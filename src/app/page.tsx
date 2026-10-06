@@ -111,22 +111,6 @@ export default async function DashboardPage() {
             </Suspense>
           </div>
         </section>
-
-        {/* Global Workspace Micro-Footer */}
-        <footer className="pt-6 pb-12 flex flex-col sm:flex-row items-center justify-between gap-3 text-outline font-label-sm text-label-sm border-t border-outline-variant/20 mt-4">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span>LifeOS v3.8.4</span>
-            <span>•</span>
-            <span>Stone Edition</span>
-            <span>•</span>
-            <span>Notion-inspired Quiet Utility</span>
-          </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            <Link href="/finances" className="hover:text-on-surface transition-colors">Telemetry Specs</Link>
-            <span className="hover:text-on-surface transition-colors">Keyboard Shortcuts (⌘K)</span>
-            <Link href="/notes" className="hover:text-on-surface transition-colors">Scratchpad Vault</Link>
-          </div>
-        </footer>
       </div>
     </div>
   );

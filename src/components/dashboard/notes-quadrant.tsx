@@ -7,26 +7,26 @@ export async function NotesQuadrant() {
   const recentNotes = notes.slice(0, 3);
 
   return (
-    <article className="rounded bg-surface-container-lowest shadow-sm p-space-lg flex flex-col justify-between gap-space-md h-full">
-      <div className="flex flex-col gap-space-md">
-        <div className="flex items-center justify-between pb-space-xs">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-[20px]">sticky_note_2</span>
-            <h2 className="font-headline-sm text-headline-sm text-on-surface font-medium">Recent Ideas &amp; Scratchpad</h2>
+    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs p-6 md:p-8 flex flex-col justify-between gap-6 h-full min-w-0">
+      <div className="flex flex-col gap-4 min-w-0">
+        <div className="flex items-center justify-between gap-3 pb-3 border-b border-outline-variant/20 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="material-symbols-outlined text-secondary text-[20px] shrink-0">sticky_note_2</span>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Recent Ideas &amp; Scratchpad</h2>
           </div>
           <Link
-            className="font-label-sm text-label-sm text-outline hover:text-on-surface flex items-center gap-0.5 transition-colors"
+            className="font-label-sm text-label-sm text-outline hover:text-on-surface flex items-center gap-1 transition-colors shrink-0"
             href="/notes"
           >
             <span>Open notes</span>
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <span className="material-symbols-outlined text-[14px] shrink-0">arrow_forward</span>
           </Link>
         </div>
 
         {/* Notes Stream */}
         <div className="flex flex-col gap-2.5">
           {recentNotes.length === 0 ? (
-            <p className="text-body-sm text-outline py-6 text-center">No ideas recorded in the vault yet.</p>
+            <p className="text-body-sm text-outline py-8 text-center font-normal">No ideas recorded in the vault yet.</p>
           ) : (
             recentNotes.map((note) => {
               const tags: string[] = Array.isArray(note.tags) ? (note.tags as string[]) : [];
@@ -34,9 +34,9 @@ export async function NotesQuadrant() {
                 <Link
                   key={note.id}
                   href="/notes"
-                  className="p-space-sm rounded bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col gap-1 group"
+                  className="p-3 rounded-xl border border-outline-variant/20 bg-surface-container-low/50 hover:bg-surface-container transition-colors flex flex-col gap-1.5 group min-w-0"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
                     <span className="font-body-md text-body-md text-on-surface group-hover:text-primary font-medium truncate">
                       {note.title}
                     </span>
@@ -48,9 +48,9 @@ export async function NotesQuadrant() {
                     {note.content || 'Empty note'}
                   </p>
                   {tags.length > 0 && (
-                    <div className="flex items-center gap-1.5 pt-1">
+                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
                       {tags.slice(0, 3).map((t, idx) => (
-                        <span key={idx} className="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">
+                        <span key={idx} className="font-label-sm text-label-sm px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant">
                           #{t}
                         </span>
                       ))}
@@ -63,11 +63,11 @@ export async function NotesQuadrant() {
         </div>
       </div>
 
-      <div className="pt-space-xs flex items-center justify-between text-outline font-label-sm text-label-sm border-t border-surface-container-high/60 mt-2">
+      <div className="pt-3 flex items-center justify-between text-outline font-label-sm text-label-sm border-t border-outline-variant/20 mt-2">
         <span>{notes.length} total sparks</span>
         <Link
           href="/notes"
-          className="text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1"
+          className="text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1.5 transition-colors"
         >
           <span className="material-symbols-outlined text-[14px]">edit</span>
           <span>New Scratch</span>
@@ -79,13 +79,13 @@ export async function NotesQuadrant() {
 
 export function NotesSkeleton() {
   return (
-    <div className="rounded bg-surface-container-lowest p-space-lg shadow-sm animate-pulse h-80 flex flex-col justify-between">
-      <div className="h-5 w-32 bg-surface-container-high rounded" />
-      <div className="space-y-2.5">
-        <div className="h-14 bg-surface-container-low rounded" />
-        <div className="h-14 bg-surface-container-low rounded" />
+    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-80 flex flex-col justify-between">
+      <div className="h-5 w-36 bg-surface-container-high rounded-md" />
+      <div className="space-y-3">
+        <div className="h-14 bg-surface-container-low rounded-xl" />
+        <div className="h-14 bg-surface-container-low rounded-xl" />
       </div>
-      <div className="h-8 bg-surface-container-low rounded" />
+      <div className="h-9 bg-surface-container-low rounded-xl" />
     </div>
   );
 }

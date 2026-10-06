@@ -29,17 +29,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
       <body
         suppressHydrationWarning
-        className="bg-surface font-sans text-on-surface antialiased"
+        className="bg-surface font-sans text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
         <QuickCaptureOmnibar />
-        <aside className="fixed left-0 top-0 h-full w-64 bg-surface-container-low border-r border-outline-variant/30 z-50 flex flex-col justify-between py-space-md px-space-sm shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-          <Sidebar />
-        </aside>
-        <div className="pl-64">
+        <Sidebar />
+        <div className="pl-0 lg:pl-64 min-h-screen transition-[padding] duration-200 flex flex-col">
           <TopHeader />
-          <main className="w-full pt-14 bg-surface min-h-screen">
+          <main className="w-full pt-14 bg-surface min-h-screen flex-1">
             {children}
           </main>
         </div>

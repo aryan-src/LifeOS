@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         {/* Top Overview Metric Row (4 Notion-style breathing stat cards) */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
           {/* Metric 1: Monthly Allowance */}
-          <div className="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
+          <div className="p-space-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Allowance Balance</span>
               <span className="px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-medium">
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Metric 2: Daily Tasks */}
-          <div className="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
+          <div className="p-space-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Daily Tasks</span>
               <span className="font-label-sm text-label-sm text-secondary font-medium">{tasksPercent}% complete</span>
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Metric 3: Active Projects */}
-          <div className="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
+          <div className="p-space-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Workstreams</span>
               <span className="w-2 h-2 rounded-full bg-secondary"></span>
@@ -157,7 +157,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Metric 4: Captured Ideas */}
-          <div className="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
+          <div className="p-space-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Incubator</span>
               <span className="material-symbols-outlined text-[16px] text-outline">lightbulb</span>

@@ -4,7 +4,7 @@ import React from 'react';
 
 export function TopHeader() {
   return (
-    <header className="fixed top-0 left-64 right-0 z-40 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <header className="fixed top-0 left-64 right-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high/60 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="h-14 w-full px-space-lg flex items-center justify-between">
         <div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm">
           <span className="hover:text-on-surface cursor-pointer">LifeOS</span>

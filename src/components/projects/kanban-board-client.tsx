@@ -125,9 +125,9 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
   };
 
   return (
-    <div className="flex flex-col w-full -mx-4 sm:-mx-6 -mt-6">
+    <div className="flex flex-col w-full">
       {/* Sub-header / Context Ribbon */}
-      <div className="px-space-lg py-space-md bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-surface-container-high/60">
+      <div className="px-space-lg py-space-lg bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-surface-container-high/60">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-space-sm">
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Projects</h1>

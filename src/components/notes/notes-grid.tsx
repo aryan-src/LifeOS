@@ -158,7 +158,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
   const conversionRate = totalSparks > 0 ? Math.round((promotedCount / totalSparks) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-space-lg w-full">
+    <div className="w-full max-w-7xl mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-xl flex flex-col gap-space-xl">
       {/* Toast Alert */}
       {errorMessage && (
         <div className="flex items-center justify-between rounded-xl border border-error-container bg-error-container p-4 text-on-error-container">

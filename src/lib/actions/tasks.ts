@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Task, InsertTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -19,10 +20,7 @@ export interface TaskWithProject extends Task {
  */
 export async function getTasks(): Promise<TaskWithProject[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // If no logged in user in local dev, fallback to seed user
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { data, error } = await supabase
     .from('tasks')
@@ -53,8 +51,7 @@ export async function createTask(
   formData: FormData
 ): Promise<ActionResponse<Task>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const title = (formData.get('title') as string)?.trim();
   const description = (formData.get('description') as string)?.trim() || null;
@@ -111,8 +108,7 @@ export async function toggleTask(
   targetCompletedState: boolean
 ): Promise<ActionResponse<{ id: string; is_completed: boolean }>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const completedAt = targetCompletedState ? new Date().toISOString() : null;
 
@@ -145,8 +141,7 @@ export async function updateTaskPriority(
   priority: number
 ): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const validPriority = Math.min(Math.max(priority, 1), 4);
 
@@ -170,8 +165,7 @@ export async function updateTaskPriority(
  */
 export async function deleteTask(taskId: string): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { error } = await supabase
     .from('tasks')

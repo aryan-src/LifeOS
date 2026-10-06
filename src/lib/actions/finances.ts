@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -100,8 +101,7 @@ const OBSOLETE_CATEGORIES = [
  */
 export async function getCategories(): Promise<Category[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   let { data, error } = await supabase
     .from('categories')
@@ -168,8 +168,7 @@ export async function getCategories(): Promise<Category[]> {
  */
 export async function getTransactions(): Promise<TransactionWithRelations[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { data, error } = await supabase
     .from('transactions')
@@ -349,8 +348,7 @@ export async function createTransaction(
   formData: FormData
 ): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const description = (formData.get('description') as string)?.trim();
   const amountRaw = formData.get('amount') as string;
@@ -409,8 +407,7 @@ export async function createTransaction(
  */
 export async function deleteTransaction(transactionId: string): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { error } = await supabase
     .from('transactions')
@@ -441,8 +438,7 @@ export async function updateTransaction(
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const description = (formData.get('description') as string)?.trim();
   const amountRaw = formData.get('amount') as string;

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 
 export interface ProjectOption {
   id: string;
@@ -10,8 +11,7 @@ export interface ProjectOption {
 
 export async function getProjectOptions(): Promise<ProjectOption[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { data, error } = await supabase
     .from('projects')

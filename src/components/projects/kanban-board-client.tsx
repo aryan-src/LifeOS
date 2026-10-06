@@ -51,7 +51,12 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'board' | 'list' | 'timeline'>('board');
+  const [isMounted, setIsMounted] = useState(false);
   const [, startTransition] = useTransition();
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Optimistic board updates using React 19 useOptimistic
   const [optimisticProjects, setOptimisticProjects] = useOptimistic(
@@ -378,7 +383,96 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
 
       {/* Board Container */}
       <div className="p-space-lg w-full overflow-x-auto">
-        <DragDropContext onDragEnd={handleDragEnd}>
+        {isMounted ? (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md min-w-[1020px]">
+              {COLUMNS.map((column) => {
+                const columnProjects = optimisticProjects.filter(
+                  (p) => p.status === column.id
+                );
+
+                return (
+                  <div
+                    key={column.id}
+                    className="flex flex-col bg-surface-container-low rounded-xl p-space-sm"
+                  >
+                    {/* Column Header */}
+                    <div className="flex items-center justify-between px-space-xs py-space-sm mb-space-xs">
+                      <div className="flex items-center gap-space-sm">
+                        <span className={`w-2 h-2 rounded-full ${column.dotClass}`} />
+                        <span className="font-headline-sm text-headline-sm text-on-surface font-medium">
+                          {column.title}
+                        </span>
+                        <span
+                          className={`font-label-sm text-label-sm px-1.5 py-0.5 rounded ${column.badgeClass}`}
+                        >
+                          {columnProjects.length}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsCreateOpen(true)}
+                        className="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors"
+                        title={`Add card to ${column.title}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">add</span>
+                      </button>
+                    </div>
+
+                    {/* Droppable Area */}
+                    <Droppable droppableId={column.id}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`flex flex-col gap-space-sm flex-1 min-h-[350px] rounded-lg p-1 transition-colors ${
+                            snapshot.isDraggingOver ? 'bg-surface-container-high/50' : ''
+                          }`}
+                        >
+                          {columnProjects.map((project, index) => (
+                            <Draggable
+                              key={project.id}
+                              draggableId={project.id}
+                              index={index}
+                            >
+                              {(draggableProvided, draggableSnapshot) => (
+                                <div
+                                  ref={draggableProvided.innerRef}
+                                  {...draggableProvided.draggableProps}
+                                  {...draggableProvided.dragHandleProps}
+                                  style={{
+                                    ...draggableProvided.draggableProps.style,
+                                    opacity: draggableSnapshot.isDragging ? 0.85 : 1,
+                                  }}
+                                >
+                                  <ProjectCard
+                                    project={project}
+                                    onDelete={handleDelete}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+
+                          {columnProjects.length === 0 && (
+                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 rounded-lg text-outline">
+                              <span className="material-symbols-outlined text-[24px] mb-1">
+                                inbox
+                              </span>
+                              <span className="font-label-sm text-label-sm">No cards yet</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                );
+              })}
+            </div>
+          </DragDropContext>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md min-w-[1020px]">
             {COLUMNS.map((column) => {
               const columnProjects = optimisticProjects.filter(
@@ -390,7 +484,6 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                   key={column.id}
                   className="flex flex-col bg-surface-container-low rounded-xl p-space-sm"
                 >
-                  {/* Column Header */}
                   <div className="flex items-center justify-between px-space-xs py-space-sm mb-space-xs">
                     <div className="flex items-center gap-space-sm">
                       <span className={`w-2 h-2 rounded-full ${column.dotClass}`} />
@@ -403,69 +496,31 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                         {columnProjects.length}
                       </span>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsCreateOpen(true)}
-                      className="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors"
-                      title={`Add card to ${column.title}`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">add</span>
-                    </button>
                   </div>
 
-                  {/* Droppable Area */}
-                  <Droppable droppableId={column.id}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className={`flex flex-col gap-space-sm flex-1 min-h-[350px] rounded-lg p-1 transition-colors ${
-                          snapshot.isDraggingOver ? 'bg-surface-container-high/50' : ''
-                        }`}
-                      >
-                        {columnProjects.map((project, index) => (
-                          <Draggable
-                            key={project.id}
-                            draggableId={project.id}
-                            index={index}
-                          >
-                            {(draggableProvided, draggableSnapshot) => (
-                              <div
-                                ref={draggableProvided.innerRef}
-                                {...draggableProvided.draggableProps}
-                                {...draggableProvided.dragHandleProps}
-                                style={{
-                                  ...draggableProvided.draggableProps.style,
-                                  opacity: draggableSnapshot.isDragging ? 0.85 : 1,
-                                }}
-                              >
-                                <ProjectCard
-                                  project={project}
-                                  onDelete={handleDelete}
-                                />
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
+                  <div className="flex flex-col gap-space-sm flex-1 min-h-[350px] rounded-lg p-1">
+                    {columnProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onDelete={handleDelete}
+                      />
+                    ))}
 
-                        {columnProjects.length === 0 && (
-                          <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 rounded-lg text-outline">
-                            <span className="material-symbols-outlined text-[24px] mb-1">
-                              inbox
-                            </span>
-                            <span className="font-label-sm text-label-sm">No cards yet</span>
-                          </div>
-                        )}
+                    {columnProjects.length === 0 && (
+                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 rounded-lg text-outline">
+                        <span className="material-symbols-outlined text-[24px] mb-1">
+                          inbox
+                        </span>
+                        <span className="font-label-sm text-label-sm">No cards yet</span>
                       </div>
                     )}
-                  </Droppable>
+                  </div>
                 </div>
               );
             })}
           </div>
-        </DragDropContext>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
@@ -28,8 +29,7 @@ export async function dispatchQuickCapture(
 
   const parsed = parseQuickCapture(trimmed);
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   // 1. Resolve project_id via indexed slug lookup if present
   let resolvedProjectId: string | null = null;

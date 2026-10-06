@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Project, InsertProject, ProjectStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -19,8 +20,7 @@ export interface ProjectWithMetrics extends Project {
  */
 export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   // 1. Fetch projects
   const { data: projects, error: projErr } = await supabase
@@ -88,8 +88,7 @@ export async function updateProjectStatus(
   status: ProjectStatus
 ): Promise<ActionResponse<{ id: string; status: ProjectStatus }>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { data, error } = await supabase
     .from('projects')
@@ -117,8 +116,7 @@ export async function createProject(
   formData: FormData
 ): Promise<ActionResponse<Project>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const title = (formData.get('title') as string)?.trim();
   const description = (formData.get('description') as string)?.trim() || null;
@@ -191,8 +189,7 @@ export async function createProject(
  */
 export async function deleteProject(projectId: string): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { error } = await supabase
     .from('projects')

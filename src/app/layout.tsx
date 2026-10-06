@@ -1,8 +1,21 @@
 import type { Metadata } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { TopHeader } from '@/components/navigation/top-header';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+});
 
 export const metadata: Metadata = {
   title: 'LifeOS — Unified Operating System',
@@ -15,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body
         suppressHydrationWarning
         className="bg-surface font-sans text-on-surface antialiased"

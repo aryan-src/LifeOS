@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getEffectiveUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Note, InsertNote } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -19,8 +20,7 @@ export interface NoteWithProject extends Note {
  */
 export async function getNotes(): Promise<NoteWithProject[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { data, error } = await supabase
     .from('notes')
@@ -48,8 +48,7 @@ export async function createNote(
   formData: FormData
 ): Promise<ActionResponse<Note>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const title = (formData.get('title') as string)?.trim() || 'Untitled Note';
   const content = (formData.get('content') as string)?.trim() || '';
@@ -95,8 +94,7 @@ export async function togglePinNote(
   isPinned: boolean
 ): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { error } = await supabase
     .from('notes')
@@ -118,8 +116,7 @@ export async function togglePinNote(
  */
 export async function deleteNote(noteId: string): Promise<ActionResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   const { error } = await supabase
     .from('notes')
@@ -151,8 +148,7 @@ export async function promoteNoteToProject(
   }
 ): Promise<ActionResponse<{ project_id: string; slug: string; tasks_created: number }>> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const effectiveUserId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+  const effectiveUserId = await getEffectiveUserId(supabase);
 
   // 1. Fetch note to extract title, content and markdown checklist items
   const { data: note, error: fetchErr } = await supabase

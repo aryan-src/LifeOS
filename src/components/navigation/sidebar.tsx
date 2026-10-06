@@ -73,6 +73,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 onClick={closeMobileMenu}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors min-w-0 ${
                   isActive
@@ -94,6 +95,7 @@ export function Sidebar() {
       <div className="pt-3 mt-auto border-t border-outline-variant/20">
         <Link
           href="/settings"
+          prefetch={true}
           onClick={closeMobileMenu}
           className="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:bg-surface-container transition-colors cursor-pointer group"
         >

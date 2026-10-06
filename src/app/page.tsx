@@ -15,31 +15,18 @@ import {
   NotesQuadrant,
   NotesSkeleton,
 } from '@/components/dashboard/notes-quadrant';
-import { getFinancialAnalytics } from '@/lib/actions/finances';
-import { getTasks } from '@/lib/actions/tasks';
-import { getProjectsWithMetrics } from '@/lib/actions/projects';
-import { getNotes } from '@/lib/actions/notes';
+import {
+  DashboardMetrics,
+  DashboardMetricsSkeleton,
+} from '@/components/dashboard/dashboard-metrics';
 import { getUserProfile } from '@/lib/actions/profile';
-import { formatCurrency } from '@/lib/utils/format';
-import { getTodayDate, formatDateIST } from '@/lib/utils/date';
+import { formatDateIST } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [analytics, tasks, projects, notes, profile] = await Promise.all([
-    getFinancialAnalytics(),
-    getTasks(),
-    getProjectsWithMetrics(),
-    getNotes(),
-    getUserProfile(),
-  ]);
-
-  const activeProjects = projects.filter((p) => p.status === 'active');
-  const completedTasksCount = tasks.filter((t) => t.is_completed).length;
-  const totalTasksCount = tasks.length;
-  const tasksPercent = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
-  const pendingTodayCount = tasks.filter((t) => !t.is_completed && (!t.due_date || t.due_date <= getTodayDate())).length;
+  const profile = await getUserProfile();
 
   return (
     <div className="flex flex-col w-full">
@@ -72,6 +59,7 @@ export default async function DashboardPage() {
             </div>
             <Link
               href="/projects"
+              prefetch={true}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors shadow-xs"
             >
               <span className="material-symbols-outlined text-[16px] text-outline">tune</span>
@@ -79,6 +67,7 @@ export default async function DashboardPage() {
             </Link>
             <Link
               href="/tasks"
+              prefetch={true}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary hover:opacity-90 font-label-md text-label-md transition-opacity shadow-xs"
             >
               <span className="material-symbols-outlined text-[16px] text-on-primary">add</span>
@@ -87,110 +76,10 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        {/* Top Overview Metric Row (4 Notion-style breathing stat cards) */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
-          {/* Metric 1: Monthly Allowance */}
-          <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Allowance Balance</span>
-              <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-medium shrink-0">
-                {100 - Math.min(analytics.allowanceUsagePercent, 100)}% remaining
-              </span>
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-              <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-                {analytics.currencySymbol}{formatCurrency(analytics.remainingAllowance)}
-              </span>
-              <div className="flex items-center gap-1.5 text-outline min-w-0">
-                <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">format_image_left</span>
-                <span suppressHydrationWarning className="font-label-sm text-label-sm truncate">
-                  Safe daily pace: <span className="text-on-surface-variant font-medium">{analytics.currencySymbol}{formatCurrency(analytics.safeDailyBudget)}/day</span>
-                </span>
-              </div>
-            </div>
-            <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
-              <div
-                className="bg-secondary h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.max(0, 100 - analytics.allowanceUsagePercent)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Metric 2: Daily Tasks */}
-          <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Daily Tasks</span>
-              <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-medium shrink-0">
-                {tasksPercent}% complete
-              </span>
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-              <span className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-                {completedTasksCount} of {totalTasksCount}
-              </span>
-              <div className="flex items-center gap-1.5 text-outline min-w-0">
-                <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">pending_actions</span>
-                <span className="font-label-sm text-label-sm truncate">
-                  <span className="text-on-surface-variant font-medium">{pendingTodayCount} pending</span> scheduled today
-                </span>
-              </div>
-            </div>
-            <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
-              <div className="bg-secondary h-full rounded-full transition-all duration-500" style={{ width: `${tasksPercent}%` }} />
-            </div>
-          </div>
-
-          {/* Metric 3: Active Projects */}
-          <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Workstreams</span>
-              <span className="w-2 h-2 rounded-full bg-secondary shrink-0"></span>
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-              <span className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-                {activeProjects.length} Ongoing
-              </span>
-              <div className="flex items-center gap-1.5 text-outline min-w-0">
-                <span className="font-label-sm text-label-sm truncate">
-                  {activeProjects.map((p) => p.title).slice(0, 3).join(' • ') || 'No active projects'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              <span className="text-label-sm font-label-sm px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant">
-                {projects.filter((p) => p.status === 'completed').length} completed
-              </span>
-              <span className="text-label-sm font-label-sm px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant">
-                {projects.filter((p) => p.status === 'backlog').length} backlog
-              </span>
-            </div>
-          </div>
-
-          {/* Metric 4: Captured Ideas */}
-          <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
-            <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Incubator</span>
-              <span className="material-symbols-outlined text-[16px] text-outline shrink-0">lightbulb</span>
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-              <span className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-                {notes.length} Notes
-              </span>
-              <div className="flex items-center gap-1.5 text-outline min-w-0">
-                <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">auto_awesome</span>
-                <span className="font-label-sm text-label-sm truncate">
-                  {notes.filter((n) => n.is_pinned).length} pinned sparks
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-outline min-w-0">
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-medium shrink-0">
-                {notes.filter((n) => n.project_id).length} promoted
-              </span>
-              <span className="font-label-sm text-label-sm truncate">to projects</span>
-            </div>
-          </div>
-        </section>
+        {/* Top Overview Metric Row (4 Notion-style breathing stat cards streamed) */}
+        <Suspense fallback={<DashboardMetricsSkeleton />}>
+          <DashboardMetrics />
+        </Suspense>
 
         {/* Main Workspace Bento: The 4 Minimalist Breathing Cards */}
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">

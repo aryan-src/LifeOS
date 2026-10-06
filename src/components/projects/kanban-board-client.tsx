@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useOptimistic, useTransition, useState } from 'react';
+import React, { useOptimistic, useTransition, useState, useMemo } from 'react';
 import {
   DragDropContext,
   Droppable,
@@ -54,6 +54,13 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [, startTransition] = useTransition();
 
+  // Non-blocking tab switching via concurrent transitions
+  const handleTabChange = (tab: 'board' | 'list' | 'timeline') => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  };
+
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -79,17 +86,36 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
     }
   );
 
-  // Compute calm editorial metrics
-  const activeCount = optimisticProjects.filter((p) => p.status === 'active').length;
-  const completedCount = optimisticProjects.filter((p) => p.status === 'completed').length;
-  const pausedCount = optimisticProjects.filter((p) => p.status === 'paused').length;
-  const avgVelocity =
-    optimisticProjects.length > 0
-      ? Math.round(
-          optimisticProjects.reduce((acc, p) => acc + (p.completion_percentage || 0), 0) /
-            optimisticProjects.length
-        )
-      : 0;
+  // Compute calm editorial metrics with useMemo
+  const { activeCount, completedCount, pausedCount, avgVelocity } = useMemo(() => {
+    const active = optimisticProjects.filter((p) => p.status === 'active').length;
+    const completed = optimisticProjects.filter((p) => p.status === 'completed').length;
+    const paused = optimisticProjects.filter((p) => p.status === 'paused').length;
+    const avg =
+      optimisticProjects.length > 0
+        ? Math.round(
+            optimisticProjects.reduce((acc, p) => acc + (p.completion_percentage || 0), 0) /
+              optimisticProjects.length
+          )
+        : 0;
+    return { activeCount: active, completedCount: completed, pausedCount: paused, avgVelocity: avg };
+  }, [optimisticProjects]);
+
+  // Memoize column project groupings to avoid repetitive filtering on every render cycle
+  const projectsByStatus = useMemo(() => {
+    const map: Record<ProjectStatus, ProjectWithMetrics[]> = {
+      backlog: [],
+      active: [],
+      paused: [],
+      completed: [],
+    };
+    for (const p of optimisticProjects) {
+      if (map[p.status]) {
+        map[p.status].push(p);
+      }
+    }
+    return map;
+  }, [optimisticProjects]);
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { NoteCard } from './note-card';
 import {
   togglePinNote,
@@ -24,6 +24,13 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
   const [selectedTag, setSelectedTag] = useState<string>('ai-research');
   const [deskPadContent, setDeskPadContent] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  const handleFilterChange = (tag: string | null) => {
+    startTransition(() => {
+      setFilterTag(tag);
+    });
+  };
 
   // Synchronize state when server updates initialNotes
   useEffect(() => {
@@ -142,20 +149,34 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     }
   };
 
-  // Filter notes
-  const filteredNotes = filterTag
-    ? notes.filter(
-        (n) => Array.isArray(n.tags) && (n.tags as string[]).includes(filterTag)
-      )
-    : notes;
+  // Filter notes - memoized so keystrokes in desk jotter or quick capture do not recompute arrays
+  const filteredNotes = useMemo(() => {
+    if (!filterTag) return notes;
+    return notes.filter(
+      (n) => Array.isArray(n.tags) && (n.tags as string[]).includes(filterTag)
+    );
+  }, [notes, filterTag]);
 
-  const pinnedNotes = filteredNotes.filter((n) => n.is_pinned);
-  const unpinnedNotes = filteredNotes.filter((n) => !n.is_pinned);
+  const pinnedNotes = useMemo(
+    () => filteredNotes.filter((n) => n.is_pinned),
+    [filteredNotes]
+  );
 
-  // Analytics
-  const totalSparks = notes.length;
-  const promotedCount = notes.filter((n) => n.project_id).length;
-  const conversionRate = totalSparks > 0 ? Math.round((promotedCount / totalSparks) * 100) : 0;
+  const unpinnedNotes = useMemo(
+    () => filteredNotes.filter((n) => !n.is_pinned),
+    [filteredNotes]
+  );
+
+  // Analytics - memoized against notes array
+  const totalSparks = useMemo(() => notes.length, [notes]);
+  const promotedCount = useMemo(
+    () => notes.filter((n) => n.project_id).length,
+    [notes]
+  );
+  const conversionRate = useMemo(
+    () => (totalSparks > 0 ? Math.round((promotedCount / totalSparks) * 100) : 0),
+    [totalSparks, promotedCount]
+  );
 
   return (
     <div className="w-full max-w-7xl mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-xl flex flex-col gap-space-xl">
@@ -203,7 +224,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           {/* Tag Filter Pills */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setFilterTag(null)}
+              onClick={() => handleFilterChange(null)}
               className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
                 filterTag === null
                   ? 'bg-surface-container-high text-on-surface font-medium'
@@ -215,7 +236,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             {['ai-research', 'engineering', 'design', 'academics'].map((tag) => (
               <button
                 key={tag}
-                onClick={() => setFilterTag(filterTag === tag ? null : tag)}
+                onClick={() => handleFilterChange(filterTag === tag ? null : tag)}
                 className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
                   filterTag === tag
                     ? 'bg-surface-container-high text-on-surface font-medium'

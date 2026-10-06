@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useOptimistic, useState, useTransition } from 'react';
+import React, { useOptimistic, useState, useTransition, useMemo } from 'react';
 import { TaskItem } from './task-item';
 import { TaskCreateInput } from './task-create-input';
 import { toggleTask, deleteTask, type TaskWithProject } from '@/lib/actions/tasks';
@@ -19,6 +19,13 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('today');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  // Non-blocking tab change using React 19 concurrent transitions
+  const handleTabChange = (tab: FilterTab) => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  };
 
   // React 19 native useOptimistic:
   // Immediately flips the visual is_completed state while the task remains rendered
@@ -71,31 +78,28 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
     });
   };
 
-  // Filter tasks for display
-  // NOTE on "Optimistic List Jumping":
-  // In the 'today' tab, tasks that were originally active in this render cycle
-  // remain in the list even if optimistically completed, showing the strikethrough grace period!
-  const filteredTasks = optimisticTasks.filter((task) => {
-    if (activeTab === 'completed') {
-      return task.is_completed;
-    }
-    if (activeTab === 'upcoming') {
-      return !task.is_completed && task.due_date && task.due_date > todayStr;
-    }
-    if (activeTab === 'today') {
-      // Include items scheduled today or overdue, OR items that are completed
-      // but were due today so they do not instantly vanish under cursor
-      const isDueTodayOrOverdue = !task.due_date || task.due_date <= todayStr;
-      return isDueTodayOrOverdue;
-    }
-    return true; // 'all'
-  });
+  // Memoize filtered tasks to prevent main-thread freeze on every re-render
+  const filteredTasks = useMemo(() => {
+    return optimisticTasks.filter((task) => {
+      if (activeTab === 'completed') {
+        return task.is_completed;
+      }
+      if (activeTab === 'upcoming') {
+        return !task.is_completed && task.due_date && task.due_date > todayStr;
+      }
+      if (activeTab === 'today') {
+        return !task.due_date || task.due_date <= todayStr;
+      }
+      return true; // 'all'
+    });
+  }, [optimisticTasks, activeTab, todayStr]);
 
-  const counts = {
+  // Memoize tab counts
+  const counts = useMemo(() => ({
     today: optimisticTasks.filter((t) => (!t.due_date || t.due_date <= todayStr) && !t.is_completed).length,
     upcoming: optimisticTasks.filter((t) => !t.is_completed && t.due_date && t.due_date > todayStr).length,
     completed: optimisticTasks.filter((t) => t.is_completed).length,
-  };
+  }), [optimisticTasks, todayStr]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
@@ -126,7 +130,7 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
           <div className="flex items-center gap-1 p-1 bg-surface-container-low rounded-lg">
             <button
               type="button"
-              onClick={() => setActiveTab('today')}
+              onClick={() => handleTabChange('today')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'today'
                   ? 'bg-surface-container-lowest text-on-surface shadow-sm'
@@ -137,7 +141,7 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('upcoming')}
+              onClick={() => handleTabChange('upcoming')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'upcoming'
                   ? 'bg-surface-container-lowest text-on-surface shadow-sm'
@@ -148,7 +152,7 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('completed')}
+              onClick={() => handleTabChange('completed')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'completed'
                   ? 'bg-surface-container-lowest text-on-surface shadow-sm'
@@ -159,7 +163,7 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('all')}
+              onClick={() => handleTabChange('all')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors hidden sm:inline-flex ${
                 activeTab === 'all'
                   ? 'bg-surface-container-lowest text-on-surface shadow-sm'

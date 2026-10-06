@@ -41,6 +41,7 @@ export function TopHeader() {
           </div>
           <Link
             href="/settings"
+            prefetch={true}
             className="text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1.5 rounded-lg hover:bg-surface-container transition-colors shrink-0"
             aria-label="View settings"
           >
@@ -48,6 +49,7 @@ export function TopHeader() {
           </Link>
           <Link
             href="/settings"
+            prefetch={true}
             className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm hover:ring-2 hover:ring-outline-variant/50 transition-all"
             aria-label="User Profile Settings"
           >

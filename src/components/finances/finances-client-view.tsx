@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { AllowanceHeroCard } from './allowance-hero-card';
 import { QuickExpenseLogger } from './quick-expense-logger';
 import { StudentExpenseFeed } from './student-expense-feed';
@@ -31,6 +31,19 @@ export function FinancesClientView({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<TransactionWithRelations | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleTimeframeChange = (timeframe: 'all' | 'daily' | 'weekly' | 'monthly') => {
+    startTransition(() => {
+      setActiveTimeframe(timeframe);
+    });
+  };
+
+  const handleViewModeChange = (mode: 'cards' | 'table') => {
+    startTransition(() => {
+      setViewMode(mode);
+    });
+  };
 
   React.useEffect(() => {
     setTransactions(initialTransactions);
@@ -101,7 +114,7 @@ export function FinancesClientView({
       <AllowanceHeroCard
         analytics={analytics}
         activeTimeframe={activeTimeframe}
-        onTimeframeChange={setActiveTimeframe}
+        onTimeframeChange={handleTimeframeChange}
         onEditAllowance={handleEditAllowance}
       />
 
@@ -130,7 +143,7 @@ export function FinancesClientView({
             <div className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-sm">
               <button
                 type="button"
-                onClick={() => setActiveTimeframe('daily')}
+                onClick={() => handleTimeframeChange('daily')}
                 className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors ${
                   activeTimeframe === 'daily'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'
@@ -141,7 +154,7 @@ export function FinancesClientView({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTimeframe('weekly')}
+                onClick={() => handleTimeframeChange('weekly')}
                 className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors ${
                   activeTimeframe === 'weekly'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'
@@ -152,7 +165,7 @@ export function FinancesClientView({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTimeframe('monthly')}
+                onClick={() => handleTimeframeChange('monthly')}
                 className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors ${
                   activeTimeframe === 'monthly'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'
@@ -163,7 +176,7 @@ export function FinancesClientView({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTimeframe('all')}
+                onClick={() => handleTimeframeChange('all')}
                 className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors ${
                   activeTimeframe === 'all'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'
@@ -178,7 +191,7 @@ export function FinancesClientView({
             <div className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-sm">
               <button
                 type="button"
-                onClick={() => setViewMode('table')}
+                onClick={() => handleViewModeChange('table')}
                 className={`p-1.5 rounded transition-colors ${
                   viewMode === 'table'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'
@@ -190,7 +203,7 @@ export function FinancesClientView({
               </button>
               <button
                 type="button"
-                onClick={() => setViewMode('cards')}
+                onClick={() => handleViewModeChange('cards')}
                 className={`p-1.5 rounded transition-colors ${
                   viewMode === 'cards'
                     ? 'text-on-surface bg-surface-container-lowest shadow-sm'

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import type { Project, InsertProject, ProjectStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { getTodayDate } from '@/lib/utils/date';
 
 export interface ProjectWithMetrics extends Project {
   total_tasks: number;
@@ -164,7 +165,7 @@ export async function createProject(
     status,
     priority,
     budget: isNaN(budget) ? 0 : budget,
-    start_date: new Date().toISOString().split('T')[0],
+    start_date: getTodayDate(),
     target_date: targetDate,
   };
 

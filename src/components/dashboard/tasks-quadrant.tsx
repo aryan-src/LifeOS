@@ -1,10 +1,11 @@
 import React from 'react';
 import { getTasks } from '@/lib/actions/tasks';
+import { getTodayDate } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function TasksQuadrant() {
   const allTasks = await getTasks();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayDate();
 
   // Incomplete tasks scheduled today or overdue
   const todayTasks = allTasks

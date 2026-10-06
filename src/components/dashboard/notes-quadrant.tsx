@@ -1,5 +1,6 @@
 import React from 'react';
 import { getNotes } from '@/lib/actions/notes';
+import { formatDateIST } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function NotesQuadrant() {
@@ -41,7 +42,7 @@ export async function NotesQuadrant() {
                       {note.title}
                     </span>
                     <span className="font-label-sm text-label-sm text-outline shrink-0 ml-2">
-                      {new Date(note.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      {formatDateIST(note.updated_at, { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                   <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">

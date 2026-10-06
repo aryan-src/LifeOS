@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
+import { getTodayDate, getTomorrowDate } from '@/lib/utils/date';
 
 describe('parseQuickCapture (TDD Engine)', () => {
   describe('Transaction Tokenizer', () => {
@@ -85,8 +86,8 @@ describe('parseQuickCapture (TDD Engine)', () => {
     });
 
     it('handles relative date tags: @today and @tomorrow', () => {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const todayStr = getTodayDate();
+      const tomorrowStr = getTomorrowDate();
 
       const resToday = parseQuickCapture('todo: Call accountant @today');
       expect(resToday.target).toBe('task');

@@ -1,4 +1,5 @@
 export type CaptureTarget = 'transaction' | 'task' | 'note';
+import { getTodayDate, getTomorrowDate } from '@/lib/utils/date';
 
 export interface ParsedCapture {
   target: CaptureTarget;
@@ -41,8 +42,8 @@ export function parseQuickCapture(rawInput: string): ParsedCapture {
 
   // 2. Extract Date Operator (@today, @tomorrow, @YYYY-MM-DD)
   let dueDate: string | undefined = undefined;
-  const todayStr = new Date().toISOString().split('T')[0];
-  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const todayStr = getTodayDate();
+  const tomorrowStr = getTomorrowDate();
 
   if (/@today\b/i.test(workingText)) {
     dueDate = todayStr;

@@ -6,6 +6,7 @@ import { createTransaction } from '@/lib/actions/finances';
 import type { Category } from '@/types/database.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import type { ActionResponse } from '@/types/action.types';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface TransactionCreateFormProps {
   categories: Category[];
@@ -38,7 +39,7 @@ export function TransactionCreateForm({
     }
   }, [state, onSuccess, onError]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayDate();
 
   return (
     <form

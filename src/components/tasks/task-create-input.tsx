@@ -5,6 +5,7 @@ import { Plus, Calendar, Flag, Folder } from 'lucide-react';
 import { createTask } from '@/lib/actions/tasks';
 import type { ActionResponse } from '@/types/action.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface TaskCreateInputProps {
   projects: ProjectOption[];
@@ -27,8 +28,8 @@ export function TaskCreateInput({ projects, onError }: TaskCreateInputProps) {
     }
   }, [state, onError]);
 
-  // Format today's local date as default YYYY-MM-DD
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Format today's local date in IST as default YYYY-MM-DD
+  const todayStr = getTodayDate();
 
   return (
     <form

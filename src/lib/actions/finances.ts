@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
 
 export interface TransactionWithRelations {
   id: string;
@@ -208,8 +209,8 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
 
   const currencySymbol = profile.currency_symbol || '₹';
 
-  // Current date boundary calculations (Timezone safe YYYY-MM-DD strings)
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Current date boundary calculations (Timezone safe YYYY-MM-DD strings in IST)
+  const todayStr = getTodayDate();
   const [currentYear, currentMonthNum, currentDayNum] = todayStr.split('-').map(Number);
   const currentYearMonth = todayStr.substring(0, 7); // e.g. "2026-10"
 
@@ -217,23 +218,15 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
   const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
   const daysLeftInMonth = Math.max(1, totalDaysInMonth - currentDayNum + 1);
 
-  // Trailing 7 days structure for weekly tracker
-  const weeklyDays: WeeklyDayData[] = [];
-  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Trailing 7 days structure for weekly tracker in IST
+  const rawWeeklyDays = getTrailingDays(7);
+  const weeklyDays: WeeklyDayData[] = rawWeeklyDays.map((d) => ({
+    ...d,
+    spent: 0,
+  }));
   const weeklyDayMap = new Map<string, WeeklyDayData>();
-
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dStr = d.toISOString().split('T')[0];
-    const item: WeeklyDayData = {
-      dayLabel: dayLabels[d.getDay()],
-      date: dStr,
-      spent: 0,
-      isToday: dStr === todayStr,
-    };
-    weeklyDays.push(item);
-    weeklyDayMap.set(dStr, item);
+  for (const item of weeklyDays) {
+    weeklyDayMap.set(item.date, item);
   }
 
   let totalInflow = 0;
@@ -385,7 +378,7 @@ export async function createTransaction(
   // Expenses stored with signed negative amounts or positive based on type
   const finalAmount = type === 'income' ? parsedAmount : -parsedAmount;
 
-  let finalDate = new Date().toISOString().split('T')[0];
+  let finalDate = getTodayDate();
   if (dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
     finalDate = dateRaw;
   }
@@ -476,7 +469,7 @@ export async function updateTransaction(
   const preciseAmount = parseFloat(parsedAmount.toFixed(2));
   const finalAmount = type === 'income' ? preciseAmount : -preciseAmount;
 
-  let finalDate = new Date().toISOString().split('T')[0];
+  let finalDate = getTodayDate();
   if (dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
     finalDate = dateRaw;
   }

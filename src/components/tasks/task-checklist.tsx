@@ -6,6 +6,7 @@ import { TaskCreateInput } from './task-create-input';
 import { toggleTask, deleteTask, type TaskWithProject } from '@/lib/actions/tasks';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { CheckCircle2, Clock, CalendarDays, AlertTriangle } from 'lucide-react';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface TaskChecklistProps {
   initialTasks: TaskWithProject[];
@@ -39,7 +40,7 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
     }
   );
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayDate();
 
   const handleToggle = (taskId: string, targetState: boolean) => {
     setErrorMessage(null);

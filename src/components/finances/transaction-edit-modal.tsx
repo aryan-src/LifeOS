@@ -17,6 +17,7 @@ import {
 import { updateTransaction, type TransactionWithRelations } from '@/lib/actions/finances';
 import type { Category } from '@/types/database.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface TransactionEditModalProps {
   transaction: TransactionWithRelations | null;
@@ -69,7 +70,7 @@ export function TransactionEditModal({
       setType(transaction.type === 'income' ? 'income' : 'expense');
       setAmount(Math.abs(transaction.amount).toFixed(2));
       setDescription(transaction.description || '');
-      setDate(transaction.date || new Date().toISOString().split('T')[0]);
+      setDate(transaction.date || getTodayDate());
       setCategoryId(transaction.category_id || (categories[0]?.id ?? ''));
       setProjectId(transaction.project_id || 'none');
       setPayeeOrSource(transaction.payee_or_source || '');

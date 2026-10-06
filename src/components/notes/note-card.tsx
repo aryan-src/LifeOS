@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { NoteWithProject } from '@/lib/actions/notes';
+import { formatDateIST } from '@/lib/utils/date';
 
 interface NoteCardProps {
   note: NoteWithProject;
@@ -103,7 +104,7 @@ export function NoteCard({
         )}
 
         <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline">
-          {new Date(note.created_at).toLocaleDateString(undefined, {
+          {formatDateIST(note.created_at, {
             month: 'short',
             day: 'numeric',
           })}

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { TaskWithProject } from '@/lib/actions/tasks';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface TaskItemProps {
   task: TaskWithProject;
@@ -17,8 +18,8 @@ const PRIORITY_BADGES: Record<number, { label: string; className: string }> = {
 export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
   const priorityInfo = PRIORITY_BADGES[task.priority] || PRIORITY_BADGES[2];
 
-  // Compare strictly against current localized YYYY-MM-DD
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Compare strictly against current localized YYYY-MM-DD in IST
+  const todayStr = getTodayDate();
   const isOverdue = task.due_date && task.due_date < todayStr && !task.is_completed;
   const isDueToday = task.due_date === todayStr && !task.is_completed;
 

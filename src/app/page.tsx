@@ -21,6 +21,7 @@ import { getProjectsWithMetrics } from '@/lib/actions/projects';
 import { getNotes } from '@/lib/actions/notes';
 import { getUserProfile } from '@/lib/actions/profile';
 import { formatCurrency } from '@/lib/utils/format';
+import { getTodayDate, formatDateIST } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,7 @@ export default async function DashboardPage() {
   const completedTasksCount = tasks.filter((t) => t.is_completed).length;
   const totalTasksCount = tasks.length;
   const tasksPercent = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
-  const pendingTodayCount = tasks.filter((t) => !t.is_completed && (!t.due_date || t.due_date <= new Date().toISOString().split('T')[0])).length;
+  const pendingTodayCount = tasks.filter((t) => !t.is_completed && (!t.due_date || t.due_date <= getTodayDate())).length;
 
   return (
     <div className="flex flex-col w-full">
@@ -64,8 +65,10 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-3 self-start md:self-auto shrink-0 flex-wrap">
             <div className="hidden sm:flex flex-col items-end mr-1 text-right">
-              <span className="font-label-sm text-label-sm text-outline">Active telemetry</span>
-              <span className="font-label-md text-label-md text-on-surface-variant font-medium">Synced Cloud</span>
+              <span className="font-label-sm text-label-sm text-outline">
+                {formatDateIST(new Date(), { weekday: 'short', day: 'numeric', month: 'short' })}
+              </span>
+              <span className="font-label-md text-label-md text-on-surface-variant font-medium">IST Active</span>
             </div>
             <Link
               href="/projects"

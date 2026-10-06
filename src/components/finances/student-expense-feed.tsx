@@ -4,6 +4,7 @@ import React, { useOptimistic, useTransition, useState, useMemo } from 'react';
 import { Tag, Folder, Trash2, AlertTriangle, Search, Filter, ArrowDownRight, ArrowUpRight, Pencil } from 'lucide-react';
 import type { TransactionWithRelations } from '@/lib/actions/finances';
 import { formatCurrency } from '@/lib/utils/format';
+import { getTodayDate, getYesterdayDate, getTrailingDays } from '@/lib/utils/date';
 
 interface StudentExpenseFeedProps {
   transactions: TransactionWithRelations[];
@@ -56,29 +57,26 @@ export function StudentExpenseFeed({
     });
   };
 
-  // Deterministic date boundary based on server-synchronized currentDate
+  // Deterministic date boundary in IST
   const todayStr = useMemo(() => {
-    return currentDate || new Date().toISOString().split('T')[0];
+    return currentDate || getTodayDate();
   }, [currentDate]);
 
   const yesterdayStr = useMemo(() => {
-    const [y, m, d] = todayStr.split('-').map(Number);
-    const prev = new Date(Date.UTC(y, m - 1, d - 1));
-    return prev.toISOString().split('T')[0];
-  }, [todayStr]);
+    return getYesterdayDate();
+  }, []);
 
   const currentYearMonth = useMemo(() => todayStr.substring(0, 7), [todayStr]);
 
-  // Trailing 7 days date strings set (UTC safe)
+  // Trailing 7 days date strings set in IST
   const trailing7DaysSet = useMemo(() => {
     const set = new Set<string>();
-    const [y, m, d] = todayStr.split('-').map(Number);
-    for (let i = 0; i < 7; i++) {
-      const prevDate = new Date(Date.UTC(y, m - 1, d - i));
-      set.add(prevDate.toISOString().split('T')[0]);
+    const days = getTrailingDays(7);
+    for (const d of days) {
+      set.add(d.date);
     }
     return set;
-  }, [todayStr]);
+  }, []);
 
   // Filter transactions by timeframe, search, and category
   const filteredTransactions = useMemo(() => {

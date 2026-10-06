@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { getTodayDate } from '@/lib/utils/date';
 
 export interface DispatchResult {
   target: 'transaction' | 'task' | 'note';
@@ -54,7 +55,7 @@ export async function dispatchQuickCapture(
     const amount = parsed.payload.amount || 0;
     const type = parsed.payload.type || 'expense';
     const description = parsed.payload.description || 'Quick Capture Transaction';
-    const date = parsed.payload.dueDate || new Date().toISOString().split('T')[0];
+    const date = parsed.payload.dueDate || getTodayDate();
 
     const { data: tx, error: txErr } = await supabase
       .from('transactions')

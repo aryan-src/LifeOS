@@ -85,63 +85,7 @@ export function HeroLandingPage() {
       </header>
 
       {/* MAIN BODY CANVAS */}
-      <main className="w-full relative pt-28 md:pt-36">
-        {/* HERO TEXT STACK */}
-        <section className="max-w-4xl mx-auto px-6 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xs text-[12px] font-mono text-stone-600 dark:text-stone-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2f5c3a] dark:bg-emerald-400 animate-pulse" />
-            <span>Local-first architecture for cognitive calm</span>
-            <span className="text-stone-300 dark:text-stone-700">•</span>
-            <span className="text-[#2f5c3a] dark:text-emerald-400 font-medium">Sub-15ms Latency</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-6xl md:text-[68px] md:leading-[1.12] tracking-[-0.035em] font-normal text-stone-900 dark:text-stone-100 max-w-3xl mx-auto">
-            A quiet operating system for students, builders, and{' '}
-            <span className="font-serif italic font-normal text-[#2f5c3a] dark:text-emerald-400">thinkers</span>.
-          </h1>
-
-          <p className="text-base sm:text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto font-normal leading-relaxed">
-            Discard bloated SaaS suites, fragmented notes, and anxious spreadsheets. LifeOS brings tactile physical clarity to your everyday computing with an offline-first personal command center.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Link
-              href="/login"
-              className="px-5 py-2.5 rounded-lg bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 text-[14px] font-medium hover:opacity-90 transition-all shadow-xs flex items-center gap-2"
-            >
-              <span>Launch Your Vault</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => openQuickCapture()}
-              className="px-4 py-2.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 text-[14px] font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors shadow-xs flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px] text-stone-400">play_circle</span>
-              <span>2-Minute Walkthrough</span>
-              <kbd className="text-[11px] font-mono text-stone-400 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded ml-1">⌘K</kbd>
-            </button>
-          </div>
-
-          {/* Live metrics micro-ticker */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-[12px] font-mono text-stone-500">
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">database</span>
-              <span>Zero cloud lock-in</span>
-            </div>
-            <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">currency_rupee</span>
-              <span>Native Student Safe-Pace</span>
-            </div>
-            <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">description</span>
-              <span>Raw Markdown &amp; Obsidian</span>
-            </div>
-          </div>
-        </section>
-
+      <main className="w-full relative pt-24 md:pt-32">
         {/* PARALLAX SCROLLING DESKTOP STAGE */}
         <ParallaxHeroWrapper />
 

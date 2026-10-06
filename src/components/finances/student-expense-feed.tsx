@@ -11,6 +11,7 @@ interface StudentExpenseFeedProps {
   currentDate?: string;
   onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   onEdit?: (tx: TransactionWithRelations) => void;
+  currencySymbol?: string;
 }
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -31,6 +32,7 @@ export function StudentExpenseFeed({
   currentDate,
   onDelete,
   onEdit,
+  currencySymbol = '₹',
 }: StudentExpenseFeedProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -304,7 +306,7 @@ export function StudentExpenseFeed({
                               isIncome ? 'text-emerald-400' : 'text-slate-100'
                             }`}
                           >
-                            {isIncome ? '+' : '-'}₹{formatCurrency(absAmount)}
+                            {isIncome ? '+' : '-'}{currencySymbol}{formatCurrency(absAmount)}
                           </span>
                         </div>
 

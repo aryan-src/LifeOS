@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useUIStore } from '@/lib/store/use-ui-store';
 
 export function TopHeader() {
@@ -38,16 +39,20 @@ export function TopHeader() {
               type="text"
             />
           </div>
-          <button
+          <Link
+            href="/settings"
             className="text-on-surface-variant hover:text-on-surface flex items-center justify-center p-1.5 rounded-lg hover:bg-surface-container transition-colors shrink-0"
-            type="button"
             aria-label="View settings"
           >
             <span className="material-symbols-outlined text-[18px]">tune</span>
-          </button>
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm">
+          </Link>
+          <Link
+            href="/settings"
+            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm hover:ring-2 hover:ring-outline-variant/50 transition-all"
+            aria-label="User Profile Settings"
+          >
             <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
-          </div>
+          </Link>
         </div>
       </div>
     </header>

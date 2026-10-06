@@ -54,6 +54,7 @@ export function AllowanceHeroCard({
     weeklyDays,
     categoryBreakdown,
     projectSpendTotal,
+    currencySymbol = '₹',
   } = analytics;
 
   // Determine budget status
@@ -79,10 +80,10 @@ export function AllowanceHeroCard({
                   isOverBudget ? 'text-error' : 'text-on-surface'
                 }`}
               >
-                ₹{formatCurrency(remainingAllowance)}
+                {currencySymbol}{formatCurrency(remainingAllowance)}
               </span>
               <span suppressHydrationWarning className="font-body-md text-body-md text-on-surface-variant font-label-md">
-                remaining of ₹{formatCurrency(monthlyAllowance)}
+                remaining of {currencySymbol}{formatCurrency(monthlyAllowance)}
               </span>
               {onEditAllowance && (
                 <button
@@ -120,10 +121,10 @@ export function AllowanceHeroCard({
           </div>
           <div className="flex items-center justify-between text-outline font-label-sm text-label-sm">
             <span suppressHydrationWarning>
-              {allowanceUsagePercent}% used (₹{formatCurrency(monthlySpent)} spent)
+              {allowanceUsagePercent}% used ({currencySymbol}{formatCurrency(monthlySpent)} spent)
             </span>
             <span suppressHydrationWarning>
-              {Math.max(0, 100 - allowanceUsagePercent)}% preserved (₹{formatCurrency(remainingAllowance)} safe)
+              {Math.max(0, 100 - allowanceUsagePercent)}% preserved ({currencySymbol}{formatCurrency(remainingAllowance)} safe)
             </span>
           </div>
         </div>
@@ -140,7 +141,7 @@ export function AllowanceHeroCard({
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-space-sm">
               <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold">
-                ₹{formatCurrency(todaySpent)}
+                {currencySymbol}{formatCurrency(todaySpent)}
               </span>
               <span
                 className={`px-2 py-0.5 rounded font-label-sm text-label-sm font-medium ${
@@ -153,7 +154,7 @@ export function AllowanceHeroCard({
               </span>
             </div>
             <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline">
-              Target budget: ~₹{formatCurrency(safeDailyBudget)} / day
+              Target budget: ~{currencySymbol}{formatCurrency(safeDailyBudget)} / day
             </span>
           </div>
         </div>
@@ -167,14 +168,14 @@ export function AllowanceHeroCard({
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-space-sm">
               <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold">
-                ₹{formatCurrency(weekSpent)}
+                {currencySymbol}{formatCurrency(weekSpent)}
               </span>
               <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">
                 {weeklyDays.filter((d) => d.spent > 0).length} active days
               </span>
             </div>
             <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline">
-              Avg: ₹{formatCurrency(weekSpent / 7)} / day this week
+              Avg: {currencySymbol}{formatCurrency(weekSpent / 7)} / day this week
             </span>
           </div>
         </div>
@@ -188,7 +189,7 @@ export function AllowanceHeroCard({
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-space-sm">
               <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold">
-                ₹{formatCurrency(projectSpendTotal)}
+                {currencySymbol}{formatCurrency(projectSpendTotal)}
               </span>
               <span className="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm text-label-sm">
                 Dedicated buffer
@@ -229,7 +230,7 @@ export function AllowanceHeroCard({
                           : 'text-outline opacity-0 group-hover:opacity-100'
                       }`}
                     >
-                      {day.spent > 0 ? `₹${Math.round(day.spent)}` : '₹0'}
+                      {day.spent > 0 ? `${currencySymbol}${Math.round(day.spent)}` : `${currencySymbol}0`}
                     </span>
                     <div
                       className={`w-full max-w-[36px] rounded-t transition-all ${
@@ -260,7 +261,7 @@ export function AllowanceHeroCard({
               <span>Staying strictly within daily pace</span>
             </div>
             <span suppressHydrationWarning className="font-label-sm text-label-sm text-on-surface font-medium">
-              ~₹{formatCurrency(safeDailyBudget)} safe daily budget
+              ~{currencySymbol}{formatCurrency(safeDailyBudget)} safe daily budget
             </span>
           </div>
         </div>
@@ -294,7 +295,7 @@ export function AllowanceHeroCard({
                 ))}
               </div>
               <div className="flex items-center justify-between font-label-sm text-label-sm text-outline">
-                <span suppressHydrationWarning>Total spent: ₹{formatCurrency(monthlySpent)}</span>
+                <span suppressHydrationWarning>Total spent: {currencySymbol}{formatCurrency(monthlySpent)}</span>
                 <span>{categoryBreakdown.length} Categories active</span>
               </div>
             </div>
@@ -324,7 +325,7 @@ export function AllowanceHeroCard({
                           {Math.round(cat.percentage)}%
                         </span>
                         <span suppressHydrationWarning className="font-label-md text-label-md text-on-surface font-semibold">
-                          ₹{formatCurrency(cat.value)}
+                          {currencySymbol}{formatCurrency(cat.value)}
                         </span>
                       </div>
                     </div>

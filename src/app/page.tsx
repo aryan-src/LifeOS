@@ -19,17 +19,19 @@ import { getFinancialAnalytics } from '@/lib/actions/finances';
 import { getTasks } from '@/lib/actions/tasks';
 import { getProjectsWithMetrics } from '@/lib/actions/projects';
 import { getNotes } from '@/lib/actions/notes';
+import { getUserProfile } from '@/lib/actions/profile';
 import { formatCurrency } from '@/lib/utils/format';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [analytics, tasks, projects, notes] = await Promise.all([
+  const [analytics, tasks, projects, notes, profile] = await Promise.all([
     getFinancialAnalytics(),
     getTasks(),
     getProjectsWithMetrics(),
     getNotes(),
+    getUserProfile(),
   ]);
 
   const activeProjects = projects.filter((p) => p.status === 'active');
@@ -54,10 +56,10 @@ export default async function DashboardPage() {
               </span>
             </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-medium">
-              Global Command Center
+              Welcome, {profile.display_name || 'Student'}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl leading-relaxed">
-              Real-time telemetry across projects, tasks, finances, and ideas. Balanced for cognitive clarity and calm focus.
+              Real-time telemetry across academics, daily tasks, finances, and ideas. Balanced for calm focus.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start md:self-auto shrink-0 flex-wrap">
@@ -94,12 +96,12 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-col gap-1 min-w-0">
               <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-                ₹{formatCurrency(analytics.remainingAllowance)}
+                {analytics.currencySymbol}{formatCurrency(analytics.remainingAllowance)}
               </span>
               <div className="flex items-center gap-1.5 text-outline min-w-0">
                 <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">format_image_left</span>
                 <span suppressHydrationWarning className="font-label-sm text-label-sm truncate">
-                  Safe daily pace: <span className="text-on-surface-variant font-medium">₹{formatCurrency(analytics.safeDailyBudget)}/day</span>
+                  Safe daily pace: <span className="text-on-surface-variant font-medium">{analytics.currencySymbol}{formatCurrency(analytics.safeDailyBudget)}/day</span>
                 </span>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getEffectiveUserId } from '@/lib/auth/user';
+import { getUserProfile } from '@/lib/actions/profile';
 import { revalidatePath } from 'next/cache';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -47,6 +48,7 @@ export interface CategoryBreakdownItem {
 
 export interface FinancialAnalytics {
   currentDate: string;
+  currencySymbol: string;
 
   // Student Pocket Money & Allowance Focus
   monthlyAllowance: number;
@@ -199,7 +201,12 @@ export async function getTransactions(): Promise<TransactionWithRelations[]> {
  * Strictly applies Number(value.toFixed(2)) to final sums to prevent binary floating-point bugs.
  */
 export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
-  const transactions = await getTransactions();
+  const [transactions, profile] = await Promise.all([
+    getTransactions(),
+    getUserProfile(),
+  ]);
+
+  const currencySymbol = profile.currency_symbol || '₹';
 
   // Current date boundary calculations (Timezone safe YYYY-MM-DD strings)
   const todayStr = new Date().toISOString().split('T')[0];
@@ -281,10 +288,17 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
     }
   }
 
-  // Graceful fallback: If current month has no logged allowance yet, use recent inflows
-  if (monthlyAllowance === 0 && totalInflow > 0) {
-    monthlyAllowance = totalInflow;
+  // Use profile's custom monthly allowance target if no allowance income logged this month yet
+  if (monthlyAllowance === 0) {
+    if (profile.monthly_allowance_target > 0) {
+      monthlyAllowance = profile.monthly_allowance_target;
+    } else if (totalInflow > 0) {
+      monthlyAllowance = totalInflow;
+    } else {
+      monthlyAllowance = 15000.00;
+    }
   }
+
   if (monthlySpent === 0 && totalOutflow > 0) {
     monthlySpent = totalOutflow;
   }
@@ -322,6 +336,7 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
 
   return {
     currentDate: todayStr,
+    currencySymbol,
     monthlyAllowance: Number(monthlyAllowance.toFixed(2)),
     monthlySpent: Number(monthlySpent.toFixed(2)),
     remainingAllowance,

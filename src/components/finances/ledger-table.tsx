@@ -15,6 +15,7 @@ interface LedgerTableProps {
   onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   onEdit?: (tx: TransactionWithRelations) => void;
   onOptimisticUpdate?: (updatedTx: TransactionWithRelations) => void;
+  currencySymbol?: string;
 }
 
 type OptimisticAction =
@@ -28,6 +29,7 @@ export function LedgerTable({
   onDelete,
   onEdit,
   onOptimisticUpdate,
+  currencySymbol = '₹',
 }: LedgerTableProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [internalEditingTx, setInternalEditingTx] = useState<TransactionWithRelations | null>(null);
@@ -171,7 +173,7 @@ export function LedgerTable({
                           isIncome ? 'text-secondary' : 'text-on-tertiary-container'
                         }
                       >
-                        {isIncome ? '+' : '-'}₹{formatCurrency(absAmount)}
+                        {isIncome ? '+' : '-'}{currencySymbol}{formatCurrency(absAmount)}
                       </span>
                     </td>
 

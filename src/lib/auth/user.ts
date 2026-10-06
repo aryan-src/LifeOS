@@ -10,8 +10,16 @@ import type { Database } from '@/types/database.types';
 export const getEffectiveUserId = cache(
   async (supabase: SupabaseClient<Database>): Promise<string> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      return user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (user && !error) {
+        return user.id;
+      }
+
+      return 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
     } catch {
       return 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
     }

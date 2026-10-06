@@ -240,6 +240,7 @@ export function FinancesClientView({
             onDelete={handleDelete}
             onEdit={(tx) => setEditingTransaction(tx)}
             onOptimisticUpdate={handleOptimisticUpdate}
+            currencySymbol={analytics.currencySymbol || '₹'}
           />
         ) : (
           <StudentExpenseFeed
@@ -248,6 +249,7 @@ export function FinancesClientView({
             currentDate={analytics.currentDate}
             onDelete={handleDelete}
             onEdit={(tx) => setEditingTransaction(tx)}
+            currencySymbol={analytics.currencySymbol || '₹'}
           />
         )}
       </div>

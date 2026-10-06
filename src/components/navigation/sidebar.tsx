@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { label: 'Daily Tasks', href: '/tasks', icon: 'check_circle' },
   { label: 'Finances', href: '/finances', icon: 'account_balance_wallet' },
   { label: 'Ideas & Notes', href: '/notes', icon: 'edit_note' },
+  { label: 'Settings', href: '/settings', icon: 'settings' },
 ];
 
 export function Sidebar() {
@@ -91,18 +92,26 @@ export function Sidebar() {
 
       {/* Profile Footer */}
       <div className="pt-3 mt-auto border-t border-outline-variant/20">
-        <div className="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:bg-surface-container transition-colors cursor-pointer">
+        <Link
+          href="/settings"
+          onClick={closeMobileMenu}
+          className="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:bg-surface-container transition-colors cursor-pointer group"
+        >
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-on-primary text-[16px]">person</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-body-sm text-body-sm font-medium text-on-surface truncate">Personal Workspace</span>
-              <span className="font-label-sm text-label-sm text-outline truncate">Free Plan</span>
+              <span className="font-body-sm text-body-sm font-medium text-on-surface truncate group-hover:text-primary transition-colors">
+                Personal Workspace
+              </span>
+              <span className="font-label-sm text-label-sm text-outline truncate">Student Settings</span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-outline text-[16px] shrink-0 ml-1">unfold_more</span>
-        </div>
+          <span className="material-symbols-outlined text-outline text-[16px] shrink-0 ml-1 group-hover:text-on-surface transition-colors">
+            tune
+          </span>
+        </Link>
       </div>
     </div>
   );

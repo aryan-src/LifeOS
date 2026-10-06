@@ -16,6 +16,7 @@ export async function FinancesQuadrant() {
     todaySpent,
     safeDailyBudget,
     daysLeftInMonth,
+    currencySymbol = '₹',
   } = analytics;
 
   const latestExpense = transactions.find((t) => t.type === 'expense' || t.amount < 0);
@@ -46,11 +47,11 @@ export async function FinancesQuadrant() {
                 suppressHydrationWarning
                 className="font-headline-lg text-headline-lg font-semibold text-on-surface font-display truncate block"
               >
-                ₹{formatCurrency(remainingAllowance)}
+                {currencySymbol}{formatCurrency(remainingAllowance)}
               </span>
             </div>
             <span suppressHydrationWarning className="font-label-md text-label-md text-outline shrink-0">
-              Pool: ₹{formatCurrency(monthlyAllowance)}
+              Pool: {currencySymbol}{formatCurrency(monthlyAllowance)}
             </span>
           </div>
 
@@ -64,10 +65,10 @@ export async function FinancesQuadrant() {
 
           <div className="flex items-center justify-between text-outline font-label-sm text-label-sm pt-1 gap-2 flex-wrap">
             <span suppressHydrationWarning className="truncate">
-              Today&apos;s spend: <span className="text-on-surface-variant font-medium">₹{formatCurrency(todaySpent)}</span>
+              Today&apos;s spend: <span className="text-on-surface-variant font-medium">{currencySymbol}{formatCurrency(todaySpent)}</span>
             </span>
             <span suppressHydrationWarning className="truncate">
-              Daily ceiling: <span className="text-on-surface-variant font-medium">₹{formatCurrency(safeDailyBudget)}</span>
+              Daily ceiling: <span className="text-on-surface-variant font-medium">{currencySymbol}{formatCurrency(safeDailyBudget)}</span>
             </span>
           </div>
         </div>
@@ -90,7 +91,7 @@ export async function FinancesQuadrant() {
                 suppressHydrationWarning
                 className="font-label-md text-label-md text-on-tertiary-container font-medium shrink-0 ml-2"
               >
-                - ₹{formatCurrency(Math.abs(latestExpense.amount))}
+                - {currencySymbol}{formatCurrency(Math.abs(latestExpense.amount))}
               </span>
             </div>
           ) : (

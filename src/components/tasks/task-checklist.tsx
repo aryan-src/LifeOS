@@ -5,20 +5,23 @@ import { TaskItem } from './task-item';
 import { TaskCreateInput } from './task-create-input';
 import { toggleTask, deleteTask, type TaskWithProject } from '@/lib/actions/tasks';
 import type { ProjectOption } from '@/lib/actions/projects-options';
-import { CheckCircle2, Clock, CalendarDays, AlertTriangle } from 'lucide-react';
 import { getTodayDate } from '@/lib/utils/date';
-import { GlassCalendar } from '@/components/ui/glass-calendar';
+import { GlassCalendar, type CalendarProjectItem } from '@/components/ui/glass-calendar';
+import { AlertTriangle } from 'lucide-react';
 
 interface TaskChecklistProps {
   initialTasks: TaskWithProject[];
   projects: ProjectOption[];
+  projectDeadlines?: CalendarProjectItem[];
 }
 
 type FilterTab = 'today' | 'upcoming' | 'completed' | 'all';
 
-export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
+export function TaskChecklist({ initialTasks, projects, projectDeadlines }: TaskChecklistProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('today');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const todayStr = getTodayDate();
+  const [selectedDueDate, setSelectedDueDate] = useState<string>(todayStr);
   const [, startTransition] = useTransition();
 
   // Non-blocking tab change using React 19 concurrent transitions
@@ -47,8 +50,6 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
       return state;
     }
   );
-
-  const todayStr = getTodayDate();
 
   const handleToggle = (taskId: string, targetState: boolean) => {
     setErrorMessage(null);
@@ -123,7 +124,11 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
         )}
 
         {/* 1. Notion-style Quick Task Creation Bar */}
-        <TaskCreateInput projects={projects} onError={(err) => setErrorMessage(err)} />
+        <TaskCreateInput
+          projects={projects}
+          selectedDueDate={selectedDueDate}
+          onError={(err) => setErrorMessage(err)}
+        />
 
         {/* 2. Filter & View Tabs with Actions */}
         <div className="flex flex-wrap items-center justify-between gap-space-sm py-space-xs">
@@ -240,10 +245,14 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
           </div>
         </div>
 
-        {/* Interactive Glass Calendar Widget */}
+        {/* Interactive Notion-styled Glass Calendar Widget */}
         <div className="flex justify-center">
           <GlassCalendar
-            className="w-full max-w-full bg-slate-900/90 backdrop-blur-2xl border border-slate-800 text-slate-100 shadow-xl"
+            tasks={optimisticTasks}
+            projects={projectDeadlines || []}
+            onOpenTaskInput={(dateStr) => {
+              setSelectedDueDate(dateStr);
+            }}
           />
         </div>
       </div>

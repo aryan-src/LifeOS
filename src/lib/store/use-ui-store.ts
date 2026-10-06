@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 interface UIState {
   isQuickCaptureOpen: boolean;
-  openQuickCapture: () => void;
+  quickCaptureInitialValue: string;
+  openQuickCapture: (initialValue?: string) => void;
   closeQuickCapture: () => void;
   toggleQuickCapture: () => void;
   isSidebarCollapsed: boolean;
@@ -15,9 +16,12 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set) => ({
   isQuickCaptureOpen: false,
-  openQuickCapture: () => set({ isQuickCaptureOpen: true }),
-  closeQuickCapture: () => set({ isQuickCaptureOpen: false }),
-  toggleQuickCapture: () => set((state) => ({ isQuickCaptureOpen: !state.isQuickCaptureOpen })),
+  quickCaptureInitialValue: '',
+  openQuickCapture: (initialValue = '') =>
+    set({ isQuickCaptureOpen: true, quickCaptureInitialValue: initialValue }),
+  closeQuickCapture: () => set({ isQuickCaptureOpen: false, quickCaptureInitialValue: '' }),
+  toggleQuickCapture: () =>
+    set((state) => ({ isQuickCaptureOpen: !state.isQuickCaptureOpen, quickCaptureInitialValue: '' })),
   isSidebarCollapsed: false,
   toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
   isMobileMenuOpen: false,

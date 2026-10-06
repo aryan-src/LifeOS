@@ -2,13 +2,15 @@ import React from 'react';
 import { TaskChecklist } from '@/components/tasks/task-checklist';
 import { getTasks } from '@/lib/actions/tasks';
 import { getProjectOptions } from '@/lib/actions/projects-options';
+import { getProjectsWithMetrics } from '@/lib/actions/projects';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TasksPage() {
-  const [tasks, projects] = await Promise.all([
+  const [tasks, projects, projectsWithMetrics] = await Promise.all([
     getTasks(),
     getProjectOptions(),
+    getProjectsWithMetrics(),
   ]);
 
   const completedTodayCount = tasks.filter((t) => t.is_completed).length;
@@ -75,7 +77,11 @@ export default async function TasksPage() {
 
       {/* Main Content Layout */}
       <div className="w-full px-space-lg lg:px-margin pb-space-xl">
-        <TaskChecklist initialTasks={tasks} projects={projects} />
+        <TaskChecklist
+          initialTasks={tasks}
+          projects={projects}
+          projectDeadlines={projectsWithMetrics}
+        />
       </div>
     </div>
   );

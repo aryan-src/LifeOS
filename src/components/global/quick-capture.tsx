@@ -7,7 +7,7 @@ import { dispatchQuickCapture } from '@/lib/actions/quick-capture';
 import { Command, ArrowRight, X, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function QuickCaptureOmnibar() {
-  const { isQuickCaptureOpen, closeQuickCapture } = useUIStore();
+  const { isQuickCaptureOpen, closeQuickCapture, quickCaptureInitialValue } = useUIStore();
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -40,14 +40,21 @@ export function QuickCaptureOmnibar() {
   // When summoned, the input element must immediately and automatically receive focus.
   useEffect(() => {
     if (isQuickCaptureOpen) {
+      if (quickCaptureInitialValue) {
+        setInput(quickCaptureInitialValue);
+      }
       setTimeout(() => {
         inputRef.current?.focus();
+        if (quickCaptureInitialValue && inputRef.current) {
+          const len = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
       }, 50);
     } else {
       setInput('');
       setFeedback(null);
     }
-  }, [isQuickCaptureOpen]);
+  }, [isQuickCaptureOpen, quickCaptureInitialValue]);
 
   // Real-time Parser Preview Pill (Updates as user types)
   const parsed = parseQuickCapture(input);

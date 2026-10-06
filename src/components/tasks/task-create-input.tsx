@@ -9,6 +9,7 @@ import { getTodayDate } from '@/lib/utils/date';
 
 interface TaskCreateInputProps {
   projects: ProjectOption[];
+  selectedDueDate?: string;
   onError?: (msg: string) => void;
 }
 
@@ -16,20 +17,30 @@ const initialState: ActionResponse = {
   success: false,
 };
 
-export function TaskCreateInput({ projects, onError }: TaskCreateInputProps) {
+export function TaskCreateInput({ projects, selectedDueDate, onError }: TaskCreateInputProps) {
   const [state, formAction, isPending] = useActionState(createTask, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Format today's local date in IST as default YYYY-MM-DD
+  const todayStr = getTodayDate();
+  const [dueDate, setDueDate] = React.useState(selectedDueDate || todayStr);
+
+  useEffect(() => {
+    if (selectedDueDate) {
+      setDueDate(selectedDueDate);
+      titleInputRef.current?.focus();
+    }
+  }, [selectedDueDate]);
 
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
+      setDueDate(selectedDueDate || todayStr);
     } else if (state.error && onError) {
       onError(state.error);
     }
-  }, [state, onError]);
-
-  // Format today's local date in IST as default YYYY-MM-DD
-  const todayStr = getTodayDate();
+  }, [state, onError, selectedDueDate, todayStr]);
 
   return (
     <form
@@ -40,6 +51,7 @@ export function TaskCreateInput({ projects, onError }: TaskCreateInputProps) {
       <div className="flex items-center gap-space-sm">
         <span className="material-symbols-outlined text-[20px] text-outline">add_circle</span>
         <input
+          ref={titleInputRef}
           name="title"
           required
           type="text"
@@ -57,7 +69,8 @@ export function TaskCreateInput({ projects, onError }: TaskCreateInputProps) {
               suppressHydrationWarning
               name="dueDate"
               type="date"
-              defaultValue={todayStr}
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="bg-transparent text-on-surface font-label-sm text-label-sm focus:outline-none cursor-pointer"
             />
           </div>

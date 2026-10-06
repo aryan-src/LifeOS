@@ -238,6 +238,36 @@ export interface Database {
           }
         ];
       };
+      profiles: {
+        Row: {
+          id: string;
+          display_name: string | null;
+          theme_preference: 'stone' | 'light' | 'dark';
+          currency_symbol: string;
+          monthly_allowance_target: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          display_name?: string | null;
+          theme_preference?: 'stone' | 'light' | 'dark';
+          currency_symbol?: string;
+          monthly_allowance_target?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          display_name?: string | null;
+          theme_preference?: 'stone' | 'light' | 'dark';
+          currency_symbol?: string;
+          monthly_allowance_target?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -274,3 +304,7 @@ export type UpdateTransaction = Database['public']['Tables']['transactions']['Up
 export type Note = Database['public']['Tables']['notes']['Row'];
 export type InsertNote = Database['public']['Tables']['notes']['Insert'];
 export type UpdateNote = Database['public']['Tables']['notes']['Update'];
+
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type InsertProfile = Database['public']['Tables']['profiles']['Insert'];
+export type UpdateProfile = Database['public']['Tables']['profiles']['Update'];

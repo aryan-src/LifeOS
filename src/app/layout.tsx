@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
-import { Sidebar } from '@/components/navigation/sidebar';
-import { TopHeader } from '@/components/navigation/top-header';
-
 import { AppShell } from '@/components/layout/app-shell';
+import { createClient } from '@/lib/supabase/server';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,15 +17,20 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'LifeOS — Unified Operating System',
+  title: 'LifeOS — A Quiet Operating System for Builders, Thinkers & Students',
   description: 'Relational personal operating system for Projects, Tasks, Finances, and Notes.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
@@ -43,7 +45,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-surface font-sans text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
-        <AppShell>{children}</AppShell>
+        <AppShell isAuthenticated={!!user}>{children}</AppShell>
       </body>
     </html>
   );

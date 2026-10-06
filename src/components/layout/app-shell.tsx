@@ -6,13 +6,20 @@ import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { TopHeader } from '@/components/navigation/top-header';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  isAuthenticated = false,
+}: {
+  children: React.ReactNode;
+  isAuthenticated?: boolean;
+}) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login');
+  const isLandingPage = pathname === '/' && !isAuthenticated;
 
-  if (isAuthPage) {
+  if (isAuthPage || isLandingPage) {
     return (
-      <main className="min-h-screen w-full bg-[#faf8f5] flex items-center justify-center p-4 selection:bg-secondary-container selection:text-on-secondary-container">
+      <main className="min-h-screen w-full selection:bg-secondary-container selection:text-on-secondary-container">
         {children}
       </main>
     );

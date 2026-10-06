@@ -7,6 +7,7 @@ import { toggleTask, deleteTask, type TaskWithProject } from '@/lib/actions/task
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { CheckCircle2, Clock, CalendarDays, AlertTriangle } from 'lucide-react';
 import { getTodayDate } from '@/lib/utils/date';
+import { GlassCalendar } from '@/components/ui/glass-calendar';
 
 interface TaskChecklistProps {
   initialTasks: TaskWithProject[];
@@ -239,42 +240,11 @@ export function TaskChecklist({ initialTasks, projects }: TaskChecklistProps) {
           </div>
         </div>
 
-        {/* Quick Weekly Cadence Widget */}
-        <div className="bg-surface-container-low p-space-lg rounded-xl flex flex-col gap-space-sm">
-          <div className="flex items-center justify-between">
-            <span className="font-headline-sm text-headline-sm font-medium text-on-surface">Weekly Cadence</span>
-            <span className="material-symbols-outlined text-[18px] text-outline">date_range</span>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center pt-space-xs">
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline">M</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm bg-secondary text-on-secondary font-medium">05</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-on-surface font-semibold">T</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm bg-primary text-on-primary font-bold shadow-sm">06</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline">W</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm hover:bg-surface-container-high text-on-surface">07</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline">T</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm hover:bg-surface-container-high text-on-surface">08</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline">F</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm hover:bg-surface-container-high text-on-surface">09</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline opacity-60">S</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm opacity-60 text-outline">10</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-label-sm text-label-sm text-outline opacity-60">S</span>
-              <span className="w-7 h-7 rounded flex items-center justify-center font-label-sm text-label-sm opacity-60 text-outline">11</span>
-            </div>
-          </div>
+        {/* Interactive Glass Calendar Widget */}
+        <div className="flex justify-center">
+          <GlassCalendar
+            className="w-full max-w-full bg-slate-900/90 backdrop-blur-2xl border border-slate-800 text-slate-100 shadow-xl"
+          />
         </div>
       </div>
     </div>

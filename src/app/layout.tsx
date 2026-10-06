@@ -5,6 +5,8 @@ import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { TopHeader } from '@/components/navigation/top-header';
 
+import { AppShell } from '@/components/layout/app-shell';
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -41,14 +43,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-surface font-sans text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
-        <QuickCaptureOmnibar />
-        <Sidebar />
-        <div className="pl-0 lg:pl-64 min-h-screen transition-[padding] duration-200 flex flex-col">
-          <TopHeader />
-          <main className="w-full pt-14 bg-surface min-h-screen flex-1">
-            {children}
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

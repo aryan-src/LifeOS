@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/';
 
   if (code) {
+    const redirectUrl = `${origin}${next.startsWith('/') ? next : `/${next}`}`;
+    const response = NextResponse.redirect(redirectUrl);
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_LOCAL_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_LOCAL_ANON_KEY,
@@ -17,17 +20,20 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+              response.cookies.set(name, value, options);
+            });
           },
         },
       }
     );
+
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      return response;
     }
+    console.error('OAuth exchange error:', error);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth-code-error`);

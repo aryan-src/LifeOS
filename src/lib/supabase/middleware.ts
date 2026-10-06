@@ -31,8 +31,31 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh auth token
-  await supabase.auth.getUser();
+  // Refresh auth token and check authentication status
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth/callback');
+
+  // If user is not authenticated and trying to access an internal protected route:
+  if (!user && !isAuthRoute) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    if (pathname !== '/') {
+      redirectUrl.searchParams.set('next', pathname);
+    }
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // If user is already authenticated and trying to access /login:
+  if (user && pathname.startsWith('/login')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return supabaseResponse;
 }

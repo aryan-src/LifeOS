@@ -5,16 +5,20 @@ import Link from 'next/link';
 import { useUIStore } from '@/lib/store/use-ui-store';
 
 export function TopHeader() {
-  const { toggleMobileMenu } = useUIStore();
+  const { toggleMobileMenu, isSidebarCollapsed } = useUIStore();
 
   return (
-    <header className="fixed top-0 left-0 lg:left-64 right-0 z-30 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_1px_8px_rgba(0,0,0,0.03)] transition-[left] duration-200">
+    <header
+      className={`fixed top-0 right-0 z-30 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_1px_8px_rgba(0,0,0,0.03)] transition-[left] duration-300 ease-out ${
+        isSidebarCollapsed ? 'left-0 lg:left-20' : 'left-0 lg:left-[260px]'
+      }`}
+    >
       <div className="h-14 w-full px-4 md:px-6 flex items-center justify-between gap-4">
         {/* Left side: Hamburger on mobile + Breadcrumb */}
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container transition-colors shrink-0"
+            className="lg:hidden p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container transition-colors shrink-0 cursor-pointer"
             type="button"
             aria-label="Toggle navigation"
           >

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { NoteCard } from './note-card';
+import { NoteCreateInput } from './note-create-input';
 import {
   togglePinNote,
   deleteNote,
@@ -20,8 +21,6 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
   const [isPromoting, setIsPromoting] = useState(false);
   const [promotionResult, setPromotionResult] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [quickInput, setQuickInput] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('ai-research');
   const [deskPadContent, setDeskPadContent] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -76,20 +75,17 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     }
   };
 
-  const handleQuickSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!quickInput.trim()) return;
+  const handleQuickSubmit = async (content: string, tag: string) => {
+    if (!content.trim()) return;
 
-    const title = quickInput.trim().split('\n')[0].slice(0, 80);
+    const title = content.trim().split('\n')[0].slice(0, 80);
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('content', quickInput.trim());
-    formData.append('tags', selectedTag);
+    formData.append('content', content.trim());
+    formData.append('tags', tag);
 
     const res = await createNote(null, formData);
-    if (res.success) {
-      setQuickInput('');
-    } else {
+    if (!res.success) {
       setErrorMessage(res.error || 'Failed to capture spark.');
     }
   };
@@ -250,63 +246,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
         </div>
       </header>
 
-      {/* Notion-Style Omnibox Quick Capture Bar */}
-      <section className="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm border border-outline-variant/30">
-        <div className="flex items-start gap-space-sm">
-          <span className="material-symbols-outlined text-outline mt-1 text-[20px]">lightbulb</span>
-          <div className="flex-1 flex flex-col gap-2">
-            <textarea
-              value={quickInput}
-              onChange={(e) => setQuickInput(e.target.value)}
-              onKeyDown={(e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                  e.preventDefault();
-                  handleQuickSubmit();
-                }
-              }}
-              placeholder="Capture a fleeting spark, code snippet, or reading note... (Shift+Enter for multi-line, ⌘+Enter to deposit)"
-              rows={2}
-              className="w-full bg-transparent resize-none font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none leading-relaxed"
-            />
-            <div className="flex flex-wrap items-center justify-between gap-space-sm pt-2 border-t border-surface-container-high/60">
-              {/* Quick Category Tags Selection */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-label-sm text-label-sm text-outline mr-1">Tack to:</span>
-                {['ai-research', 'engineering', 'design', 'academics', 'personal'].map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setSelectedTag(tag)}
-                    className={`px-2 py-0.5 rounded font-label-sm text-label-sm transition-colors ${
-                      selectedTag === tag
-                        ? 'bg-secondary text-on-secondary font-medium'
-                        : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                    }`}
-                  >
-                    #{tag}
-                  </button>
-                ))}
-              </div>
-
-              {/* Sync State & Save Button */}
-              <div className="flex items-center gap-space-md">
-                <div className="flex items-center gap-1.5 font-label-sm text-label-sm text-secondary">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                  <span>Vault active</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleQuickSubmit()}
-                  disabled={!quickInput.trim()}
-                  className="px-3.5 py-1.5 rounded bg-primary text-on-primary font-body-sm text-body-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
-                >
-                  Deposit Spark
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Adaptive Spring Quick Capture Bar (Jahed AI-Input Design) */}
+      <NoteCreateInput onSubmit={handleQuickSubmit} />
 
       {/* Main Workspace Split: Core Cards Feed & Persistent Desk Jotter */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">

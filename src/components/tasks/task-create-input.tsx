@@ -398,7 +398,7 @@ export function TaskCreateInput({
               Add a new task (e.g. &apos;Deploy API route updates&apos;)...
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 mr-10">
             <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono text-outline bg-surface-container dark:bg-stone-800 px-1.5 py-0.5 rounded border border-outline-variant/40">
               <span>↵</span>
               <span>New</span>

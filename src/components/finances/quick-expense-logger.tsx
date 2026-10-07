@@ -18,6 +18,8 @@ interface QuickExpenseLoggerProps {
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
 
 const STUDENT_CATEGORY_EMOJIS: Record<string, string> = {
+  'Grocery': '🛒',
+  'Groceries': '🛒',
   'Stationary': '📚',
   'Junk Food': '🍕',
   'Vegetable': '🥦',
@@ -30,6 +32,7 @@ const STUDENT_CATEGORY_EMOJIS: Record<string, string> = {
 };
 
 const QUICK_DESCRIPTIONS = [
+  'Grocery Run',
   'Junk Food',
   'Fresh Juice',
   'Bus / Metro Commute',

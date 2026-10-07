@@ -42,7 +42,7 @@ export function RecordExpenseModal({
       setType('expense');
       setError(null);
       if (categories.length > 0) {
-        const defaultCat = categories.find((c) => c.name.toLowerCase().includes('juice') || c.name.toLowerCase().includes('food')) || categories[0];
+        const defaultCat = categories.find((c) => c.name.toLowerCase().includes('grocery') || c.name.toLowerCase().includes('juice') || c.name.toLowerCase().includes('food')) || categories[0];
         setCategoryId(defaultCat?.id || '');
       }
       setTimeout(() => inputRef.current?.focus(), 50);

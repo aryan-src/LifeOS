@@ -16,6 +16,8 @@ interface StudentExpenseFeedProps {
 }
 
 const CATEGORY_EMOJIS: Record<string, string> = {
+  'Grocery': '🛒',
+  'Groceries': '🛒',
   'Stationary': '📚',
   'Junk Food': '🍕',
   'Vegetable': '🥦',

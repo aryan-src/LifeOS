@@ -31,6 +31,8 @@ interface TransactionEditModalProps {
 }
 
 const CATEGORY_EMOJIS: Record<string, string> = {
+  'Grocery': '🛒',
+  'Groceries': '🛒',
   'Stationary': '📚',
   'Junk Food': '🍕',
   'Vegetable': '🥦',

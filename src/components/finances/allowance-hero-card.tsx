@@ -72,7 +72,7 @@ export function AllowanceHeroCard({
       ? activeCategories
       : [
           { name: 'Rent & Utilities', value: 1600, percentage: 35, color: '#3c6847' },
-          { name: 'Groceries', value: 1350, percentage: 30, color: '#cb6654' },
+          { name: 'Grocery', value: 1350, percentage: 30, color: '#16a34a' },
           { name: 'Other', value: 1355, percentage: 35, color: '#625d5b' },
         ];
 

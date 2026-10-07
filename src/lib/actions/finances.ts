@@ -79,6 +79,7 @@ export interface FinancialAnalytics {
 
 const STUDENT_CATEGORIES: { name: string; type: 'income' | 'expense'; color: string }[] = [
   { name: 'Allowance', type: 'income', color: '#10b981' },
+  { name: 'Grocery', type: 'expense', color: '#16a34a' },
   { name: 'Stationary', type: 'expense', color: '#8b5cf6' },
   { name: 'Junk Food', type: 'expense', color: '#f97316' },
   { name: 'Vegetable', type: 'expense', color: '#22c55e' },

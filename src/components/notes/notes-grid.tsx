@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { NoteCard } from './note-card';
 import { NoteCreateInput } from './note-create-input';
+import { DeskJotter } from './desk-jotter';
 import {
   togglePinNote,
   deleteNote,
@@ -90,25 +91,31 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     }
   };
 
+  const [isAppendingDeskPad, setIsAppendingDeskPad] = useState(false);
+
   const handleAppendDeskPadToVault = async () => {
-    if (!deskPadContent.trim()) return;
+    if (!deskPadContent.trim() || isAppendingDeskPad) return;
+    setIsAppendingDeskPad(true);
+    try {
+      const title = deskPadContent.trim().split('\n')[0].slice(0, 60) || 'Desk Jotter Capture';
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', deskPadContent.trim());
+      formData.append('tags', 'scratchpad');
 
-    const title = deskPadContent.trim().split('\n')[0].slice(0, 60) || 'Desk Jotter Capture';
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', deskPadContent.trim());
-    formData.append('tags', 'scratchpad');
-
-    const res = await createNote(null, formData);
-    if (res.success) {
-      setDeskPadContent('');
-      try {
-        localStorage.removeItem('lifeos_desk_jotter');
-      } catch {
-        // Ignore
+      const res = await createNote(null, formData);
+      if (res.success) {
+        setDeskPadContent('');
+        try {
+          localStorage.removeItem('lifeos_desk_jotter');
+        } catch {
+          // Ignore
+        }
+      } else {
+        setErrorMessage(res.error || 'Failed to save to vault.');
       }
-    } else {
-      setErrorMessage(res.error || 'Failed to save to vault.');
+    } finally {
+      setIsAppendingDeskPad(false);
     }
   };
 
@@ -251,8 +258,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
 
       {/* Main Workspace Split: Core Cards Feed & Persistent Desk Jotter */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        {/* Primary Feed (Left 8 Cols) */}
-        <div className="lg:col-span-8 flex flex-col gap-space-xl">
+        {/* Primary Feed (Left 7 Cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-space-xl">
           {/* Pinned / High-Sparks Shelf */}
           {pinnedNotes.length > 0 && (
             <section className="flex flex-col gap-space-sm">
@@ -318,62 +325,15 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           </section>
         </div>
 
-        {/* Right Column: Desk Jotter & Vault Dynamics (4 Cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-space-md">
-          {/* Interactive Scratchpad / Auto-Saving Desk Pad */}
-          <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm border border-outline-variant/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                  Desk Jotter
-                </span>
-              </div>
-              <span className="font-label-sm text-label-sm text-outline">
-                {deskPadContent.length} chars
-              </span>
-            </div>
-
-            <div className="relative">
-              <textarea
-                value={deskPadContent}
-                onChange={(e) => handleDeskPadChange(e.target.value)}
-                rows={8}
-                placeholder="Keep an untruncated fleeting stream here. Everything written auto-persists locally until you hit deposit or clear."
-                className="w-full bg-surface-container-low rounded p-3 font-body-sm text-body-sm text-on-surface leading-relaxed resize-none focus:outline-none focus:bg-surface-container-lowest transition-colors border border-transparent focus:border-outline-variant/40"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => handleDeskPadChange('')}
-                  className="px-2.5 py-1 rounded hover:bg-surface-container text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors"
-                >
-                  Clear
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(deskPadContent);
-                  }}
-                  className="px-2.5 py-1 rounded hover:bg-surface-container text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleAppendDeskPadToVault}
-                disabled={!deskPadContent.trim()}
-                className="px-3 py-1 rounded bg-primary text-on-primary font-body-sm text-body-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
-              >
-                Append to Vault
-              </button>
-            </div>
-          </div>
+        {/* Right Column: Desk Jotter & Vault Dynamics (5 Cols - Spacious Jotter Room) */}
+        <div className="lg:col-span-5 flex flex-col gap-space-md">
+          {/* Spring-Animated Desk Jotter with Jahed AI-Input Design */}
+          <DeskJotter
+            content={deskPadContent}
+            onChange={handleDeskPadChange}
+            onAppendToVault={handleAppendDeskPadToVault}
+            isAppending={isAppendingDeskPad}
+          />
 
           {/* Vault Health & Metrics Card */}
           <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-outline-variant/30">

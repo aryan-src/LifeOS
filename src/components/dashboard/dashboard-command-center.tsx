@@ -1,24 +1,12 @@
 import React, { Suspense } from 'react';
 import {
-  ProjectsQuadrant,
-  ProjectsSkeleton,
-} from '@/components/dashboard/projects-quadrant';
-import {
-  TasksQuadrant,
-  TasksSkeleton,
-} from '@/components/dashboard/tasks-quadrant';
-import {
-  FinancesQuadrant,
-  FinancesSkeleton,
-} from '@/components/dashboard/finances-quadrant';
-import {
-  NotesQuadrant,
-  NotesSkeleton,
-} from '@/components/dashboard/notes-quadrant';
-import {
   DashboardMetrics,
   DashboardMetricsSkeleton,
 } from '@/components/dashboard/dashboard-metrics';
+import {
+  DashboardCarouselSection,
+  DashboardCarouselSkeleton,
+} from '@/components/dashboard/dashboard-carousel-section';
 import { getUserProfile } from '@/lib/actions/profile';
 import { formatDateIST } from '@/lib/utils/date';
 import Link from 'next/link';
@@ -33,8 +21,12 @@ export async function DashboardCommandCenter() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-outline-variant/20">
           <div className="flex flex-col gap-1.5 min-w-0">
             <div className="flex items-center gap-2 text-outline flex-wrap">
-              <span className="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">compass_calibration</span>
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">LifeOS Command Engine</span>
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">
+                compass_calibration
+              </span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+                LifeOS Command Engine
+              </span>
               <span className="text-outline-variant">•</span>
               <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
@@ -79,35 +71,11 @@ export async function DashboardCommandCenter() {
           <DashboardMetrics />
         </Suspense>
 
-        {/* Main Workspace Bento: The 4 Minimalist Breathing Cards */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-          {/* Card 1: Active Projects */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<ProjectsSkeleton />}>
-              <ProjectsQuadrant />
-            </Suspense>
-          </div>
-
-          {/* Card 2: Today's Focus */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<TasksSkeleton />}>
-              <TasksQuadrant />
-            </Suspense>
-          </div>
-
-          {/* Card 3: Pocket Money Tracker */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<FinancesSkeleton />}>
-              <FinancesQuadrant />
-            </Suspense>
-          </div>
-
-          {/* Card 4: Recent Ideas & Scratchpad */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<NotesSkeleton />}>
-              <NotesQuadrant />
-            </Suspense>
-          </div>
+        {/* Main Workspace Interactive Carousel: 4 Animated Modules */}
+        <section className="w-full">
+          <Suspense fallback={<DashboardCarouselSkeleton />}>
+            <DashboardCarouselSection />
+          </Suspense>
         </section>
       </div>
     </div>

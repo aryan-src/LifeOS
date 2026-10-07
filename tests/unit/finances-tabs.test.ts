@@ -86,4 +86,55 @@ describe('Finances Time Filter Logic', () => {
   it('shows all transactions when "all" is active', () => {
     expect(mockTransactions.length).toBe(4);
   });
+
+  describe('Dynamic Allowance & Target Scaling', () => {
+    const monthlyBaseline = 5000;
+    const totalDaysInMonth = 31; // October
+    const recordedCyclesCount = 2; // Sept and Oct
+
+    it('scales limit and remaining for "monthly" scope', () => {
+      const budgetLimit = monthlyBaseline;
+      const spent = 500; // sum of monthly expenses
+      const remaining = budgetLimit - spent;
+      const percent = Math.round((spent / budgetLimit) * 100);
+
+      expect(budgetLimit).toBe(5000);
+      expect(remaining).toBe(4500);
+      expect(percent).toBe(10);
+    });
+
+    it('scales limit uniformly by 4 weeks for "this_week" scope', () => {
+      const budgetLimit = Number((monthlyBaseline / 4).toFixed(2));
+      const weekSpent = 200;
+      const remaining = budgetLimit - weekSpent;
+      const percent = Math.round((weekSpent / budgetLimit) * 100);
+
+      expect(budgetLimit).toBe(1250);
+      expect(remaining).toBe(1050);
+      expect(percent).toBe(16);
+    });
+
+    it('scales limit uniformly across days in cycle for "today" scope', () => {
+      const budgetLimit = Number((monthlyBaseline / totalDaysInMonth).toFixed(2));
+      const todaySpent = 120;
+      const remaining = budgetLimit - todaySpent;
+      const percent = Math.round((todaySpent / budgetLimit) * 100);
+
+      expect(budgetLimit).toBe(161.29);
+      expect(remaining).toBeCloseTo(41.29, 2);
+      expect(percent).toBe(74);
+    });
+
+    it('scales cumulative allowance across recorded cycles for "all" scope', () => {
+      const budgetLimit = monthlyBaseline * recordedCyclesCount;
+      const allSpent = 550;
+      const remaining = budgetLimit - allSpent;
+      const percent = Math.round((allSpent / budgetLimit) * 100);
+
+      expect(budgetLimit).toBe(10000);
+      expect(remaining).toBe(9450);
+      expect(percent).toBe(6);
+    });
+  });
 });
+

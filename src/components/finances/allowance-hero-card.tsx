@@ -12,6 +12,7 @@ interface AllowanceHeroCardProps {
   activeTab?: TimeFilterTab;
   filteredSpent?: number;
   filteredRemaining?: number;
+  filteredLimit?: number;
   filteredCategoryBreakdown?: Array<{
     name: string;
     value: number;
@@ -20,6 +21,7 @@ interface AllowanceHeroCardProps {
     percentage: number;
   }>;
   filteredTransactionsCount?: number;
+  recordedCyclesCount?: number;
 }
 
 const MONTH_NAMES = [
@@ -40,11 +42,13 @@ const MONTH_NAMES = [
 export function AllowanceHeroCard({
   analytics,
   onEditAllowance,
-  activeTab = 'all',
+  activeTab = 'monthly',
   filteredSpent,
   filteredRemaining,
+  filteredLimit,
   filteredCategoryBreakdown,
   filteredTransactionsCount,
+  recordedCyclesCount,
 }: AllowanceHeroCardProps) {
   const {
     monthlyAllowance,
@@ -63,26 +67,52 @@ export function AllowanceHeroCard({
   } = analytics;
 
   // Compute month label e.g. "October 2026"
-  const [yearStr, monthStr] = (currentDate || '2026-10-07').split('-');
-  const monthIndex = parseInt(monthStr, 10) - 1;
+  const [yearStr, monthStr, dayStr] = (currentDate || '2026-10-07').split('-');
+  const yearNum = parseInt(yearStr || '2026', 10);
+  const monthIndex = parseInt(monthStr || '10', 10) - 1;
+  const dayNum = parseInt(dayStr || '1', 10);
   const currentMonthName = MONTH_NAMES[monthIndex] || 'October';
   const currentYear = yearStr || '2026';
   const formattedMonthYear = `${currentMonthName} ${currentYear}`;
 
-  // If user has not set an allowance yet, fallback gracefully to student default budget (10,354)
-  const displayAllowance = monthlyAllowance > 0 ? monthlyAllowance : 10354;
+  // Days in current month cycle
+  const totalDaysInMonth = new Date(yearNum, monthIndex + 1, 0).getDate() || 30;
+
+  // Days left in week (Monday to Sunday)
+  const todayDateObj = new Date(yearNum, monthIndex, dayNum);
+  const dayOfWeek = todayDateObj.getDay();
+  const dayOfWeekMonSun = dayOfWeek === 0 ? 7 : dayOfWeek;
+  const daysLeftInWeek = 7 - dayOfWeekMonSun + 1;
+
+  // Monthly baseline allowance
+  const monthlyBaseline = monthlyAllowance > 0 ? monthlyAllowance : 5000;
+  const displayCyclesCount = Math.max(1, recordedCyclesCount || 1);
+
+  // Scaled budget limit relative to active tab scope
+  const displayLimit =
+    typeof filteredLimit === 'number'
+      ? filteredLimit
+      : activeTab === 'today'
+      ? Number((monthlyBaseline / totalDaysInMonth).toFixed(2))
+      : activeTab === 'this_week'
+      ? Number((monthlyBaseline / 4).toFixed(2))
+      : activeTab === 'all'
+      ? monthlyBaseline * displayCyclesCount
+      : monthlyBaseline;
+
   const displaySpent =
     typeof filteredSpent === 'number' ? filteredSpent : monthlySpent;
+
   const displayRemaining =
     typeof filteredRemaining === 'number'
       ? filteredRemaining
-      : monthlyAllowance > 0
-      ? rawRemaining
-      : Math.max(0, displayAllowance - displaySpent);
-  const displayPercent =
-    displayAllowance > 0
-      ? Math.min(100, Math.round((displaySpent / displayAllowance) * 100))
-      : rawPercent;
+      : displayLimit - displaySpent;
+
+  const computedPercent =
+    displayLimit > 0
+      ? Math.round((displaySpent / displayLimit) * 100)
+      : 0;
+  const displayPercent = computedPercent;
   const safeBufferPercent = Math.max(0, 100 - displayPercent);
 
   const isTodayOverTarget = safeDailyBudget > 0 && todaySpent > safeDailyBudget;
@@ -98,18 +128,75 @@ export function AllowanceHeroCard({
       ? "Today's Budget Tracker"
       : activeTab === 'this_week'
       ? "This Week's Budget Tracker"
-      : activeTab === 'monthly'
-      ? 'Monthly Budget Tracker'
+      : activeTab === 'all'
+      ? 'Budget Tracker (All Feed)'
       : 'Monthly Budget Tracker';
+
+  const scopeLabel =
+    activeTab === 'today'
+      ? 'daily'
+      : activeTab === 'this_week'
+      ? 'weekly'
+      : activeTab === 'all'
+      ? 'total'
+      : 'monthly';
+
+  const limitCardHeader =
+    activeTab === 'today'
+      ? 'DAILY LIMIT'
+      : activeTab === 'this_week'
+      ? 'WEEKLY LIMIT'
+      : activeTab === 'all'
+      ? 'TOTAL LIMIT'
+      : 'MONTHLY LIMIT';
+
+  const spentRunwayText =
+    activeTab === 'today'
+      ? displayPercent <= 65
+        ? 'Under daily safe runway'
+        : 'Approaching daily spending limit'
+      : activeTab === 'this_week'
+      ? displayPercent <= 65
+        ? 'Under expected weekly runway'
+        : 'Approaching weekly runway ceiling'
+      : activeTab === 'all'
+      ? displayPercent <= 65
+        ? 'Within all-time target limits'
+        : 'Approaching all-time budget ceiling'
+      : displayPercent <= 65
+      ? 'Under expected daily runway'
+      : 'Approaching monthly runway ceiling';
+
+  const limitSubtitle =
+    activeTab === 'today'
+      ? displayRemaining > 0
+        ? `Remaining today: ~${currencySymbol}${formatNumber(Math.round(displayRemaining))}`
+        : 'Daily limit reached'
+      : activeTab === 'this_week'
+      ? `Safe to spend: ~${currencySymbol}${formatNumber(Math.round(Math.max(0, displayRemaining / Math.max(1, daysLeftInWeek))))} / day`
+      : activeTab === 'all'
+      ? `Recorded across ${displayCyclesCount} ${displayCyclesCount === 1 ? 'cycle' : 'cycles'}`
+      : `Safe to spend: ~${currencySymbol}${formatNumber(Math.round(safeDailyBudget > 0 ? safeDailyBudget : daysLeftInMonth > 0 ? Math.max(0, displayRemaining / daysLeftInMonth) : 0))} / day`;
+
+  const cycleCountdownLabel =
+    activeTab === 'today'
+      ? 'Current 24h cycle'
+      : activeTab === 'this_week'
+      ? `${daysLeftInWeek} days left this week`
+      : activeTab === 'all'
+      ? `${displayCyclesCount} recorded ${
+          displayCyclesCount === 1 ? 'cycle' : 'cycles'
+        }`
+      : `${daysLeftInMonth} days left this cycle`;
 
   const outflowSubtitle =
     activeTab === 'today'
       ? "Today's categorical outflow"
       : activeTab === 'this_week'
       ? "This week's categorical outflow"
-      : activeTab === 'monthly'
-      ? `${currentMonthName} categorical outflow`
-      : 'All-time categorical outflow';
+      : activeTab === 'all'
+      ? 'All-time categorical outflow'
+      : `${currentMonthName} categorical outflow`;
 
   const hasExpensesInPeriod = activeCategories.length > 0;
 
@@ -153,8 +240,9 @@ export function AllowanceHeroCard({
                     displayRemaining < 0 ? 'text-error' : 'text-on-surface'
                   }`}
                 >
+                  {displayRemaining < 0 ? '-' : ''}
                   {currencySymbol}
-                  {formatNumber(Math.round(displayRemaining))}
+                  {formatNumber(Math.abs(Math.round(displayRemaining)))}
                 </span>
                 <span className="font-label-md text-label-md text-outline font-medium">
                   remaining balance
@@ -164,7 +252,7 @@ export function AllowanceHeroCard({
                 <span className="material-symbols-outlined text-secondary text-[16px]">
                   schedule
                 </span>
-                <span>{daysLeftInMonth} days left this cycle</span>
+                <span>{cycleCountdownLabel}</span>
               </div>
             </div>
 
@@ -177,7 +265,7 @@ export function AllowanceHeroCard({
                 />
               </div>
               <div className="flex items-center justify-between text-outline font-label-sm text-label-sm pt-0.5">
-                <span>{displayPercent}% of monthly cap utilized</span>
+                <span>{displayPercent}% of {scopeLabel} cap utilized</span>
                 <span className="text-secondary font-medium">
                   {safeBufferPercent}% safe buffer remaining
                 </span>
@@ -185,7 +273,7 @@ export function AllowanceHeroCard({
             </div>
           </div>
 
-          {/* Two Columns: Spent vs Monthly Limit */}
+          {/* Two Columns: Spent vs Limit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
             {/* Spent */}
             <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
@@ -202,17 +290,15 @@ export function AllowanceHeroCard({
                 {formatNumber(Math.round(displaySpent))}
               </span>
               <span className="font-label-sm text-label-sm text-outline">
-                {displayPercent <= 65
-                  ? 'Under expected daily runway'
-                  : 'Approaching monthly runway ceiling'}
+                {spentRunwayText}
               </span>
             </div>
 
-            {/* Monthly Limit (Secondary Card: Right Side) */}
+            {/* Limit (Secondary Card: Right Side) */}
             <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
-                  Monthly Limit
+                  {limitCardHeader}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
                   {safeBufferPercent}%
@@ -220,11 +306,10 @@ export function AllowanceHeroCard({
               </div>
               <span className="font-headline-lg text-headline-lg text-on-surface font-bold font-mono">
                 {currencySymbol}
-                {formatNumber(Math.round(displayAllowance))}
+                {formatNumber(Math.round(displayLimit))}
               </span>
               <span className="font-label-sm text-label-sm text-secondary font-medium">
-                Safe to spend: ~{currencySymbol}
-                {Math.round(safeDailyBudget > 0 ? safeDailyBudget : displayRemaining / daysLeftInMonth)} / day
+                {limitSubtitle}
               </span>
             </div>
           </div>

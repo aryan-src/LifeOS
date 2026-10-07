@@ -58,7 +58,7 @@ export function FinancesClientView({
 }: FinancesClientViewProps) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TimeFilterTab>('all');
+  const [activeTab, setActiveTab] = useState<TimeFilterTab>('monthly');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] =
@@ -133,10 +133,50 @@ export function FinancesClientView({
     showToast(errorMsg, 'error');
   };
 
+  // Base monthly budget (fallback to 5000 if not configured)
+  const monthlyBaseline =
+    analytics.monthlyAllowance > 0 ? analytics.monthlyAllowance : 5000;
+
+  // Days in current month cycle
+  const todayStr = analytics.currentDate || getTodayDate();
+  const [currentYearStr, currentMonthStr] = todayStr.split('-');
+  const totalDaysInMonth = useMemo(() => {
+    const y = parseInt(currentYearStr || '2026', 10);
+    const m = parseInt(currentMonthStr || '10', 10);
+    return new Date(y, m, 0).getDate() || 30;
+  }, [currentYearStr, currentMonthStr]);
+
+  // Recorded cycles count across transaction history for "all"
+  const recordedCyclesCount = useMemo(() => {
+    const months = new Set<string>();
+    months.add(todayStr.substring(0, 7));
+    for (const t of transactions) {
+      if (t.date) {
+        months.add(t.date.substring(0, 7));
+      }
+    }
+    return Math.max(1, months.size);
+  }, [transactions, todayStr]);
+
+  // Scaled budget limit relative to active tab scope
+  const filteredLimit = useMemo(() => {
+    switch (activeTab) {
+      case 'today':
+        return Number((monthlyBaseline / totalDaysInMonth).toFixed(2));
+      case 'this_week':
+        return Number((monthlyBaseline / 4).toFixed(2));
+      case 'monthly':
+        return monthlyBaseline;
+      case 'all':
+        return monthlyBaseline * recordedCyclesCount;
+      default:
+        return monthlyBaseline;
+    }
+  }, [activeTab, monthlyBaseline, totalDaysInMonth, recordedCyclesCount]);
+
   // Deterministic timeframe-based filtering
   const filteredTransactions = useMemo(() => {
     if (activeTab === 'all') return transactions;
-    const todayStr = analytics.currentDate || getTodayDate();
 
     if (activeTab === 'today') {
       return transactions.filter((t) => t.date === todayStr);
@@ -160,7 +200,7 @@ export function FinancesClientView({
     }
 
     return transactions;
-  }, [transactions, activeTab, analytics.currentDate, analytics.weeklyDays]);
+  }, [transactions, activeTab, todayStr, analytics.weeklyDays]);
 
   // Recalculate spending metrics according to active filtered timeframe
   const filteredSpent = useMemo(() => {
@@ -170,10 +210,8 @@ export function FinancesClientView({
   }, [filteredTransactions]);
 
   const filteredRemaining = useMemo(() => {
-    const allowance =
-      analytics.monthlyAllowance > 0 ? analytics.monthlyAllowance : 10354;
-    return Math.max(0, allowance - filteredSpent);
-  }, [analytics.monthlyAllowance, filteredSpent]);
+    return filteredLimit - filteredSpent;
+  }, [filteredLimit, filteredSpent]);
 
   const filteredCategoryBreakdown = useMemo(() => {
     const catMap: Record<
@@ -299,8 +337,10 @@ export function FinancesClientView({
         activeTab={activeTab}
         filteredSpent={filteredSpent}
         filteredRemaining={filteredRemaining}
+        filteredLimit={filteredLimit}
         filteredCategoryBreakdown={filteredCategoryBreakdown}
         filteredTransactionsCount={filteredTransactions.length}
+        recordedCyclesCount={recordedCyclesCount}
       />
 
       {/* =========================================================================

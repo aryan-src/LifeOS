@@ -50,6 +50,7 @@ export default {
         'outline-variant': '#d0c4be',
         'on-primary-fixed': '#1e1b19',
         'primary': '#000000',
+        'primary-foreground': '#ffffff',
         'primary-fixed-dim': '#ccc5c2',
         'primary-container': '#1e1b19',
         'secondary-container': '#bbecc2',
@@ -57,6 +58,18 @@ export default {
         'primary-fixed': '#e9e1dd',
         'on-background': '#1f1b17',
         'tertiary': '#000000',
+
+        // shadcn / Origin UI standard color mappings
+        'foreground': '#1f1b17',
+        'muted': '#f6ece6',
+        'muted-foreground': '#7e7570',
+        'accent': '#f0e6e0',
+        'accent-foreground': '#1f1b17',
+        'border': '#d0c4be',
+        'input': '#d0c4be',
+        'ring': '#3c6847',
+        'destructive': '#ba1a1a',
+        'destructive-foreground': '#ffffff',
       },
       borderRadius: {
         DEFAULT: '0.125rem',

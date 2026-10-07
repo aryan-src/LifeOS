@@ -113,16 +113,20 @@ export function AllowanceHeroCard({
             </button>
           </div>
 
-          {/* Budget Total & Main Limit Bar */}
+          {/* Budget Total & Main Limit Bar (Primary Display: Emphasizing Remaining Balance) */}
           <div className="flex flex-col gap-space-sm">
             <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-1">
               <div className="flex items-baseline gap-space-sm">
-                <span className="font-display text-display text-on-surface font-bold tracking-tight">
+                <span
+                  className={`font-display text-display font-bold tracking-tight ${
+                    displayRemaining < 0 ? 'text-error' : 'text-on-surface'
+                  }`}
+                >
                   {currencySymbol}
-                  {formatNumber(Math.round(displayAllowance))}
+                  {formatNumber(Math.round(displayRemaining))}
                 </span>
                 <span className="font-label-md text-label-md text-outline font-medium">
-                  monthly limit
+                  remaining balance
                 </span>
               </div>
               <div className="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
@@ -150,7 +154,7 @@ export function AllowanceHeroCard({
             </div>
           </div>
 
-          {/* Two Columns: Spent vs Remaining */}
+          {/* Two Columns: Spent vs Monthly Limit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
             {/* Spent */}
             <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
@@ -173,11 +177,11 @@ export function AllowanceHeroCard({
               </span>
             </div>
 
-            {/* Remaining */}
+            {/* Monthly Limit (Secondary Card: Right Side) */}
             <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
-                  Remaining
+                  Monthly Limit
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
                   {safeBufferPercent}%
@@ -185,7 +189,7 @@ export function AllowanceHeroCard({
               </div>
               <span className="font-headline-lg text-headline-lg text-on-surface font-bold font-mono">
                 {currencySymbol}
-                {formatNumber(Math.round(displayRemaining))}
+                {formatNumber(Math.round(displayAllowance))}
               </span>
               <span className="font-label-sm text-label-sm text-secondary font-medium">
                 Safe to spend: ~{currencySymbol}

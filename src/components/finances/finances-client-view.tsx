@@ -22,6 +22,34 @@ interface FinancesClientViewProps {
   projects: ProjectOption[];
 }
 
+import { getTodayDate } from '@/lib/utils/date';
+
+export type TimeFilterTab = 'today' | 'this_week' | 'monthly' | 'all';
+
+function getWeekRange(dateStr: string): { startOfWeek: string; endOfWeek: string } {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const day = date.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const format = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dayOfMonth = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dayOfMonth}`;
+  };
+
+  return {
+    startOfWeek: format(monday),
+    endOfWeek: format(sunday),
+  };
+}
+
 export function FinancesClientView({
   initialTransactions,
   analytics,
@@ -30,9 +58,7 @@ export function FinancesClientView({
 }: FinancesClientViewProps) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
-  const [activeTimeframe, setActiveTimeframe] = useState<
-    'all' | 'daily' | 'weekly' | 'monthly'
-  >('monthly');
+  const [activeTab, setActiveTab] = useState<TimeFilterTab>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] =
@@ -47,11 +73,9 @@ export function FinancesClientView({
     setTransactions(initialTransactions);
   }, [initialTransactions]);
 
-  const handleTimeframeChange = (
-    timeframe: 'all' | 'daily' | 'weekly' | 'monthly'
-  ) => {
+  const handleTabChange = (tab: TimeFilterTab) => {
     startTransition(() => {
-      setActiveTimeframe(timeframe);
+      setActiveTab(tab);
     });
   };
 
@@ -109,28 +133,78 @@ export function FinancesClientView({
     showToast(errorMsg, 'error');
   };
 
-  // Filter transactions according to selected timeframe
+  // Deterministic timeframe-based filtering
   const filteredTransactions = useMemo(() => {
-    if (activeTimeframe === 'all') return transactions;
-    const today = analytics.currentDate;
-    if (activeTimeframe === 'daily') {
-      const dailyList = transactions.filter((t) => t.date === today);
-      return dailyList.length > 0 ? dailyList : transactions;
+    if (activeTab === 'all') return transactions;
+    const todayStr = analytics.currentDate || getTodayDate();
+
+    if (activeTab === 'today') {
+      return transactions.filter((t) => t.date === todayStr);
     }
-    if (activeTimeframe === 'weekly') {
-      const trailing7 = new Set(analytics.weeklyDays.map((d) => d.date));
-      const weeklyList = transactions.filter((t) => trailing7.has(t.date));
-      return weeklyList.length > 0 ? weeklyList : transactions;
-    }
-    if (activeTimeframe === 'monthly') {
-      const currentYearMonth = today ? today.substring(0, 7) : '2026-10';
-      const monthlyList = transactions.filter((t) =>
-        t.date.startsWith(currentYearMonth)
+
+    if (activeTab === 'this_week') {
+      const { startOfWeek, endOfWeek } = getWeekRange(todayStr);
+      const trailing7Set = new Set(
+        analytics.weeklyDays?.map((d) => d.date) || []
       );
-      return monthlyList.length > 0 ? monthlyList : transactions;
+      return transactions.filter(
+        (t) =>
+          (t.date >= startOfWeek && t.date <= endOfWeek) ||
+          trailing7Set.has(t.date)
+      );
     }
+
+    if (activeTab === 'monthly') {
+      const currentYearMonth = todayStr.substring(0, 7);
+      return transactions.filter((t) => t.date.startsWith(currentYearMonth));
+    }
+
     return transactions;
-  }, [transactions, activeTimeframe, analytics.currentDate, analytics.weeklyDays]);
+  }, [transactions, activeTab, analytics.currentDate, analytics.weeklyDays]);
+
+  // Recalculate spending metrics according to active filtered timeframe
+  const filteredSpent = useMemo(() => {
+    return filteredTransactions
+      .filter((t) => t.type === 'expense' || (t.type !== 'income' && t.amount < 0))
+      .reduce((acc, t) => acc + Math.abs(Number(t.amount || 0)), 0);
+  }, [filteredTransactions]);
+
+  const filteredRemaining = useMemo(() => {
+    const allowance =
+      analytics.monthlyAllowance > 0 ? analytics.monthlyAllowance : 10354;
+    return Math.max(0, allowance - filteredSpent);
+  }, [analytics.monthlyAllowance, filteredSpent]);
+
+  const filteredCategoryBreakdown = useMemo(() => {
+    const catMap: Record<
+      string,
+      { value: number; count: number; color?: string }
+    > = {};
+    for (const tx of filteredTransactions) {
+      if (tx.type === 'income') continue;
+      const catName = tx.category?.name || 'Personal & Misc';
+      const catColor = tx.category?.color || '#a855f7';
+      if (!catMap[catName]) {
+        catMap[catName] = { value: 0, count: 0, color: catColor };
+      }
+      catMap[catName].value += Math.abs(Number(tx.amount || 0));
+      catMap[catName].count += 1;
+    }
+    const totalSpent = Object.values(catMap).reduce(
+      (sum, c) => sum + c.value,
+      0
+    );
+    return Object.entries(catMap)
+      .map(([name, data]) => ({
+        name,
+        value: Number(data.value.toFixed(2)),
+        count: data.count,
+        color: data.color || '#a855f7',
+        percentage:
+          totalSpent > 0 ? Math.round((data.value / totalSpent) * 100) : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredTransactions]);
 
   return (
     <div className="flex flex-col gap-space-xl w-full">
@@ -170,51 +244,38 @@ export function FinancesClientView({
 
         {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-space-sm">
-          <div className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-sm">
-            <button
-              type="button"
-              onClick={() => handleTimeframeChange('daily')}
-              className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                activeTimeframe === 'daily'
-                  ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTimeframeChange('weekly')}
-              className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                activeTimeframe === 'weekly'
-                  ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              This Week
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTimeframeChange('monthly')}
-              className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                activeTimeframe === 'monthly'
-                  ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTimeframeChange('all')}
-              className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                activeTimeframe === 'all'
-                  ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              All Feed
-            </button>
+          <div
+            role="tablist"
+            aria-label="Filter finances by timeframe"
+            className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-xs"
+          >
+            {[
+              { id: 'today', label: 'Today' },
+              { id: 'this_week', label: 'This Week' },
+              { id: 'monthly', label: 'Monthly' },
+              { id: 'all', label: 'All Feed' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`header-tab-${tab.id}`}
+                  aria-selected={isActive}
+                  aria-controls="finances-ledger-table"
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => handleTabChange(tab.id as TimeFilterTab)}
+                  className={`px-space-sm py-1 rounded font-label-md text-label-md transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-stone-800 dark:text-stone-100'
+                      : 'text-on-surface-variant hover:text-on-surface font-normal hover:bg-surface-container/50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           <button
@@ -235,6 +296,11 @@ export function FinancesClientView({
       <AllowanceHeroCard
         analytics={analytics}
         onEditAllowance={handleEditAllowance}
+        activeTab={activeTab}
+        filteredSpent={filteredSpent}
+        filteredRemaining={filteredRemaining}
+        filteredCategoryBreakdown={filteredCategoryBreakdown}
+        filteredTransactionsCount={filteredTransactions.length}
       />
 
       {/* =========================================================================
@@ -249,8 +315,8 @@ export function FinancesClientView({
           onEdit={(tx) => setEditingTransaction(tx)}
           onOptimisticUpdate={handleOptimisticUpdate}
           currencySymbol={analytics.currencySymbol || '₹'}
-          activeTimeframe={activeTimeframe}
-          onTimeframeChange={handleTimeframeChange}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
           onRecordExpense={() => setIsRecordModalOpen(true)}
@@ -274,7 +340,7 @@ export function FinancesClientView({
           </div>
           <StudentExpenseFeed
             transactions={filteredTransactions}
-            activeTimeframe={activeTimeframe}
+            activeTab={activeTab}
             currentDate={analytics.currentDate}
             onDelete={handleDelete}
             onEdit={(tx) => setEditingTransaction(tx)}

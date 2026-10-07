@@ -6,9 +6,12 @@ import type { TransactionWithRelations } from '@/lib/actions/finances';
 import { formatCurrency } from '@/lib/utils/format';
 import { getTodayDate, getYesterdayDate, getTrailingDays } from '@/lib/utils/date';
 
+export type TimeFilterTab = 'today' | 'this_week' | 'monthly' | 'all';
+
 interface StudentExpenseFeedProps {
   transactions: TransactionWithRelations[];
-  activeTimeframe: 'all' | 'daily' | 'weekly' | 'monthly';
+  activeTab?: TimeFilterTab;
+  activeTimeframe?: 'all' | 'daily' | 'weekly' | 'monthly';
   currentDate?: string;
   onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   onEdit?: (tx: TransactionWithRelations) => void;
@@ -31,7 +34,8 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 
 export function StudentExpenseFeed({
   transactions: initialTransactions,
-  activeTimeframe,
+  activeTab,
+  activeTimeframe = 'monthly',
   currentDate,
   onDelete,
   onEdit,
@@ -216,9 +220,9 @@ export function StudentExpenseFeed({
       {/* Empty State */}
       {filteredTransactions.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center">
-          <p className="text-sm font-medium text-slate-300">No transactions found</p>
+          <p className="text-sm font-medium text-slate-300">No expenses recorded for this period</p>
           <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-            {activeTimeframe === 'daily'
+            {activeTab === 'today' || activeTimeframe === 'daily'
               ? "You haven't logged any expenses for today yet. Use the Quick Logger above to record today's canteen lunch or coffee!"
               : 'Try clearing filters or search to view more records.'}
           </p>

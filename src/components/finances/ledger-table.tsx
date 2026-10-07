@@ -16,8 +16,10 @@ interface LedgerTableProps {
   onEdit?: (tx: TransactionWithRelations) => void;
   onOptimisticUpdate?: (updatedTx: TransactionWithRelations) => void;
   currencySymbol?: string;
-  activeTimeframe?: 'all' | 'daily' | 'weekly' | 'monthly';
-  onTimeframeChange?: (tf: 'all' | 'daily' | 'weekly' | 'monthly') => void;
+  activeTab?: 'today' | 'this_week' | 'monthly' | 'all';
+  onTabChange?: (tab: 'today' | 'this_week' | 'monthly' | 'all') => void;
+  activeTimeframe?: string;
+  onTimeframeChange?: (tf: any) => void;
   viewMode?: 'table' | 'cards';
   onViewModeChange?: (mode: 'table' | 'cards') => void;
   onRecordExpense?: () => void;
@@ -35,7 +37,9 @@ export function LedgerTable({
   onEdit,
   onOptimisticUpdate,
   currencySymbol = '₹',
-  activeTimeframe = 'monthly',
+  activeTab,
+  onTabChange,
+  activeTimeframe,
   onTimeframeChange,
   viewMode = 'table',
   onViewModeChange,
@@ -46,6 +50,27 @@ export function LedgerTable({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [, startTransition] = useTransition();
+
+  const currentTab: 'today' | 'this_week' | 'monthly' | 'all' =
+    activeTab ||
+    (activeTimeframe === 'daily'
+      ? 'today'
+      : activeTimeframe === 'weekly'
+      ? 'this_week'
+      : activeTimeframe === 'monthly'
+      ? 'monthly'
+      : 'all');
+
+  const handleTabClick = (tab: 'today' | 'this_week' | 'monthly' | 'all') => {
+    setCurrentPage(1);
+    if (onTabChange) {
+      onTabChange(tab);
+    } else if (onTimeframeChange) {
+      onTimeframeChange(
+        tab === 'today' ? 'daily' : tab === 'this_week' ? 'weekly' : tab === 'monthly' ? 'monthly' : 'all'
+      );
+    }
+  };
 
   // React 19 native useOptimistic: zero-latency deletion & row updates from the DOM
   const [optimisticTransactions, setOptimisticTransactions] = useOptimistic(
@@ -90,11 +115,11 @@ export function LedgerTable({
   const paginatedTransactions = optimisticTransactions.slice(startIndex, startIndex + itemsPerPage);
 
   const timeframeTitle =
-    activeTimeframe === 'daily'
+    currentTab === 'today'
       ? "Today's Activity"
-      : activeTimeframe === 'weekly'
+      : currentTab === 'this_week'
       ? "This Week's Activity"
-      : activeTimeframe === 'monthly'
+      : currentTab === 'monthly'
       ? "This Month's Spending"
       : 'All Transactions';
 
@@ -129,53 +154,40 @@ export function LedgerTable({
         </div>
 
         <div className="flex flex-wrap items-center gap-space-sm">
-          {/* Timeframe Filter Switcher */}
-          {onTimeframeChange && (
-            <div className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-sm">
-              <button
-                type="button"
-                onClick={() => onTimeframeChange('daily')}
-                className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                  activeTimeframe === 'daily'
-                    ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                Today
-              </button>
-              <button
-                type="button"
-                onClick={() => onTimeframeChange('weekly')}
-                className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                  activeTimeframe === 'weekly'
-                    ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                This Week
-              </button>
-              <button
-                type="button"
-                onClick={() => onTimeframeChange('monthly')}
-                className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                  activeTimeframe === 'monthly'
-                    ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                type="button"
-                onClick={() => onTimeframeChange('all')}
-                className={`px-space-sm py-1 rounded font-label-md text-label-md transition-colors cursor-pointer ${
-                  activeTimeframe === 'all'
-                    ? 'text-on-surface bg-surface-container-lowest shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                All Feed
-              </button>
+          {/* Timeframe Filter Switcher with Accessible Tab Roles */}
+          {(onTabChange || onTimeframeChange) && (
+            <div
+              role="tablist"
+              aria-label="Filter ledger records by timeframe"
+              className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-xs"
+            >
+              {[
+                { id: 'today', label: 'Today' },
+                { id: 'this_week', label: 'This Week' },
+                { id: 'monthly', label: 'Monthly' },
+                { id: 'all', label: 'All Feed' },
+              ].map((tab) => {
+                const isActive = currentTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    id={`table-tab-${tab.id}`}
+                    aria-selected={isActive}
+                    aria-controls="finances-ledger-table"
+                    tabIndex={isActive ? 0 : -1}
+                    onClick={() => handleTabClick(tab.id as 'today' | 'this_week' | 'monthly' | 'all')}
+                    className={`px-space-sm py-1 rounded font-label-md text-label-md transition-all duration-150 cursor-pointer ${
+                      isActive
+                        ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-stone-800 dark:text-stone-100'
+                        : 'text-on-surface-variant hover:text-on-surface font-normal hover:bg-surface-container/50'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -226,7 +238,7 @@ export function LedgerTable({
       {/* Main Ledger Table */}
       {optimisticTransactions.length === 0 ? (
         <div className="rounded-xl border border-dashed border-outline-variant/40 p-12 text-center bg-surface-container-low/50">
-          <p className="text-body-md text-on-surface-variant">No transactions found for this period.</p>
+          <p className="text-body-md text-on-surface-variant font-medium">No expenses recorded for this period</p>
           <p className="mt-1 text-label-sm text-outline">
             Click &ldquo;Record Expense&rdquo; above or use Quick Capture (⌘K) to add one.
           </p>

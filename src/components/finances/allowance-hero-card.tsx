@@ -4,9 +4,22 @@ import React from 'react';
 import type { FinancialAnalytics } from '@/lib/actions/finances';
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
 
+export type TimeFilterTab = 'today' | 'this_week' | 'monthly' | 'all';
+
 interface AllowanceHeroCardProps {
   analytics: FinancialAnalytics;
   onEditAllowance?: () => void;
+  activeTab?: TimeFilterTab;
+  filteredSpent?: number;
+  filteredRemaining?: number;
+  filteredCategoryBreakdown?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    count: number;
+    percentage: number;
+  }>;
+  filteredTransactionsCount?: number;
 }
 
 const MONTH_NAMES = [
@@ -27,6 +40,11 @@ const MONTH_NAMES = [
 export function AllowanceHeroCard({
   analytics,
   onEditAllowance,
+  activeTab = 'all',
+  filteredSpent,
+  filteredRemaining,
+  filteredCategoryBreakdown,
+  filteredTransactionsCount,
 }: AllowanceHeroCardProps) {
   const {
     monthlyAllowance,
@@ -53,8 +71,14 @@ export function AllowanceHeroCard({
 
   // If user has not set an allowance yet, fallback gracefully to student default budget (10,354)
   const displayAllowance = monthlyAllowance > 0 ? monthlyAllowance : 10354;
-  const displaySpent = monthlySpent;
-  const displayRemaining = monthlyAllowance > 0 ? rawRemaining : Math.max(0, displayAllowance - displaySpent);
+  const displaySpent =
+    typeof filteredSpent === 'number' ? filteredSpent : monthlySpent;
+  const displayRemaining =
+    typeof filteredRemaining === 'number'
+      ? filteredRemaining
+      : monthlyAllowance > 0
+      ? rawRemaining
+      : Math.max(0, displayAllowance - displaySpent);
   const displayPercent =
     displayAllowance > 0
       ? Math.min(100, Math.round((displaySpent / displayAllowance) * 100))
@@ -66,21 +90,28 @@ export function AllowanceHeroCard({
 
   // Active categories for segmented bar
   const defaultColors = ['#3c6847', '#cb6654', '#625d5b', '#8b5cf6', '#3b82f6'];
-  const activeCategories = categoryBreakdown.filter((c) => c.value > 0);
-  const displayBreakdown =
-    activeCategories.length > 0
-      ? activeCategories
-      : [
-          { name: 'Rent & Utilities', value: 1600, percentage: 35, color: '#3c6847' },
-          { name: 'Grocery', value: 1350, percentage: 30, color: '#16a34a' },
-          { name: 'Other', value: 1355, percentage: 35, color: '#625d5b' },
-        ];
+  const sourceBreakdown = filteredCategoryBreakdown ?? categoryBreakdown;
+  const activeCategories = sourceBreakdown.filter((c) => c.value > 0);
 
-  // Inactive categories to display in "Where Did Money Go" if few categories exist
-  const sampleInactiveCategories = [
-    { name: 'Campus Supplies & Books', percentage: 0, value: 0 },
-    { name: 'Printouts & Lab Notes', percentage: 0, value: 0 },
-  ];
+  const trackerTitle =
+    activeTab === 'today'
+      ? "Today's Budget Tracker"
+      : activeTab === 'this_week'
+      ? "This Week's Budget Tracker"
+      : activeTab === 'monthly'
+      ? 'Monthly Budget Tracker'
+      : 'Monthly Budget Tracker';
+
+  const outflowSubtitle =
+    activeTab === 'today'
+      ? "Today's categorical outflow"
+      : activeTab === 'this_week'
+      ? "This week's categorical outflow"
+      : activeTab === 'monthly'
+      ? `${currentMonthName} categorical outflow`
+      : 'All-time categorical outflow';
+
+  const hasExpensesInPeriod = activeCategories.length > 0;
 
   const activeDaysCount = weeklyDays.filter((d) => d.spent > 0).length;
 
@@ -97,7 +128,7 @@ export function AllowanceHeroCard({
             <div className="flex items-center gap-space-sm">
               <div className="w-2 h-2 rounded-full bg-secondary" />
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-medium">
-                Monthly Budget Tracker
+                {trackerTitle}
               </span>
             </div>
             <button
@@ -205,50 +236,58 @@ export function AllowanceHeroCard({
                 Spending Breakdown
               </span>
               <span className="font-label-sm text-label-sm text-outline font-mono">
-                {displayBreakdown.length} categories active
+                {activeCategories.length} {activeCategories.length === 1 ? 'category' : 'categories'} active
               </span>
             </div>
 
-            {/* Segmented bar */}
-            <div className="w-full h-2.5 bg-surface-container-high rounded-full overflow-hidden flex gap-0.5">
-              {displayBreakdown.map((cat, idx) => (
-                <div
-                  key={idx}
-                  className="h-full transition-all"
-                  style={{
-                    width: `${Math.max(cat.percentage, 5)}%`,
-                    backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
-                  }}
-                  title={`${cat.name}: ${currencySymbol}${formatNumber(Math.round(cat.value))}`}
-                />
-              ))}
-            </div>
-
-            {/* 3 mini cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm pt-space-xs">
-              {displayBreakdown.slice(0, 3).map((cat, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low border border-outline-variant/20"
-                >
-                  <div className="flex items-center gap-space-xs min-w-0">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
+            {hasExpensesInPeriod ? (
+              <>
+                {/* Segmented bar */}
+                <div className="w-full h-2.5 bg-surface-container-high rounded-full overflow-hidden flex gap-0.5">
+                  {activeCategories.map((cat, idx) => (
+                    <div
+                      key={idx}
+                      className="h-full transition-all"
                       style={{
+                        width: `${Math.max(cat.percentage, 5)}%`,
                         backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
                       }}
+                      title={`${cat.name}: ${currencySymbol}${formatNumber(Math.round(cat.value))}`}
                     />
-                    <span className="font-body-sm text-body-sm text-on-surface font-medium truncate">
-                      {cat.name}
-                    </span>
-                  </div>
-                  <span className="font-label-md text-label-md font-mono text-on-surface font-bold shrink-0 ml-1">
-                    {currencySymbol}
-                    {formatNumber(Math.round(cat.value))}
-                  </span>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                {/* mini cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm pt-space-xs">
+                  {activeCategories.slice(0, 3).map((cat, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low border border-outline-variant/20"
+                    >
+                      <div className="flex items-center gap-space-xs min-w-0">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
+                          }}
+                        />
+                        <span className="font-body-sm text-body-sm text-on-surface font-medium truncate">
+                          {cat.name}
+                        </span>
+                      </div>
+                      <span className="font-label-md text-label-md font-mono text-on-surface font-bold shrink-0 ml-1">
+                        {currencySymbol}
+                        {formatNumber(Math.round(cat.value))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="py-2.5 px-3 rounded-lg bg-surface-container-low text-center text-outline text-label-sm border border-outline-variant/20">
+                No expenses recorded for this period
+              </div>
+            )}
           </div>
 
           {/* Action Button: View Details */}
@@ -452,7 +491,7 @@ export function AllowanceHeroCard({
               </span>
             </div>
             <span className="font-label-sm text-label-sm text-outline">
-              {currentMonthName} categorical outflow
+              {outflowSubtitle}
             </span>
           </div>
 
@@ -467,14 +506,14 @@ export function AllowanceHeroCard({
                       className="h-full transition-all"
                       style={{
                         width: `${cat.percentage}%`,
-                        backgroundColor: cat.color || '#cb6654',
+                        backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
                       }}
                       title={`${cat.name}: ${cat.percentage}%`}
                     />
                   ))
                 ) : (
                   <div
-                    className="h-full bg-on-tertiary-container transition-all"
+                    className="h-full bg-surface-container-high transition-all"
                     style={{ width: '100%' }}
                   />
                 )}
@@ -482,10 +521,10 @@ export function AllowanceHeroCard({
               <div className="flex items-center justify-between font-label-sm text-label-sm text-outline">
                 <span>
                   Total spent: {currencySymbol}
-                  {formatCurrency(monthlySpent)}
+                  {formatCurrency(displaySpent)}
                 </span>
                 <span>
-                  {Math.max(activeCategories.length, 1)} Category Active
+                  {activeCategories.length} {activeCategories.length === 1 ? 'Category' : 'Categories'} active
                 </span>
               </div>
             </div>
@@ -493,7 +532,7 @@ export function AllowanceHeroCard({
             {/* Breakdown List */}
             <div className="flex flex-col gap-space-sm">
               {activeCategories.length > 0 ? (
-                activeCategories.slice(0, 3).map((cat, idx) => (
+                activeCategories.slice(0, 4).map((cat, idx) => (
                   <div
                     key={idx}
                     className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors"
@@ -501,7 +540,7 @@ export function AllowanceHeroCard({
                     <div className="flex items-center gap-space-sm">
                       <span
                         className="w-3 h-3 rounded-sm"
-                        style={{ backgroundColor: cat.color || '#cb6654' }}
+                        style={{ backgroundColor: cat.color || defaultColors[idx % defaultColors.length] }}
                       />
                       <span className="font-body-sm text-body-sm text-on-surface font-medium">
                         {cat.name}
@@ -519,42 +558,10 @@ export function AllowanceHeroCard({
                   </div>
                 ))
               ) : (
-                <div className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
-                  <div className="flex items-center gap-space-sm">
-                    <span className="w-3 h-3 rounded-sm bg-on-tertiary-container" />
-                    <span className="font-body-sm text-body-sm text-on-surface font-medium">
-                      Juice &amp; Snacks
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-space-md">
-                    <span className="font-label-sm text-label-sm text-outline">100%</span>
-                    <span className="font-label-md text-label-md text-on-surface font-semibold">
-                      {currencySymbol}50.00
-                    </span>
-                  </div>
+                <div className="py-8 px-4 rounded-lg bg-surface-container-low text-center text-outline text-label-sm border border-outline-variant/20">
+                  No expenses recorded for this period
                 </div>
               )}
-
-              {/* Inactive Category placeholders with opacity-40 */}
-              {sampleInactiveCategories.map((cat, idx) => (
-                <div
-                  key={`inactive-${idx}`}
-                  className="flex items-center justify-between p-space-sm rounded-lg opacity-40"
-                >
-                  <div className="flex items-center gap-space-sm">
-                    <span className="w-3 h-3 rounded-sm bg-outline-variant" />
-                    <span className="font-body-sm text-body-sm text-on-surface">
-                      {cat.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-space-md">
-                    <span className="font-label-sm text-label-sm text-outline">0%</span>
-                    <span className="font-label-md text-label-md text-on-surface font-semibold">
-                      {currencySymbol}0.00
-                    </span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 

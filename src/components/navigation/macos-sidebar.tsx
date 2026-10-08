@@ -117,10 +117,12 @@ function DockNavItem({
       ref={itemRef}
       style={{
         scale,
-        transformOrigin: isCollapsed ? 'center center' : 'left center',
+        transformOrigin: 'center center',
         willChange: 'transform',
       }}
-      className={`relative w-full ${isCollapsed ? 'flex justify-center' : ''}`}
+      className={`relative box-border ${
+        isCollapsed ? 'w-full flex justify-center' : 'w-full max-w-full px-1'
+      }`}
       onMouseEnter={() => setHoveredIndex(index)}
     >
       <Link
@@ -128,10 +130,10 @@ function DockNavItem({
         prefetch={true}
         onClick={onSelect}
         title={isCollapsed ? item.label : undefined}
-        className={`relative cursor-pointer block transition-colors group select-none ${
+        className={`relative cursor-pointer block transition-colors group select-none box-border ${
           isCollapsed
             ? 'flex items-center justify-center size-10 rounded-xl'
-            : 'rounded-xl overflow-hidden'
+            : 'w-full rounded-xl overflow-hidden'
         }`}
       >
         {/* Active Route Selection Pill */}
@@ -177,7 +179,7 @@ function DockNavItem({
             }`}
           />
         ) : (
-          <div className="relative z-10 flex items-center gap-3 px-3 py-2">
+          <div className="relative z-10 flex items-center gap-3 px-3 py-2 min-w-0 w-full box-border">
             <HugeiconsIcon
               icon={item.icon}
               className={`size-5 shrink-0 transition-colors ${
@@ -187,7 +189,7 @@ function DockNavItem({
               }`}
             />
             <span
-              className={`tracking-tight text-sm transition-colors truncate ${
+              className={`tracking-tight text-sm transition-colors truncate flex-1 min-w-0 ${
                 isSelected
                   ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
                   : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-neutral-100 font-normal'
@@ -329,46 +331,73 @@ export function MacOSSidebar({
     setSelectedIndex(activeRouteIndex);
   }, [activeRouteIndex]);
 
-  const renderSidebarBody = (isMobile = false) => {
+  const renderSidebarContent = (isMobile = false) => {
     const effectivelyOpen = isMobile ? true : isOpen;
 
     return (
-      <motion.div
-        animate={{ width: effectivelyOpen ? 240 : 64 }}
-        transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
-        className={`p-2.5 rounded-2xl shrink-0 flex flex-col items-start h-full transition-colors duration-300 ease-out border border-neutral-200/80 dark:border-neutral-800 shadow-sm ${
-          effectivelyOpen
-            ? 'bg-neutral-100/95 dark:bg-neutral-900/95 backdrop-blur-md'
-            : 'bg-neutral-100/90 dark:bg-neutral-900/90 backdrop-blur-md'
-        }`}
-      >
-        {/* Top Header / Actions Area */}
-        <div
-          className={`flex items-center w-full ${
-            effectivelyOpen
-              ? 'justify-between gap-2'
-              : 'flex-col justify-center gap-2.5'
-          } text-neutral-700 dark:text-neutral-300 p-1.5 shrink-0`}
-        >
-          {effectivelyOpen ? (
-            <>
-              {/* Brand & App Title */}
-              <Link
-                href="/"
-                prefetch={true}
-                onClick={closeMobileMenu}
-                className="flex items-center gap-2.5 min-w-0 group cursor-pointer"
-              >
-                <div className="w-6 h-6 rounded-md bg-neutral-900 text-neutral-100 dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                  L
-                </div>
-                <span className="font-semibold text-sm tracking-tight text-neutral-900 dark:text-neutral-100 truncate group-hover:opacity-80 transition-opacity">
-                  LifeOS
-                </span>
-              </Link>
+      <div className="w-full h-full box-border flex flex-col justify-between overflow-x-hidden">
+        {/* Top Header & Navigation Section */}
+        <div className="w-full flex flex-col box-border">
+          {/* Top Header / Actions Area */}
+          <div
+            className={`flex items-center w-full ${
+              effectivelyOpen
+                ? 'justify-between gap-2'
+                : 'flex-col justify-center gap-2.5'
+            } text-neutral-700 dark:text-neutral-300 p-1 shrink-0 box-border`}
+          >
+            {effectivelyOpen ? (
+              <>
+                {/* Brand & App Title */}
+                <Link
+                  href="/"
+                  prefetch={true}
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-2.5 min-w-0 group cursor-pointer"
+                >
+                  <div className="w-6 h-6 rounded-md bg-neutral-900 text-neutral-100 dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                    L
+                  </div>
+                  <span className="font-semibold text-sm tracking-tight text-neutral-900 dark:text-neutral-100 truncate group-hover:opacity-80 transition-opacity">
+                    LifeOS
+                  </span>
+                </Link>
 
-              {/* Action Buttons: Quick Capture (+) & Collapse Toggle */}
-              <div className="flex items-center gap-1 shrink-0">
+                {/* Action Buttons: Quick Capture (+) & Collapse Toggle */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileMenu();
+                      openQuickCapture();
+                    }}
+                    title="Quick Capture (⌘K)"
+                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  >
+                    <HugeiconsIcon className="size-5" icon={PlusSignIcon} />
+                  </button>
+                  <motion.button
+                    layout
+                    type="button"
+                    onClick={handleToggle}
+                    title="Collapse sidebar"
+                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  >
+                    <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
+                  </motion.button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Collapsed Controls */}
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  title="Expand sidebar"
+                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -376,67 +405,35 @@ export function MacOSSidebar({
                     openQuickCapture();
                   }}
                   title="Quick Capture (⌘K)"
-                  className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   <HugeiconsIcon className="size-5" icon={PlusSignIcon} />
                 </button>
-                <motion.button
-                  layout
-                  type="button"
-                  onClick={handleToggle}
-                  title="Collapse sidebar"
-                  className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                >
-                  <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
-                </motion.button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Collapsed Controls */}
-              <button
-                type="button"
-                onClick={handleToggle}
-                title="Expand sidebar"
-                className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  closeMobileMenu();
-                  openQuickCapture();
-                }}
-                title="Quick Capture (⌘K)"
-                className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <HugeiconsIcon className="size-5" icon={PlusSignIcon} />
-              </button>
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
 
-        {/* Refactored Navigation Items with MacBook-style Dock Zoom Effect */}
-        <AnimatePresence mode="wait">
-          <DockNavLane
-            key={effectivelyOpen ? 'expanded-dock' : 'collapsed-dock'}
-            items={resolvedItems}
-            selectedIndex={selectedIndex}
-            setSelectedIndex={setSelectedIndex}
-            isCollapsed={!effectivelyOpen}
-            onItemClick={closeMobileMenu}
-          />
-        </AnimatePresence>
+          {/* Refactored Navigation Items with MacBook-style Dock Zoom Effect */}
+          <AnimatePresence mode="wait">
+            <DockNavLane
+              key={effectivelyOpen ? 'expanded-dock' : 'collapsed-dock'}
+              items={resolvedItems}
+              selectedIndex={selectedIndex}
+              setSelectedIndex={setSelectedIndex}
+              isCollapsed={!effectivelyOpen}
+              onItemClick={closeMobileMenu}
+            />
+          </AnimatePresence>
+        </div>
 
         {/* Bottom Profile / Personal Workspace Section */}
         {effectivelyOpen ? (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full">
+          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full box-border">
             <Link
               href="/settings"
               prefetch={true}
               onClick={closeMobileMenu}
-              className="flex items-center justify-between p-2 rounded-xl bg-neutral-200/40 hover:bg-neutral-200/80 dark:bg-neutral-800/40 dark:hover:bg-neutral-800 transition-colors cursor-pointer group"
+              className="flex items-center justify-between p-2 rounded-xl bg-neutral-200/40 hover:bg-neutral-200/80 dark:bg-neutral-800/40 dark:hover:bg-neutral-800 transition-colors cursor-pointer group w-full box-border"
               title="Personal Workspace — Settings"
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -458,12 +455,12 @@ export function MacOSSidebar({
             </Link>
           </div>
         ) : (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex justify-center">
+          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex justify-center box-border">
             <Link
               href="/settings"
               prefetch={true}
               onClick={closeMobileMenu}
-              className="w-10 h-10 rounded-full bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
+              className="size-10 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer box-border"
               title="Personal Workspace — Settings"
             >
               <HugeiconsIcon
@@ -473,7 +470,7 @@ export function MacOSSidebar({
             </Link>
           </div>
         )}
-      </motion.div>
+      </div>
     );
   };
 
@@ -483,7 +480,13 @@ export function MacOSSidebar({
       <div
         className={`flex bg-neutral-200 dark:bg-neutral-950 rounded-3xl p-3 relative w-full sm:min-w-[480px] overflow-hidden ${className}`}
       >
-        {renderSidebarBody(false)}
+        <div
+          className={`shrink-0 flex flex-col justify-between h-full box-border border-r border-neutral-200/80 dark:border-neutral-800 bg-neutral-100/95 dark:bg-neutral-900/95 backdrop-blur-md overflow-x-hidden p-3.5 transition-[width] duration-300 ${
+            isOpen ? 'w-[260px]' : 'w-20'
+          }`}
+        >
+          {renderSidebarContent(false)}
+        </div>
         <div className="flex-1 w-full h-full min-h-full overflow-y-auto z-0 pl-4 lg:pl-8">
           {children}
         </div>
@@ -495,11 +498,13 @@ export function MacOSSidebar({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 z-40 p-2.5 pointer-events-none h-screen">
-        <div className="pointer-events-auto h-full flex flex-col">
-          {renderSidebarBody(false)}
-        </div>
-      </aside>
+      <motion.aside
+        animate={{ width: isOpen ? 260 : 80 }}
+        transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
+        className="hidden lg:flex fixed left-0 top-0 bottom-0 z-40 h-screen box-border border-r border-neutral-200/80 dark:border-neutral-800 bg-neutral-100/95 dark:bg-neutral-900/95 backdrop-blur-md overflow-x-hidden p-3.5 flex-col justify-between"
+      >
+        {renderSidebarContent(false)}
+      </motion.aside>
 
       {/* Mobile Drawer (Activated via header hamburger) */}
       {isMobileMenuOpen && (
@@ -510,8 +515,8 @@ export function MacOSSidebar({
             onClick={closeMobileMenu}
           />
           {/* Drawer content */}
-          <div className="relative h-full p-2.5 z-10 animate-in slide-in-from-left duration-200 max-w-[85vw]">
-            {renderSidebarBody(true)}
+          <div className="relative h-full w-[260px] max-w-[85vw] box-border border-r border-neutral-200/80 dark:border-neutral-800 bg-neutral-100/95 dark:bg-neutral-900/95 backdrop-blur-md overflow-x-hidden p-3.5 z-10 animate-in slide-in-from-left duration-200 flex flex-col justify-between">
+            {renderSidebarContent(true)}
           </div>
         </div>
       )}

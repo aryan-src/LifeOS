@@ -3,6 +3,7 @@
 import React from 'react';
 import type { FinancialAnalytics } from '@/lib/actions/finances';
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
+import { HoverTraceBarChart } from '@/components/ui/hover-trace-bar-chart';
 
 export type TimeFilterTab = 'today' | 'this_week' | 'monthly' | 'all';
 
@@ -482,86 +483,24 @@ export function AllowanceHeroCard({
           SECTION 2: Two-Column Analytical Insights (7-Day Pattern & Outflow)
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
-        {/* Left Column: 7-Day Spending Pattern Bar Chart (7 Cols) */}
-        <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-lg min-h-[360px] border border-outline-variant/30">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
-                7-Day Spending Pattern
-              </h2>
-              <span className="font-label-sm text-label-sm text-outline">
-                Daily disbursements vs safe ceiling
-              </span>
-            </div>
-            <div className="flex items-center gap-space-sm font-label-sm text-label-sm text-outline">
-              <span className="w-2.5 h-2.5 rounded-sm bg-on-tertiary-container inline-block" />
-              <span>Recorded Expense</span>
-            </div>
-          </div>
-
-          {/* Minimal Bar Chart Visualization */}
-          <div className="w-full flex flex-col gap-space-sm pt-space-md">
-            <div className="h-44 w-full flex items-end justify-between gap-2 px-space-sm">
-              {weeklyDays.map((day, idx) => {
-                const heightPercent =
-                  maxWeeklySpent > 0 ? (day.spent / maxWeeklySpent) * 100 : 0;
-                const isSpent = day.spent > 0;
-
-                return (
-                  <div
-                    key={idx}
-                    className="flex-1 flex flex-col items-center gap-2 h-full justify-end group"
-                  >
-                    <span
-                      className={`font-label-sm text-label-sm transition-opacity ${
-                        isSpent
-                          ? 'text-on-tertiary-container font-medium opacity-100'
-                          : 'text-outline opacity-0 group-hover:opacity-100'
-                      }`}
-                    >
-                      {currencySymbol}
-                      {Math.round(day.spent)}
-                    </span>
-                    <div
-                      className={`w-full max-w-[36px] rounded-t transition-all ${
-                        isSpent
-                          ? 'bg-on-tertiary-container shadow-sm group-hover:opacity-90'
-                          : 'bg-surface-container-high h-1.5 group-hover:bg-surface-tint'
-                      }`}
-                      style={{
-                        height: isSpent
-                          ? `${Math.max(Math.min(heightPercent, 100), 16)}%`
-                          : '6px',
-                      }}
-                    />
-                    <span
-                      className={`font-label-sm text-label-sm ${
-                        day.isToday
-                          ? 'text-on-surface font-semibold'
-                          : 'text-outline'
-                      }`}
-                    >
-                      {day.dayLabel}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Chart Footer Indicator */}
-          <div className="pt-space-sm bg-surface-container-low px-space-md py-space-sm rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[16px] text-secondary">
-                verified
-              </span>
-              <span>Staying strictly within daily pace</span>
-            </div>
-            <span className="font-label-sm text-label-sm text-on-surface font-medium">
-              ~{currencySymbol}
-              {formatCurrency(safeDailyBudget > 0 ? safeDailyBudget : 190.38)} safe daily budget
-            </span>
-          </div>
+        {/* Left Column: 7-Day Spending Pattern Interactive Bar Chart (7 Cols) */}
+        <div className="lg:col-span-7">
+          <HoverTraceBarChart
+            data={weeklyDays.map((d) => ({
+              day: d.dayLabel,
+              date: d.date,
+              amount: d.spent,
+              isToday: d.isToday,
+            }))}
+            currencySymbol={currencySymbol}
+            safeDailyBudget={safeDailyBudget > 0 ? safeDailyBudget : 175.58}
+            headerTitle="7-Day Spending Pattern"
+            headerSubtitle="Daily disbursements vs safe ceiling"
+            legendLabel="Recorded Expense"
+            barColor="#C2634C"
+            showBenchmarkBanner={true}
+            benchmarkText="Staying strictly within daily pace"
+          />
         </div>
 
         {/* Right Column: Where Did Pocket Money Go? (5 Cols) */}

@@ -44,15 +44,15 @@ export const DEFAULT_NAV_ITEMS: NavItemConfig[] = [
 
 /**
  * Mathematical proximity formula used by the dock zoom effect.
- * Directly hovered center: 1.06 (max 1.08 in collapsed mode)
- * Immediate vertical neighbor (~42px): 1.022
+ * Directly hovered center: 1.12 (max 1.16 in collapsed mode) [Doubled zoom factor]
+ * Immediate vertical neighbor (~42px): 1.044
  * Edge boundary (>=85px): 1.0
  */
 export function calculateDockScale(distance: number, isCollapsed = false): number {
   if (!isFinite(distance)) return 1;
   const absDist = Math.abs(distance);
-  const maxScale = isCollapsed ? 1.08 : 1.06;
-  const neighborScale = 1.022;
+  const maxScale = isCollapsed ? 1.16 : 1.12;
+  const neighborScale = 1.044;
   const maxRange = 85;
   const midRange = 42;
 
@@ -96,12 +96,12 @@ function DockNavItem({
     return val - centerY;
   });
 
-  // Calculate subtle, highly constrained magnification
-  const maxTargetScale = isCollapsed ? 1.08 : 1.06;
+  // Calculate doubled magnification (1.12 expanded, 1.16 collapsed)
+  const maxTargetScale = isCollapsed ? 1.16 : 1.12;
   const rawScale = useTransform(
     distance,
     [-85, -42, 0, 42, 85],
-    [1, 1.022, maxTargetScale, 1.022, 1],
+    [1, 1.044, maxTargetScale, 1.044, 1],
     { clamp: true }
   );
 

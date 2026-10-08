@@ -1,12 +1,24 @@
 import React, { Suspense } from 'react';
 import {
+  ProjectsQuadrant,
+  ProjectsSkeleton,
+} from '@/components/dashboard/projects-quadrant';
+import {
+  TasksQuadrant,
+  TasksSkeleton,
+} from '@/components/dashboard/tasks-quadrant';
+import {
+  FinancesQuadrant,
+  FinancesSkeleton,
+} from '@/components/dashboard/finances-quadrant';
+import {
+  NotesQuadrant,
+  NotesSkeleton,
+} from '@/components/dashboard/notes-quadrant';
+import {
   DashboardMetrics,
   DashboardMetricsSkeleton,
 } from '@/components/dashboard/dashboard-metrics';
-import {
-  DashboardCarouselSection,
-  DashboardCarouselSkeleton,
-} from '@/components/dashboard/dashboard-carousel-section';
 import { getUserProfile } from '@/lib/actions/profile';
 import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
 import Link from 'next/link';
@@ -71,11 +83,35 @@ export async function DashboardCommandCenter() {
           <DashboardMetrics />
         </Suspense>
 
-        {/* Main Workspace Interactive Carousel: 4 Animated Modules */}
-        <section className="w-full">
-          <Suspense fallback={<DashboardCarouselSkeleton />}>
-            <DashboardCarouselSection />
-          </Suspense>
+        {/* Main Workspace Bento: The 4 Minimalist Breathing Cards */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+          {/* Card 1: Active Projects */}
+          <div className="w-full min-w-0">
+            <Suspense fallback={<ProjectsSkeleton />}>
+              <ProjectsQuadrant />
+            </Suspense>
+          </div>
+
+          {/* Card 2: Today's Focus */}
+          <div className="w-full min-w-0">
+            <Suspense fallback={<TasksSkeleton />}>
+              <TasksQuadrant />
+            </Suspense>
+          </div>
+
+          {/* Card 3: Pocket Money Tracker */}
+          <div className="w-full min-w-0">
+            <Suspense fallback={<FinancesSkeleton />}>
+              <FinancesQuadrant />
+            </Suspense>
+          </div>
+
+          {/* Card 4: Recent Ideas & Scratchpad */}
+          <div className="w-full min-w-0">
+            <Suspense fallback={<NotesSkeleton />}>
+              <NotesQuadrant />
+            </Suspense>
+          </div>
         </section>
       </div>
     </div>

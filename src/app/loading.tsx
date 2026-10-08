@@ -1,5 +1,4 @@
 import React from 'react';
-import { DashboardCarouselSkeleton } from '@/components/dashboard/dashboard-carousel-skeleton';
 
 export default function RootLoading() {
   return (
@@ -35,9 +34,24 @@ export default function RootLoading() {
           ))}
         </section>
 
-        {/* Main Workspace Interactive Carousel Skeleton (Section root parity) */}
-        <section className="w-full">
-          <DashboardCarouselSkeleton />
+        {/* 4 Quadrants Grid Skeleton */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+          {[1, 2, 3, 4].map((i) => (
+            <article
+              key={i}
+              className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 min-h-[360px] flex flex-col justify-between gap-6"
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-outline-variant/20">
+                <div className="h-5 w-36 bg-surface-container-high rounded" />
+                <div className="h-4 w-20 bg-surface-container-high rounded" />
+              </div>
+              <div className="space-y-3">
+                <div className="h-14 bg-surface-container-low rounded-xl" />
+                <div className="h-14 bg-surface-container-low rounded-xl" />
+              </div>
+              <div className="h-9 bg-surface-container-low rounded-xl" />
+            </article>
+          ))}
         </section>
       </div>
     </div>

@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, type ReactNode } from 'react';
+import React, { useState, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'motion/react';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  useSpring,
+  type MotionValue,
+} from 'framer-motion';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   PlusSignIcon,
@@ -35,6 +42,216 @@ export const DEFAULT_NAV_ITEMS: NavItemConfig[] = [
   { label: 'Settings', href: '/settings', icon: Settings02Icon },
 ];
 
+/**
+ * Mathematical proximity formula used by the dock zoom effect.
+ * Directly hovered center: 1.06 (max 1.08 in collapsed mode)
+ * Immediate vertical neighbor (~42px): 1.022
+ * Edge boundary (>=85px): 1.0
+ */
+export function calculateDockScale(distance: number, isCollapsed = false): number {
+  if (!isFinite(distance)) return 1;
+  const absDist = Math.abs(distance);
+  const maxScale = isCollapsed ? 1.08 : 1.06;
+  const neighborScale = 1.022;
+  const maxRange = 85;
+  const midRange = 42;
+
+  if (absDist >= maxRange) return 1;
+  if (absDist <= midRange) {
+    const t = absDist / midRange;
+    return maxScale - t * (maxScale - neighborScale);
+  }
+  const t = (absDist - midRange) / (maxRange - midRange);
+  return neighborScale - t * (neighborScale - 1);
+}
+
+interface DockNavItemProps {
+  item: NavItemConfig;
+  index: number;
+  isSelected: boolean;
+  hoveredIndex: number | null;
+  setHoveredIndex: (idx: number | null) => void;
+  mouseY: MotionValue<number>;
+  onSelect: () => void;
+  isCollapsed: boolean;
+}
+
+function DockNavItem({
+  item,
+  index,
+  isSelected,
+  hoveredIndex,
+  setHoveredIndex,
+  mouseY,
+  onSelect,
+  isCollapsed,
+}: DockNavItemProps) {
+  const itemRef = useRef<HTMLDivElement>(null);
+
+  // Measure vertical distance from mouse cursor to item center in viewport space
+  const distance = useTransform(mouseY, (val: number) => {
+    if (val === Infinity || !itemRef.current) return Infinity;
+    const bounds = itemRef.current.getBoundingClientRect();
+    const centerY = bounds.top + bounds.height / 2;
+    return val - centerY;
+  });
+
+  // Calculate subtle, highly constrained magnification
+  const maxTargetScale = isCollapsed ? 1.08 : 1.06;
+  const rawScale = useTransform(
+    distance,
+    [-85, -42, 0, 42, 85],
+    [1, 1.022, maxTargetScale, 1.022, 1],
+    { clamp: true }
+  );
+
+  // Apply fluid physical spring elasticity without visual lag
+  const scale = useSpring(rawScale, {
+    mass: 0.1,
+    stiffness: 260,
+    damping: 20,
+  });
+
+  return (
+    <motion.div
+      ref={itemRef}
+      style={{
+        scale,
+        transformOrigin: isCollapsed ? 'center center' : 'left center',
+        willChange: 'transform',
+      }}
+      className={`relative w-full ${isCollapsed ? 'flex justify-center' : ''}`}
+      onMouseEnter={() => setHoveredIndex(index)}
+    >
+      <Link
+        href={item.href}
+        prefetch={true}
+        onClick={onSelect}
+        title={isCollapsed ? item.label : undefined}
+        className={`relative cursor-pointer block transition-colors group select-none ${
+          isCollapsed
+            ? 'flex items-center justify-center size-10 rounded-xl'
+            : 'rounded-xl overflow-hidden'
+        }`}
+      >
+        {/* Active Route Selection Pill */}
+        <AnimatePresence>
+          {isSelected && (
+            <motion.div
+              layoutId={isCollapsed ? 'sidebar-active-pill-collapsed' : 'sidebar-active-pill-expanded'}
+              className="absolute inset-0 z-0 bg-neutral-200/80 dark:bg-neutral-800 rounded-xl shadow-xs border border-neutral-300/40 dark:border-neutral-700/60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Hover Pill Background */}
+        <AnimatePresence>
+          {hoveredIndex === index && !isSelected && (
+            <motion.span
+              layoutId={isCollapsed ? 'sidebar-hover-bg-collapsed' : 'sidebar-hover-bg-expanded'}
+              className="absolute inset-0 z-0 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 350,
+                damping: 30,
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Item Label and Icon */}
+        {isCollapsed ? (
+          <HugeiconsIcon
+            icon={item.icon}
+            className={`size-5 z-10 shrink-0 transition-colors ${
+              isSelected
+                ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
+                : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+            }`}
+          />
+        ) : (
+          <div className="relative z-10 flex items-center gap-3 px-3 py-2">
+            <HugeiconsIcon
+              icon={item.icon}
+              className={`size-5 shrink-0 transition-colors ${
+                isSelected
+                  ? 'text-neutral-950 dark:text-neutral-100'
+                  : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+              }`}
+            />
+            <span
+              className={`tracking-tight text-sm transition-colors truncate ${
+                isSelected
+                  ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
+                  : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-neutral-100 font-normal'
+              }`}
+            >
+              {item.label}
+            </span>
+          </div>
+        )}
+      </Link>
+    </motion.div>
+  );
+}
+
+interface DockNavLaneProps {
+  items: NavItemConfig[];
+  selectedIndex: number;
+  setSelectedIndex: (idx: number) => void;
+  isCollapsed: boolean;
+  onItemClick: () => void;
+}
+
+export function DockNavLane({
+  items,
+  selectedIndex,
+  setSelectedIndex,
+  isCollapsed,
+  onItemClick,
+}: DockNavLaneProps) {
+  // Continuous pointer tracker across the vertical navigation container
+  const mouseY = useMotionValue(Infinity);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  return (
+    <nav
+      onMouseMove={(e) => mouseY.set(e.clientY)}
+      onMouseLeave={() => {
+        mouseY.set(Infinity);
+        setHoveredIndex(null);
+      }}
+      className={`flex flex-col ${
+        isCollapsed ? 'items-center gap-1.5' : 'gap-1'
+      } mt-3 w-full relative z-10`}
+    >
+      {items.map((item, index) => (
+        <DockNavItem
+          key={item.href}
+          item={item}
+          index={index}
+          isSelected={selectedIndex === index}
+          hoveredIndex={hoveredIndex}
+          setHoveredIndex={setHoveredIndex}
+          mouseY={mouseY}
+          onSelect={() => {
+            setSelectedIndex(index);
+            onItemClick();
+          }}
+          isCollapsed={isCollapsed}
+        />
+      ))}
+    </nav>
+  );
+}
+
 export interface MacOSSidebarProps {
   items?: (string | NavItemConfig)[];
   defaultOpen?: boolean;
@@ -59,7 +276,6 @@ export function MacOSSidebar({
     closeMobileMenu,
   } = useUIStore();
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(
     typeof defaultOpen === 'boolean' ? defaultOpen : !isSidebarCollapsed
   );
@@ -201,143 +417,17 @@ export function MacOSSidebar({
           )}
         </div>
 
-        {/* Navigation Items */}
-        {effectivelyOpen ? (
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(4px)' }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="flex flex-col gap-1 mt-3 w-full relative z-10 whitespace-nowrap"
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              {resolvedItems.map((item, index) => {
-                const isSelected = selectedIndex === index;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    prefetch={true}
-                    className="relative cursor-pointer block rounded-lg overflow-hidden"
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onClick={() => {
-                      setSelectedIndex(index);
-                      closeMobileMenu();
-                    }}
-                  >
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          className="absolute inset-0 z-0 bg-neutral-200/80 dark:bg-neutral-800 rounded-lg shadow-xs"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2, ease: 'easeOut' }}
-                        />
-                      )}
-                    </AnimatePresence>
-                    <div className="relative z-10 flex items-center gap-3 px-3 py-2">
-                      <HugeiconsIcon
-                        icon={item.icon}
-                        className={`size-5 shrink-0 transition-colors ${
-                          isSelected
-                            ? 'text-neutral-950 dark:text-neutral-100'
-                            : 'text-neutral-600 dark:text-neutral-400'
-                        }`}
-                      />
-                      <p
-                        className={`tracking-tight text-sm transition-colors truncate ${
-                          isSelected
-                            ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                            : 'text-neutral-700 dark:text-neutral-300'
-                        }`}
-                      >
-                        {item.label}
-                      </p>
-                    </div>
-                    <AnimatePresence>
-                      {hoveredIndex === index && !isSelected && (
-                        <motion.span
-                          layoutId="sidebar-hover-bg"
-                          className="absolute inset-0 z-0 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-lg"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 350,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                    </AnimatePresence>
-                  </Link>
-                );
-              })}
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          /* Folded / Collapsed Icon Bar (Centered 64px) */
-          <div
-            className="flex flex-col items-center gap-1.5 mt-3 w-full relative z-10"
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
-            {resolvedItems.map((item, index) => {
-              const isSelected = selectedIndex === index;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch={true}
-                  title={item.label}
-                  className="relative cursor-pointer flex items-center justify-center size-10 rounded-xl"
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onClick={() => {
-                    setSelectedIndex(index);
-                    closeMobileMenu();
-                  }}
-                >
-                  <AnimatePresence>
-                    {isSelected && (
-                      <motion.div
-                        className="absolute inset-0 z-0 bg-neutral-200/80 dark:bg-neutral-800 rounded-xl shadow-xs"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                      />
-                    )}
-                  </AnimatePresence>
-                  <HugeiconsIcon
-                    icon={item.icon}
-                    className={`size-5 z-10 shrink-0 transition-colors ${
-                      isSelected
-                        ? 'text-neutral-950 dark:text-neutral-100'
-                        : 'text-neutral-600 dark:text-neutral-400'
-                    }`}
-                  />
-                  <AnimatePresence>
-                    {hoveredIndex === index && !isSelected && (
-                      <motion.span
-                        layoutId="sidebar-hover-bg-collapsed"
-                        className="absolute inset-0 z-0 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-xl"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 350,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                  </AnimatePresence>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+        {/* Refactored Navigation Items with MacBook-style Dock Zoom Effect */}
+        <AnimatePresence mode="wait">
+          <DockNavLane
+            key={effectivelyOpen ? 'expanded-dock' : 'collapsed-dock'}
+            items={resolvedItems}
+            selectedIndex={selectedIndex}
+            setSelectedIndex={setSelectedIndex}
+            isCollapsed={!effectivelyOpen}
+            onItemClick={closeMobileMenu}
+          />
+        </AnimatePresence>
 
         {/* Bottom Profile / Personal Workspace Section */}
         {effectivelyOpen ? (
@@ -387,7 +477,7 @@ export function MacOSSidebar({
     );
   };
 
-  // If children are supplied (standalone macOS preview container mode)
+  // If children are supplied (standalone preview container mode)
   if (children) {
     return (
       <div

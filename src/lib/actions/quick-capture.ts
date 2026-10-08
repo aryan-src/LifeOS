@@ -9,7 +9,7 @@ import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate } from '@/lib/utils/date';
 
 export interface DispatchResult {
-  target: 'transaction' | 'task' | 'note';
+  target: 'transaction' | 'task' | 'note' | 'assignment';
   message: string;
   projectId?: string | null;
   entityId: string;
@@ -128,6 +128,46 @@ export async function dispatchQuickCapture(
         entityId: task.id,
         projectId: resolvedProjectId,
         message: `Created task "${title}"${dueInfo}${projectInfo}`,
+      },
+    };
+  }
+
+  if (parsed.target === 'assignment') {
+    const title = parsed.payload.title || 'Untitled Assignment';
+    const subject = parsed.payload.subject || 'General';
+    const dueDate = parsed.payload.dueDate || null;
+
+    const { data: assignment, error: assignmentErr } = await supabase
+      .from('assignments')
+      .insert({
+        user_id: effectiveUserId,
+        title,
+        subject,
+        due_date: dueDate,
+        status: 'not_started',
+        project_id: resolvedProjectId,
+      })
+      .select('id')
+      .single();
+
+    if (assignmentErr || !assignment) {
+      console.error('Quick capture assignment error:', assignmentErr);
+      return { success: false, error: formatErrorMessage(assignmentErr || 'Failed to create assignment.') };
+    }
+
+    revalidatePath('/assignments');
+    revalidatePath('/projects');
+    revalidatePath('/');
+
+    const projectInfo = resolvedProjectTitle ? ` under #${parsed.projectSlug}` : '';
+    const dueInfo = dueDate ? ` due ${dueDate}` : '';
+    return {
+      success: true,
+      data: {
+        target: 'assignment',
+        entityId: assignment.id,
+        projectId: resolvedProjectId,
+        message: `Created assignment "${title}" (${subject})${dueInfo}${projectInfo}`,
       },
     };
   }

@@ -9,6 +9,12 @@ export type Json =
 export type ProjectStatus = 'backlog' | 'active' | 'paused' | 'completed';
 export type TransactionType = 'income' | 'expense' | 'transfer';
 export type CategoryType = 'income' | 'expense';
+export type AssignmentStatus =
+  | 'not_started'
+  | 'in_progress'
+  | 'submission_pending'
+  | 'submitted'
+  | 'graded';
 
 export interface Database {
   public: {
@@ -268,6 +274,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      assignments: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          subject: string;
+          title: string;
+          due_date: string | null;
+          status: AssignmentStatus;
+          marks_achieved: number | null;
+          total_marks: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id?: string | null;
+          subject: string;
+          title: string;
+          due_date?: string | null;
+          status?: AssignmentStatus;
+          marks_achieved?: number | null;
+          total_marks?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          project_id?: string | null;
+          subject?: string;
+          title?: string;
+          due_date?: string | null;
+          status?: AssignmentStatus;
+          marks_achieved?: number | null;
+          total_marks?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -276,7 +324,7 @@ export interface Database {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      assignment_status: AssignmentStatus;
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -308,3 +356,7 @@ export type UpdateNote = Database['public']['Tables']['notes']['Update'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type InsertProfile = Database['public']['Tables']['profiles']['Insert'];
 export type UpdateProfile = Database['public']['Tables']['profiles']['Update'];
+
+export type Assignment = Database['public']['Tables']['assignments']['Row'];
+export type InsertAssignment = Database['public']['Tables']['assignments']['Insert'];
+export type UpdateAssignment = Database['public']['Tables']['assignments']['Update'];

@@ -1,4 +1,4 @@
-export type CaptureTarget = 'transaction' | 'task' | 'note';
+export type CaptureTarget = 'transaction' | 'task' | 'note' | 'assignment';
 import { getTodayDate, getTomorrowDate } from '@/lib/utils/date';
 
 export interface ParsedCapture {
@@ -10,8 +10,9 @@ export interface ParsedCapture {
     amount?: number;
     type?: 'expense' | 'income';
     description?: string;
-    // For tasks:
+    // For tasks / assignments:
     title?: string;
+    subject?: string;
     dueDate?: string;
     priority?: number;
     // For notes:
@@ -21,7 +22,7 @@ export interface ParsedCapture {
 
 /**
  * Intelligent deterministic tokenizer for Quick Capture input.
- * Strictly tested and compliant with multi-currency tokens, date tags, and edge case token overlaps.
+ * Strictly tested and compliant with multi-currency tokens, date tags, #assignment directives, and edge case token overlaps.
  */
 export function parseQuickCapture(rawInput: string): ParsedCapture {
   const input = rawInput.trim();
@@ -33,14 +34,20 @@ export function parseQuickCapture(rawInput: string): ParsedCapture {
     };
   }
 
-  // 1. Extract Project Reference (#slug)
-  const projectMatch = input.match(/#([a-zA-Z0-9_-]+)/);
-  const projectSlug = projectMatch ? projectMatch[1] : undefined;
+  // 1. Detect #assignment Directive Tag
+  const isAssignment = /#assignment\b/i.test(input);
 
-  // Working text with project tag removed
-  let workingText = input.replace(/#([a-zA-Z0-9_-]+)/g, '').trim();
+  // 2. Extract Project Reference (#slug, ignoring #assignment)
+  const hashtagMatches = Array.from(input.matchAll(/#([a-zA-Z0-9_-]+)/g)).map((m) => m[1]);
+  const projectSlug = hashtagMatches.find((slug) => slug.toLowerCase() !== 'assignment');
 
-  // 2. Extract Date Operator (@today, @tomorrow, @YYYY-MM-DD)
+  // Working text with hashtag tokens removed
+  let workingText = input
+    .replace(/#assignment\b/gi, '')
+    .replace(/#([a-zA-Z0-9_-]+)/g, '')
+    .trim();
+
+  // 3. Extract Date Operator (@today, @tomorrow, @YYYY-MM-DD)
   let dueDate: string | undefined = undefined;
   const todayStr = getTodayDate();
   const tomorrowStr = getTomorrowDate();
@@ -62,9 +69,49 @@ export function parseQuickCapture(rawInput: string): ParsedCapture {
   // Clean redundant whitespace
   workingText = workingText.replace(/\s+/g, ' ').trim();
 
-  // 3. Currency / Transaction Detection
+  // 4. Assignment Directive Detection (#assignment tag)
+  if (isAssignment) {
+    // Strip task or assignment prefixes if present e.g. "todo:", "TODO:", "- [ ]", "[ ]", "assignment:"
+    let cleanAssignmentText = workingText
+      .replace(/^(?:(?:-\s*)?\[\s*\]|todo:|assignment:)\s*/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    let subject = 'General';
+    let title = cleanAssignmentText || 'Untitled Assignment';
+
+    // Check for explicit subject separator: "Physics: Lab Report" or "Physics - Lab Report"
+    const separatorMatch = cleanAssignmentText.match(/^([^:\-]+)[:\-]\s+(.+)$/);
+    if (separatorMatch) {
+      subject = separatorMatch[1].trim();
+      title = separatorMatch[2].trim();
+    } else {
+      // First word subject heuristic for multi-word titles (e.g. "Physics Lab Report" -> subject: "Physics", title: "Physics Lab Report")
+      const words = cleanAssignmentText.split(/\s+/);
+      if (words.length >= 2) {
+        subject = words[0];
+      }
+    }
+
+    const summaryPill = `Assignment: "${title}" (${subject})${dueDate ? ` | Due: ${dueDate}` : ''}${
+      projectSlug ? ` | #${projectSlug}` : ''
+    }`;
+
+    return {
+      target: 'assignment',
+      projectSlug,
+      summaryPill,
+      payload: {
+        subject,
+        title,
+        dueDate,
+      },
+    };
+  }
+
+  // 5. Currency / Transaction Detection
   // Matches:
-  // a) Symbol prefix: [+-]?[$€£¥]\s*[0-9]+(\.[0-9]{1,2})?
+  // a) Symbol prefix: [+-]?[$€£¥₹]\s*[0-9]+(\.[0-9]{1,2})?
   // b) Trailing currency code: [0-9]+(\.[0-9]{1,2})?\s+(USD|EUR|GBP|INR)
   const symbolMatch = workingText.match(/([+-]?)\s*([$€£¥₹])\s*(\d+(?:\.\d{1,2})?)/);
   const trailingCodeMatch = workingText.match(/(\d+(?:\.\d{1,2})?)\s+(USD|EUR|GBP|INR)\b/i);
@@ -104,7 +151,7 @@ export function parseQuickCapture(rawInput: string): ParsedCapture {
     };
   }
 
-  // 4. Task Directive Detection ("todo:", "TODO:", "[]", "- [ ]")
+  // 6. Task Directive Detection ("todo:", "TODO:", "[]", "- [ ]")
   const taskPrefixMatch = workingText.match(/^(?:(?:-\s*)?\[\s*\]|todo:)\s*(.+)$/i);
   if (taskPrefixMatch) {
     const taskTitle = taskPrefixMatch[1].replace(/\s+/g, ' ').trim();
@@ -124,7 +171,7 @@ export function parseQuickCapture(rawInput: string): ParsedCapture {
     };
   }
 
-  // 5. Unstructured Ideas & Notes Fallback
+  // 7. Unstructured Ideas & Notes Fallback
   const summaryTitle =
     workingText.length > 40 ? workingText.slice(0, 40) + '...' : workingText;
   const summaryPill = `Idea: "${summaryTitle}"${projectSlug ? ` | #${projectSlug}` : ''}`;

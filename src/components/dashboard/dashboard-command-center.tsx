@@ -19,6 +19,10 @@ import {
   DashboardMetrics,
   DashboardMetricsSkeleton,
 } from '@/components/dashboard/dashboard-metrics';
+import {
+  UpcomingSubmissionsWidget,
+  UpcomingSubmissionsSkeleton,
+} from '@/components/dashboard/upcoming-submissions-widget';
 import { getUserProfile } from '@/lib/actions/profile';
 import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
 import Link from 'next/link';
@@ -81,6 +85,11 @@ export async function DashboardCommandCenter() {
         {/* Top Overview Metric Row (4 Notion-style breathing stat cards streamed) */}
         <Suspense fallback={<DashboardMetricsSkeleton />}>
           <DashboardMetrics />
+        </Suspense>
+
+        {/* Upcoming Submissions & Action Alerts */}
+        <Suspense fallback={<UpcomingSubmissionsSkeleton />}>
+          <UpcomingSubmissionsWidget />
         </Suspense>
 
         {/* Main Workspace Bento: The 4 Minimalist Breathing Cards */}

@@ -132,4 +132,32 @@ describe('parseQuickCapture (TDD Engine)', () => {
       expect(res.payload.content).toBe('Review 50 test files');
     });
   });
+
+  describe('Assignment Tokenizer (#assignment directive)', () => {
+    it('routes "todo: Physics Lab Report @tomorrow #assignment" to assignments table target', () => {
+      const res = parseQuickCapture('todo: Physics Lab Report @tomorrow #assignment');
+      expect(res.target).toBe('assignment');
+      expect(res.payload.title).toBe('Physics Lab Report');
+      expect(res.payload.subject).toBe('Physics');
+      expect(res.payload.dueDate).toBe(getTomorrowDate());
+      expect(res.summaryPill).toContain('Assignment:');
+    });
+
+    it('extracts explicit subject delimiter like "CS101: Algorithm Analysis @today #assignment #academics"', () => {
+      const res = parseQuickCapture('CS101: Algorithm Analysis @today #assignment #academics');
+      expect(res.target).toBe('assignment');
+      expect(res.payload.subject).toBe('CS101');
+      expect(res.payload.title).toBe('Algorithm Analysis');
+      expect(res.projectSlug).toBe('academics');
+      expect(res.payload.dueDate).toBe(getTodayDate());
+    });
+
+    it('handles single-word assignment title fallback to General subject', () => {
+      const res = parseQuickCapture('Homework @2026-10-20 #assignment');
+      expect(res.target).toBe('assignment');
+      expect(res.payload.title).toBe('Homework');
+      expect(res.payload.subject).toBe('General');
+      expect(res.payload.dueDate).toBe('2026-10-20');
+    });
+  });
 });

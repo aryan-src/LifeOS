@@ -39,6 +39,12 @@ function normalizeDateString(dateStr?: string | null): string | null {
   return null;
 }
 
+export interface GetAssignmentsResult {
+  assignments: AssignmentWithProject[];
+  error: string | null;
+  isSchemaMissing: boolean;
+}
+
 /**
  * Fetches all assignments for the authenticated user, ordered by due date and status.
  */
@@ -66,6 +72,57 @@ export async function getAssignments(): Promise<AssignmentWithProject[]> {
   } catch (err) {
     console.error('Unhandled error in getAssignments:', err);
     return [];
+  }
+}
+
+/**
+ * Fetches assignments and captures explicit schema or network diagnostics.
+ */
+export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> {
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
+
+    const { data, error } = await supabase
+      .from('assignments')
+      .select(`
+        *,
+        project:projects(id, title, slug)
+      `)
+      .eq('user_id', effectiveUserId)
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      const isSchemaMissing =
+        (error as any)?.code === 'PGRST205' ||
+        error.message?.includes('schema cache') ||
+        error.message?.includes('does not exist') ||
+        error.message?.includes('relation "public.');
+
+      return {
+        assignments: [],
+        error: formatErrorMessage(error),
+        isSchemaMissing,
+      };
+    }
+
+    return {
+      assignments: (data as any) || [],
+      error: null,
+      isSchemaMissing: false,
+    };
+  } catch (err) {
+    const isSchemaMissing =
+      String(err).includes('PGRST205') ||
+      String(err).includes('schema cache') ||
+      String(err).includes('does not exist');
+
+    return {
+      assignments: [],
+      error: formatErrorMessage(err),
+      isSchemaMissing,
+    };
   }
 }
 

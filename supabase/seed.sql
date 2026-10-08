@@ -151,4 +151,13 @@ begin
             '["devops", "cloud"]'::jsonb,
             false
         );
+
+    -- 7. Seed Assignments (Academic deadlines, lab reports, pending submissions, graded)
+    insert into public.assignments (user_id, project_id, subject, title, due_date, status, marks_achieved, total_marks)
+    values
+        (v_user_id, null, 'CS-301', 'Distributed Consensus & Raft Lab', current_date + 1, 'submission_pending', null, 100),
+        (v_user_id, null, 'MATH-204', 'Multivariable Calculus Problem Set 4', current_date + 3, 'in_progress', null, 50),
+        (v_user_id, v_project_cloud, 'CS-350', 'Cloud Architecture Capstone Draft', current_date + 7, 'not_started', null, 100),
+        (v_user_id, null, 'PHYS-101', 'Wave Optics Experimental Analysis', current_date - 3, 'graded', 46.50, 50.00),
+        (v_user_id, null, 'ENG-210', 'Technical Communication Case Study', current_date - 1, 'submitted', null, 30.00);
 end $$;

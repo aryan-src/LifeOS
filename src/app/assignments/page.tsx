@@ -1,5 +1,4 @@
-import React from 'react';
-import { getAssignments } from '@/lib/actions/assignments';
+import { getAssignmentsWithStatus } from '@/lib/actions/assignments';
 import { getProjectOptions } from '@/lib/actions/projects-options';
 import { AssignmentsView } from '@/components/assignments/assignments-view';
 
@@ -11,8 +10,8 @@ export const metadata = {
 };
 
 export default async function AssignmentsPage() {
-  const [assignments, projects] = await Promise.all([
-    getAssignments(),
+  const [{ assignments, error, isSchemaMissing }, projects] = await Promise.all([
+    getAssignmentsWithStatus(),
     getProjectOptions(),
   ]);
 
@@ -21,6 +20,8 @@ export default async function AssignmentsPage() {
       <AssignmentsView
         initialAssignments={assignments}
         projects={projects}
+        initialError={error}
+        isSchemaMissing={isSchemaMissing}
       />
     </main>
   );

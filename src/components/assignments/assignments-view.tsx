@@ -25,6 +25,8 @@ import {
   Award,
   BookOpen,
   AlertTriangle,
+  Database,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ProjectOption {
@@ -36,6 +38,8 @@ interface ProjectOption {
 interface AssignmentsViewProps {
   initialAssignments: AssignmentWithProject[];
   projects: ProjectOption[];
+  initialError?: string | null;
+  isSchemaMissing?: boolean;
 }
 
 type OptimisticAction =
@@ -91,12 +95,15 @@ const STATUS_COLUMNS: Array<{
 export function AssignmentsView({
   initialAssignments,
   projects,
+  initialError,
+  isSchemaMissing = false,
 }: AssignmentsViewProps) {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(initialError || null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -372,8 +379,56 @@ export function AssignmentsView({
         </div>
       </div>
 
-      {/* Error message banner */}
-      {errorMessage && (
+      {/* Schema Missing Setup Banner */}
+      {(isSchemaMissing || (errorMessage && errorMessage.includes('Database tables not found in schema'))) && (
+        <div className="rounded-2xl border border-amber-300/80 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-700/60 p-5 shadow-xs flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <span className="p-2 rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200 shrink-0 mt-0.5">
+                <Database size={18} />
+              </span>
+              <div>
+                <h3 className="font-semibold text-sm text-amber-950 dark:text-amber-100">
+                  Database Table Setup Required
+                </h3>
+                <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-1 leading-relaxed">
+                  The <code className="font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 py-0.5 rounded text-[11px]">assignments</code> table is not yet created in your Supabase schema. Apply the migration script to enable assignment tracking.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsRetrying(true);
+                window.location.reload();
+              }}
+              disabled={isRetrying}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-950 transition-colors shrink-0 shadow-xs cursor-pointer"
+            >
+              {isRetrying ? 'Checking...' : 'Refresh Status'}
+            </button>
+          </div>
+
+          <div className="pt-2.5 border-t border-amber-200/60 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-300">
+            <span>
+              Run <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">supabase/apply_assignments_cloud.sql</code> in the Supabase SQL Editor, or <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">npx supabase db reset</code> for local CLI.
+            </span>
+            <a
+              href="https://supabase.com/dashboard/project/xbxdpnrmsfkqmnodlwnm/sql/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium underline hover:text-amber-950 dark:hover:text-amber-100 whitespace-nowrap self-start sm:self-auto"
+            >
+              <span>Open SQL Editor</span>
+              <ExternalLink size={12} />
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Standard error banner for non-schema errors */}
+      {errorMessage && !errorMessage.includes('Database tables not found in schema') && !isSchemaMissing && (
         <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300">
           <AlertTriangle size={14} className="shrink-0" />
           <span>{errorMessage}</span>

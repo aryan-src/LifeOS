@@ -5,7 +5,7 @@ import { getTasks, type TaskWithProject } from '@/lib/actions/tasks';
 import { getProjectsWithMetrics, type ProjectWithMetrics } from '@/lib/actions/projects';
 import { getNotes, type NoteWithProject } from '@/lib/actions/notes';
 import { buildDashboardCards } from './minimal-carousel';
-import { DashboardCarouselClient } from './dashboard-carousel-client';
+import { MinimalCarousel } from './dashboard-carousel-client';
 import { DashboardCarouselSkeleton } from './dashboard-carousel-skeleton';
 
 export { DashboardCarouselSkeleton };
@@ -38,5 +38,5 @@ export async function DashboardCarouselSection() {
     notes,
   });
 
-  return <DashboardCarouselClient cards={cards} />;
+  return <MinimalCarousel cards={cards} />;
 }

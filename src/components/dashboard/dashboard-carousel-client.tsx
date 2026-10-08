@@ -2,10 +2,10 @@
 
 import dynamic from 'next/dynamic';
 import React from 'react';
-import type { CarouselCard } from './minimal-carousel';
+import type { MinimalCarouselProps } from './minimal-carousel';
 import { DashboardCarouselSkeleton } from './dashboard-carousel-skeleton';
 
-const ClientMinimalCarousel = dynamic(
+export const MinimalCarousel = dynamic(
   () => import('./minimal-carousel').then((mod) => mod.MinimalCarousel),
   {
     ssr: false,
@@ -13,6 +13,6 @@ const ClientMinimalCarousel = dynamic(
   }
 );
 
-export function DashboardCarouselClient({ cards }: { cards: CarouselCard[] }) {
-  return <ClientMinimalCarousel cards={cards} />;
+export function DashboardCarouselClient(props: MinimalCarouselProps) {
+  return <MinimalCarousel {...props} />;
 }

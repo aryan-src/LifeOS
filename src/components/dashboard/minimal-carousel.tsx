@@ -37,8 +37,7 @@ export interface CarouselCard {
   color: string;
   accentBg: string;
   accentText: string;
-  icon?: React.ElementType;
-  iconName?: 'wallet' | 'tasks' | 'projects' | 'notes';
+  iconName?: 'wallet' | 'tasks' | 'projects' | 'notes' | string;
   primaryAction: {
     label: string;
     route: string;
@@ -60,7 +59,6 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 function renderCardIcon(card: CarouselCard, className: string) {
   const IconComponent =
-    card.icon ||
     (card.iconName ? ICON_MAP[card.iconName] : undefined) ||
     ICON_MAP[card.module] ||
     Wallet;

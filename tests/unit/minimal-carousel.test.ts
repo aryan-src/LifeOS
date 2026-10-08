@@ -85,6 +85,10 @@ describe('buildDashboardCards Data Binding', () => {
     const ids = cards.map((c) => c.id);
     expect(ids).toEqual(['finances-card', 'tasks-card', 'projects-card', 'notes-card']);
     expect(cards.map((c) => c.iconName)).toEqual(['wallet', 'tasks', 'projects', 'notes']);
+    // Verify cards have no non-serializable React elements or functions
+    cards.forEach((card: any) => {
+      expect(card.icon).toBeUndefined();
+    });
     // Verify cards are 100% JSON serializable across RSC Flight protocol boundaries
     expect(() => JSON.stringify(cards)).not.toThrow();
   });

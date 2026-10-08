@@ -25,6 +25,7 @@ import {
 } from '@/components/dashboard/upcoming-submissions-widget';
 import { getUserProfile } from '@/lib/actions/profile';
 import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
+import { GlowCard } from '@/components/ui/spotlight-card';
 import Link from 'next/link';
 
 export async function DashboardCommandCenter() {
@@ -92,34 +93,58 @@ export async function DashboardCommandCenter() {
           <UpcomingSubmissionsWidget />
         </Suspense>
 
-        {/* Main Workspace Bento: The 4 Minimalist Breathing Cards */}
+        {/* Main Workspace Bento: The 4 Minimalist Breathing Cards with Interactive Spotlight Glow */}
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-          {/* Card 1: Active Projects */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<ProjectsSkeleton />}>
-              <ProjectsQuadrant />
-            </Suspense>
+          {/* Card 1: Active Projects (Blue Spotlight) */}
+          <div className="w-full min-w-0 h-full">
+            <GlowCard
+              customSize
+              glowColor="blue"
+              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 !bg-surface-container-lowest/90 dark:!bg-stone-900/90 transition-all"
+            >
+              <Suspense fallback={<ProjectsSkeleton />}>
+                <ProjectsQuadrant />
+              </Suspense>
+            </GlowCard>
           </div>
 
-          {/* Card 2: Today's Focus */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<TasksSkeleton />}>
-              <TasksQuadrant />
-            </Suspense>
+          {/* Card 2: Today's Focus (Orange Spotlight) */}
+          <div className="w-full min-w-0 h-full">
+            <GlowCard
+              customSize
+              glowColor="orange"
+              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 !bg-surface-container-lowest/90 dark:!bg-stone-900/90 transition-all"
+            >
+              <Suspense fallback={<TasksSkeleton />}>
+                <TasksQuadrant />
+              </Suspense>
+            </GlowCard>
           </div>
 
-          {/* Card 3: Pocket Money Tracker */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<FinancesSkeleton />}>
-              <FinancesQuadrant />
-            </Suspense>
+          {/* Card 3: Pocket Money Tracker (Green Spotlight) */}
+          <div className="w-full min-w-0 h-full">
+            <GlowCard
+              customSize
+              glowColor="green"
+              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 !bg-surface-container-lowest/90 dark:!bg-stone-900/90 transition-all"
+            >
+              <Suspense fallback={<FinancesSkeleton />}>
+                <FinancesQuadrant />
+              </Suspense>
+            </GlowCard>
           </div>
 
-          {/* Card 4: Recent Ideas & Scratchpad */}
-          <div className="w-full min-w-0">
-            <Suspense fallback={<NotesSkeleton />}>
-              <NotesQuadrant />
-            </Suspense>
+          {/* Card 4: Recent Ideas & Scratchpad (Purple Spotlight) */}
+          <div className="w-full min-w-0 h-full">
+            <GlowCard
+              customSize
+              glowColor="purple"
+              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 !bg-surface-container-lowest/90 dark:!bg-stone-900/90 transition-all"
+            >
+              <Suspense fallback={<NotesSkeleton />}>
+                <NotesQuadrant />
+              </Suspense>
+            </GlowCard>
           </div>
         </section>
       </div>

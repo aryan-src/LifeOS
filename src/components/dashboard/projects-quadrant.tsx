@@ -13,7 +13,7 @@ export async function ProjectsQuadrant() {
   const activeProjects = safeProjects.filter((p) => p?.status === 'active').slice(0, 3);
 
   return (
-    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs p-6 md:p-8 flex flex-col justify-between gap-6 h-full min-w-0">
+    <article className="p-6 md:p-8 flex flex-col justify-between gap-6 h-full min-w-0 relative z-10">
       <div className="flex flex-col gap-4 min-w-0">
         <div className="flex items-center justify-between gap-3 pb-3 border-b border-outline-variant/20 min-w-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -83,7 +83,7 @@ export async function ProjectsQuadrant() {
 
 export function ProjectsSkeleton() {
   return (
-    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-full min-w-0 flex flex-col justify-between gap-6">
+    <article className="p-6 md:p-8 animate-pulse h-full min-w-0 flex flex-col justify-between gap-6 relative z-10">
       <div className="h-5 w-36 bg-surface-container-high rounded-md" />
       <div className="space-y-3">
         <div className="h-12 bg-surface-container-low rounded-xl" />

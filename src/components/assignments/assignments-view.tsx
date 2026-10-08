@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useOptimistic, useTransition, useMemo } from 'react';
+import React, { useState, useOptimistic, useTransition, useMemo, useEffect } from 'react';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import type { AssignmentStatus } from '@/types/database.types';
 import {
@@ -15,6 +15,12 @@ import { AssignmentRow } from './assignment-row';
 import { AssignmentModal } from './assignment-modal';
 import { GradeModal } from './grade-modal';
 import {
+  FOUR_COLUMNS,
+  getAssignmentPriority,
+  getLetterGrade,
+  type PriorityLevel,
+} from './assignment-helpers';
+import {
   Kanban,
   List,
   Plus,
@@ -27,7 +33,9 @@ import {
   AlertTriangle,
   Database,
   ExternalLink,
+  ArrowUpDown,
 } from 'lucide-react';
+import { getTodayDate } from '@/lib/utils/date';
 
 interface ProjectOption {
   id: string;
@@ -54,43 +62,7 @@ type OptimisticAction =
   | { type: 'create'; assignment: AssignmentWithProject }
   | { type: 'update'; assignment: AssignmentWithProject };
 
-const STATUS_COLUMNS: Array<{
-  id: AssignmentStatus;
-  label: string;
-  badgeClass: string;
-  columnClass: string;
-}> = [
-  {
-    id: 'not_started',
-    label: 'Not Started',
-    badgeClass: 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300',
-    columnClass: 'border-stone-200/70 dark:border-stone-800',
-  },
-  {
-    id: 'in_progress',
-    label: 'In Progress',
-    badgeClass: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300',
-    columnClass: 'border-sky-200/60 dark:border-sky-900/40',
-  },
-  {
-    id: 'submission_pending',
-    label: 'Submission Pending',
-    badgeClass: 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 ring-1 ring-amber-300 dark:ring-amber-800',
-    columnClass: 'border-amber-300/80 bg-amber-50/20 dark:border-amber-700/60 dark:bg-amber-950/10',
-  },
-  {
-    id: 'submitted',
-    label: 'Submitted',
-    badgeClass: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300',
-    columnClass: 'border-emerald-200/60 dark:border-emerald-900/40',
-  },
-  {
-    id: 'graded',
-    label: 'Graded',
-    badgeClass: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300',
-    columnClass: 'border-emerald-200/60 dark:border-emerald-900/40',
-  },
-];
+type SortOption = 'due_asc' | 'due_desc' | 'title_asc' | 'score_desc';
 
 export function AssignmentsView({
   initialAssignments,
@@ -101,12 +73,15 @@ export function AssignmentsView({
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('due_asc');
   const [errorMessage, setErrorMessage] = useState<string | null>(initialError || null);
   const [isRetrying, setIsRetrying] = useState(false);
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createDefaultStatus, setCreateDefaultStatus] = useState<AssignmentStatus>('not_started');
   const [editingAssignment, setEditingAssignment] = useState<AssignmentWithProject | null>(null);
   const [gradingAssignment, setGradingAssignment] = useState<AssignmentWithProject | null>(null);
 
@@ -146,6 +121,25 @@ export function AssignmentsView({
     }
   );
 
+  // Global keyboard shortcut for ⌘N / Ctrl+N to open New Assignment modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+        const target = e.target as HTMLElement;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+          return;
+        }
+        e.preventDefault();
+        setEditingAssignment(null);
+        setCreateDefaultStatus('not_started');
+        setIsCreateOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Distinct subjects for filter dropdown
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -155,22 +149,31 @@ export function AssignmentsView({
     return Array.from(set).sort();
   }, [optimisticAssignments]);
 
-  // Filtered assignments
+  const today = getTodayDate();
+
+  // Filtered and Sorted assignments
   const filteredAssignments = useMemo(() => {
-    return optimisticAssignments.filter((a) => {
-      // Search query filter (matches title or subject)
+    const filtered = optimisticAssignments.filter((a) => {
+      // Search query filter (matches title, subject, or project)
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchesTitle = a.title.toLowerCase().includes(query);
         const matchesSubject = a.subject.toLowerCase().includes(query);
-        const matchesProject = a.project?.title?.toLowerCase().includes(query) ||
-                               a.project?.slug?.toLowerCase().includes(query);
+        const matchesProject =
+          a.project?.title?.toLowerCase().includes(query) ||
+          a.project?.slug?.toLowerCase().includes(query);
         if (!matchesTitle && !matchesSubject && !matchesProject) return false;
       }
 
       // Subject filter
       if (selectedSubject !== 'all' && a.subject !== selectedSubject) {
         return false;
+      }
+
+      // Priority filter
+      if (selectedPriority !== 'all') {
+        const p = getAssignmentPriority(a, today);
+        if (p !== selectedPriority) return false;
       }
 
       // Status filter
@@ -180,9 +183,48 @@ export function AssignmentsView({
 
       return true;
     });
-  }, [optimisticAssignments, searchQuery, selectedSubject, selectedStatus]);
 
-  // Metrics
+    // Sorting
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'due_asc') {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return a.due_date.localeCompare(b.due_date);
+      }
+      if (sortBy === 'due_desc') {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return b.due_date.localeCompare(a.due_date);
+      }
+      if (sortBy === 'title_asc') {
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === 'score_desc') {
+        const aScore =
+          a.marks_achieved !== null && a.total_marks
+            ? a.marks_achieved / a.total_marks
+            : -1;
+        const bScore =
+          b.marks_achieved !== null && b.total_marks
+            ? b.marks_achieved / b.total_marks
+            : -1;
+        return bScore - aScore;
+      }
+      return 0;
+    });
+  }, [
+    optimisticAssignments,
+    searchQuery,
+    selectedSubject,
+    selectedPriority,
+    selectedStatus,
+    sortBy,
+    today,
+  ]);
+
+  // Dynamic KPI Metrics computation
   const metrics = useMemo(() => {
     const total = optimisticAssignments.length;
     const pendingSubmission = optimisticAssignments.filter(
@@ -208,13 +250,26 @@ export function AssignmentsView({
       avgPercentage = Math.round(sum / gradedItems.length);
     }
 
+    const uniqueSubjects = new Set(optimisticAssignments.map((a) => a.subject).filter(Boolean));
+
+    // Urgent pending items (due today or overdue)
+    const urgentPendingCount = optimisticAssignments.filter(
+      (a) =>
+        a.status === 'submission_pending' &&
+        a.due_date &&
+        a.due_date <= today
+    ).length;
+
     return {
       total,
       pendingSubmission,
       completed,
       avgPercentage,
+      gradedCount: gradedItems.length,
+      moduleCount: uniqueSubjects.size,
+      urgentPendingCount,
     };
-  }, [optimisticAssignments]);
+  }, [optimisticAssignments, today]);
 
   // Handlers
   const handleStatusChange = (id: string, status: AssignmentStatus) => {
@@ -239,9 +294,12 @@ export function AssignmentsView({
     });
   };
 
-  const handleGradeSubmit = async (id: string, marksAchieved: number, totalMarks: number) => {
+  const handleGradeSubmit = async (
+    id: string,
+    marksAchieved: number,
+    totalMarks: number
+  ) => {
     setErrorMessage(null);
-
     startTransition(async () => {
       setOptimisticAssignments({
         type: 'grade',
@@ -251,21 +309,22 @@ export function AssignmentsView({
       });
 
       const res = await gradeAssignment(id, marksAchieved, totalMarks);
-
       if (!res.success) {
         setErrorMessage(res.error || 'Failed to save grade');
       }
     });
   };
 
-  const handleSaveAssignment = async (data: import('@/lib/actions/assignments').CreateAssignmentInput, id?: string) => {
+  const handleSaveAssignment = async (
+    data: import('@/lib/actions/assignments').CreateAssignmentInput,
+    id?: string
+  ) => {
     setErrorMessage(null);
     const targetProject = data.project_id
       ? projects.find((p) => p.id === data.project_id) || null
       : null;
 
     if (id) {
-      // Edit mode
       const existing = optimisticAssignments.find((a) => a.id === id);
       if (existing) {
         const updated: AssignmentWithProject = {
@@ -274,9 +333,19 @@ export function AssignmentsView({
           due_date: data.due_date || null,
           status: data.status || existing.status,
           project_id: data.project_id || null,
-          marks_achieved: data.marks_achieved !== undefined ? data.marks_achieved : existing.marks_achieved,
-          total_marks: data.total_marks !== undefined ? data.total_marks : existing.total_marks,
-          project: targetProject ? { id: targetProject.id, title: targetProject.title, slug: targetProject.slug } : null,
+          marks_achieved:
+            data.marks_achieved !== undefined
+              ? data.marks_achieved
+              : existing.marks_achieved,
+          total_marks:
+            data.total_marks !== undefined ? data.total_marks : existing.total_marks,
+          project: targetProject
+            ? {
+                id: targetProject.id,
+                title: targetProject.title,
+                slug: targetProject.slug,
+              }
+            : null,
         };
 
         startTransition(async () => {
@@ -288,7 +357,6 @@ export function AssignmentsView({
         });
       }
     } else {
-      // Create mode
       const tempId = `temp-${Date.now()}`;
       const newAssignment: AssignmentWithProject = {
         id: tempId,
@@ -302,7 +370,13 @@ export function AssignmentsView({
         total_marks: data.total_marks || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        project: targetProject ? { id: targetProject.id, title: targetProject.title, slug: targetProject.slug } : null,
+        project: targetProject
+          ? {
+              id: targetProject.id,
+              title: targetProject.title,
+              slug: targetProject.slug,
+            }
+          : null,
       };
 
       startTransition(async () => {
@@ -315,36 +389,46 @@ export function AssignmentsView({
     }
   };
 
+  const openNewWithStatus = (status: AssignmentStatus) => {
+    setEditingAssignment(null);
+    setCreateDefaultStatus(status);
+    setIsCreateOpen(true);
+  };
+
+  const letterGrade = getLetterGrade(metrics.avgPercentage);
+
   return (
-    <div className="flex flex-col gap-8 pb-12">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex flex-col gap-6 pb-16">
+      {/* Top Header & Actions (Stitch Theme) */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="font-mono text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400">
+          {/* Category Badge */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[11px] font-mono tracking-wider text-amber-800 dark:text-amber-300 uppercase font-semibold">
               Academics
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100">
             Assignment Tracker
           </h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
-            Track coursework deadlines, prioritize pending submissions, and record assignment grades.
+          <p className="mt-1 text-sm text-[#7A766F] dark:text-stone-400 max-w-2xl leading-relaxed">
+            Track coursework deadlines, prioritize pending submissions, and record assignment grades across all current modules.
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-0.5 rounded-xl border border-stone-200/60 dark:border-stone-700/60">
+        {/* View Mode & New Assignment Action Buttons */}
+        <div className="flex items-center flex-wrap gap-3">
+          {/* View Mode Switcher */}
+          <div className="flex items-center p-1 bg-stone-200/50 dark:bg-stone-800 rounded-xl border border-[#EAE6DF]/70 dark:border-stone-700/60 text-xs font-medium">
             <button
               type="button"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'kanban'
-                  ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  ? 'bg-white dark:bg-stone-900 text-[#1A1A1A] dark:text-stone-100 shadow-xs border border-stone-200/80 dark:border-stone-700 font-semibold cursor-default'
+                  : 'text-[#7A766F] dark:text-stone-400 hover:text-[#1A1A1A] dark:hover:text-stone-100 cursor-pointer'
               }`}
             >
               <Kanban size={13} />
@@ -353,10 +437,10 @@ export function AssignmentsView({
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
+                  ? 'bg-white dark:bg-stone-900 text-[#1A1A1A] dark:text-stone-100 shadow-xs border border-stone-200/80 dark:border-stone-700 font-semibold cursor-default'
+                  : 'text-[#7A766F] dark:text-stone-400 hover:text-[#1A1A1A] dark:hover:text-stone-100 cursor-pointer'
               }`}
             >
               <List size={13} />
@@ -364,23 +448,29 @@ export function AssignmentsView({
             </button>
           </div>
 
-          {/* New Assignment Button */}
+          {/* Primary New Assignment Button */}
           <button
             type="button"
             onClick={() => {
               setEditingAssignment(null);
+              setCreateDefaultStatus('not_started');
               setIsCreateOpen(true);
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 text-xs font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-xs"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-[#1A1A1A] dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] text-white dark:text-stone-900 text-xs font-semibold rounded-xl shadow-xs transition-all duration-150 cursor-pointer"
           >
             <Plus size={14} />
             <span>New Assignment</span>
+            <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] bg-stone-700 dark:bg-stone-300 text-stone-200 dark:text-stone-800 rounded font-mono font-normal">
+              ⌘N
+            </kbd>
           </button>
         </div>
-      </div>
+      </section>
 
       {/* Schema Missing Setup Banner */}
-      {(isSchemaMissing || (errorMessage && errorMessage.includes('Database tables not found in schema'))) && (
+      {(isSchemaMissing ||
+        (errorMessage &&
+          errorMessage.includes('Database tables not found in schema'))) && (
         <div className="rounded-2xl border border-amber-300/80 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-700/60 p-5 shadow-xs flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -392,7 +482,11 @@ export function AssignmentsView({
                   Database Table Setup Required
                 </h3>
                 <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-1 leading-relaxed">
-                  The <code className="font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 py-0.5 rounded text-[11px]">assignments</code> table is not yet created in your Supabase schema. Apply the migration script to enable assignment tracking.
+                  The{' '}
+                  <code className="font-mono bg-amber-200/60 dark:bg-amber-900/60 px-1 py-0.5 rounded text-[11px]">
+                    assignments
+                  </code>{' '}
+                  table is not yet created in your Supabase schema. Apply the migration script to enable assignment tracking.
                 </p>
               </div>
             </div>
@@ -412,7 +506,15 @@ export function AssignmentsView({
 
           <div className="pt-2.5 border-t border-amber-200/60 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-300">
             <span>
-              Run <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">supabase/apply_assignments_cloud.sql</code> in the Supabase SQL Editor, or <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">npx supabase db reset</code> for local CLI.
+              Run{' '}
+              <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">
+                supabase/apply_assignments_cloud.sql
+              </code>{' '}
+              in the Supabase SQL Editor, or{' '}
+              <code className="font-mono font-medium bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded text-[11px]">
+                npx supabase db reset
+              </code>{' '}
+              for local CLI.
             </span>
             <a
               href="https://supabase.com/dashboard/project/xbxdpnrmsfkqmnodlwnm/sql/new"
@@ -427,92 +529,151 @@ export function AssignmentsView({
         </div>
       )}
 
-      {/* Standard error banner for non-schema errors */}
-      {errorMessage && !errorMessage.includes('Database tables not found in schema') && !isSchemaMissing && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300">
-          <AlertTriangle size={14} className="shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      )}
+      {/* Standard Error Banner */}
+      {errorMessage &&
+        !errorMessage.includes('Database tables not found in schema') &&
+        !isSchemaMissing && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300">
+            <AlertTriangle size={14} className="shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-      {/* Metric Cards (Notion-style, breathable) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total */}
-        <div className="rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-white dark:bg-stone-900/60 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
-            <span>Total Tracked</span>
-            <BookOpen size={14} className="text-stone-400" />
+      {/* Upper KPI Summary Cards (Stitch Design) */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Tracked */}
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-stone-400/60 transition-all">
+          <div className="flex items-center justify-between text-[#7A766F] dark:text-stone-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Total Tracked
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
+              <BookOpen size={16} />
+            </div>
           </div>
-          <div className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100 font-mono">
-            {metrics.total}
-          </div>
-          <div className="text-[11px] text-stone-500 mt-1">Across all subjects</div>
-        </div>
-
-        {/* Submission Pending - Warm Amber Highlight */}
-        <div className="rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/40 dark:bg-amber-950/20 p-4 shadow-xs ring-1 ring-amber-400/20">
-          <div className="flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 mb-1 font-medium">
-            <span>Submission Pending</span>
-            <Clock size={14} className="text-amber-600 dark:text-amber-400" />
-          </div>
-          <div className="text-2xl font-semibold tracking-tight text-amber-950 dark:text-amber-200 font-mono">
-            {metrics.pendingSubmission}
-          </div>
-          <div className="text-[11px] text-amber-700/80 dark:text-amber-400 mt-1">
-            Work done • Needs submission
+          <div className="mt-4">
+            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 font-mono">
+              {metrics.total}
+            </div>
+            <div className="text-xs text-[#7A766F] dark:text-stone-400 mt-1">
+              Across {metrics.moduleCount} academic{' '}
+              {metrics.moduleCount === 1 ? 'module' : 'modules'}
+            </div>
           </div>
         </div>
 
-        {/* Submitted / Done */}
-        <div className="rounded-2xl border border-emerald-200/70 dark:border-emerald-800/40 bg-emerald-50/30 dark:bg-emerald-950/20 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 mb-1 font-medium">
-            <span>Submitted & Done</span>
-            <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
+        {/* Card 2: Submission Pending (Highlighted Amber) */}
+        <div className="bg-[#FFFDF7] dark:bg-amber-950/20 rounded-2xl p-4 sm:p-5 border-2 border-amber-300 dark:border-amber-700/60 shadow-xs flex flex-col justify-between group hover:border-amber-400 transition-all">
+          <div className="flex items-center justify-between text-amber-800 dark:text-amber-300">
+            <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Submission Pending
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-amber-100/70 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-300">
+              <Clock size={16} />
+            </div>
           </div>
-          <div className="text-2xl font-semibold tracking-tight text-emerald-950 dark:text-emerald-200 font-mono">
-            {metrics.completed}
-          </div>
-          <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400 mt-1">
-            Turned in or evaluated
+          <div className="mt-4">
+            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 flex items-baseline gap-2 font-mono">
+              <span>{metrics.pendingSubmission}</span>
+              {metrics.urgentPendingCount > 0 && (
+                <span className="text-xs font-normal text-amber-700 dark:text-amber-300 font-mono">
+                  {metrics.urgentPendingCount} Due Soon
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-amber-700 dark:text-amber-300/90 mt-1 font-medium">
+              Work complete • Final upload required
+            </div>
           </div>
         </div>
 
-        {/* Graded Average */}
-        <div className="rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-white dark:bg-stone-900/60 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
-            <span>Graded Average</span>
-            <Award size={14} className="text-stone-400" />
+        {/* Card 3: Submitted & Done (Soft Emerald) */}
+        <div className="bg-[#FAFCFA] dark:bg-emerald-950/20 rounded-2xl p-4 sm:p-5 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex flex-col justify-between group hover:border-emerald-300 transition-all">
+          <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+            <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Submitted &amp; Done
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+              <CheckCircle2 size={16} />
+            </div>
           </div>
-          <div className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100 font-mono">
-            {metrics.avgPercentage !== null ? `${metrics.avgPercentage}%` : '—'}
-          </div>
-          <div className="text-[11px] text-stone-500 mt-1">
-            {metrics.avgPercentage !== null ? 'Across graded assignments' : 'No graded items yet'}
+          <div className="mt-4">
+            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 font-mono">
+              {metrics.completed}
+            </div>
+            <div className="text-xs text-emerald-700 dark:text-emerald-300/90 mt-1 font-medium">
+              Turned in or officially evaluated
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-stone-900/50 p-2 sm:p-2.5 rounded-2xl border border-stone-200/70 dark:border-stone-800">
-        <div className="relative flex-1 min-w-0">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+        {/* Card 4: Graded Average */}
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-stone-400/60 transition-all">
+          <div className="flex items-center justify-between text-[#7A766F] dark:text-stone-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Graded Average
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
+              <Award size={16} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 flex items-baseline gap-2 font-mono">
+              <span>
+                {metrics.avgPercentage !== null ? `${metrics.avgPercentage}%` : '—'}
+              </span>
+              {letterGrade && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono font-medium">
+                  {letterGrade}
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-[#7A766F] dark:text-stone-400 mt-1">
+              {metrics.gradedCount > 0
+                ? `Based on ${metrics.gradedCount} evaluated ${
+                    metrics.gradedCount === 1 ? 'assessment' : 'assessments'
+                  }`
+                : 'No graded items yet'}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Filter and Search Bar (Warm Cream/Charcoal Stitch Toolbar) */}
+      <section className="bg-white dark:bg-stone-900 rounded-2xl p-2.5 sm:p-3 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* Search Input Box */}
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A766F] dark:text-stone-400"
+          />
           <input
             type="text"
-            placeholder="Search assignments by title, subject, or project..."
+            placeholder="Search assignments by title, course code, or tag..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-400 text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
+            className="w-full pl-10 pr-4 py-2 text-xs bg-stone-50/70 dark:bg-stone-800/60 border border-transparent rounded-xl text-[#1A1A1A] dark:text-stone-100 placeholder-[#7A766F] dark:placeholder-stone-400 focus:bg-white dark:focus:bg-stone-900 focus:border-stone-300 dark:focus:border-stone-700 focus:outline-none transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Subject Filter */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <Filter size={13} className="text-stone-400 shrink-0" />
+        {/* Filter Badges & Sort Cluster */}
+        <div className="flex items-center flex-wrap gap-2 text-xs">
+          {/* Filter Label */}
+          <div className="px-2.5 py-1.5 text-[#7A766F] dark:text-stone-400 flex items-center gap-1 border-r border-[#EAE6DF] dark:border-stone-800 pr-3">
+            <Filter size={13} />
+            <span className="font-medium text-[11px] uppercase tracking-wider">
+              Filters
+            </span>
+          </div>
+
+          {/* Subject Filter Pill */}
+          <div className="relative inline-block text-left">
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="px-2.5 py-1.5 rounded-xl border border-stone-200/60 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs focus:outline-none cursor-pointer"
+              className="appearance-none bg-stone-100/80 dark:bg-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-700 border border-transparent text-[#1A1A1A] dark:text-stone-200 font-medium py-1.5 pl-3 pr-7 rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-stone-400"
             >
               <option value="all">All Subjects</option>
               {subjects.map((s) => (
@@ -523,59 +684,107 @@ export function AssignmentsView({
             </select>
           </div>
 
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl border border-stone-200/60 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Statuses</option>
-            <option value="not_started">Not Started</option>
-            <option value="in_progress">In Progress</option>
-            <option value="submission_pending">Submission Pending</option>
-            <option value="submitted">Submitted</option>
-            <option value="graded">Graded</option>
-          </select>
-        </div>
-      </div>
+          {/* Priority Filter Pill */}
+          <div className="relative inline-block text-left">
+            <select
+              value={selectedPriority}
+              onChange={(e) => setSelectedPriority(e.target.value)}
+              className="appearance-none bg-stone-100/80 dark:bg-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-700 border border-transparent text-[#1A1A1A] dark:text-stone-200 font-medium py-1.5 pl-3 pr-7 rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-stone-400"
+            >
+              <option value="all">All Priorities</option>
+              <option value="HIGH">High Priority (P1)</option>
+              <option value="MED">Medium Priority (P2)</option>
+              <option value="LOW">Low Priority (P3)</option>
+            </select>
+          </div>
 
-      {/* Main Content: Kanban vs Table View */}
+          {/* Status Filter Pill */}
+          <div className="relative inline-block text-left">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="appearance-none bg-stone-100/80 dark:bg-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-700 border border-transparent text-[#1A1A1A] dark:text-stone-200 font-medium py-1.5 pl-3 pr-7 rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-stone-400"
+            >
+              <option value="all">All Statuses</option>
+              <option value="not_started">Not Started</option>
+              <option value="in_progress">In Progress</option>
+              <option value="submission_pending">Submission Pending</option>
+              <option value="submitted">Submitted</option>
+              <option value="graded">Graded</option>
+            </select>
+          </div>
+
+          {/* Sort Pill */}
+          <div className="relative inline-block text-left">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="appearance-none bg-stone-100/80 dark:bg-stone-800 hover:bg-stone-200/60 dark:hover:bg-stone-700 border border-transparent text-[#1A1A1A] dark:text-stone-200 font-medium py-1.5 pl-3 pr-7 rounded-xl text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-stone-400"
+            >
+              <option value="due_asc">Sort: Due Date (Earliest)</option>
+              <option value="due_desc">Sort: Due Date (Latest)</option>
+              <option value="title_asc">Sort: Title (A-Z)</option>
+              <option value="score_desc">Sort: Highest Score</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content: Kanban 4-Column Board vs Table List View */}
       {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
-          {STATUS_COLUMNS.map((column) => {
-            const columnItems = filteredAssignments.filter((a) => a.status === column.id);
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start pb-8">
+          {FOUR_COLUMNS.map((col) => {
+            const columnItems = filteredAssignments.filter((a) =>
+              col.statuses.includes(a.status)
+            );
 
             return (
               <div
-                key={column.id}
-                className={`flex flex-col rounded-2xl border ${column.columnClass} p-3 sm:p-3.5 min-h-[360px] bg-stone-50/40 dark:bg-stone-900/30`}
+                key={col.id}
+                className={`flex flex-col rounded-2xl p-4 min-h-[600px] ${col.containerClass}`}
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-stone-200/60 dark:border-stone-800">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-stone-800 dark:text-stone-200">
-                      {column.label}
-                    </span>
+                <div className="flex items-center justify-between px-1.5 py-1 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className={`w-2 h-2 rounded-full ${col.accentDot}`} />
+                    <h2
+                      className={`text-xs font-semibold tracking-wide ${
+                        col.isHighlighted
+                          ? 'text-amber-900 dark:text-amber-200'
+                          : 'text-[#1A1A1A] dark:text-stone-200'
+                      }`}
+                    >
+                      {col.title}
+                    </h2>
                     <span
-                      className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-md ${column.badgeClass}`}
+                      className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-medium ${col.badgeClass}`}
                     >
                       {columnItems.length}
                     </span>
                   </div>
 
-                  {column.id === 'submission_pending' && columnItems.length > 0 && (
-                    <span className="flex h-2 w-2 relative" title="Action required">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-                    </span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => openNewWithStatus(col.defaultCreateStatus)}
+                    className="text-[#7A766F] hover:text-[#1A1A1A] dark:hover:text-white text-lg leading-none p-1 transition-colors cursor-pointer"
+                    title={`Add assignment to ${col.title}`}
+                  >
+                    +
+                  </button>
                 </div>
 
-                {/* Cards List */}
-                <div className="flex flex-col gap-3 flex-1">
+                {/* Column Cards Container */}
+                <div className="space-y-4 flex-1 flex flex-col">
                   {columnItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-dashed border-stone-200 dark:border-stone-800/80 text-stone-400 text-xs italic">
-                      No assignments
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-stone-200 dark:border-stone-800 text-stone-400 text-xs italic">
+                      <p>No assignments in this column.</p>
+                      <button
+                        type="button"
+                        onClick={() => openNewWithStatus(col.defaultCreateStatus)}
+                        className="mt-2 text-xs font-medium text-stone-600 dark:text-stone-300 hover:underline cursor-pointer"
+                      >
+                        + Add item
+                      </button>
                     </div>
                   ) : (
                     columnItems.map((assignment) => (
@@ -596,13 +805,13 @@ export function AssignmentsView({
               </div>
             );
           })}
-        </div>
+        </section>
       ) : (
-        /* High-density List / Table View */
-        <div className="overflow-x-auto rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-white dark:bg-stone-900/60 shadow-xs">
+        /* High-Density List / Table View */
+        <div className="overflow-x-auto rounded-2xl border border-[#EAE6DF] dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-stone-200/70 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/40 text-stone-500 dark:text-stone-400 text-[11px] font-mono uppercase tracking-wider">
+              <tr className="border-b border-[#EAE6DF] dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/60 text-[#7A766F] dark:text-stone-400 text-[11px] font-mono uppercase tracking-wider">
                 <th className="py-2.5 px-3 sm:px-4 font-medium">Subject</th>
                 <th className="py-2.5 px-3 sm:px-4 font-medium">Assignment</th>
                 <th className="py-2.5 px-3 sm:px-4 font-medium">Due Date</th>
@@ -614,7 +823,10 @@ export function AssignmentsView({
             <tbody>
               {filteredAssignments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-stone-400 italic">
+                  <td
+                    colSpan={6}
+                    className="py-12 text-center text-xs text-stone-400 italic"
+                  >
                     No assignments found matching your filter criteria.
                   </td>
                 </tr>
@@ -638,7 +850,7 @@ export function AssignmentsView({
         </div>
       )}
 
-      {/* Modals */}
+      {/* New / Edit Assignment Modal */}
       <AssignmentModal
         isOpen={isCreateOpen}
         onClose={() => {
@@ -646,10 +858,12 @@ export function AssignmentsView({
           setEditingAssignment(null);
         }}
         initialAssignment={editingAssignment}
+        defaultStatus={createDefaultStatus}
         projects={projects}
         onSubmit={handleSaveAssignment}
       />
 
+      {/* Grade Modal */}
       {gradingAssignment && (
         <GradeModal
           isOpen={Boolean(gradingAssignment)}

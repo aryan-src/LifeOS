@@ -64,4 +64,62 @@ describe('Assignments logic and formatting', () => {
     expect(urgentIds).not.toContain('6'); // graded excluded
     expect(urgent.length).toBe(3);
   });
+
+  it('maps Supabase statuses into the 4 wide columns correctly', async () => {
+    const { FOUR_COLUMNS } = await import('@/components/assignments/assignment-helpers');
+    expect(FOUR_COLUMNS).toHaveLength(4);
+
+    const [activeCol, inProgressCol, submittedCol, gradedCol] = FOUR_COLUMNS;
+    expect(activeCol.id).toBe('active');
+    expect(activeCol.statuses).toEqual(['not_started']);
+
+    expect(inProgressCol.id).toBe('in_progress');
+    expect(inProgressCol.statuses).toEqual(['in_progress', 'submission_pending']);
+    expect(inProgressCol.isHighlighted).toBe(true);
+
+    expect(submittedCol.id).toBe('submitted');
+    expect(submittedCol.statuses).toEqual(['submitted']);
+
+    expect(gradedCol.id).toBe('graded');
+    expect(gradedCol.statuses).toEqual(['graded']);
+  });
+
+  it('computes priorities and letter grades accurately', async () => {
+    const { getAssignmentPriority, getLetterGrade, getSubjectBadgeStyle } = await import(
+      '@/components/assignments/assignment-helpers'
+    );
+
+    const today = '2026-10-08';
+
+    // Submission pending is always HIGH priority
+    expect(
+      getAssignmentPriority({ status: 'submission_pending', due_date: '2026-10-20' }, today)
+    ).toBe('HIGH');
+
+    // Overdue is HIGH priority
+    expect(
+      getAssignmentPriority({ status: 'not_started', due_date: '2026-10-05' }, today)
+    ).toBe('HIGH');
+
+    // Due in <= 2 days is HIGH priority
+    expect(
+      getAssignmentPriority({ status: 'in_progress', due_date: '2026-10-10' }, today)
+    ).toBe('HIGH');
+
+    // Due in 5 days is MED priority
+    expect(
+      getAssignmentPriority({ status: 'not_started', due_date: '2026-10-13' }, today)
+    ).toBe('MED');
+
+    // Letter grades
+    expect(getLetterGrade(98)).toBe('A+ (4.0)');
+    expect(getLetterGrade(94)).toBe('A (4.0)');
+    expect(getLetterGrade(85)).toBe('B (3.0)');
+    expect(getLetterGrade(null)).toBeNull();
+
+    // Subject styles
+    expect(getSubjectBadgeStyle('CS 101')).toContain('indigo');
+    expect(getSubjectBadgeStyle('MATH 240')).toContain('teal');
+    expect(getSubjectBadgeStyle('HIST 110')).toContain('amber');
+  });
 });

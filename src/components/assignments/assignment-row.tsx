@@ -14,6 +14,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+import { getSubjectBadgeStyle } from './assignment-helpers';
+
 interface AssignmentRowProps {
   assignment: AssignmentWithProject;
   onStatusChange: (id: string, status: AssignmentStatus) => void;
@@ -50,7 +52,11 @@ export function AssignmentRow({
     <tr className="border-b border-stone-200/60 dark:border-stone-800/80 hover:bg-stone-50/60 dark:hover:bg-stone-900/40 transition-colors group">
       {/* Subject */}
       <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-        <span className="font-mono text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+        <span
+          className={`font-mono text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md border ${getSubjectBadgeStyle(
+            assignment.subject
+          )}`}
+        >
           {assignment.subject}
         </span>
       </td>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Edit3, Calendar } from 'lucide-react';
 import type { AssignmentWithProject, CreateAssignmentInput } from '@/lib/actions/assignments';
 import type { ProjectOption } from '@/lib/actions/projects-options';
@@ -11,6 +11,7 @@ interface AssignmentModalProps {
   onClose: () => void;
   onSubmit: (input: CreateAssignmentInput, id?: string) => Promise<void>;
   initialAssignment?: AssignmentWithProject | null;
+  defaultStatus?: AssignmentStatus;
   projects: ProjectOption[];
 }
 
@@ -19,6 +20,7 @@ export function AssignmentModal({
   onClose,
   onSubmit,
   initialAssignment,
+  defaultStatus,
   projects,
 }: AssignmentModalProps) {
   const isEditing = Boolean(initialAssignment);
@@ -26,7 +28,9 @@ export function AssignmentModal({
   const [subject, setSubject] = useState(initialAssignment?.subject || '');
   const [title, setTitle] = useState(initialAssignment?.title || '');
   const [dueDate, setDueDate] = useState(initialAssignment?.due_date || '');
-  const [status, setStatus] = useState<AssignmentStatus>(initialAssignment?.status || 'not_started');
+  const [status, setStatus] = useState<AssignmentStatus>(
+    initialAssignment?.status || defaultStatus || 'not_started'
+  );
   const [projectId, setProjectId] = useState<string>(initialAssignment?.project_id || '');
   const [totalMarks, setTotalMarks] = useState<string>(
     initialAssignment?.total_marks ? String(initialAssignment.total_marks) : ''
@@ -36,6 +40,19 @@ export function AssignmentModal({
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSubject(initialAssignment?.subject || '');
+      setTitle(initialAssignment?.title || '');
+      setDueDate(initialAssignment?.due_date || '');
+      setStatus(initialAssignment?.status || defaultStatus || 'not_started');
+      setProjectId(initialAssignment?.project_id || '');
+      setTotalMarks(initialAssignment?.total_marks ? String(initialAssignment.total_marks) : '');
+      setMarksAchieved(initialAssignment?.marks_achieved ? String(initialAssignment.marks_achieved) : '');
+      setError(null);
+    }
+  }, [isOpen, initialAssignment, defaultStatus]);
 
   if (!isOpen) return null;
 

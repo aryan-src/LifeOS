@@ -84,6 +84,9 @@ describe('buildDashboardCards Data Binding', () => {
     expect(cards.length).toBe(4);
     const ids = cards.map((c) => c.id);
     expect(ids).toEqual(['finances-card', 'tasks-card', 'projects-card', 'notes-card']);
+    expect(cards.map((c) => c.iconName)).toEqual(['wallet', 'tasks', 'projects', 'notes']);
+    // Verify cards are 100% JSON serializable across RSC Flight protocol boundaries
+    expect(() => JSON.stringify(cards)).not.toThrow();
   });
 
   it('binds live dynamic values and currency into cards', () => {

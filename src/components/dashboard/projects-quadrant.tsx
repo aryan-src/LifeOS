@@ -1,10 +1,16 @@
 import React from 'react';
-import { getProjectsWithMetrics } from '@/lib/actions/projects';
+import { getProjectsWithMetrics, type ProjectWithMetrics } from '@/lib/actions/projects';
 import Link from 'next/link';
 
 export async function ProjectsQuadrant() {
-  const allProjects = await getProjectsWithMetrics();
-  const activeProjects = allProjects.filter((p) => p.status === 'active').slice(0, 3);
+  let allProjects: ProjectWithMetrics[] = [];
+  try {
+    allProjects = await getProjectsWithMetrics();
+  } catch (err) {
+    console.error('ProjectsQuadrant error:', err);
+  }
+  const safeProjects = Array.isArray(allProjects) ? allProjects : [];
+  const activeProjects = safeProjects.filter((p) => p?.status === 'active').slice(0, 3);
 
   return (
     <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs p-6 md:p-8 flex flex-col justify-between gap-6 h-full min-w-0">

@@ -44,7 +44,7 @@ export async function DashboardMetrics() {
       <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0">
           <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Allowance Balance</span>
-          <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-medium shrink-0">
+          <span suppressHydrationWarning className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-medium shrink-0">
             {100 - Math.min(analytics.allowanceUsagePercent, 100)}% remaining
           </span>
         </div>
@@ -59,8 +59,9 @@ export async function DashboardMetrics() {
             </span>
           </div>
         </div>
-        <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
+        <div suppressHydrationWarning className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
           <div
+            suppressHydrationWarning
             className="bg-secondary h-full rounded-full transition-all duration-500"
             style={{ width: `${Math.max(0, 100 - analytics.allowanceUsagePercent)}%` }}
           />
@@ -71,23 +72,23 @@ export async function DashboardMetrics() {
       <div className="p-5 md:p-6 rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs flex flex-col justify-between gap-3 hover:shadow-sm transition-shadow min-w-0">
         <div className="flex items-center justify-between gap-2 min-w-0">
           <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider truncate">Daily Tasks</span>
-          <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-medium shrink-0">
+          <span suppressHydrationWarning className="px-2 py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-medium shrink-0">
             {tasksPercent}% complete
           </span>
         </div>
         <div className="flex flex-col gap-1 min-w-0">
-          <span className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
+          <span suppressHydrationWarning className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
             {completedTasksCount} of {totalTasksCount}
           </span>
           <div className="flex items-center gap-1.5 text-outline min-w-0">
             <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">pending_actions</span>
-            <span className="font-label-sm text-label-sm truncate">
+            <span suppressHydrationWarning className="font-label-sm text-label-sm truncate">
               <span className="text-on-surface-variant font-medium">{pendingTodayCount} pending</span> scheduled today
             </span>
           </div>
         </div>
-        <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
-          <div className="bg-secondary h-full rounded-full transition-all duration-500" style={{ width: `${tasksPercent}%` }} />
+        <div suppressHydrationWarning className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-1">
+          <div suppressHydrationWarning className="bg-secondary h-full rounded-full transition-all duration-500" style={{ width: `${tasksPercent}%` }} />
         </div>
       </div>
 

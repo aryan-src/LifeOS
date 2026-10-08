@@ -1,13 +1,23 @@
 import React from 'react';
-import { getFinancialAnalytics, getTransactions } from '@/lib/actions/finances';
+import { getFinancialAnalytics, getTransactions, type TransactionWithRelations } from '@/lib/actions/finances';
+import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
 import { formatCurrency } from '@/lib/utils/format';
 import Link from 'next/link';
 
 export async function FinancesQuadrant() {
-  const [analytics, transactions] = await Promise.all([
-    getFinancialAnalytics(),
-    getTransactions(),
-  ]);
+  let analytics = getFallbackFinancialAnalytics();
+  let transactions: TransactionWithRelations[] = [];
+
+  try {
+    const [a, t] = await Promise.all([
+      getFinancialAnalytics(),
+      getTransactions(),
+    ]);
+    analytics = a || analytics;
+    transactions = t || transactions;
+  } catch (err) {
+    console.error('FinancesQuadrant error:', err);
+  }
 
   const {
     monthlyAllowance,
@@ -19,7 +29,7 @@ export async function FinancesQuadrant() {
     currencySymbol = '₹',
   } = analytics;
 
-  const latestExpense = transactions.find((t) => t.type === 'expense' || t.amount < 0);
+  const latestExpense = (transactions || []).find((t) => t?.type === 'expense' || (t?.amount !== undefined && t.amount < 0));
 
   return (
     <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest shadow-xs p-6 md:p-8 flex flex-col justify-between gap-6 h-full min-w-0">

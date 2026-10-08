@@ -4,7 +4,15 @@ import { formatDateIST } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function NotesQuadrant() {
-  const notes = await getNotes();
+  let notes: Awaited<ReturnType<typeof getNotes>> = [];
+  try {
+    const fetchedNotes = await getNotes();
+    if (Array.isArray(fetchedNotes)) {
+      notes = fetchedNotes;
+    }
+  } catch (error) {
+    console.error('Failed to load notes for NotesQuadrant:', error);
+  }
   const recentNotes = notes.slice(0, 3);
 
   return (
@@ -41,7 +49,7 @@ export async function NotesQuadrant() {
                     <span className="font-body-md text-body-md text-on-surface group-hover:text-primary font-medium truncate">
                       {note.title}
                     </span>
-                    <span className="font-label-sm text-label-sm text-outline shrink-0 ml-2">
+                    <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline shrink-0 ml-2">
                       {formatDateIST(note.updated_at, { month: 'short', day: 'numeric' })}
                     </span>
                   </div>

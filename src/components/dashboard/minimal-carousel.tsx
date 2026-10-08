@@ -37,7 +37,8 @@ export interface CarouselCard {
   color: string;
   accentBg: string;
   accentText: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
+  iconName?: 'wallet' | 'tasks' | 'projects' | 'notes';
   primaryAction: {
     label: string;
     route: string;
@@ -47,6 +48,23 @@ export interface CarouselCard {
     route: string;
   };
   previewItems?: CarouselCardPreviewItem[];
+}
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  finances: Wallet,
+  wallet: Wallet,
+  tasks: CheckCircle2,
+  projects: FolderKanban,
+  notes: StickyNote,
+};
+
+function renderCardIcon(card: CarouselCard, className: string) {
+  const IconComponent =
+    card.icon ||
+    (card.iconName ? ICON_MAP[card.iconName] : undefined) ||
+    ICON_MAP[card.module] ||
+    Wallet;
+  return <IconComponent className={className} />;
 }
 
 export interface MinimalCarouselProps {
@@ -114,7 +132,7 @@ export const MinimalCarousel: React.FC<MinimalCarouselProps> = ({
                     <div
                       className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl shrink-0 ${activeCard.accentBg} ${activeCard.accentText}`}
                     >
-                      <activeCard.icon className="w-6 h-6 sm:w-7 sm:h-7" />
+                      {renderCardIcon(activeCard, 'w-6 h-6 sm:w-7 sm:h-7')}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] font-semibold tracking-wider uppercase opacity-70">
@@ -257,7 +275,7 @@ export const MinimalCarousel: React.FC<MinimalCarouselProps> = ({
                   <div
                     className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl shrink-0 ${card.accentBg} ${card.accentText}`}
                   >
-                    <card.icon className={activeId ? 'w-4 h-4' : 'w-5 h-5'} />
+                    {renderCardIcon(card, activeId ? 'w-4 h-4' : 'w-5 h-5')}
                   </div>
                   {card.badge && (
                     <span
@@ -358,7 +376,7 @@ export function buildDashboardCards({
         'bg-emerald-50/70 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/40 text-stone-900 dark:text-stone-100',
       accentBg: 'bg-emerald-100/80 dark:bg-emerald-900/40',
       accentText: 'text-emerald-800 dark:text-emerald-300',
-      icon: Wallet,
+      iconName: 'wallet' as const,
       primaryAction: {
         label: 'Open Ledger',
         route: '/finances',
@@ -401,7 +419,7 @@ export function buildDashboardCards({
         'bg-amber-50/70 hover:bg-amber-50 dark:bg-amber-950/20 dark:hover:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/40 text-stone-900 dark:text-stone-100',
       accentBg: 'bg-amber-100/80 dark:bg-amber-900/40',
       accentText: 'text-amber-800 dark:text-amber-300',
-      icon: CheckCircle2,
+      iconName: 'tasks' as const,
       primaryAction: {
         label: 'Priority Matrix',
         route: '/tasks',
@@ -430,7 +448,7 @@ export function buildDashboardCards({
         'bg-indigo-50/70 hover:bg-indigo-50 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/30 border-indigo-200/60 dark:border-indigo-800/40 text-stone-900 dark:text-stone-100',
       accentBg: 'bg-indigo-100/80 dark:bg-indigo-900/40',
       accentText: 'text-indigo-800 dark:text-indigo-300',
-      icon: FolderKanban,
+      iconName: 'projects' as const,
       primaryAction: {
         label: 'View Board',
         route: '/projects',
@@ -459,7 +477,7 @@ export function buildDashboardCards({
         'bg-rose-50/70 hover:bg-rose-50 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/40 text-stone-900 dark:text-stone-100',
       accentBg: 'bg-rose-100/80 dark:bg-rose-900/40',
       accentText: 'text-rose-800 dark:text-rose-300',
-      icon: StickyNote,
+      iconName: 'notes' as const,
       primaryAction: {
         label: 'Open Notes',
         route: '/notes',

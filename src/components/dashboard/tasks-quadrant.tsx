@@ -1,19 +1,25 @@
 import React from 'react';
-import { getTasks } from '@/lib/actions/tasks';
+import { getTasks, type TaskWithProject } from '@/lib/actions/tasks';
 import { getTodayDate } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function TasksQuadrant() {
-  const allTasks = await getTasks();
+  let allTasks: TaskWithProject[] = [];
+  try {
+    allTasks = await getTasks();
+  } catch (err) {
+    console.error('TasksQuadrant error:', err);
+  }
+  const safeTasks = Array.isArray(allTasks) ? allTasks : [];
   const todayStr = getTodayDate();
 
   // Incomplete tasks scheduled today or overdue
-  const todayTasks = allTasks
-    .filter((t) => !t.is_completed && (!t.due_date || t.due_date <= todayStr))
+  const todayTasks = safeTasks
+    .filter((t) => !t?.is_completed && (!t?.due_date || t.due_date <= todayStr))
     .slice(0, 3);
 
-  const completedToday = allTasks.filter(
-    (t) => t.is_completed && t.completed_at && t.completed_at.startsWith(todayStr)
+  const completedToday = safeTasks.filter(
+    (t) => t?.is_completed && typeof t?.completed_at === 'string' && t.completed_at.startsWith(todayStr)
   ).slice(0, 1);
 
   return (

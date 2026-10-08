@@ -8,7 +8,7 @@ import {
   DashboardCarouselSkeleton,
 } from '@/components/dashboard/dashboard-carousel-section';
 import { getUserProfile } from '@/lib/actions/profile';
-import { formatDateIST, getTodayDate } from '@/lib/utils/date';
+import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function DashboardCommandCenter() {
@@ -43,7 +43,7 @@ export async function DashboardCommandCenter() {
           <div className="flex items-center gap-3 self-start md:self-auto shrink-0 flex-wrap">
             <div className="hidden sm:flex flex-col items-end mr-1 text-right">
               <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline">
-                {formatDateIST(getTodayDate(), { weekday: 'short', day: 'numeric', month: 'short' })}
+                {formatCalendarDate(getTodayDate(), 'header')}
               </span>
               <span className="font-label-md text-label-md text-on-surface-variant font-medium">IST Active</span>
             </div>

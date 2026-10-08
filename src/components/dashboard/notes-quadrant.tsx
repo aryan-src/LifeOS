@@ -1,6 +1,6 @@
 import React from 'react';
 import { getNotes } from '@/lib/actions/notes';
-import { formatDateIST } from '@/lib/utils/date';
+import { formatCalendarDate } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function NotesQuadrant() {
@@ -50,7 +50,7 @@ export async function NotesQuadrant() {
                       {note.title}
                     </span>
                     <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline shrink-0 ml-2">
-                      {formatDateIST(note.updated_at, { month: 'short', day: 'numeric' })}
+                      {formatCalendarDate(note.updated_at, 'short')}
                     </span>
                   </div>
                   <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
@@ -88,13 +88,13 @@ export async function NotesQuadrant() {
 
 export function NotesSkeleton() {
   return (
-    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-80 flex flex-col justify-between">
+    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-full min-w-0 flex flex-col justify-between gap-6">
       <div className="h-5 w-36 bg-surface-container-high rounded-md" />
       <div className="space-y-3">
         <div className="h-14 bg-surface-container-low rounded-xl" />
         <div className="h-14 bg-surface-container-low rounded-xl" />
       </div>
       <div className="h-9 bg-surface-container-low rounded-xl" />
-    </div>
+    </article>
   );
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { DashboardCarouselSkeleton } from '@/components/dashboard/dashboard-carousel-skeleton';
 
 export default function RootLoading() {
   return (
@@ -17,8 +18,8 @@ export default function RootLoading() {
           </div>
         </div>
 
-        {/* 4 Stat Cards Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
+        {/* 4 Stat Cards Skeleton (Section root parity) */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -32,25 +33,12 @@ export default function RootLoading() {
               <div className="h-2 w-full bg-surface-container-high rounded-full" />
             </div>
           ))}
-        </div>
+        </section>
 
-        {/* 4 Quadrants Grid Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 min-h-[380px] flex flex-col gap-4"
-            >
-              <div className="flex justify-between items-center pb-3 border-b border-outline-variant/20">
-                <div className="h-5 w-36 bg-surface-container-high rounded" />
-                <div className="h-4 w-20 bg-surface-container-high rounded" />
-              </div>
-              <div className="h-32 bg-surface-container-low/60 rounded-xl" />
-              <div className="h-16 bg-surface-container-low/40 rounded-xl" />
-              <div className="h-16 bg-surface-container-low/40 rounded-xl" />
-            </div>
-          ))}
-        </div>
+        {/* Main Workspace Interactive Carousel Skeleton (Section root parity) */}
+        <section className="w-full">
+          <DashboardCarouselSkeleton />
+        </section>
       </div>
     </div>
   );

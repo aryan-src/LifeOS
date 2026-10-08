@@ -66,8 +66,9 @@ export async function FinancesQuadrant() {
           </div>
 
           {/* Soft Sage Fill Bar */}
-          <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+          <div suppressHydrationWarning className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
             <div
+              suppressHydrationWarning
               className="bg-secondary h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.max(0, 100 - allowanceUsagePercent)}%` }}
             />
@@ -112,7 +113,7 @@ export async function FinancesQuadrant() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-3 text-outline font-label-sm text-label-sm border-t border-outline-variant/20 mt-2">
+      <div suppressHydrationWarning className="flex items-center justify-between pt-3 text-outline font-label-sm text-label-sm border-t border-outline-variant/20 mt-2">
         <span>Cycle resets in {daysLeftInMonth} days</span>
         <span className="text-secondary font-medium">{allowanceUsagePercent}% spent</span>
       </div>
@@ -122,10 +123,10 @@ export async function FinancesQuadrant() {
 
 export function FinancesSkeleton() {
   return (
-    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-80 flex flex-col justify-between">
+    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-full min-w-0 flex flex-col justify-between gap-6">
       <div className="h-5 w-36 bg-surface-container-high rounded-md" />
       <div className="h-28 bg-surface-container-low rounded-xl" />
       <div className="h-10 bg-surface-container-low rounded-xl" />
-    </div>
+    </article>
   );
 }

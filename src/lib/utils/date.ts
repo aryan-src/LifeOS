@@ -80,3 +80,53 @@ export function getTrailingDays(count: number = 7): Array<{
 
   return days;
 }
+
+/**
+ * Deterministically formats strict YYYY-MM-DD database strings without timezone shifts.
+ * Prevents server (UTC) vs client (IST/local) day/hour mismatch hydration crashes.
+ */
+export function formatCalendarDate(
+  dateInput: string | Date | null | undefined,
+  format: 'short' | 'medium' | 'full' | 'header' = 'medium'
+): string {
+  if (!dateInput) return '';
+
+  let dateStr: string;
+  if (typeof dateInput === 'string') {
+    dateStr = dateInput.split('T')[0];
+  } else {
+    dateStr = getTodayDate(dateInput);
+  }
+
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d) || m < 1 || m > 12) return dateStr;
+
+  const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fullMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Construct absolute local date without UTC midnight shifts
+  const dateObj = new Date(y, m - 1, d);
+  const dayName = shortDays[dateObj.getDay()] || '';
+  const shortMonth = shortMonths[m - 1] || '';
+  const fullMonth = fullMonths[m - 1] || '';
+
+  if (format === 'header') {
+    return `${dayName}, ${d} ${shortMonth}`;
+  }
+  if (format === 'short') {
+    return `${shortMonth} ${d}`;
+  }
+  if (format === 'full') {
+    return `${fullMonth} ${d}, ${y}`;
+  }
+  return `${d} ${shortMonth} ${y}`;
+}

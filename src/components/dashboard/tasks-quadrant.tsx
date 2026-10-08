@@ -1,6 +1,6 @@
 import React from 'react';
 import { getTasks, type TaskWithProject } from '@/lib/actions/tasks';
-import { getTodayDate } from '@/lib/utils/date';
+import { getTodayDate, formatCalendarDate } from '@/lib/utils/date';
 import Link from 'next/link';
 
 export async function TasksQuadrant() {
@@ -74,8 +74,8 @@ export async function TasksQuadrant() {
                   <span className="font-body-md text-body-md text-on-surface group-hover:text-primary font-medium truncate">
                     {task.title}
                   </span>
-                  <span className="font-label-sm text-label-sm text-outline truncate">
-                    {task.due_date ? `Due ${task.due_date}` : 'No deadline'} • {task.project ? `#${task.project.slug}` : 'Personal'}
+                  <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline truncate">
+                    {task.due_date ? `Due ${formatCalendarDate(task.due_date, 'short')}` : 'No deadline'} • {task.project ? `#${task.project.slug}` : 'Personal'}
                   </span>
                 </div>
               </Link>
@@ -101,13 +101,13 @@ export async function TasksQuadrant() {
 
 export function TasksSkeleton() {
   return (
-    <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-80 flex flex-col justify-between">
+    <article className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 md:p-8 shadow-xs animate-pulse h-full min-w-0 flex flex-col justify-between gap-6">
       <div className="h-5 w-36 bg-surface-container-high rounded-md" />
       <div className="space-y-3">
         <div className="h-12 bg-surface-container-low rounded-xl" />
         <div className="h-12 bg-surface-container-low rounded-xl" />
       </div>
       <div className="h-9 bg-surface-container-low rounded-xl" />
-    </div>
+    </article>
   );
 }

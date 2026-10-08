@@ -97,7 +97,7 @@ export default function ErrorBoundary({
           <div className="mt-2 rounded-lg bg-stone-100 dark:bg-stone-950 p-3 font-mono text-[11px] text-stone-700 dark:text-stone-300 overflow-x-auto border border-stone-200/50 dark:border-stone-800/50">
             <div>Digest: {error.digest || 'None'}</div>
             {error.message && <div>Message: {error.message}</div>}
-            <div>Time: {new Date().toISOString()}</div>
+            <div suppressHydrationWarning>Time: {new Date().toISOString()}</div>
           </div>
         </details>
       </div>

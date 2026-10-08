@@ -20,65 +20,69 @@ export interface ProjectWithMetrics extends Project {
  * CRITICAL: Uses NULLIF(total_tasks, 0) logic to prevent NaN / divide-by-zero errors.
  */
 export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
 
-  // 1. Fetch projects
-  const { data: projects, error: projErr } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('user_id', effectiveUserId)
-    .order('priority', { ascending: false })
-    .order('created_at', { ascending: false });
+    // 1. Fetch projects
+    const { data: projects, error: projErr } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', effectiveUserId)
+      .order('priority', { ascending: false })
+      .order('created_at', { ascending: false });
 
-  if (projErr || !projects) {
-    console.error('Error fetching projects:', projErr);
+    if (projErr || !projects || projects.length === 0) {
+      if (projErr) console.error('Error fetching projects:', projErr);
+      return [];
+    }
+
+    // 2. Fetch associated tasks and transactions for metrics calculation
+    const projectIds = projects.map((p) => p.id);
+
+    const [{ data: tasks }, { data: transactions }] = await Promise.all([
+      supabase
+        .from('tasks')
+        .select('id, project_id, is_completed')
+        .in('project_id', projectIds),
+      supabase
+        .from('transactions')
+        .select('id, project_id, amount, type')
+        .in('project_id', projectIds),
+    ]);
+
+    // Aggregate metrics per project with divide-by-zero safeguards
+    return projects.map((project) => {
+      const projTasks = tasks?.filter((t) => t.project_id === project.id) || [];
+      const totalTasks = projTasks.length;
+      const completedTasks = projTasks.filter((t) => t.is_completed).length;
+
+      // NULLIF(totalTasks, 0) safeguard:
+      const completionPercentage =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+      const projTransactions = transactions?.filter((tx) => tx.project_id === project.id) || [];
+      const totalSpend = projTransactions.reduce((acc, tx) => {
+        const rawAmt = typeof tx.amount === 'number' ? tx.amount : parseFloat(tx.amount as any);
+        const amt = isNaN(rawAmt) ? 0 : rawAmt;
+        if (tx.type === 'expense' || amt < 0) {
+          return acc + Math.abs(amt);
+        }
+        return acc;
+      }, 0);
+
+      return {
+        ...project,
+        total_tasks: totalTasks,
+        completed_tasks: completedTasks,
+        completion_percentage: completionPercentage,
+        total_spend: totalSpend,
+      };
+    });
+  } catch (err) {
+    console.error('Unhandled error in getProjectsWithMetrics:', err);
     return [];
   }
-
-  // 2. Fetch associated tasks and transactions for metrics calculation
-  const projectIds = projects.map((p) => p.id);
-
-  if (projectIds.length === 0) return [];
-
-  const [{ data: tasks }, { data: transactions }] = await Promise.all([
-    supabase
-      .from('tasks')
-      .select('id, project_id, is_completed')
-      .in('project_id', projectIds),
-    supabase
-      .from('transactions')
-      .select('id, project_id, amount, type')
-      .in('project_id', projectIds),
-  ]);
-
-  // Aggregate metrics per project with divide-by-zero safeguards
-  return projects.map((project) => {
-    const projTasks = tasks?.filter((t) => t.project_id === project.id) || [];
-    const totalTasks = projTasks.length;
-    const completedTasks = projTasks.filter((t) => t.is_completed).length;
-
-    // NULLIF(totalTasks, 0) safeguard:
-    const completionPercentage =
-      totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    const projTransactions = transactions?.filter((tx) => tx.project_id === project.id) || [];
-    const totalSpend = projTransactions.reduce((acc, tx) => {
-      // Sum expenses
-      if (tx.type === 'expense' || tx.amount < 0) {
-        return acc + Math.abs(tx.amount);
-      }
-      return acc;
-    }, 0);
-
-    return {
-      ...project,
-      total_tasks: totalTasks,
-      completed_tasks: completedTasks,
-      completion_percentage: completionPercentage,
-      total_spend: totalSpend,
-    };
-  });
 }
 
 /**

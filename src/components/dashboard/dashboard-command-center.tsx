@@ -34,7 +34,7 @@ export async function DashboardCommandCenter() {
               </span>
             </div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-medium">
-              Welcome, {profile.display_name || 'Student'}
+              Welcome, {profile?.display_name || 'Student'}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl leading-relaxed">
               Real-time telemetry across academics, daily tasks, finances, and ideas. Balanced for calm focus.

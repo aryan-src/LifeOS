@@ -129,4 +129,26 @@ describe('buildDashboardCards Data Binding', () => {
       expect(card.color).not.toContain('text-white');
     });
   });
+
+  it('safely handles null and undefined telemetry without crashing', () => {
+    // Calling with empty object
+    const cardsFromEmpty = buildDashboardCards({});
+    expect(cardsFromEmpty.length).toBe(4);
+    expect(cardsFromEmpty[0].value).toContain('15,000');
+    expect(cardsFromEmpty[1].value).toBe('0 of 0 tasks completed');
+    expect(cardsFromEmpty[2].value).toBe('0 Ongoing Workstreams');
+    expect(cardsFromEmpty[3].value).toBe('0 thoughts in vault');
+
+    // Calling with undefined / null arguments
+    const cardsFromNulls = buildDashboardCards({
+      analytics: null,
+      tasks: null,
+      projects: null,
+      notes: null,
+    });
+    expect(cardsFromNulls.length).toBe(4);
+    expect(cardsFromNulls[0].title).toBe('Pocket Money Tracker');
+    expect(cardsFromNulls[1].title).toBe("Today's Focus");
+  });
 });
+

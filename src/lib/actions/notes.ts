@@ -19,25 +19,30 @@ export interface NoteWithProject extends Note {
  * Fetch all notes for the authenticated user, ordered by is_pinned DESC and updated_at DESC.
  */
 export async function getNotes(): Promise<NoteWithProject[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
 
-  const { data, error } = await supabase
-    .from('notes')
-    .select(`
-      *,
-      project:projects(id, title, slug)
-    `)
-    .eq('user_id', effectiveUserId)
-    .order('is_pinned', { ascending: false })
-    .order('updated_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        *,
+        project:projects(id, title, slug)
+      `)
+      .eq('user_id', effectiveUserId)
+      .order('is_pinned', { ascending: false })
+      .order('updated_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching notes:', error);
+    if (error || !data) {
+      if (error) console.error('Error fetching notes:', error);
+      return [];
+    }
+
+    return (data as any) || [];
+  } catch (err) {
+    console.error('Unhandled error in getNotes:', err);
     return [];
   }
-
-  return (data as any) || [];
 }
 
 /**

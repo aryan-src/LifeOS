@@ -305,32 +305,45 @@ export function buildDashboardCards({
   projects,
   notes,
 }: {
-  analytics: FinancialAnalytics;
-  tasks: TaskWithProject[];
-  projects: ProjectWithMetrics[];
-  notes: NoteWithProject[];
-}): CarouselCard[] {
-  const currency = analytics.currencySymbol || '₹';
-  const todayStr = analytics.currentDate || getTodayDate();
+  analytics?: FinancialAnalytics | null;
+  tasks?: TaskWithProject[] | null;
+  projects?: ProjectWithMetrics[] | null;
+  notes?: NoteWithProject[] | null;
+} = {}): CarouselCard[] {
+  const currency = analytics?.currencySymbol || '₹';
+  const todayStr = analytics?.currentDate || getTodayDate();
+
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeProjects = Array.isArray(projects) ? projects : [];
+  const safeNotes = Array.isArray(notes) ? notes : [];
 
   // 1. Finances data
-  const remainingAllowance = analytics.remainingAllowance;
-  const safeBufferPercent = Math.max(0, 100 - analytics.allowanceUsagePercent);
+  const remainingAllowance = typeof analytics?.remainingAllowance === 'number' ? analytics.remainingAllowance : 15000;
+  const allowanceUsage = typeof analytics?.allowanceUsagePercent === 'number' ? analytics.allowanceUsagePercent : 0;
+  const safeBufferPercent = Math.max(0, 100 - allowanceUsage);
+  const monthlyAllowance = typeof analytics?.monthlyAllowance === 'number' ? analytics.monthlyAllowance : 15000;
+  const safeDailyBudget = typeof analytics?.safeDailyBudget === 'number' ? analytics.safeDailyBudget : 500;
+  const monthlySpent = typeof analytics?.monthlySpent === 'number' ? analytics.monthlySpent : 0;
 
   // 2. Tasks data
-  const completedTasks = tasks.filter((t) => t.is_completed);
-  const pendingTodayTasks = tasks.filter(
-    (t) => !t.is_completed && (!t.due_date || t.due_date <= todayStr)
+  const completedTasks = safeTasks.filter((t) => t?.is_completed);
+  const pendingTodayTasks = safeTasks.filter(
+    (t) => !t?.is_completed && (!t?.due_date || t.due_date <= todayStr)
   );
   const tasksPercent =
-    tasks.length > 0
-      ? Math.round((completedTasks.length / tasks.length) * 100)
+    safeTasks.length > 0
+      ? Math.round((completedTasks.length / safeTasks.length) * 100)
       : 0;
 
   // 3. Projects data
-  const activeProjects = projects.filter((p) => p.status === 'active');
-  const completedProjects = projects.filter((p) => p.status === 'completed');
-  const backlogProjects = projects.filter((p) => p.status === 'backlog');
+  const activeProjects = safeProjects.filter((p) => p?.status === 'active');
+  const completedProjects = safeProjects.filter((p) => p?.status === 'completed');
+  const backlogProjects = safeProjects.filter((p) => p?.status === 'backlog');
+
+  const latestNoteTitle =
+    safeNotes.length > 0 && safeNotes[0]?.title
+      ? `Latest: "${safeNotes[0].title}"`
+      : 'Scratchpad is ready for new ideas';
 
   return [
     // Quadrant 1: Pocket Money Tracker (Soft Sage palette)
@@ -339,7 +352,7 @@ export function buildDashboardCards({
       module: 'finances',
       title: 'Pocket Money Tracker',
       value: `${currency}${formatCurrency(remainingAllowance)} remaining balance`,
-      subtitle: `Safe daily runway: ${currency}${formatCurrency(analytics.safeDailyBudget)}/day`,
+      subtitle: `Safe daily runway: ${currency}${formatCurrency(safeDailyBudget)}/day`,
       badge: `${safeBufferPercent}% buffer`,
       color:
         'bg-emerald-50/70 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/40 text-stone-900 dark:text-stone-100',
@@ -358,20 +371,20 @@ export function buildDashboardCards({
         {
           id: 'fin-1',
           label: 'Pool Total',
-          meta: `${currency}${formatCurrency(analytics.monthlyAllowance)}`,
+          meta: `${currency}${formatCurrency(monthlyAllowance)}`,
           sublabel: 'Monthly cap',
         },
         {
           id: 'fin-2',
           label: 'Safe Pace',
-          meta: `${currency}${formatCurrency(analytics.safeDailyBudget)}`,
+          meta: `${currency}${formatCurrency(safeDailyBudget)}`,
           sublabel: 'Per day guidance',
         },
         {
           id: 'fin-3',
           label: 'Spent',
-          meta: `${currency}${formatCurrency(analytics.monthlySpent)}`,
-          sublabel: `${analytics.allowanceUsagePercent}% utilized`,
+          meta: `${currency}${formatCurrency(monthlySpent)}`,
+          sublabel: `${allowanceUsage}% utilized`,
         },
       ],
     },
@@ -381,7 +394,7 @@ export function buildDashboardCards({
       id: 'tasks-card',
       module: 'tasks',
       title: "Today's Focus",
-      value: `${completedTasks.length} of ${tasks.length} tasks completed`,
+      value: `${completedTasks.length} of ${safeTasks.length} tasks completed`,
       subtitle: `${pendingTodayTasks.length} pending scheduled today`,
       badge: `${tasksPercent}% complete`,
       color:
@@ -399,7 +412,7 @@ export function buildDashboardCards({
       },
       previewItems: pendingTodayTasks.slice(0, 3).map((t) => ({
         id: t.id,
-        label: t.title,
+        label: t.title || 'Untitled task',
         meta: typeof t.priority === 'number' && t.priority > 0 ? `P${t.priority}` : undefined,
         sublabel: t.project ? `#${t.project.slug}` : 'Daily Focus',
       })),
@@ -428,9 +441,9 @@ export function buildDashboardCards({
       },
       previewItems: activeProjects.slice(0, 3).map((p) => ({
         id: p.id,
-        label: p.title,
-        meta: `${p.completion_percentage}%`,
-        sublabel: `#${p.slug} • ${p.total_tasks} tasks`,
+        label: p.title || 'Untitled project',
+        meta: `${p.completion_percentage ?? 0}%`,
+        sublabel: `#${p.slug || 'project'} • ${p.total_tasks ?? 0} tasks`,
       })),
     },
 
@@ -439,12 +452,9 @@ export function buildDashboardCards({
       id: 'notes-card',
       module: 'notes',
       title: 'Recent Ideas & Scratchpad',
-      value: `${notes.length} thoughts in vault`,
-      subtitle:
-        notes.length > 0
-          ? `Latest: "${notes[0].title}"`
-          : 'Scratchpad is ready for new ideas',
-      badge: `${notes.length} Notes`,
+      value: `${safeNotes.length} thoughts in vault`,
+      subtitle: latestNoteTitle,
+      badge: `${safeNotes.length} Notes`,
       color:
         'bg-rose-50/70 hover:bg-rose-50 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/40 text-stone-900 dark:text-stone-100',
       accentBg: 'bg-rose-100/80 dark:bg-rose-900/40',
@@ -458,9 +468,9 @@ export function buildDashboardCards({
         label: 'New Scratch',
         route: '/notes',
       },
-      previewItems: notes.slice(0, 3).map((n) => ({
+      previewItems: safeNotes.slice(0, 3).map((n) => ({
         id: n.id,
-        label: n.title,
+        label: n.title || 'Untitled idea',
         sublabel: n.content ? n.content.substring(0, 45) : 'Empty note',
       })),
     },

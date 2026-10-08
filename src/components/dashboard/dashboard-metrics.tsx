@@ -1,24 +1,42 @@
 import React from 'react';
-import { getFinancialAnalytics } from '@/lib/actions/finances';
-import { getTasks } from '@/lib/actions/tasks';
-import { getProjectsWithMetrics } from '@/lib/actions/projects';
-import { getNotes } from '@/lib/actions/notes';
+import { getFinancialAnalytics, type FinancialAnalytics } from '@/lib/actions/finances';
+import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
+import { getTasks, type TaskWithProject } from '@/lib/actions/tasks';
+import { getProjectsWithMetrics, type ProjectWithMetrics } from '@/lib/actions/projects';
+import { getNotes, type NoteWithProject } from '@/lib/actions/notes';
 import { formatCurrency } from '@/lib/utils/format';
 import { getTodayDate } from '@/lib/utils/date';
 
 export async function DashboardMetrics() {
-  const [analytics, tasks, projects, notes] = await Promise.all([
-    getFinancialAnalytics(),
-    getTasks(),
-    getProjectsWithMetrics(),
-    getNotes(),
-  ]);
+  let analytics: FinancialAnalytics = getFallbackFinancialAnalytics();
+  let tasks: TaskWithProject[] = [];
+  let projects: ProjectWithMetrics[] = [];
+  let notes: NoteWithProject[] = [];
 
-  const activeProjects = projects.filter((p) => p.status === 'active');
-  const completedTasksCount = tasks.filter((t) => t.is_completed).length;
-  const totalTasksCount = tasks.length;
+  try {
+    const results = await Promise.all([
+      getFinancialAnalytics(),
+      getTasks(),
+      getProjectsWithMetrics(),
+      getNotes(),
+    ]);
+    analytics = results[0] || analytics;
+    tasks = Array.isArray(results[1]) ? results[1] : [];
+    projects = Array.isArray(results[2]) ? results[2] : [];
+    notes = Array.isArray(results[3]) ? results[3] : [];
+  } catch (err) {
+    console.error('Error fetching dashboard metrics data:', err);
+  }
+
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeProjects = Array.isArray(projects) ? projects : [];
+  const safeNotes = Array.isArray(notes) ? notes : [];
+
+  const activeProjects = safeProjects.filter((p) => p?.status === 'active');
+  const completedTasksCount = safeTasks.filter((t) => t?.is_completed).length;
+  const totalTasksCount = safeTasks.length;
   const tasksPercent = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
-  const pendingTodayCount = tasks.filter((t) => !t.is_completed && (!t.due_date || t.due_date <= getTodayDate())).length;
+  const pendingTodayCount = safeTasks.filter((t) => !t?.is_completed && (!t?.due_date || t.due_date <= getTodayDate())).length;
 
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
@@ -85,16 +103,16 @@ export async function DashboardMetrics() {
           </span>
           <div className="flex items-center gap-1.5 text-outline min-w-0">
             <span className="font-label-sm text-label-sm truncate">
-              {activeProjects.map((p) => p.title).slice(0, 3).join(' • ') || 'No active projects'}
+              {activeProjects.map((p) => p?.title || 'Project').slice(0, 3).join(' • ') || 'No active projects'}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           <span className="text-label-sm font-label-sm px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant">
-            {projects.filter((p) => p.status === 'completed').length} completed
+            {safeProjects.filter((p) => p?.status === 'completed').length} completed
           </span>
           <span className="text-label-sm font-label-sm px-2 py-0.5 rounded-md bg-surface-container text-on-surface-variant">
-            {projects.filter((p) => p.status === 'backlog').length} backlog
+            {safeProjects.filter((p) => p?.status === 'backlog').length} backlog
           </span>
         </div>
       </div>
@@ -107,18 +125,18 @@ export async function DashboardMetrics() {
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           <span className="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight font-display truncate">
-            {notes.length} Notes
+            {safeNotes.length} Notes
           </span>
           <div className="flex items-center gap-1.5 text-outline min-w-0">
             <span className="material-symbols-outlined text-[15px] shrink-0 text-secondary">auto_awesome</span>
             <span className="font-label-sm text-label-sm truncate">
-              {notes.filter((n) => n.is_pinned).length} pinned sparks
+              {safeNotes.filter((n) => n?.is_pinned).length} pinned sparks
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 mt-1 text-outline min-w-0">
           <span className="font-label-sm text-label-sm text-on-surface-variant font-medium shrink-0">
-            {notes.filter((n) => n.project_id).length} promoted
+            {safeNotes.filter((n) => n?.project_id).length} promoted
           </span>
           <span className="font-label-sm text-label-sm truncate">to projects</span>
         </div>

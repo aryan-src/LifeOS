@@ -19,26 +19,31 @@ export interface TaskWithProject extends Task {
  * Fetch tasks for the authenticated user, optionally with linked project data.
  */
 export async function getTasks(): Promise<TaskWithProject[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
 
-  const { data, error } = await supabase
-    .from('tasks')
-    .select(`
-      *,
-      project:projects(id, title, slug)
-    `)
-    .eq('user_id', effectiveUserId)
-    .order('is_completed', { ascending: true })
-    .order('priority', { ascending: false })
-    .order('due_date', { ascending: true, nullsFirst: false });
+    const { data, error } = await supabase
+      .from('tasks')
+      .select(`
+        *,
+        project:projects(id, title, slug)
+      `)
+      .eq('user_id', effectiveUserId)
+      .order('is_completed', { ascending: true })
+      .order('priority', { ascending: false })
+      .order('due_date', { ascending: true, nullsFirst: false });
 
-  if (error) {
-    console.error('Error fetching tasks:', error);
+    if (error || !data) {
+      if (error) console.error('Error fetching tasks:', error);
+      return [];
+    }
+
+    return (data as any) || [];
+  } catch (err) {
+    console.error('Unhandled error in getTasks:', err);
     return [];
   }
-
-  return (data as any) || [];
 }
 
 /**

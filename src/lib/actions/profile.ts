@@ -14,42 +14,55 @@ import { cache } from 'react';
  * Deduplicates across RSC passes to eliminate redundant database calls.
  */
 export const getUserProfile = cache(async (): Promise<Profile> => {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', effectiveUserId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error fetching student profile:', error);
-  }
-
-  if (profile) {
-    return {
-      ...profile,
-      monthly_allowance_target: Number(profile.monthly_allowance_target),
-    };
-  }
-
-  // Graceful fallback for new or unseeded profiles
-  const { data: { user } } = await supabase.auth.getUser();
-  const fallbackName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    (user?.email ? user.email.split('@')[0] : 'Student');
-
-  return {
-    id: effectiveUserId,
-    display_name: fallbackName,
+  const defaultProfile: Profile = {
+    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    display_name: 'Student',
     theme_preference: 'stone',
     currency_symbol: '₹',
     monthly_allowance_target: 15000.00,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
+
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
+    defaultProfile.id = effectiveUserId;
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', effectiveUserId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching student profile:', error);
+    }
+
+    if (profile) {
+      return {
+        ...profile,
+        monthly_allowance_target: Number(profile.monthly_allowance_target || 15000),
+      };
+    }
+
+    // Graceful fallback for new or unseeded profiles
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const fallbackName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        (user?.email ? user.email.split('@')[0] : 'Student');
+      defaultProfile.display_name = fallbackName;
+    } catch {
+      // Ignore auth getUser error
+    }
+
+    return defaultProfile;
+  } catch (err) {
+    console.error('Unhandled error in getUserProfile:', err);
+    return defaultProfile;
+  }
 });
 
 /**

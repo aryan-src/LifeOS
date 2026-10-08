@@ -100,69 +100,76 @@ const OBSOLETE_CATEGORIES = [
   'Transport & Commute',
 ];
 
+import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
+
 /**
  * Fetch financial categories and auto-seed/sync the student categories if missing.
  */
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
 
-  let { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('user_id', effectiveUserId)
-    .order('name', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-
-  const existingNames = new Set((data || []).map((c) => c.name));
-  const hasObsolete = (data || []).some((c) => OBSOLETE_CATEGORIES.includes(c.name));
-  const missingCategories = STUDENT_CATEGORIES.filter((c) => !existingNames.has(c.name));
-
-  if (hasObsolete || missingCategories.length > 0) {
-    // Clean up obsolete categories
-    if (hasObsolete) {
-      await supabase
-        .from('categories')
-        .delete()
-        .eq('user_id', effectiveUserId)
-        .in('name', OBSOLETE_CATEGORIES);
-    }
-
-    // Insert missing student categories
-    if (missingCategories.length > 0) {
-      await supabase
-        .from('categories')
-        .insert(
-          missingCategories.map((c) => ({
-            user_id: effectiveUserId,
-            name: c.name,
-            type: c.type,
-            color: c.color,
-          }))
-        );
-    }
-
-    // Re-query the updated clean category set
-    const refreshed = await supabase
+    let { data, error } = await supabase
       .from('categories')
       .select('*')
       .eq('user_id', effectiveUserId)
       .order('name', { ascending: true });
 
-    if (refreshed.data) {
-      data = refreshed.data;
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return [];
     }
-  }
 
-  // Parse monthly_budget to number if present
-  return (data || []).map((c) => ({
-    ...c,
-    monthly_budget: c.monthly_budget !== null ? Number(c.monthly_budget) : null,
-  }));
+    const existingNames = new Set((data || []).map((c) => c.name));
+    const hasObsolete = (data || []).some((c) => OBSOLETE_CATEGORIES.includes(c.name));
+    const missingCategories = STUDENT_CATEGORIES.filter((c) => !existingNames.has(c.name));
+
+    if (hasObsolete || missingCategories.length > 0) {
+      // Clean up obsolete categories
+      if (hasObsolete) {
+        await supabase
+          .from('categories')
+          .delete()
+          .eq('user_id', effectiveUserId)
+          .in('name', OBSOLETE_CATEGORIES);
+      }
+
+      // Insert missing student categories
+      if (missingCategories.length > 0) {
+        await supabase
+          .from('categories')
+          .insert(
+            missingCategories.map((c) => ({
+              user_id: effectiveUserId,
+              name: c.name,
+              type: c.type,
+              color: c.color,
+            }))
+          );
+      }
+
+      // Re-query the updated clean category set
+      const refreshed = await supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', effectiveUserId)
+        .order('name', { ascending: true });
+
+      if (refreshed.data) {
+        data = refreshed.data;
+      }
+    }
+
+    // Parse monthly_budget to number if present
+    return (data || []).map((c) => ({
+      ...c,
+      monthly_budget: c.monthly_budget !== null ? Number(c.monthly_budget) : null,
+    }));
+  } catch (err) {
+    console.error('Unhandled error in getCategories:', err);
+    return [];
+  }
 }
 
 /**
@@ -171,30 +178,35 @@ export async function getCategories(): Promise<Category[]> {
  * Strictly casts PostgreSQL numeric amount strings into JavaScript numbers.
  */
 export async function getTransactions(): Promise<TransactionWithRelations[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await getEffectiveUserId(supabase);
 
-  const { data, error } = await supabase
-    .from('transactions')
-    .select(`
-      *,
-      category:categories(id, name, color),
-      project:projects(id, title, slug)
-    `)
-    .eq('user_id', effectiveUserId)
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(100);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        category:categories(id, name, color),
+        project:projects(id, title, slug)
+      `)
+      .eq('user_id', effectiveUserId)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(100);
 
-  if (error) {
-    console.error('Error fetching transactions:', error);
+    if (error || !data) {
+      if (error) console.error('Error fetching transactions:', error);
+      return [];
+    }
+
+    return data.map((t: any) => ({
+      ...t,
+      amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
+    }));
+  } catch (err) {
+    console.error('Unhandled error in getTransactions:', err);
     return [];
   }
-
-  return (data || []).map((t: any) => ({
-    ...t,
-    amount: parseFloat(t.amount) || 0, // Explicitly parsed into float
-  }));
 }
 
 /**
@@ -203,150 +215,161 @@ export async function getTransactions(): Promise<TransactionWithRelations[]> {
  * Strictly applies Number(value.toFixed(2)) to final sums to prevent binary floating-point bugs.
  */
 export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
-  const [transactions, profile] = await Promise.all([
-    getTransactions(),
-    getUserProfile(),
-  ]);
+  try {
+    const [transactions, profile] = await Promise.all([
+      getTransactions(),
+      getUserProfile(),
+    ]);
 
-  const currencySymbol = profile.currency_symbol || '₹';
+    const currencySymbol = profile?.currency_symbol || '₹';
 
-  // Current date boundary calculations (Timezone safe YYYY-MM-DD strings in IST)
-  const todayStr = getTodayDate();
-  const [currentYear, currentMonthNum, currentDayNum] = todayStr.split('-').map(Number);
-  const currentYearMonth = todayStr.substring(0, 7); // e.g. "2026-10"
+    // Current date boundary calculations (Timezone safe YYYY-MM-DD strings in IST)
+    const todayStr = getTodayDate();
+    const [currentYear, currentMonthNum, currentDayNum] = todayStr.split('-').map(Number);
+    const currentYearMonth = todayStr.substring(0, 7); // e.g. "2026-10"
 
-  // Days in current month and days remaining (including today)
-  const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
-  const daysLeftInMonth = Math.max(1, totalDaysInMonth - currentDayNum + 1);
+    // Days in current month and days remaining (including today)
+    const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+    const rawDaysLeft = totalDaysInMonth - currentDayNum + 1;
+    const daysLeftInMonth = isNaN(rawDaysLeft) || rawDaysLeft < 1 ? 1 : rawDaysLeft;
 
-  // Trailing 7 days structure for weekly tracker in IST
-  const rawWeeklyDays = getTrailingDays(7);
-  const weeklyDays: WeeklyDayData[] = rawWeeklyDays.map((d) => ({
-    ...d,
-    spent: 0,
-  }));
-  const weeklyDayMap = new Map<string, WeeklyDayData>();
-  for (const item of weeklyDays) {
-    weeklyDayMap.set(item.date, item);
-  }
+    // Trailing 7 days structure for weekly tracker in IST
+    const rawWeeklyDays = getTrailingDays(7);
+    const weeklyDays: WeeklyDayData[] = rawWeeklyDays.map((d) => ({
+      ...d,
+      spent: 0,
+    }));
+    const weeklyDayMap = new Map<string, WeeklyDayData>();
+    for (const item of weeklyDays) {
+      weeklyDayMap.set(item.date, item);
+    }
 
-  let totalInflow = 0;
-  let totalOutflow = 0;
-  let monthlyAllowance = 0;
-  let monthlySpent = 0;
-  let todaySpent = 0;
-  let weekSpent = 0;
-  let projectSpendTotal = 0;
+    let totalInflow = 0;
+    let totalOutflow = 0;
+    let monthlyAllowance = 0;
+    let monthlySpent = 0;
+    let todaySpent = 0;
+    let weekSpent = 0;
+    let projectSpendTotal = 0;
 
-  const categoryMap = new Map<string, { value: number; color: string; count: number }>();
+    const categoryMap = new Map<string, { value: number; color: string; count: number }>();
 
-  for (const t of transactions) {
-    const amt = Math.abs(t.amount);
-    const isIncome = t.type === 'income' || t.amount > 0;
-    const isCurrentMonth = t.date.startsWith(currentYearMonth);
+    for (const t of (transactions || [])) {
+      if (!t) continue;
+      const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any);
+      const amt = Math.abs(isNaN(rawAmt) ? 0 : rawAmt);
+      const isIncome = t.type === 'income' || (typeof t.amount === 'number' && t.amount > 0);
+      const txDate = typeof t.date === 'string' ? t.date : todayStr;
+      const isCurrentMonth = txDate.startsWith(currentYearMonth);
 
-    if (isIncome) {
-      totalInflow += amt;
-      if (isCurrentMonth) {
-        monthlyAllowance += amt;
-      }
-    } else {
-      totalOutflow += amt;
-      if (isCurrentMonth) {
-        monthlySpent += amt;
-      }
-
-      if (t.date === todayStr) {
-        todaySpent += amt;
-      }
-
-      const weekDay = weeklyDayMap.get(t.date);
-      if (weekDay) {
-        weekDay.spent = Number((weekDay.spent + amt).toFixed(2));
-        weekSpent += amt;
-      }
-
-      if (t.project_id) {
-        projectSpendTotal += amt;
-      }
-
-      const catName = t.category?.name || 'Personal & Misc';
-      const catColor = t.category?.color || '#a855f7';
-      const existing = categoryMap.get(catName);
-      if (existing) {
-        existing.value += amt;
-        existing.count += 1;
+      if (isIncome) {
+        totalInflow += amt;
+        if (isCurrentMonth) {
+          monthlyAllowance += amt;
+        }
       } else {
-        categoryMap.set(catName, { value: amt, color: catColor, count: 1 });
+        totalOutflow += amt;
+        if (isCurrentMonth) {
+          monthlySpent += amt;
+        }
+
+        if (txDate === todayStr) {
+          todaySpent += amt;
+        }
+
+        const weekDay = weeklyDayMap.get(txDate);
+        if (weekDay) {
+          weekDay.spent = Number((weekDay.spent + amt).toFixed(2));
+          weekSpent += amt;
+        }
+
+        if (t.project_id) {
+          projectSpendTotal += amt;
+        }
+
+        const catName = t.category?.name || 'Personal & Misc';
+        const catColor = t.category?.color || '#a855f7';
+        const existing = categoryMap.get(catName);
+        if (existing) {
+          existing.value += amt;
+          existing.count += 1;
+        } else {
+          categoryMap.set(catName, { value: amt, color: catColor, count: 1 });
+        }
       }
     }
-  }
 
-  // Use profile's custom monthly allowance target if no allowance income logged this month yet
-  if (monthlyAllowance === 0) {
-    if (profile.monthly_allowance_target > 0) {
-      monthlyAllowance = profile.monthly_allowance_target;
-    } else if (totalInflow > 0) {
-      monthlyAllowance = totalInflow;
-    } else {
-      monthlyAllowance = 15000.00;
+    // Use profile's custom monthly allowance target if no allowance income logged this month yet
+    if (monthlyAllowance === 0) {
+      const profileTarget = Number(profile?.monthly_allowance_target || 0);
+      if (profileTarget > 0) {
+        monthlyAllowance = profileTarget;
+      } else if (totalInflow > 0) {
+        monthlyAllowance = totalInflow;
+      } else {
+        monthlyAllowance = 15000.00;
+      }
     }
+
+    if (monthlySpent === 0 && totalOutflow > 0) {
+      monthlySpent = totalOutflow;
+    }
+
+    const remainingAllowance = Number((monthlyAllowance - monthlySpent).toFixed(2));
+    const allowanceUsagePercent =
+      monthlyAllowance > 0
+        ? Math.min(100, Math.round((monthlySpent / monthlyAllowance) * 100))
+        : monthlySpent > 0
+        ? 100
+        : 0;
+
+    // Safe daily budget target recommendation
+    const safeDaysLeft = Math.max(1, daysLeftInMonth);
+    const safeDailyBudget =
+      remainingAllowance > 0
+        ? Number((remainingAllowance / safeDaysLeft).toFixed(2))
+        : 0;
+
+    const categoryBreakdown: CategoryBreakdownItem[] = Array.from(categoryMap.entries())
+      .map(([name, data]) => ({
+        name,
+        value: Number(data.value.toFixed(2)),
+        color: data.color,
+        count: data.count,
+        percentage: monthlySpent > 0 ? Math.round((data.value / monthlySpent) * 100) : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    const netCashflow = Number((totalInflow - totalOutflow).toFixed(2));
+
+    const cashflowComparison = [
+      { name: 'Pocket Money (In)', amount: Number(monthlyAllowance.toFixed(2)), fill: '#10b981' },
+      { name: 'Spent (Out)', amount: Number(monthlySpent.toFixed(2)), fill: '#f43f5e' },
+    ];
+
+    return {
+      currentDate: todayStr,
+      currencySymbol,
+      monthlyAllowance: Number(monthlyAllowance.toFixed(2)),
+      monthlySpent: Number(monthlySpent.toFixed(2)),
+      remainingAllowance,
+      allowanceUsagePercent,
+      todaySpent: Number(todaySpent.toFixed(2)),
+      safeDailyBudget,
+      daysLeftInMonth: safeDaysLeft,
+      weekSpent: Number(weekSpent.toFixed(2)),
+      weeklyDays,
+      categoryBreakdown,
+      projectSpendTotal: Number(projectSpendTotal.toFixed(2)),
+      totalInflow: Number(totalInflow.toFixed(2)),
+      totalOutflow: Number(totalOutflow.toFixed(2)),
+      netCashflow,
+      cashflowComparison,
+    };
+  } catch (error) {
+    console.error('Unhandled error in getFinancialAnalytics, returning safe fallback:', error);
+    return getFallbackFinancialAnalytics();
   }
-
-  if (monthlySpent === 0 && totalOutflow > 0) {
-    monthlySpent = totalOutflow;
-  }
-
-  const remainingAllowance = Number((monthlyAllowance - monthlySpent).toFixed(2));
-  const allowanceUsagePercent =
-    monthlyAllowance > 0
-      ? Math.min(100, Math.round((monthlySpent / monthlyAllowance) * 100))
-      : monthlySpent > 0
-      ? 100
-      : 0;
-
-  // Safe daily budget target recommendation
-  const safeDailyBudget =
-    remainingAllowance > 0
-      ? Number((remainingAllowance / daysLeftInMonth).toFixed(2))
-      : 0;
-
-  const categoryBreakdown: CategoryBreakdownItem[] = Array.from(categoryMap.entries())
-    .map(([name, data]) => ({
-      name,
-      value: Number(data.value.toFixed(2)),
-      color: data.color,
-      count: data.count,
-      percentage: monthlySpent > 0 ? Math.round((data.value / monthlySpent) * 100) : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
-
-  const netCashflow = Number((totalInflow - totalOutflow).toFixed(2));
-
-  const cashflowComparison = [
-    { name: 'Pocket Money (In)', amount: Number(monthlyAllowance.toFixed(2)), fill: '#10b981' },
-    { name: 'Spent (Out)', amount: Number(monthlySpent.toFixed(2)), fill: '#f43f5e' },
-  ];
-
-  return {
-    currentDate: todayStr,
-    currencySymbol,
-    monthlyAllowance: Number(monthlyAllowance.toFixed(2)),
-    monthlySpent: Number(monthlySpent.toFixed(2)),
-    remainingAllowance,
-    allowanceUsagePercent,
-    todaySpent: Number(todaySpent.toFixed(2)),
-    safeDailyBudget,
-    daysLeftInMonth,
-    weekSpent: Number(weekSpent.toFixed(2)),
-    weeklyDays,
-    categoryBreakdown,
-    projectSpendTotal: Number(projectSpendTotal.toFixed(2)),
-    totalInflow: Number(totalInflow.toFixed(2)),
-    totalOutflow: Number(totalOutflow.toFixed(2)),
-    netCashflow,
-    cashflowComparison,
-  };
 }
 
 /**

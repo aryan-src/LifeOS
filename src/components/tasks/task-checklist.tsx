@@ -133,54 +133,54 @@ export function TaskChecklist({ initialTasks, projects, projectDeadlines }: Task
         {/* 2. Filter & View Tabs with Actions */}
         <div className="flex flex-wrap items-center justify-between gap-space-sm py-space-xs">
           {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-1 p-1 bg-surface-container-low rounded-lg">
+          <div className="flex items-center gap-1 p-1 bg-surface-container-low dark:bg-zinc-900/60 dark:border dark:border-zinc-800/60 rounded-lg">
             <button
               type="button"
               onClick={() => handleTabChange('today')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'today'
-                  ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
               }`}
             >
-              Today &amp; Overdue <span className="ml-1 text-label-sm text-on-surface-variant font-label-sm">({counts.today})</span>
+              Today &amp; Overdue <span className="ml-1 text-label-sm text-on-surface-variant dark:text-zinc-400 font-label-sm">({counts.today})</span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('upcoming')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'upcoming'
-                  ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
               }`}
             >
-              Upcoming <span className="ml-1 text-label-sm text-outline font-label-sm">({counts.upcoming})</span>
+              Upcoming <span className="ml-1 text-label-sm text-outline dark:text-zinc-500 font-label-sm">({counts.upcoming})</span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('completed')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors ${
                 activeTab === 'completed'
-                  ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
               }`}
             >
-              Completed <span className="ml-1 text-label-sm text-outline font-label-sm">({counts.completed})</span>
+              Completed <span className="ml-1 text-label-sm text-outline dark:text-zinc-500 font-label-sm">({counts.completed})</span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('all')}
               className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors hidden sm:inline-flex ${
                 activeTab === 'all'
-                  ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
               }`}
             >
               All Tasks
             </button>
           </div>
 
-          <div className="flex items-center gap-1 text-outline font-label-sm text-label-sm">
+          <div className="flex items-center gap-1 text-outline dark:text-zinc-400 font-label-sm text-label-sm">
             <span>{filteredTasks.length} items shown</span>
           </div>
         </div>
@@ -189,9 +189,9 @@ export function TaskChecklist({ initialTasks, projects, projectDeadlines }: Task
         <div className="flex flex-col gap-space-sm">
           <div className="flex items-center justify-between px-space-xs pt-space-xs">
             <div className="flex items-center gap-space-xs">
-              <span className="material-symbols-outlined text-[18px] text-outline">crisis_alert</span>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-medium">Deliverables</h2>
-              <span className="font-label-sm text-label-sm bg-surface-container px-space-xs py-0.5 rounded text-outline">
+              <span className="material-symbols-outlined text-[18px] text-outline dark:text-zinc-400">crisis_alert</span>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-medium">Deliverables</h2>
+              <span className="font-label-sm text-label-sm bg-surface-container dark:bg-zinc-800 px-space-xs py-0.5 rounded text-outline dark:text-zinc-400">
                 {filteredTasks.length} items
               </span>
             </div>
@@ -199,9 +199,9 @@ export function TaskChecklist({ initialTasks, projects, projectDeadlines }: Task
 
           <div className="flex flex-col gap-2">
             {filteredTasks.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-outline-variant p-10 text-center bg-surface-container-lowest">
-                <p className="font-body-sm text-body-sm text-outline">No tasks in this category.</p>
-                <p className="font-label-sm text-label-sm text-outline mt-1">
+              <div className="rounded-xl border border-dashed border-outline-variant dark:border-zinc-800/80 p-10 text-center bg-surface-container-lowest dark:bg-zinc-900/40">
+                <p className="font-body-sm text-body-sm text-outline dark:text-zinc-400">No tasks in this category.</p>
+                <p className="font-label-sm text-label-sm text-outline dark:text-zinc-500 mt-1">
                   Use the quick creation bar above or press ⌘K.
                 </p>
               </div>
@@ -222,26 +222,26 @@ export function TaskChecklist({ initialTasks, projects, projectDeadlines }: Task
       {/* Right Column: Focus Companion & Context Workspace (4 Cols) */}
       <div className="lg:col-span-4 flex flex-col gap-space-lg">
         {/* Focus Sprint Block */}
-        <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 dark:border dark:border-zinc-800/60 p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Deep Work Sprint</span>
-            <span className="inline-flex items-center gap-1 text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded font-label-sm text-label-sm font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">Deep Work Sprint</span>
+            <span className="inline-flex items-center gap-1 text-on-secondary-container dark:text-emerald-300 bg-secondary-container dark:bg-emerald-950/40 px-2 py-0.5 rounded font-label-sm text-label-sm font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary dark:bg-emerald-400 animate-pulse"></span>
               Focus Mode
             </span>
           </div>
           <div className="flex items-baseline justify-between py-space-xs">
             <div>
-              <span className="font-display text-display font-semibold tracking-tight text-on-surface">25:00</span>
-              <p className="font-label-sm text-label-sm text-outline mt-0.5">Session: Pomodoro Standard</p>
+              <span className="font-display text-display font-semibold tracking-tight text-on-surface dark:text-zinc-100">25:00</span>
+              <p className="font-label-sm text-label-sm text-outline dark:text-zinc-400 mt-0.5">Session: Pomodoro Standard</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primary text-on-primary dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-[20px]">timer</span>
             </div>
           </div>
           {/* Micro session bar */}
-          <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-            <div className="bg-secondary h-full rounded-full transition-all" style={{ width: '60%' }}></div>
+          <div className="w-full bg-surface-container dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-secondary dark:bg-emerald-400 h-full rounded-full transition-all" style={{ width: '60%' }}></div>
           </div>
         </div>
 

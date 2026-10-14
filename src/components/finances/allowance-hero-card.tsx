@@ -210,23 +210,23 @@ export function AllowanceHeroCard({
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md items-stretch">
         {/* Left 2/3 Column: Monthly Budget Tracker Card */}
-        <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md border border-outline-variant/30 h-full">
+        <div className="lg:col-span-2 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md border border-outline-variant/30 dark:border-zinc-800/60 h-full">
           {/* Card Header & Month Switcher */}
           <div className="flex items-center justify-between pb-space-xs">
             <div className="flex items-center gap-space-sm">
-              <div className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-medium">
+              <div className="w-2 h-2 rounded-full bg-secondary dark:bg-emerald-400" />
+              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-400 font-medium">
                 {trackerTitle}
               </span>
             </div>
             <button
               type="button"
               onClick={onEditAllowance}
-              className="flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 text-on-surface font-label-md text-label-md transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container-low hover:bg-surface-container dark:bg-zinc-800/50 dark:hover:bg-zinc-800 border border-outline-variant/40 dark:border-zinc-700/60 text-on-surface dark:text-zinc-200 font-label-md text-label-md transition-colors cursor-pointer"
               title="Change monthly allowance or view details"
             >
               <span>{formattedMonthYear}</span>
-              <span className="material-symbols-outlined text-[16px] text-outline">
+              <span className="material-symbols-outlined text-[16px] text-outline dark:text-zinc-400">
                 keyboard_arrow_down
               </span>
             </button>
@@ -238,19 +238,19 @@ export function AllowanceHeroCard({
               <div className="flex items-baseline gap-space-sm">
                 <span
                   className={`font-display text-display font-bold tracking-tight ${
-                    displayRemaining < 0 ? 'text-error' : 'text-on-surface'
+                    displayRemaining < 0 ? 'text-error dark:text-rose-400' : 'text-on-surface dark:text-zinc-100'
                   }`}
                 >
                   {displayRemaining < 0 ? '-' : ''}
                   {currencySymbol}
                   {formatNumber(Math.abs(Math.round(displayRemaining)))}
                 </span>
-                <span className="font-label-md text-label-md text-outline font-medium">
+                <span className="font-label-md text-label-md text-outline dark:text-zinc-400 font-medium">
                   remaining balance
                 </span>
               </div>
-              <div className="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
-                <span className="material-symbols-outlined text-secondary text-[16px]">
+              <div className="flex items-center gap-space-xs text-outline dark:text-zinc-400 font-label-sm text-label-sm">
+                <span className="material-symbols-outlined text-secondary dark:text-emerald-400 text-[16px]">
                   schedule
                 </span>
                 <span>{cycleCountdownLabel}</span>
@@ -259,15 +259,15 @@ export function AllowanceHeroCard({
 
             {/* Main Spent Progress Bar */}
             <div className="flex flex-col gap-1.5 pt-space-xs">
-              <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
+              <div className="w-full h-3 bg-surface-container-high dark:bg-zinc-800 rounded-full overflow-hidden flex">
                 <div
-                  className="h-full bg-on-surface rounded-full transition-all duration-700 ease-out"
+                  className="h-full bg-on-surface dark:bg-zinc-100 rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${Math.min(displayPercent, 100)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-outline font-label-sm text-label-sm pt-0.5">
+              <div className="flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm pt-0.5">
                 <span>{displayPercent}% of {scopeLabel} cap utilized</span>
-                <span className="text-secondary font-medium">
+                <span className="text-secondary dark:text-emerald-400 font-medium">
                   {safeBufferPercent}% safe buffer remaining
                 </span>
               </div>
@@ -277,51 +277,51 @@ export function AllowanceHeroCard({
           {/* Two Columns: Spent vs Limit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
             {/* Spent */}
-            <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
+            <div className="p-space-md rounded-lg bg-surface-container-low dark:bg-zinc-800/40 border border-outline-variant/20 dark:border-zinc-800/60 flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
                   Spent
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-surface-container-high dark:bg-zinc-800 text-on-surface dark:text-zinc-200 font-label-sm text-label-sm font-semibold">
                   {displayPercent}%
                 </span>
               </div>
-              <span className="font-headline-lg text-headline-lg text-on-surface font-bold font-mono">
+              <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-bold font-mono">
                 {currencySymbol}
                 {formatNumber(Math.round(displaySpent))}
               </span>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 {spentRunwayText}
               </span>
             </div>
 
             {/* Limit (Secondary Card: Right Side) */}
-            <div className="p-space-md rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1">
+            <div className="p-space-md rounded-lg bg-surface-container-low dark:bg-zinc-800/40 border border-outline-variant/20 dark:border-zinc-800/60 flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
                   {limitCardHeader}
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-secondary-container dark:bg-emerald-950/40 text-on-secondary-container dark:text-emerald-300 font-label-sm text-label-sm font-semibold">
                   {safeBufferPercent}%
                 </span>
               </div>
-              <span className="font-headline-lg text-headline-lg text-on-surface font-bold font-mono">
+              <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-bold font-mono">
                 {currencySymbol}
                 {formatNumber(Math.round(displayLimit))}
               </span>
-              <span className="font-label-sm text-label-sm text-secondary font-medium">
+              <span className="font-label-sm text-label-sm text-secondary dark:text-emerald-400 font-medium">
                 {limitSubtitle}
               </span>
             </div>
           </div>
 
           {/* Spending Breakdown with Segmented Bar */}
-          <div className="flex flex-col gap-space-sm pt-space-xs border-t border-outline-variant/40">
+          <div className="flex flex-col gap-space-sm pt-space-xs border-t border-outline-variant/40 dark:border-zinc-800/60">
             <div className="flex items-center justify-between">
-              <span className="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider">
+              <span className="font-label-md text-label-md text-on-surface dark:text-zinc-100 font-semibold uppercase tracking-wider">
                 Spending Breakdown
               </span>
-              <span className="font-label-sm text-label-sm text-outline font-mono">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 font-mono">
                 {activeCategories.length} {activeCategories.length === 1 ? 'category' : 'categories'} active
               </span>
             </div>
@@ -329,7 +329,7 @@ export function AllowanceHeroCard({
             {hasExpensesInPeriod ? (
               <>
                 {/* Segmented bar */}
-                <div className="w-full h-2.5 bg-surface-container-high rounded-full overflow-hidden flex gap-0.5">
+                <div className="w-full h-2.5 bg-surface-container-high dark:bg-zinc-800 rounded-full overflow-hidden flex gap-0.5">
                   {activeCategories.map((cat, idx) => (
                     <div
                       key={idx}
@@ -348,7 +348,7 @@ export function AllowanceHeroCard({
                   {activeCategories.slice(0, 3).map((cat, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low border border-outline-variant/20"
+                      className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low dark:bg-zinc-800/40 border border-outline-variant/20 dark:border-zinc-800/60"
                     >
                       <div className="flex items-center gap-space-xs min-w-0">
                         <span
@@ -357,11 +357,11 @@ export function AllowanceHeroCard({
                             backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
                           }}
                         />
-                        <span className="font-body-sm text-body-sm text-on-surface font-medium truncate">
+                        <span className="font-body-sm text-body-sm text-on-surface dark:text-zinc-200 font-medium truncate">
                           {cat.name}
                         </span>
                       </div>
-                      <span className="font-label-md text-label-md font-mono text-on-surface font-bold shrink-0 ml-1">
+                      <span className="font-label-md text-label-md font-mono text-on-surface dark:text-zinc-100 font-bold shrink-0 ml-1">
                         {currencySymbol}
                         {formatNumber(Math.round(cat.value))}
                       </span>
@@ -370,7 +370,7 @@ export function AllowanceHeroCard({
                 </div>
               </>
             ) : (
-              <div className="py-2.5 px-3 rounded-lg bg-surface-container-low text-center text-outline text-label-sm border border-outline-variant/20">
+              <div className="py-2.5 px-3 rounded-lg bg-surface-container-low dark:bg-zinc-800/40 text-center text-outline dark:text-zinc-500 text-label-sm border border-outline-variant/20 dark:border-zinc-800/60">
                 No expenses recorded for this period
               </div>
             )}
@@ -380,10 +380,10 @@ export function AllowanceHeroCard({
           <button
             type="button"
             onClick={onEditAllowance}
-            className="w-full flex items-center justify-center gap-space-xs py-2 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 text-on-surface font-label-md text-label-md font-medium transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-space-xs py-2 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container dark:bg-zinc-800/50 dark:hover:bg-zinc-800 border border-outline-variant/40 dark:border-zinc-700/60 text-on-surface dark:text-zinc-200 font-label-md text-label-md font-medium transition-colors cursor-pointer"
           >
             <span>View Details</span>
-            <span className="material-symbols-outlined text-[16px] text-outline">
+            <span className="material-symbols-outlined text-[16px] text-outline dark:text-zinc-400">
               arrow_forward
             </span>
           </button>
@@ -392,32 +392,32 @@ export function AllowanceHeroCard({
         {/* Right 1/3 Column: Stacked Metric Tiles */}
         <div className="lg:col-span-1 flex flex-col justify-between gap-space-md h-full">
           {/* Tile 1: Today's Spending */}
-          <div className="flex-1 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30">
+          <div className="flex-1 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30 dark:border-zinc-800/60">
             <div className="flex items-center justify-between pb-space-xs">
-              <span className="font-label-md text-label-md text-outline uppercase tracking-wider">
+              <span className="font-label-md text-label-md text-outline dark:text-zinc-400 uppercase tracking-wider">
                 Today&apos;s Spending
               </span>
-              <span className="material-symbols-outlined text-outline text-[18px]">
+              <span className="material-symbols-outlined text-outline dark:text-zinc-400 text-[18px]">
                 wb_sunny
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-space-sm">
-                <span className="font-headline-lg text-headline-lg text-on-surface font-semibold">
+                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold">
                   {currencySymbol}
                   {formatCurrency(todaySpent)}
                 </span>
                 <span
                   className={`px-2 py-0.5 rounded font-label-sm text-label-sm font-medium ${
                     isTodayOverTarget
-                      ? 'bg-error-container text-on-error-container'
-                      : 'bg-secondary-container text-on-secondary-container'
+                      ? 'bg-error-container text-on-error-container dark:bg-rose-950/40 dark:text-rose-400'
+                      : 'bg-secondary-container text-on-secondary-container dark:bg-emerald-950/40 dark:text-emerald-300'
                   }`}
                 >
                   {isTodayOverTarget ? 'Limit reached' : 'Safe pace'}
                 </span>
               </div>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 Target budget: ~{currencySymbol}
                 {formatCurrency(safeDailyBudget > 0 ? safeDailyBudget : 190.38)} / day
               </span>
@@ -425,26 +425,26 @@ export function AllowanceHeroCard({
           </div>
 
           {/* Tile 2: 7-Day Outlays */}
-          <div className="flex-1 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30">
+          <div className="flex-1 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30 dark:border-zinc-800/60">
             <div className="flex items-center justify-between pb-space-xs">
-              <span className="font-label-md text-label-md text-outline uppercase tracking-wider">
+              <span className="font-label-md text-label-md text-outline dark:text-zinc-400 uppercase tracking-wider">
                 7-Day Outlays
               </span>
-              <span className="material-symbols-outlined text-outline text-[18px]">
+              <span className="material-symbols-outlined text-outline dark:text-zinc-400 text-[18px]">
                 monitoring
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-space-sm">
-                <span className="font-headline-lg text-headline-lg text-on-surface font-semibold">
+                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold">
                   {currencySymbol}
                   {formatCurrency(weekSpent)}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">
+                <span className="px-2 py-0.5 rounded bg-surface-container-high dark:bg-zinc-800 text-on-surface-variant dark:text-zinc-300 font-label-sm text-label-sm font-medium">
                   {activeDaysCount === 1 ? '1 transaction' : `${activeDaysCount} active days`}
                 </span>
               </div>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 Avg: {currencySymbol}
                 {formatCurrency(weekSpent / 7)} / day this week
               </span>
@@ -452,26 +452,26 @@ export function AllowanceHeroCard({
           </div>
 
           {/* Tile 3: Projects & Study Work */}
-          <div className="flex-1 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30">
+          <div className="flex-1 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-md shadow-sm flex flex-col justify-between border border-outline-variant/30 dark:border-zinc-800/60">
             <div className="flex items-center justify-between pb-space-xs">
-              <span className="font-label-md text-label-md text-outline uppercase tracking-wider">
+              <span className="font-label-md text-label-md text-outline dark:text-zinc-400 uppercase tracking-wider">
                 Projects &amp; Study Work
               </span>
-              <span className="material-symbols-outlined text-outline text-[18px]">
+              <span className="material-symbols-outlined text-outline dark:text-zinc-400 text-[18px]">
                 school
               </span>
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-space-sm">
-                <span className="font-headline-lg text-headline-lg text-on-surface font-semibold">
+                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold">
                   {currencySymbol}
                   {formatCurrency(projectSpendTotal)}
                 </span>
-                <span className="px-2 py-0.5 rounded bg-surface-container text-outline font-label-sm text-label-sm">
+                <span className="px-2 py-0.5 rounded bg-surface-container dark:bg-zinc-800 text-outline dark:text-zinc-400 font-label-sm text-label-sm">
                   {projectSpendTotal > 0 ? 'Active budget' : 'Idle buffer'}
                 </span>
               </div>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 Dedicated book &amp; print reserve
               </span>
             </div>
@@ -504,17 +504,17 @@ export function AllowanceHeroCard({
         </div>
 
         {/* Right Column: Where Did Pocket Money Go? (5 Cols) */}
-        <div className="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-lg min-h-[360px] border border-outline-variant/30">
+        <div className="lg:col-span-5 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-lg min-h-[360px] border border-outline-variant/30 dark:border-zinc-800/60">
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
                 Where Did Money Go?
               </h2>
-              <span className="font-label-sm text-label-sm text-outline font-mono">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 font-mono">
                 100% Accounted
               </span>
             </div>
-            <span className="font-label-sm text-label-sm text-outline">
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
               {outflowSubtitle}
             </span>
           </div>
@@ -522,7 +522,7 @@ export function AllowanceHeroCard({
           <div className="flex flex-col gap-space-md">
             {/* Horizontal Breakdown Bar */}
             <div className="flex flex-col gap-space-xs">
-              <div className="w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
+              <div className="w-full h-3 bg-surface-container-high dark:bg-zinc-800 rounded-full overflow-hidden flex">
                 {activeCategories.length > 0 ? (
                   activeCategories.map((cat, idx) => (
                     <div
@@ -537,12 +537,12 @@ export function AllowanceHeroCard({
                   ))
                 ) : (
                   <div
-                    className="h-full bg-surface-container-high transition-all"
+                    className="h-full bg-surface-container-high dark:bg-zinc-800 transition-all"
                     style={{ width: '100%' }}
                   />
                 )}
               </div>
-              <div className="flex items-center justify-between font-label-sm text-label-sm text-outline">
+              <div className="flex items-center justify-between font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 <span>
                   Total spent: {currencySymbol}
                   {formatCurrency(displaySpent)}
@@ -559,22 +559,22 @@ export function AllowanceHeroCard({
                 activeCategories.slice(0, 4).map((cat, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors"
+                    className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low dark:bg-zinc-800/40 hover:bg-surface-container dark:hover:bg-zinc-800/70 transition-colors"
                   >
                     <div className="flex items-center gap-space-sm">
                       <span
                         className="w-3 h-3 rounded-sm"
                         style={{ backgroundColor: cat.color || defaultColors[idx % defaultColors.length] }}
                       />
-                      <span className="font-body-sm text-body-sm text-on-surface font-medium">
+                      <span className="font-body-sm text-body-sm text-on-surface dark:text-zinc-200 font-medium">
                         {cat.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-space-md">
-                      <span className="font-label-sm text-label-sm text-outline">
+                      <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                         {Math.round(cat.percentage)}%
                       </span>
-                      <span className="font-label-md text-label-md text-on-surface font-semibold">
+                      <span className="font-label-md text-label-md text-on-surface dark:text-zinc-100 font-semibold">
                         {currencySymbol}
                         {formatCurrency(cat.value)}
                       </span>
@@ -582,16 +582,16 @@ export function AllowanceHeroCard({
                   </div>
                 ))
               ) : (
-                <div className="py-8 px-4 rounded-lg bg-surface-container-low text-center text-outline text-label-sm border border-outline-variant/20">
+                <div className="py-8 px-4 rounded-lg bg-surface-container-low dark:bg-zinc-800/40 text-center text-outline dark:text-zinc-500 text-label-sm border border-outline-variant/20 dark:border-zinc-800/60">
                   No expenses recorded for this period
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-outline font-label-sm text-label-sm pt-space-xs border-t border-surface-container-high/60">
+          <div className="flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm pt-space-xs border-t border-surface-container-high/60 dark:border-zinc-800/60">
             <span>Zero emergency debits logged</span>
-            <span className="text-secondary font-medium">
+            <span className="text-secondary dark:text-emerald-400 font-medium">
               Discipline Index: 98/100
             </span>
           </div>

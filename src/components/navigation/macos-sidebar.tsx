@@ -287,6 +287,34 @@ export function MacOSSidebar({
     setIsOpen(!isSidebarCollapsed);
   }, [isSidebarCollapsed]);
 
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const checkDark = () => {
+      const isDark =
+        document.documentElement.classList.contains('dark') ||
+        (typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark');
+      setIsDarkMode(isDark);
+    };
+    checkDark();
+
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
   const handleToggle = () => {
     const next = !isOpen;
     setIsOpen(next);
@@ -428,7 +456,47 @@ export function MacOSSidebar({
 
         {/* Bottom Profile / Personal Workspace Section */}
         {effectivelyOpen ? (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full box-border">
+          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full box-border flex flex-col gap-2">
+            {/* Quick Theme Switcher Pill in Sidebar / Mobile Drawer */}
+            <div className="flex items-center justify-between p-1.5 rounded-xl bg-neutral-200/40 dark:bg-neutral-800/40 text-xs">
+              <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 ml-1">
+                <span className="material-symbols-outlined text-[15px]">
+                  {isDarkMode ? 'dark_mode' : 'light_mode'}
+                </span>
+                <span>Theme</span>
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isDarkMode) toggleTheme();
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all ${
+                    !isDarkMode
+                      ? 'bg-white text-neutral-900 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                  aria-label="Switch to light theme"
+                >
+                  Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isDarkMode) toggleTheme();
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all ${
+                    isDarkMode
+                      ? 'bg-neutral-900 text-white dark:bg-neutral-700 shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                  aria-label="Switch to dark theme"
+                >
+                  Dark
+                </button>
+              </div>
+            </div>
+
             <Link
               href="/settings"
               prefetch={true}
@@ -455,7 +523,18 @@ export function MacOSSidebar({
             </Link>
           </div>
         ) : (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex justify-center box-border">
+          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex flex-col items-center gap-2 box-border">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="size-10 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer box-border"
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <span className="material-symbols-outlined text-[18px] text-neutral-700 dark:text-neutral-200">
+                {isDarkMode ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
             <Link
               href="/settings"
               prefetch={true}

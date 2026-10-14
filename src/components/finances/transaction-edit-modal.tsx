@@ -165,36 +165,36 @@ export function TransactionEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-md transition-opacity animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-900/40 dark:bg-black/60 backdrop-blur-md transition-opacity animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-lg rounded-3xl border border-slate-800/90 bg-slate-900/95 dark:bg-zinc-950/95 p-7 shadow-2xl backdrop-blur-xl text-slate-100 space-y-6"
+        className="relative w-full max-w-lg rounded-3xl border border-stone-200/80 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 p-7 shadow-2xl backdrop-blur-xl text-stone-900 dark:text-zinc-100 space-y-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-transaction-heading"
       >
         {/* Minimalist Notion-Inspired Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+        <div className="flex items-center justify-between pb-2 border-b border-stone-200/80 dark:border-zinc-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
               <Pencil size={15} />
             </div>
             <div>
-              <h2 id="edit-transaction-heading" className="text-sm font-semibold tracking-tight text-white">
+              <h2 id="edit-transaction-heading" className="text-sm font-semibold tracking-tight text-stone-900 dark:text-zinc-100">
                 Edit Transaction
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">
                 Notion-style frictionless property editor
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-block rounded-md border border-slate-800 bg-slate-950 px-2 py-0.5 text-[10px] font-mono text-slate-400">
+            <span className="hidden sm:inline-block rounded-md border border-stone-200 dark:border-zinc-800 bg-stone-100 dark:bg-zinc-950 px-2 py-0.5 text-[10px] font-mono text-stone-500 dark:text-zinc-400">
               ESC
             </span>
             <button
               onClick={onClose}
-              className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+              className="rounded-xl p-1.5 text-stone-400 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-stone-700 dark:hover:text-zinc-200 transition"
               title="Close (Esc)"
             >
               <X size={16} />
@@ -203,7 +203,7 @@ export function TransactionEditModal({
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-300">
+          <div className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-600 dark:text-rose-300">
             <AlertCircle size={15} className="shrink-0" />
             <span>{error}</span>
           </div>
@@ -219,11 +219,11 @@ export function TransactionEditModal({
                 onClick={() => setType('expense')}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
                   type === 'expense'
-                    ? 'border border-rose-500/30 bg-rose-500/10 text-rose-300 shadow-sm'
-                    : 'border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-300 shadow-sm'
+                    : 'border border-transparent text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
                 }`}
               >
-                <ArrowDownRight size={13} className="text-rose-400" />
+                <ArrowDownRight size={13} className="text-rose-500 dark:text-rose-400" />
                 <span>Expense</span>
               </button>
 
@@ -232,18 +232,18 @@ export function TransactionEditModal({
                 onClick={() => setType('income')}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
                   type === 'income'
-                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 shadow-sm'
-                    : 'border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 shadow-sm'
+                    : 'border border-transparent text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800/50'
                 }`}
               >
-                <ArrowUpRight size={13} className="text-emerald-400" />
+                <ArrowUpRight size={13} className="text-emerald-500 dark:text-emerald-400" />
                 <span>Income / Pocket Money</span>
               </button>
             </div>
 
             {/* Airy Amount Input */}
-            <div className="flex items-baseline gap-2 border-b border-slate-800 pb-2 focus-within:border-indigo-500 transition">
-              <span className="text-3xl font-light text-slate-400 font-mono">₹</span>
+            <div className="flex items-baseline gap-2 border-b border-stone-200 dark:border-zinc-800 pb-2 focus-within:border-indigo-500 transition">
+              <span className="text-3xl font-light text-stone-400 dark:text-zinc-400 font-mono">₹</span>
               <input
                 ref={amountInputRef}
                 type="number"
@@ -253,29 +253,29 @@ export function TransactionEditModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full bg-transparent text-3xl font-bold font-mono text-white placeholder:text-slate-600 outline-none"
+                className="w-full bg-transparent text-3xl font-bold font-mono text-stone-900 dark:text-zinc-100 placeholder:text-stone-300 dark:placeholder:text-zinc-600 outline-none"
               />
             </div>
 
             {/* Airy Description Title Input */}
-            <div className="border-b border-slate-800 pb-2 focus-within:border-indigo-500 transition">
+            <div className="border-b border-stone-200 dark:border-zinc-800 pb-2 focus-within:border-indigo-500 transition">
               <input
                 type="text"
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What was this transaction for? (e.g. Canteen lunch, Semester books)"
-                className="w-full bg-transparent text-sm font-medium text-white placeholder:text-slate-500 outline-none"
+                className="w-full bg-transparent text-sm font-medium text-stone-900 dark:text-zinc-100 placeholder:text-stone-400 dark:placeholder:text-zinc-500 outline-none"
               />
             </div>
           </div>
 
           {/* Notion Properties Grid (Airy & Spacious) */}
-          <div className="rounded-2xl border border-slate-800/60 bg-slate-950/40 p-4 space-y-3.5">
+          <div className="rounded-2xl border border-stone-200/80 dark:border-zinc-800/60 bg-stone-50/60 dark:bg-zinc-950/40 p-4 space-y-3.5">
             {/* Property: Date */}
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-400 w-36">
-                <Calendar size={14} className="text-slate-500" />
+              <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 w-36">
+                <Calendar size={14} className="text-stone-400 dark:text-zinc-500" />
                 <span>Date</span>
               </div>
               <input
@@ -283,20 +283,20 @@ export function TransactionEditModal({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                className="flex-1 rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3 py-1.5 text-xs text-stone-800 dark:text-zinc-200 focus:border-indigo-500 focus:outline-none"
               />
             </div>
 
             {/* Property: Category */}
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-400 w-36">
-                <Tag size={14} className="text-slate-500" />
+              <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 w-36">
+                <Tag size={14} className="text-stone-400 dark:text-zinc-500" />
                 <span>Category</span>
               </div>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                className="flex-1 rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3 py-1.5 text-xs text-stone-800 dark:text-zinc-200 focus:border-indigo-500 focus:outline-none"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -308,14 +308,14 @@ export function TransactionEditModal({
 
             {/* Property: Project */}
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-400 w-36">
-                <Folder size={14} className="text-slate-500" />
+              <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 w-36">
+                <Folder size={14} className="text-stone-400 dark:text-zinc-500" />
                 <span>Linked Project</span>
               </div>
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                className="flex-1 rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3 py-1.5 text-xs text-stone-800 dark:text-zinc-200 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="none">No Project</option>
                 {projects.map((p) => (
@@ -328,8 +328,8 @@ export function TransactionEditModal({
 
             {/* Property: Payee or Source */}
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-400 w-36">
-                <User size={14} className="text-slate-500" />
+              <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 w-36">
+                <User size={14} className="text-stone-400 dark:text-zinc-500" />
                 <span>{type === 'income' ? 'Source' : 'Paid To'}</span>
               </div>
               <input
@@ -337,7 +337,7 @@ export function TransactionEditModal({
                 value={payeeOrSource}
                 onChange={(e) => setPayeeOrSource(e.target.value)}
                 placeholder={type === 'income' ? 'Mom & Dad, Scholarship' : 'Campus Canteen, Book Store'}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+                className="flex-1 rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 px-3 py-1.5 text-xs text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 focus:border-indigo-500 focus:outline-none"
               />
             </div>
           </div>
@@ -348,7 +348,7 @@ export function TransactionEditModal({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="rounded-xl border border-slate-800 px-4 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white transition disabled:opacity-50"
+              className="rounded-xl border border-stone-200 dark:border-zinc-800 px-4 py-2 text-xs font-semibold text-stone-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 hover:text-stone-900 dark:hover:text-zinc-100 transition disabled:opacity-50"
             >
               Cancel
             </button>

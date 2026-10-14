@@ -24,26 +24,26 @@ const COLUMNS: { id: ProjectStatus; title: string; dotClass: string; badgeClass:
   {
     id: 'backlog',
     title: 'Backlog',
-    dotClass: 'bg-outline',
-    badgeClass: 'bg-surface-container-high text-on-surface-variant',
+    dotClass: 'bg-outline dark:bg-zinc-500',
+    badgeClass: 'bg-surface-container-high text-on-surface-variant dark:bg-zinc-800 dark:text-zinc-400',
   },
   {
     id: 'active',
     title: 'Active',
-    dotClass: 'bg-secondary',
-    badgeClass: 'bg-secondary-container text-on-secondary-fixed-variant font-medium',
+    dotClass: 'bg-secondary dark:bg-emerald-400',
+    badgeClass: 'bg-secondary-container text-on-secondary-fixed-variant dark:bg-emerald-950/60 dark:text-emerald-300 font-medium',
   },
   {
     id: 'paused',
     title: 'Paused',
-    dotClass: 'bg-tertiary-fixed-dim',
-    badgeClass: 'bg-surface-container-high text-on-surface-variant',
+    dotClass: 'bg-tertiary-fixed-dim dark:bg-amber-400',
+    badgeClass: 'bg-surface-container-high text-on-surface-variant dark:bg-zinc-800 dark:text-zinc-400',
   },
   {
     id: 'completed',
     title: 'Completed',
-    dotClass: 'bg-secondary',
-    badgeClass: 'bg-secondary-container text-on-secondary-fixed-variant font-medium',
+    dotClass: 'bg-secondary dark:bg-emerald-400',
+    badgeClass: 'bg-secondary-container text-on-secondary-fixed-variant dark:bg-emerald-950/60 dark:text-emerald-300 font-medium',
   },
 ];
 
@@ -158,28 +158,28 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
   return (
     <div className="flex flex-col w-full">
       {/* Sub-header / Context Ribbon */}
-      <div className="px-space-lg py-space-lg bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-surface-container-high/60">
+      <div className="px-space-lg py-space-lg bg-surface-container-low dark:bg-zinc-950/60 flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-surface-container-high/60 dark:border-zinc-800/60">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-space-sm">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Projects</h1>
-            <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">
+            <h1 className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 tracking-tight">Projects</h1>
+            <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container dark:bg-zinc-800 text-on-surface-variant dark:text-zinc-400 font-medium">
               Q4 Roadmap
             </span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
+          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400">
             Kanban roadmap, milestone tracking, and task completion metrics.
           </p>
         </div>
 
         {/* Controls Ribbon */}
         <div className="flex flex-wrap items-center gap-space-sm">
-          <div className="flex items-center p-0.5 bg-surface-container-high rounded">
+          <div className="flex items-center p-0.5 bg-surface-container-high dark:bg-zinc-900 rounded">
             <button
               onClick={() => setActiveTab('board')}
               className={`flex items-center gap-1.5 px-space-sm py-1 rounded font-body-sm text-body-sm transition-all ${
                 activeTab === 'board'
-                  ? 'bg-surface-container-lowest shadow-sm text-on-surface font-medium'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 shadow-sm text-on-surface dark:text-zinc-100 font-medium'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
               }`}
               type="button"
             >
@@ -190,8 +190,8 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
               onClick={() => setActiveTab('list')}
               className={`flex items-center gap-1.5 px-space-sm py-1 rounded font-body-sm text-body-sm transition-all ${
                 activeTab === 'list'
-                  ? 'bg-surface-container-lowest shadow-sm text-on-surface font-medium'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 shadow-sm text-on-surface dark:text-zinc-100 font-medium'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
               }`}
               type="button"
             >
@@ -202,8 +202,8 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
               onClick={() => setActiveTab('timeline')}
               className={`flex items-center gap-1.5 px-space-sm py-1 rounded font-body-sm text-body-sm transition-all ${
                 activeTab === 'timeline'
-                  ? 'bg-surface-container-lowest shadow-sm text-on-surface font-medium'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-surface-container-lowest dark:bg-zinc-800 shadow-sm text-on-surface dark:text-zinc-100 font-medium'
+                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
               }`}
               type="button"
             >
@@ -212,7 +212,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
             </button>
           </div>
 
-          <div className="h-4 w-[1px] bg-outline-variant mx-1 hidden sm:block" />
+          <div className="h-4 w-[1px] bg-outline-variant dark:bg-zinc-700 mx-1 hidden sm:block" />
 
           <button
             onClick={() => setIsCreateOpen(!isCreateOpen)}
@@ -226,60 +226,60 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
       </div>
 
       {/* Metric Strip (Calm editorial analytics) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-surface-container-high px-space-lg py-px">
-        <div className="bg-surface-container-lowest p-space-md flex flex-col justify-between">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-surface-container-high dark:bg-zinc-800/60 px-space-lg py-px">
+        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 p-space-md flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-500 uppercase tracking-wider">
               Active Workstreams
             </span>
-            <span className="w-2 h-2 rounded-full bg-secondary" />
+            <span className="w-2 h-2 rounded-full bg-secondary dark:bg-emerald-400" />
           </div>
           <div className="flex items-baseline gap-space-sm mt-space-sm">
-            <span className="font-headline-lg text-headline-lg text-on-surface">{activeCount}</span>
-            <span className="font-label-sm text-label-sm text-on-secondary-container">
+            <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100">{activeCount}</span>
+            <span className="font-label-sm text-label-sm text-on-secondary-container dark:text-emerald-400">
               Across Domains
             </span>
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md flex flex-col justify-between">
+        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 p-space-md flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-500 uppercase tracking-wider">
               Overall Velocity
             </span>
-            <span className="material-symbols-outlined text-[16px] text-outline">trending_up</span>
+            <span className="material-symbols-outlined text-[16px] text-outline dark:text-zinc-400">trending_up</span>
           </div>
           <div className="flex items-baseline gap-space-sm mt-space-sm">
-            <span className="font-headline-lg text-headline-lg text-on-surface">{avgVelocity}%</span>
-            <span className="font-label-sm text-label-sm text-outline">Avg card pace</span>
+            <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100">{avgVelocity}%</span>
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Avg card pace</span>
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md flex flex-col justify-between">
+        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 p-space-md flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-500 uppercase tracking-wider">
               Completed / Q4
             </span>
-            <span className="material-symbols-outlined text-[16px] text-secondary">check_circle</span>
+            <span className="material-symbols-outlined text-[16px] text-secondary dark:text-emerald-400">check_circle</span>
           </div>
           <div className="flex items-baseline gap-space-sm mt-space-sm">
-            <span className="font-headline-lg text-headline-lg text-on-surface">{completedCount}</span>
-            <span className="font-label-sm text-label-sm text-secondary bg-surface-container px-1.5 py-0.5 rounded font-medium">
+            <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100">{completedCount}</span>
+            <span className="font-label-sm text-label-sm text-secondary bg-surface-container dark:bg-zinc-800 dark:text-emerald-400 px-1.5 py-0.5 rounded font-medium">
               Achieved
             </span>
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md flex flex-col justify-between">
+        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 p-space-md flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-500 uppercase tracking-wider">
               Stalled Items
             </span>
-            <span className="material-symbols-outlined text-[16px] text-outline">pause_circle</span>
+            <span className="material-symbols-outlined text-[16px] text-outline dark:text-zinc-400">pause_circle</span>
           </div>
           <div className="flex items-baseline gap-space-sm mt-space-sm">
-            <span className="font-headline-lg text-headline-lg text-on-surface">{pausedCount}</span>
-            <span className="font-label-sm text-label-sm text-outline">On hold</span>
+            <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100">{pausedCount}</span>
+            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">On hold</span>
           </div>
         </div>
       </div>
@@ -302,15 +302,15 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
 
       {/* Inline Create Project Form */}
       {isCreateOpen && (
-        <div className="mx-space-lg mt-space-md p-space-lg bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-sm">
+        <div className="mx-space-lg mt-space-md p-space-lg bg-surface-container-lowest dark:bg-zinc-900/90 rounded-xl border border-outline-variant/40 dark:border-zinc-800/80 shadow-sm">
           <div className="flex items-center justify-between mb-space-md">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-primary">add_box</span>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface">Initiate New Project</h3>
+              <span className="material-symbols-outlined text-[18px] text-primary dark:text-zinc-300">add_box</span>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100">Initiate New Project</h3>
             </div>
             <button
               onClick={() => setIsCreateOpen(false)}
-              className="text-outline hover:text-on-surface p-1 rounded"
+              className="text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 p-1 rounded"
             >
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
@@ -329,43 +329,43 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-outline">Project Title</label>
+                <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Project Title</label>
                 <input
                   name="title"
                   required
                   placeholder="e.g. 'Operating System Revision'"
-                  className="w-full bg-surface-container-low rounded-lg border border-outline-variant/40 px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary"
+                  className="w-full bg-surface-container-low dark:bg-zinc-800/80 rounded-lg border border-outline-variant/40 dark:border-zinc-700/80 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:border-primary dark:focus:border-zinc-500 placeholder:text-zinc-500"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-outline">Target Deadline</label>
+                <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Target Deadline</label>
                 <input
                   name="targetDate"
                   type="date"
-                  className="w-full bg-surface-container-low rounded-lg border border-outline-variant/40 px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary"
+                  className="w-full bg-surface-container-low dark:bg-zinc-800/80 rounded-lg border border-outline-variant/40 dark:border-zinc-700/80 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:border-primary dark:focus:border-zinc-500"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-outline">Description & Scope</label>
+              <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Description & Scope</label>
               <textarea
                 name="description"
                 rows={2}
                 placeholder="High-level objectives, deliverables, and requirements..."
-                className="w-full bg-surface-container-low rounded-lg border border-outline-variant/40 p-3 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary"
+                className="w-full bg-surface-container-low dark:bg-zinc-800/80 rounded-lg border border-outline-variant/40 dark:border-zinc-700/80 p-3 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:border-primary dark:focus:border-zinc-500 placeholder:text-zinc-500"
               />
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-label-sm text-label-sm text-outline">Priority:</span>
+                  <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Priority:</span>
                   <select
                     name="priority"
                     defaultValue="2"
-                    className="bg-surface-container-low rounded-lg border border-outline-variant/40 px-2.5 py-1.5 font-label-sm text-label-sm text-on-surface focus:outline-none"
+                    className="bg-surface-container-low dark:bg-zinc-800/80 rounded-lg border border-outline-variant/40 dark:border-zinc-700/80 px-2.5 py-1.5 font-label-sm text-label-sm text-on-surface dark:text-zinc-100 focus:outline-none"
                   >
                     <option value="4">P1 - Urgent</option>
                     <option value="3">P2 - High</option>
@@ -375,14 +375,14 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-label-sm text-label-sm text-outline">Budget (₹):</span>
+                  <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Budget (₹):</span>
                   <input
                     name="budget"
                     type="number"
                     step="0.01"
                     placeholder="0.00"
                     defaultValue="0"
-                    className="w-28 bg-surface-container-low rounded-lg border border-outline-variant/40 px-2.5 py-1.5 font-label-sm text-label-sm text-on-surface focus:outline-none"
+                    className="w-28 bg-surface-container-low dark:bg-zinc-800/80 rounded-lg border border-outline-variant/40 dark:border-zinc-700/80 px-2.5 py-1.5 font-label-sm text-label-sm text-on-surface dark:text-zinc-100 focus:outline-none"
                   />
                 </div>
               </div>
@@ -391,13 +391,13 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="rounded-lg px-4 py-1.5 font-body-sm text-body-sm text-outline hover:text-on-surface"
+                  className="rounded-lg px-4 py-1.5 font-body-sm text-body-sm text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-primary px-4 py-1.5 font-body-sm text-body-sm font-medium text-on-primary hover:opacity-90 transition-opacity"
+                  className="rounded-lg bg-primary dark:bg-zinc-100 dark:text-zinc-900 px-4 py-1.5 font-body-sm text-body-sm font-medium text-on-primary hover:opacity-90 transition-opacity"
                 >
                   Create Project
                 </button>
@@ -420,13 +420,13 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                 return (
                   <div
                     key={column.id}
-                    className="flex flex-col bg-surface-container-low rounded-xl p-space-sm"
+                    className="flex flex-col bg-surface-container-low dark:bg-zinc-900/40 border border-transparent dark:border-zinc-800/50 rounded-xl p-space-sm"
                   >
                     {/* Column Header */}
                     <div className="flex items-center justify-between px-space-xs py-space-sm mb-space-xs">
                       <div className="flex items-center gap-space-sm">
                         <span className={`w-2 h-2 rounded-full ${column.dotClass}`} />
-                        <span className="font-headline-sm text-headline-sm text-on-surface font-medium">
+                        <span className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-200 font-medium">
                           {column.title}
                         </span>
                         <span
@@ -439,7 +439,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                       <button
                         type="button"
                         onClick={() => setIsCreateOpen(true)}
-                        className="text-outline hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors"
+                        className="text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 p-1 rounded hover:bg-surface-container-high dark:hover:bg-zinc-800 transition-colors"
                         title={`Add card to ${column.title}`}
                       >
                         <span className="material-symbols-outlined text-[18px]">add</span>
@@ -453,7 +453,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                           ref={provided.innerRef}
                           {...provided.droppableProps}
                           className={`flex flex-col gap-space-sm flex-1 min-h-[350px] rounded-lg p-1 transition-colors ${
-                            snapshot.isDraggingOver ? 'bg-surface-container-high/50' : ''
+                            snapshot.isDraggingOver ? 'bg-surface-container-high/50 dark:bg-zinc-800/40' : ''
                           }`}
                         >
                           {columnProjects.map((project, index) => (
@@ -483,7 +483,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                           {provided.placeholder}
 
                           {columnProjects.length === 0 && (
-                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 rounded-lg text-outline">
+                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500">
                               <span className="material-symbols-outlined text-[24px] mb-1">
                                 inbox
                               </span>
@@ -508,12 +508,12 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
               return (
                 <div
                   key={column.id}
-                  className="flex flex-col bg-surface-container-low rounded-xl p-space-sm"
+                  className="flex flex-col bg-surface-container-low dark:bg-zinc-900/40 border border-transparent dark:border-zinc-800/50 rounded-xl p-space-sm"
                 >
                   <div className="flex items-center justify-between px-space-xs py-space-sm mb-space-xs">
                     <div className="flex items-center gap-space-sm">
                       <span className={`w-2 h-2 rounded-full ${column.dotClass}`} />
-                      <span className="font-headline-sm text-headline-sm text-on-surface font-medium">
+                      <span className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-200 font-medium">
                         {column.title}
                       </span>
                       <span
@@ -534,7 +534,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                     ))}
 
                     {columnProjects.length === 0 && (
-                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 rounded-lg text-outline">
+                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500">
                         <span className="material-symbols-outlined text-[24px] mb-1">
                           inbox
                         </span>

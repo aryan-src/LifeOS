@@ -202,22 +202,22 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       {/* Header Section */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm">
+          <div className="flex items-center gap-space-sm text-outline dark:text-zinc-400 font-label-sm text-label-sm">
             <span>LifeOS</span>
-            <span className="text-outline-variant">/</span>
+            <span className="text-outline-variant dark:text-zinc-600">/</span>
             <span>Workspace</span>
-            <span className="text-outline-variant">/</span>
-            <span className="text-on-surface font-medium">Ideas & Notes</span>
+            <span className="text-outline-variant dark:text-zinc-600">/</span>
+            <span className="text-on-surface dark:text-zinc-100 font-medium">Ideas & Notes</span>
           </div>
           <div className="flex items-baseline gap-space-sm mt-1">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+            <h1 className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 tracking-tight">
               Ideas & Notes
             </h1>
-            <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">
+            <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high dark:bg-zinc-800 text-on-surface-variant dark:text-zinc-300 font-medium">
               {totalSparks} Active Sparks
             </span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant max-w-2xl">
+          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 max-w-2xl">
             Freeform scratchpad, quick capture repository, and 1-click project promotion engine.
           </p>
         </div>
@@ -230,8 +230,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
               onClick={() => handleFilterChange(null)}
               className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
                 filterTag === null
-                  ? 'bg-surface-container-high text-on-surface font-medium'
-                  : 'text-outline hover:text-on-surface'
+                  ? 'bg-surface-container-high dark:bg-zinc-800 text-on-surface dark:text-zinc-100 font-medium'
+                  : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100'
               }`}
             >
               All
@@ -242,8 +242,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                 onClick={() => handleFilterChange(filterTag === tag ? null : tag)}
                 className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
                   filterTag === tag
-                    ? 'bg-surface-container-high text-on-surface font-medium'
-                    : 'text-outline hover:text-on-surface'
+                    ? 'bg-surface-container-high dark:bg-zinc-800 text-on-surface dark:text-zinc-100 font-medium'
+                    : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100'
                 }`}
               >
                 #{tag}
@@ -264,11 +264,11 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           {pinnedNotes.length > 0 && (
             <section className="flex flex-col gap-space-sm">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">
+                <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-400">
                   <span className="material-symbols-outlined text-[14px]">push_pin</span>
                   <span>Pinned Sparks & High Impact</span>
                 </div>
-                <span className="font-label-sm text-label-sm text-outline">
+                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                   {pinnedNotes.length} pinned
                 </span>
               </div>
@@ -290,22 +290,22 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           {/* Fresh Scratchpad Stream */}
           <section className="flex flex-col gap-space-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline">
+              <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-400">
                 <span className="material-symbols-outlined text-[14px]">stream</span>
                 <span>Fresh Scratchpad Stream</span>
               </div>
-              <span className="font-label-sm text-label-sm text-outline">
+              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
                 {unpinnedNotes.length} notes
               </span>
             </div>
 
             {unpinnedNotes.length === 0 && pinnedNotes.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-outline-variant/50 p-12 text-center bg-surface-container-low/30">
-                <span className="material-symbols-outlined text-[36px] text-outline mb-2">
+              <div className="rounded-2xl border border-dashed border-outline-variant/50 dark:border-zinc-800/60 p-12 text-center bg-surface-container-low/30 dark:bg-zinc-900/40">
+                <span className="material-symbols-outlined text-[36px] text-outline dark:text-zinc-400 mb-2">
                   lightbulb
                 </span>
-                <p className="font-headline-sm text-headline-sm text-on-surface">No ideas captured yet.</p>
-                <p className="font-body-sm text-body-sm text-outline mt-1">
+                <p className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100">No ideas captured yet.</p>
+                <p className="font-body-sm text-body-sm text-outline dark:text-zinc-400 mt-1">
                   Type a quick spark into the capture bar above or use Quick Capture (⌘K).
                 </p>
               </div>
@@ -336,35 +336,35 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           />
 
           {/* Vault Health & Metrics Card */}
-          <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-outline-variant/30">
+          <div className="bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-outline-variant/30 dark:border-zinc-800/60">
             <div className="flex items-center justify-between">
-              <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+              <span className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
                 Vault Dynamics
               </span>
-              <span className="material-symbols-outlined text-[18px] text-outline">analytics</span>
+              <span className="material-symbols-outlined text-[18px] text-outline dark:text-zinc-400">analytics</span>
             </div>
 
             <div className="grid grid-cols-2 gap-space-sm">
-              <div className="bg-surface-container-low p-space-sm rounded flex flex-col">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+              <div className="bg-surface-container-low dark:bg-zinc-800/40 p-space-sm rounded flex flex-col">
+                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
                   Total Sparks
                 </span>
-                <span className="font-headline-lg text-headline-lg text-on-surface font-semibold mt-1">
+                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold mt-1">
                   {totalSparks}
                 </span>
-                <span className="font-label-sm text-label-sm text-secondary mt-0.5">
+                <span className="font-label-sm text-label-sm text-secondary dark:text-emerald-400 mt-0.5">
                   In Repository
                 </span>
               </div>
 
-              <div className="bg-surface-container-low p-space-sm rounded flex flex-col">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
+              <div className="bg-surface-container-low dark:bg-zinc-800/40 p-space-sm rounded flex flex-col">
+                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
                   Promoted
                 </span>
-                <span className="font-headline-lg text-headline-lg text-on-surface font-semibold mt-1">
+                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold mt-1">
                   {promotedCount}
                 </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+                <span className="font-label-sm text-label-sm text-on-surface-variant dark:text-zinc-400 mt-0.5">
                   {conversionRate}% conversion
                 </span>
               </div>
@@ -373,14 +373,14 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             {/* Distribution Visual */}
             <div className="flex flex-col gap-2 pt-1">
               <div className="flex items-center justify-between font-label-sm text-label-sm">
-                <span className="text-on-surface-variant font-medium">Idea Distribution</span>
-                <span className="text-outline">Top domains</span>
+                <span className="text-on-surface-variant dark:text-zinc-300 font-medium">Idea Distribution</span>
+                <span className="text-outline dark:text-zinc-400">Top domains</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-surface-container flex overflow-hidden">
-                <div className="h-full bg-primary" style={{ width: '40%' }} title="AI & Research" />
-                <div className="h-full bg-secondary" style={{ width: '30%' }} title="Engineering" />
-                <div className="h-full bg-tertiary-container" style={{ width: '15%' }} title="Design" />
-                <div className="h-full bg-outline" style={{ width: '15%' }} title="Academics" />
+              <div className="w-full h-2 rounded-full bg-surface-container dark:bg-zinc-800 flex overflow-hidden">
+                <div className="h-full bg-primary dark:bg-zinc-200" style={{ width: '40%' }} title="AI & Research" />
+                <div className="h-full bg-secondary dark:bg-emerald-400" style={{ width: '30%' }} title="Engineering" />
+                <div className="h-full bg-tertiary-container dark:bg-amber-400" style={{ width: '15%' }} title="Design" />
+                <div className="h-full bg-outline dark:bg-zinc-600" style={{ width: '15%' }} title="Academics" />
               </div>
             </div>
           </div>
@@ -389,46 +389,46 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
 
       {/* Relational "Promote to Project" Modal */}
       {selectedNoteForPromotion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-surface-container-high pb-3">
-              <div className="flex items-center gap-2 text-primary">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-outline-variant/40 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-container-high dark:border-zinc-800 pb-3">
+              <div className="flex items-center gap-2 text-primary dark:text-zinc-100">
                 <span className="material-symbols-outlined text-[20px]">rocket_launch</span>
-                <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+                <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-zinc-100">
                   Promote Spark to Project
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedNoteForPromotion(null)}
-                className="rounded-lg p-1 text-outline hover:text-on-surface hover:bg-surface-container"
+                className="rounded-lg p-1 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
+            <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400">
               This initiates an atomic transaction creating a new Project, generating its unique slug, and extracting any markdown checklist items as child tasks.
             </p>
 
             <form onSubmit={handleConfirmPromotion} className="space-y-3.5">
               <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm font-medium text-on-surface">Project Title</label>
+                <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Project Title</label>
                 <input
                   name="title"
                   required
                   defaultValue={selectedNoteForPromotion.title}
-                  className="w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="font-label-sm text-label-sm font-medium text-on-surface">Priority</label>
+                  <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Priority</label>
                   <select
                     name="priority"
                     defaultValue="2"
-                    className="w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-3 py-2 font-label-sm text-label-sm text-on-surface focus:outline-none"
+                    className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-label-sm text-label-sm text-on-surface dark:text-zinc-100 focus:outline-none"
                   >
                     <option value="4">P1 - Urgent</option>
                     <option value="3">P2 - High</option>
@@ -438,36 +438,36 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="font-label-sm text-label-sm font-medium text-on-surface">Budget (₹)</label>
+                  <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Budget (₹)</label>
                   <input
                     name="budget"
                     type="number"
                     step="0.01"
                     defaultValue="0.00"
-                    className="w-full rounded-lg border border-outline-variant/40 bg-surface-container-low px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none"
+                    className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none"
                   />
                 </div>
               </div>
 
               {promotionResult && (
-                <div className="flex items-center gap-2 rounded-lg border border-secondary/30 bg-secondary-container p-2.5 font-label-sm text-label-sm text-on-secondary-fixed-variant">
+                <div className="flex items-center gap-2 rounded-lg border border-secondary/30 dark:border-emerald-800/40 bg-secondary-container dark:bg-emerald-950/40 p-2.5 font-label-sm text-label-sm text-on-secondary-fixed-variant dark:text-emerald-300">
                   <span className="material-symbols-outlined text-[16px]">check_circle</span>
                   <span>{promotionResult}</span>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-surface-container-high">
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-container-high dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setSelectedNoteForPromotion(null)}
-                  className="rounded-lg px-3.5 py-1.5 font-body-sm text-body-sm text-outline hover:text-on-surface"
+                  className="rounded-lg px-3.5 py-1.5 font-body-sm text-body-sm text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPromoting}
-                  className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 font-body-sm text-body-sm font-medium text-on-primary hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg bg-primary dark:bg-zinc-100 px-4 py-1.5 font-body-sm text-body-sm font-medium text-on-primary dark:text-zinc-900 hover:opacity-90 disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
                   <span>{isPromoting ? 'Promoting...' : 'Confirm Promotion'}</span>

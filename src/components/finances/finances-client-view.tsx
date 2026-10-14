@@ -266,16 +266,16 @@ export function FinancesClientView({
          ========================================================================= */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-lg">
         <div className="flex flex-col gap-space-xs max-w-xl">
-          <div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm uppercase tracking-wider">
-            <span className="inline-block w-2 h-2 rounded-full bg-secondary" />
+          <div className="flex items-center gap-space-sm text-outline dark:text-zinc-400 font-label-sm text-label-sm uppercase tracking-wider">
+            <span className="inline-block w-2 h-2 rounded-full bg-secondary dark:bg-emerald-400" />
             <span>Semester Autumn 2026</span>
             <span>·</span>
             <span>Ledger Active</span>
           </div>
-          <h1 className="font-display text-display text-on-surface font-semibold tracking-tight">
+          <h1 className="font-display text-display text-on-surface dark:text-zinc-100 font-semibold tracking-tight">
             Student Finances
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
+          <p className="font-body-md text-body-md text-on-surface-variant dark:text-zinc-400">
             Pocket money, daily safe limits, and mindful student expense tracker.
           </p>
         </div>
@@ -285,7 +285,7 @@ export function FinancesClientView({
           <div
             role="tablist"
             aria-label="Filter finances by timeframe"
-            className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-xs"
+            className="flex items-center p-0.5 bg-surface-container-high dark:bg-zinc-800 rounded-lg shadow-xs"
           >
             {[
               { id: 'today', label: 'Today' },
@@ -306,8 +306,8 @@ export function FinancesClientView({
                   onClick={() => handleTabChange(tab.id as TimeFilterTab)}
                   className={`px-space-sm py-1 rounded font-label-md text-label-md transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-stone-800 dark:text-stone-100'
-                      : 'text-on-surface-variant hover:text-on-surface font-normal hover:bg-surface-container/50'
+                      ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-zinc-900 dark:text-zinc-100'
+                      : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 font-normal hover:bg-surface-container/50 dark:hover:bg-zinc-700/50'
                   }`}
                 >
                   {tab.label}
@@ -320,7 +320,7 @@ export function FinancesClientView({
             type="button"
             id="record-expense-btn"
             onClick={() => setIsRecordModalOpen(true)}
-            className="flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-on-surface text-surface font-body-sm text-body-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-sm cursor-pointer"
+            className="flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-on-surface text-surface dark:bg-zinc-100 dark:text-zinc-900 font-body-sm text-body-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Record Expense</span>
@@ -364,13 +364,13 @@ export function FinancesClientView({
       ) : (
         <div className="flex flex-col gap-space-md">
           <div className="flex items-center justify-between">
-            <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+            <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
               Expense Feed (Card View)
             </h2>
             <button
               type="button"
               onClick={() => handleViewModeChange('table')}
-              className="flex items-center gap-1 text-label-md text-secondary hover:underline cursor-pointer"
+              className="flex items-center gap-1 text-label-md text-secondary dark:text-emerald-400 hover:underline cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">
                 table_rows
@@ -417,11 +417,11 @@ export function FinancesClientView({
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3 text-xs font-medium text-on-surface shadow-xl backdrop-blur-xl animate-in slide-in-from-bottom-2 fade-in duration-200">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-xl border border-outline-variant/60 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900 px-4 py-3 text-xs font-medium text-on-surface dark:text-zinc-100 shadow-xl backdrop-blur-xl animate-in slide-in-from-bottom-2 fade-in duration-200">
           {toast.type === 'success' ? (
-            <CheckCircle2 size={16} className="text-secondary shrink-0" />
+            <CheckCircle2 size={16} className="text-secondary dark:text-emerald-400 shrink-0" />
           ) : (
-            <AlertTriangle size={16} className="text-error shrink-0" />
+            <AlertTriangle size={16} className="text-error dark:text-rose-400 shrink-0" />
           )}
           <span>{toast.message}</span>
         </div>

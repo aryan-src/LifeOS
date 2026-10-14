@@ -85,31 +85,31 @@ export function QuickCaptureOmnibar() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-20 sm:pt-28 bg-on-surface/25 backdrop-blur-xs px-4 transition-opacity animate-in fade-in duration-150"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-20 sm:pt-28 bg-on-surface/25 dark:bg-black/60 backdrop-blur-xs px-4 transition-opacity animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closeQuickCapture();
         }
       }}
     >
-      <div className="w-full max-w-2xl rounded-2xl border border-outline-variant/40 bg-surface-container-lowest shadow-2xl overflow-hidden ring-1 ring-black/5">
+      <div className="w-full max-w-2xl rounded-2xl border border-outline-variant/40 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900/95 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 transition-colors duration-200">
         <form onSubmit={handleSubmit} className="relative">
           {/* Main Input Row */}
-          <div className="flex items-center px-4 py-3.5 border-b border-outline-variant/20">
-            <Command size={18} className="text-secondary shrink-0 mr-3" />
+          <div className="flex items-center px-4 py-3.5 border-b border-outline-variant/20 dark:border-zinc-800/60">
+            <Command size={18} className="text-secondary dark:text-emerald-400 shrink-0 mr-3" />
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type anything: '$50 hosting #cloud' or 'todo: Ship v1 @tomorrow'..."
-              className="w-full bg-transparent text-sm text-on-surface placeholder:text-outline focus:outline-none"
+              className="w-full bg-transparent text-sm text-on-surface dark:text-zinc-100 placeholder:text-outline dark:placeholder:text-zinc-500 focus:outline-none"
             />
             {input && (
               <button
                 type="button"
                 onClick={() => setInput('')}
-                className="text-outline hover:text-on-surface p-1 mr-2 transition-colors"
+                className="text-outline dark:text-zinc-500 hover:text-on-surface dark:hover:text-zinc-200 p-1 mr-2 transition-colors cursor-pointer"
               >
                 <X size={15} />
               </button>
@@ -117,7 +117,7 @@ export function QuickCaptureOmnibar() {
             <button
               type="submit"
               disabled={isSubmitting || !input.trim()}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-on-primary shadow-xs hover:opacity-90 disabled:opacity-40 transition shrink-0"
+              className="flex items-center gap-1.5 rounded-lg bg-primary dark:bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-on-primary dark:text-zinc-900 shadow-xs hover:opacity-90 dark:hover:bg-zinc-200 disabled:opacity-40 transition shrink-0 cursor-pointer"
             >
               <span>{isSubmitting ? 'Routing...' : 'Capture'}</span>
               <ArrowRight size={13} />
@@ -125,14 +125,14 @@ export function QuickCaptureOmnibar() {
           </div>
 
           {/* Dynamic Summary Pill Feedback Mechanism */}
-          <div className="flex items-center justify-between px-4 py-2.5 bg-surface-container-low/70 text-xs border-b border-outline-variant/15 gap-2">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-surface-container-low/70 dark:bg-zinc-950/60 text-xs border-b border-outline-variant/15 dark:border-zinc-800/60 gap-2">
             <div className="flex items-center gap-2 min-w-0 truncate">
-              <Sparkles size={13} className="text-secondary shrink-0" />
-              <span className="font-mono text-[11px] text-on-surface-variant truncate">
+              <Sparkles size={13} className="text-secondary dark:text-emerald-400 shrink-0" />
+              <span className="font-mono text-[11px] text-on-surface-variant dark:text-zinc-300 truncate">
                 {input.trim() ? parsed.summaryPill : 'Examples: "$45 dinner", "todo: File taxes @tomorrow #ops", "Note ideas..."'}
               </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0 text-[10px] text-outline font-mono">
+            <div className="flex items-center gap-2 shrink-0 text-[10px] text-outline dark:text-zinc-500 font-mono">
               <span>ESC to cancel</span>
               <span>•</span>
               <span>ENTER to log</span>
@@ -143,10 +143,10 @@ export function QuickCaptureOmnibar() {
         {/* Action Dispatch Feedback Toast */}
         {feedback && (
           <div
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-t ${
+            className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-t transition-colors ${
               feedback.type === 'success'
-                ? 'border-secondary/20 bg-secondary-container text-on-secondary-container'
-                : 'border-error/20 bg-error-container text-on-error-container'
+                ? 'border-secondary/20 dark:border-emerald-800/40 bg-secondary-container dark:bg-emerald-950/40 text-on-secondary-container dark:text-emerald-300'
+                : 'border-error/20 dark:border-rose-800/40 bg-error-container dark:bg-rose-950/40 text-on-error-container dark:text-rose-300'
             }`}
           >
             {feedback.type === 'success' ? (

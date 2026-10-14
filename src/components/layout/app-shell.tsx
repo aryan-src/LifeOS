@@ -21,7 +21,7 @@ export function AppShell({
 
   if (isAuthPage || isLandingPage) {
     return (
-      <main className="min-h-screen w-full selection:bg-secondary-container selection:text-on-secondary-container">
+      <main className="min-h-screen w-full bg-surface dark:bg-zinc-950 text-on-surface dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
         {children}
       </main>
     );
@@ -37,7 +37,7 @@ export function AppShell({
         }`}
       >
         <TopHeader />
-        <main className="w-full pt-14 bg-surface min-h-screen flex-1">
+        <main className="w-full pt-14 bg-surface dark:bg-zinc-950 min-h-screen flex-1 text-on-surface dark:text-zinc-100 transition-colors duration-200">
           {children}
         </main>
       </div>

@@ -88,21 +88,21 @@ export function RecordExpenseModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/20 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/20 dark:bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
-        className="bg-surface-container-lowest text-on-surface p-space-lg rounded-xl shadow-xl max-w-md w-full border border-outline-variant/30 relative flex flex-col gap-space-md"
+        className="bg-surface-container-lowest dark:bg-zinc-900 text-on-surface dark:text-zinc-100 p-space-lg rounded-xl shadow-xl max-w-md w-full border border-outline-variant/30 dark:border-zinc-800 relative flex flex-col gap-space-md"
         role="dialog"
         aria-modal="true"
         aria-labelledby="record-expense-title"
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 id="record-expense-title" className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+          <h3 id="record-expense-title" className="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-zinc-100">
             Record Micro-Expense
           </h3>
           <button
             onClick={onClose}
-            className="text-outline hover:text-on-surface transition-colors p-1 rounded hover:bg-surface-container"
+            className="text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 transition-colors p-1 rounded hover:bg-surface-container dark:hover:bg-zinc-800"
             type="button"
             aria-label="Close dialog"
           >
@@ -111,7 +111,7 @@ export function RecordExpenseModal({
         </div>
 
         {error && (
-          <div className="rounded-lg bg-error-container/40 border border-error/30 p-2.5 text-xs text-error font-medium">
+          <div className="rounded-lg bg-error-container/40 dark:bg-rose-950/40 border border-error/30 dark:border-rose-800/50 p-2.5 text-xs text-error dark:text-rose-400 font-medium">
             {error}
           </div>
         )}
@@ -120,12 +120,12 @@ export function RecordExpenseModal({
         <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm">
           {/* Item Description */}
           <div className="flex flex-col gap-1">
-            <label className="font-label-sm text-label-sm text-outline">Item Description</label>
+            <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Item Description</label>
             <input
               ref={inputRef}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-surface-container-low px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/30 focus:border-outline"
+              className="bg-surface-container-low dark:bg-zinc-800/80 px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-800 transition-colors border border-outline-variant/30 dark:border-zinc-700/80 focus:border-outline"
               placeholder="e.g. Printing assignment, Chai"
               required
               type="text"
@@ -135,11 +135,11 @@ export function RecordExpenseModal({
           {/* Amount & Category */}
           <div className="grid grid-cols-2 gap-space-sm">
             <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-outline">Amount ({currencySymbol})</label>
+              <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Amount ({currencySymbol})</label>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="bg-surface-container-low px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/30 focus:border-outline font-mono"
+                className="bg-surface-container-low dark:bg-zinc-800/80 px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-800 transition-colors border border-outline-variant/30 dark:border-zinc-700/80 focus:border-outline font-mono"
                 placeholder="0.00"
                 required
                 step="any"
@@ -147,11 +147,11 @@ export function RecordExpenseModal({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-outline">Category</label>
+              <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Category</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="bg-surface-container-low px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/30 focus:border-outline"
+                className="bg-surface-container-low dark:bg-zinc-800/80 px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-800 transition-colors border border-outline-variant/30 dark:border-zinc-700/80 focus:border-outline"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -165,11 +165,11 @@ export function RecordExpenseModal({
           {/* Type & Project Row */}
           <div className="grid grid-cols-2 gap-space-sm pt-1">
             <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-outline">Type</label>
+              <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as 'expense' | 'income')}
-                className="bg-surface-container-low px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/30 focus:border-outline"
+                className="bg-surface-container-low dark:bg-zinc-800/80 px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-800 transition-colors border border-outline-variant/30 dark:border-zinc-700/80 focus:border-outline"
               >
                 <option value="expense">Expense (-)</option>
                 <option value="income">Allowance / Pocket Money (+)</option>
@@ -177,11 +177,11 @@ export function RecordExpenseModal({
             </div>
             {projects.length > 0 && (
               <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-outline">Link Project (Optional)</label>
+                <label className="font-label-sm text-label-sm text-outline dark:text-zinc-400">Link Project (Optional)</label>
                 <select
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
-                  className="bg-surface-container-low px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-colors border border-outline-variant/30 focus:border-outline"
+                  className="bg-surface-container-low dark:bg-zinc-800/80 px-space-sm py-1.5 rounded font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-800 transition-colors border border-outline-variant/30 dark:border-zinc-700/80 focus:border-outline"
                 >
                   <option value="none">None</option>
                   {projects.map((p) => (
@@ -199,14 +199,14 @@ export function RecordExpenseModal({
             <button
               onClick={onClose}
               type="button"
-              className="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer"
+              className="px-space-md py-1.5 rounded font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:bg-surface-container dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-1 px-space-md py-1.5 rounded bg-on-surface text-surface font-body-sm text-body-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shadow-sm"
+              className="flex items-center gap-1 px-space-md py-1.5 rounded bg-on-surface text-surface dark:bg-zinc-100 dark:text-zinc-900 font-body-sm text-body-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {isPending && <Loader2 size={14} className="animate-spin text-current" />}
               <span>Save Record</span>

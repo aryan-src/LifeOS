@@ -49,10 +49,15 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body
         suppressHydrationWarning
-        className="bg-surface font-sans text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container"
+        className="bg-surface dark:bg-zinc-950 font-sans text-on-surface dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
         <AppShell isAuthenticated={!!user}>{children}</AppShell>
       </body>

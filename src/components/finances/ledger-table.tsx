@@ -124,14 +124,14 @@ export function LedgerTable({
       : 'All Transactions';
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg border border-outline-variant/30">
+    <div className="bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg border border-outline-variant/30 dark:border-zinc-800/60">
       {errorMessage && (
-        <div className="flex items-center justify-between rounded-xl border border-error/30 bg-error-container/30 p-3 text-error text-xs">
+        <div className="flex items-center justify-between rounded-xl border border-error/30 dark:border-rose-800/50 bg-error-container/30 dark:bg-rose-950/30 p-3 text-error dark:text-rose-400 text-xs">
           <div className="flex items-center gap-2">
             <AlertTriangle size={15} />
             <span>{errorMessage}</span>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-error hover:underline cursor-pointer">
+          <button onClick={() => setErrorMessage(null)} className="text-error dark:text-rose-400 hover:underline cursor-pointer">
             Dismiss
           </button>
         </div>
@@ -141,14 +141,14 @@ export function LedgerTable({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-space-sm">
-            <h2 className="font-headline-sm text-headline-sm text-on-surface font-semibold">
+            <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
               {timeframeTitle}
             </h2>
-            <span className="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-mono">
+            <span className="px-2 py-0.5 rounded-full bg-surface-container dark:bg-zinc-800 text-on-surface-variant dark:text-zinc-300 font-label-sm text-label-sm font-mono">
               {optimisticTransactions.length} records
             </span>
           </div>
-          <p className="font-body-sm text-body-sm text-outline">
+          <p className="font-body-sm text-body-sm text-outline dark:text-zinc-400">
             Student pocket money outlays, allowance records, and expenses
           </p>
         </div>
@@ -159,7 +159,7 @@ export function LedgerTable({
             <div
               role="tablist"
               aria-label="Filter ledger records by timeframe"
-              className="flex items-center p-0.5 bg-surface-container-high rounded-lg shadow-xs"
+              className="flex items-center p-0.5 bg-surface-container-high dark:bg-zinc-800 rounded-lg shadow-xs"
             >
               {[
                 { id: 'today', label: 'Today' },
@@ -180,8 +180,8 @@ export function LedgerTable({
                     onClick={() => handleTabClick(tab.id as 'today' | 'this_week' | 'monthly' | 'all')}
                     className={`px-space-sm py-1 rounded font-label-md text-label-md transition-all duration-150 cursor-pointer ${
                       isActive
-                        ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-stone-800 dark:text-stone-100'
-                        : 'text-on-surface-variant hover:text-on-surface font-normal hover:bg-surface-container/50'
+                        ? 'text-on-surface bg-surface-container-lowest shadow-xs font-medium dark:bg-zinc-900 dark:text-zinc-100'
+                        : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 font-normal hover:bg-surface-container/50 dark:hover:bg-zinc-700/50'
                     }`}
                   >
                     {tab.label}
@@ -193,14 +193,14 @@ export function LedgerTable({
 
           {/* View Mode Toggle: Table vs Cards */}
           {onViewModeChange && (
-            <div className="flex items-center p-0.5 bg-surface-container rounded-lg border border-outline-variant/30">
+            <div className="flex items-center p-0.5 bg-surface-container dark:bg-zinc-800 rounded-lg border border-outline-variant/30 dark:border-zinc-700/60">
               <button
                 type="button"
                 onClick={() => onViewModeChange('table')}
                 className={`p-1 rounded transition-colors cursor-pointer ${
                   viewMode === 'table'
-                    ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                    : 'text-outline hover:text-on-surface'
+                    ? 'bg-surface-container-lowest dark:bg-zinc-900 text-on-surface dark:text-zinc-100 shadow-sm'
+                    : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
                 }`}
                 title="Table view"
               >
@@ -211,8 +211,8 @@ export function LedgerTable({
                 onClick={() => onViewModeChange('cards')}
                 className={`p-1 rounded transition-colors cursor-pointer ${
                   viewMode === 'cards'
-                    ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                    : 'text-outline hover:text-on-surface'
+                    ? 'bg-surface-container-lowest dark:bg-zinc-900 text-on-surface dark:text-zinc-100 shadow-sm'
+                    : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
                 }`}
                 title="Grid view"
               >
@@ -226,7 +226,7 @@ export function LedgerTable({
             <button
               type="button"
               onClick={onRecordExpense}
-              className="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg bg-on-surface text-surface font-body-sm text-body-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg bg-on-surface text-surface dark:bg-zinc-100 dark:text-zinc-900 font-body-sm text-body-sm font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
               <span>Record Expense</span>
@@ -237,9 +237,9 @@ export function LedgerTable({
 
       {/* Main Ledger Table */}
       {optimisticTransactions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-outline-variant/40 p-12 text-center bg-surface-container-low/50">
-          <p className="text-body-md text-on-surface-variant font-medium">No expenses recorded for this period</p>
-          <p className="mt-1 text-label-sm text-outline">
+        <div className="rounded-xl border border-dashed border-outline-variant/40 dark:border-zinc-800/80 p-12 text-center bg-surface-container-low/50 dark:bg-zinc-900/40">
+          <p className="text-body-md text-on-surface-variant dark:text-zinc-300 font-medium">No expenses recorded for this period</p>
+          <p className="mt-1 text-label-sm text-outline dark:text-zinc-500">
             Click &ldquo;Record Expense&rdquo; above or use Quick Capture (⌘K) to add one.
           </p>
         </div>
@@ -247,7 +247,7 @@ export function LedgerTable({
         <>
           <div className="overflow-x-auto -mx-space-lg px-space-lg">
             <table className="w-full text-left border-collapse">
-              <thead className="border-b border-outline-variant/30 text-outline font-label-sm text-label-sm uppercase tracking-wider">
+              <thead className="border-b border-outline-variant/30 dark:border-zinc-800/60 text-outline dark:text-zinc-400 font-label-sm text-label-sm uppercase tracking-wider">
                 <tr>
                   <th className="pb-space-sm font-medium">Date</th>
                   <th className="pb-space-sm font-medium">Description</th>
@@ -257,7 +257,7 @@ export function LedgerTable({
                   <th className="pb-space-sm font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline-variant/20 font-body-sm text-body-sm">
+              <tbody className="divide-y divide-outline-variant/20 dark:divide-zinc-800/40 font-body-sm text-body-sm">
                 {paginatedTransactions.map((tx) => {
                   const isIncome = tx.type === 'income' || tx.amount > 0;
                   const absAmount = Math.abs(tx.amount);
@@ -266,19 +266,19 @@ export function LedgerTable({
                   return (
                     <tr
                       key={tx.id}
-                      className="hover:bg-surface-container-low transition-colors group"
+                      className="hover:bg-surface-container-low dark:hover:bg-zinc-800/40 transition-colors group"
                     >
                       {/* Date */}
-                      <td className="py-space-sm font-mono text-outline font-label-sm text-label-sm whitespace-nowrap">
+                      <td className="py-space-sm font-mono text-outline dark:text-zinc-400 font-label-sm text-label-sm whitespace-nowrap">
                         {tx.date}
                       </td>
 
                       {/* Description */}
-                      <td className="py-space-sm font-medium text-on-surface">
+                      <td className="py-space-sm font-medium text-on-surface dark:text-zinc-100">
                         <div className="flex flex-col">
                           <span>{tx.description}</span>
                           {tx.payee_or_source && (
-                            <span className="text-[11px] text-outline font-normal">
+                            <span className="text-[11px] text-outline dark:text-zinc-500 font-normal">
                               {tx.payee_or_source}
                             </span>
                           )}
@@ -291,8 +291,8 @@ export function LedgerTable({
                           <span
                             className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-label-sm text-label-sm font-medium ${
                               isIncome
-                                ? 'bg-secondary-container text-on-secondary-container'
-                                : 'bg-surface-container-high text-on-tertiary-container'
+                                ? 'bg-secondary-container dark:bg-emerald-950/40 text-on-secondary-container dark:text-emerald-300'
+                                : 'bg-surface-container-high dark:bg-zinc-800 text-on-tertiary-container dark:text-rose-400'
                             }`}
                           >
                             <span
@@ -302,14 +302,14 @@ export function LedgerTable({
                             <span>{tx.category.name}</span>
                           </span>
                         ) : (
-                          <span className="text-outline font-label-sm text-label-sm">—</span>
+                          <span className="text-outline dark:text-zinc-500 font-label-sm text-label-sm">—</span>
                         )}
                       </td>
 
                       {/* Project */}
-                      <td className="py-space-sm text-outline whitespace-nowrap">
+                      <td className="py-space-sm text-outline dark:text-zinc-400 whitespace-nowrap">
                         {tx.project ? (
-                          <span className="font-mono text-[12px] text-on-surface-variant">
+                          <span className="font-mono text-[12px] text-on-surface-variant dark:text-zinc-400">
                             #{tx.project.slug}
                           </span>
                         ) : (
@@ -320,7 +320,7 @@ export function LedgerTable({
                       {/* Signed Amount */}
                       <td
                         className={`py-space-sm text-right font-mono font-semibold whitespace-nowrap ${
-                          isIncome ? 'text-secondary' : 'text-on-tertiary-container'
+                          isIncome ? 'text-secondary dark:text-emerald-400' : 'text-on-tertiary-container dark:text-rose-400'
                         }`}
                       >
                         {isIncome ? '+' : '-'}
@@ -334,7 +334,7 @@ export function LedgerTable({
                           <button
                             type="button"
                             onClick={() => handleEditClick(tx)}
-                            className="p-1 rounded hover:bg-surface-container text-outline hover:text-on-surface transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-surface-container dark:hover:bg-zinc-800 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 transition-colors cursor-pointer"
                             title="Edit transaction"
                           >
                             <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -342,7 +342,7 @@ export function LedgerTable({
                           <button
                             type="button"
                             onClick={() => handleDeleteClick(tx.id)}
-                            className="p-1 rounded hover:bg-surface-container text-outline hover:text-error transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-surface-container dark:hover:bg-zinc-800 text-outline dark:text-zinc-400 hover:text-error dark:hover:text-rose-400 transition-colors cursor-pointer"
                             title="Delete entry"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -357,7 +357,7 @@ export function LedgerTable({
           </div>
 
           {/* Table Pagination Footer */}
-          <div className="flex items-center justify-between pt-space-xs border-t border-outline-variant/30 text-outline font-label-sm text-label-sm">
+          <div className="flex items-center justify-between pt-space-xs border-t border-outline-variant/30 dark:border-zinc-800/60 text-outline dark:text-zinc-400 font-label-sm text-label-sm">
             <span className="font-mono">
               Showing {Math.min(startIndex + 1, optimisticTransactions.length)}–
               {Math.min(startIndex + itemsPerPage, optimisticTransactions.length)} of{' '}
@@ -368,18 +368,18 @@ export function LedgerTable({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage <= 1}
-                className="hover:text-on-surface disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                className="hover:text-on-surface dark:hover:text-zinc-100 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="px-2 py-0.5 rounded bg-surface-container text-on-surface font-medium">
+              <span className="px-2 py-0.5 rounded bg-surface-container dark:bg-zinc-800 text-on-surface dark:text-zinc-100 font-medium">
                 {currentPage}
               </span>
               <button
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage >= totalPages}
-                className="hover:text-on-surface disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                className="hover:text-on-surface dark:hover:text-zinc-100 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
                 Next
               </button>

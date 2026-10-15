@@ -28,9 +28,21 @@ describe('FocusTimer Component', () => {
     expect(html).toContain('aria-label="Pomodoro Focus Timer"');
   });
 
-  it('renders progress bar with custom Notion cream track', () => {
+  it('renders progress bar with custom Notion cream track and deep forest sage fill', () => {
     const html = renderToString(<FocusTimer />);
     expect(html).toContain('bg-[#F4ECE3]');
     expect(html).toContain('bg-[#2D6A4F]');
+  });
+
+  it('renders muted sage green status badge for Focus Mode', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('bg-[#CBEBD6]');
+    expect(html).toContain('text-[#2A6041]');
+  });
+
+  it('renders squircle main action button with accessible title', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('rounded-2xl');
+    expect(html).toContain('Start Focus Timer (Space)');
   });
 });

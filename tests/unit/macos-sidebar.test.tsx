@@ -5,13 +5,14 @@ import {
 } from '@/components/navigation/macos-sidebar';
 
 describe('MacOSSidebar Config & Nav Items', () => {
-  it('defines the 7 required navigation items with icons and links', () => {
-    expect(DEFAULT_NAV_ITEMS.length).toBe(7);
+  it('defines the 8 navigation items with icons and links including Habits', () => {
+    expect(DEFAULT_NAV_ITEMS.length).toBe(8);
     const labels = DEFAULT_NAV_ITEMS.map((item) => item.label);
     expect(labels).toEqual([
       'Dashboard',
       'Projects',
       'Daily Tasks',
+      'Habits',
       'Assignments',
       'Finances',
       'Ideas & Notes',
@@ -23,6 +24,7 @@ describe('MacOSSidebar Config & Nav Items', () => {
       '/',
       '/projects',
       '/tasks',
+      '/habits',
       '/assignments',
       '/finances',
       '/notes',

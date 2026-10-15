@@ -316,6 +316,60 @@ export interface Database {
         };
         Relationships: [];
       };
+      habits: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      habit_logs: {
+        Row: {
+          id: string;
+          habit_id: string;
+          user_id: string | null;
+          date: string;
+          is_completed: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          habit_id: string;
+          user_id?: string | null;
+          date: string;
+          is_completed?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          habit_id?: string;
+          user_id?: string | null;
+          date?: string;
+          is_completed?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -360,3 +414,11 @@ export type UpdateProfile = Database['public']['Tables']['profiles']['Update'];
 export type Assignment = Database['public']['Tables']['assignments']['Row'];
 export type InsertAssignment = Database['public']['Tables']['assignments']['Insert'];
 export type UpdateAssignment = Database['public']['Tables']['assignments']['Update'];
+
+export type Habit = Database['public']['Tables']['habits']['Row'];
+export type InsertHabit = Database['public']['Tables']['habits']['Insert'];
+export type UpdateHabit = Database['public']['Tables']['habits']['Update'];
+
+export type HabitLog = Database['public']['Tables']['habit_logs']['Row'];
+export type InsertHabitLog = Database['public']['Tables']['habit_logs']['Insert'];
+export type UpdateHabitLog = Database['public']['Tables']['habit_logs']['Update'];

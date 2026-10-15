@@ -24,6 +24,7 @@ import {
   Settings02Icon,
   UserCircleIcon,
 } from '@hugeicons/core-free-icons';
+import { CheckCircle2 } from 'lucide-react';
 import { useUIStore } from '@/lib/store/use-ui-store';
 
 export interface NavItemConfig {
@@ -36,6 +37,7 @@ export const DEFAULT_NAV_ITEMS: NavItemConfig[] = [
   { label: 'Dashboard', href: '/', icon: DashboardSquare01Icon },
   { label: 'Projects', href: '/projects', icon: KanbanIcon },
   { label: 'Daily Tasks', href: '/tasks', icon: TaskDaily01Icon },
+  { label: 'Habits', href: '/habits', icon: CheckCircle2 },
   { label: 'Assignments', href: '/assignments', icon: AssignmentsIcon },
   { label: 'Finances', href: '/finances', icon: Wallet01Icon },
   { label: 'Ideas & Notes', href: '/notes', icon: NoteEditIcon },
@@ -169,36 +171,47 @@ function DockNavItem({
         </AnimatePresence>
 
         {/* Item Label and Icon */}
-        {isCollapsed ? (
-          <HugeiconsIcon
-            icon={item.icon}
-            className={`size-5 z-10 shrink-0 transition-colors ${
-              isSelected
-                ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
-            }`}
-          />
-        ) : (
-          <div className="relative z-10 flex items-center gap-3 px-3 py-2 min-w-0 w-full box-border">
-            <HugeiconsIcon
-              icon={item.icon}
-              className={`size-5 shrink-0 transition-colors ${
-                isSelected
-                  ? 'text-neutral-950 dark:text-neutral-100'
-                  : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
-              }`}
-            />
-            <span
-              className={`tracking-tight text-sm transition-colors truncate flex-1 min-w-0 ${
+        {(() => {
+          const renderIcon = (extraClass: string) => {
+            if (
+              typeof item.icon === 'function' ||
+              (typeof item.icon === 'object' && item.icon !== null && ('render' in item.icon || '$$typeof' in item.icon))
+            ) {
+              const IconComp = item.icon;
+              return <IconComp className={extraClass} />;
+            }
+            return <HugeiconsIcon icon={item.icon} className={extraClass} />;
+          };
+
+          return isCollapsed ? (
+            renderIcon(
+              `size-5 z-10 shrink-0 transition-colors ${
                 isSelected
                   ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                  : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-neutral-100 font-normal'
-              }`}
-            >
-              {item.label}
-            </span>
-          </div>
-        )}
+                  : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+              }`
+            )
+          ) : (
+            <div className="relative z-10 flex items-center gap-3 px-3 py-2 min-w-0 w-full box-border">
+              {renderIcon(
+                `size-5 shrink-0 transition-colors ${
+                  isSelected
+                    ? 'text-neutral-950 dark:text-neutral-100'
+                    : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+                }`
+              )}
+              <span
+                className={`tracking-tight text-sm transition-colors truncate flex-1 min-w-0 ${
+                  isSelected
+                    ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
+                    : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-neutral-100 font-normal'
+                }`}
+              >
+                {item.label}
+              </span>
+            </div>
+          );
+        })()}
       </Link>
     </motion.div>
   );

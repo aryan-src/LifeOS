@@ -24,6 +24,7 @@ import type { ActionResponse } from '@/types/action.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { getTodayDate } from '@/lib/utils/date';
 import { cn } from '@/lib/utils';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 // ----------------------------------------------------------------------
 // Transition Physics & Spring Curves from Origin / Jahed AI Input
@@ -373,6 +374,9 @@ export function TaskCreateInput({
           expanded ? 'cursor-text' : 'cursor-default'
         )}
       >
+        {/* Animated Subtle Border Beam Trace */}
+        <BorderBeam size={160} duration={12} borderWidth={1.5} borderRadius={16} />
+
         {/* Resting Placeholder Trigger Button */}
         <button
           type="button"

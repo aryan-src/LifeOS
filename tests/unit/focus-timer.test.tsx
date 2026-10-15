@@ -13,7 +13,6 @@ describe('FocusTimer Component', () => {
 
     // Default 25:00 Pomodoro interval
     expect(html).toContain('25:00');
-    expect(html).toContain('Session: Pomodoro Standard');
 
     // Flat progress bar track and initial 0% progress
     expect(html).toContain('style="width:0%"');

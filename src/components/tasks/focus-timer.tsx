@@ -310,17 +310,13 @@ export function FocusTimer({ className = '', onSessionComplete }: FocusTimerProp
 
       {/* Middle Row: Large Time Display & Main Squircle Clock Button */}
       <div className="flex items-center justify-between py-1">
-        <div className="flex flex-col">
+        <div className="flex items-center">
           <VaporCountdownDigits
             minutes={minutes}
             seconds={seconds}
             isRunning={isRunning}
             digitClassName="text-5xl sm:text-6xl"
           />
-          <p className="font-mono text-xs sm:text-sm text-stone-500 dark:text-zinc-400 mt-2.5 select-none">
-            {currentConfig.sessionLabel}
-            {completedSprints > 0 && mode === 'focus' && ` • #${completedSprints + 1}`}
-          </p>
         </div>
 
         {/* Main Action Control (Play / Pause / Reset) */}

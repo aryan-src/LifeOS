@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 // ----------------------------------------------------------------------
 // Transition Physics & Spring Curves from Origin / Jahed AI Input
@@ -230,6 +231,9 @@ export function NoteCreateInput({
         className
       )}
     >
+      {/* Animated Subtle Border Beam Trace */}
+      <BorderBeam size={160} duration={12} borderWidth={1.5} borderRadius={16} />
+
       {/* Resting State Trigger Button */}
       <button
         type="button"

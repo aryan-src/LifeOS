@@ -521,13 +521,15 @@ export function VaporCountdownDigits({
             </span>
           </span>
 
-          {/* Colon Separator */}
+          {/* Mathematically Centered Colon Dots */}
           <span
-            className={`inline-block w-[0.35em] text-center text-stone-400 dark:text-zinc-500 font-sans select-none leading-none ${
+            className={`inline-flex flex-col items-center justify-center gap-[0.38em] mx-[0.16em] select-none self-center ${
               isRunning ? 'animate-pulse' : ''
             }`}
+            aria-hidden="true"
           >
-            :
+            <span className="w-[0.12em] h-[0.12em] rounded-full bg-stone-400 dark:bg-zinc-500 shrink-0" />
+            <span className="w-[0.12em] h-[0.12em] rounded-full bg-stone-400 dark:bg-zinc-500 shrink-0" />
           </span>
 
           {/* Seconds */}

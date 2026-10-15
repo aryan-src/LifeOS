@@ -7,6 +7,7 @@ import { toggleTask, deleteTask, type TaskWithProject } from '@/lib/actions/task
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { getTodayDate } from '@/lib/utils/date';
 import { GlassCalendar, type CalendarProjectItem } from '@/components/ui/glass-calendar';
+import { FocusTimer } from './focus-timer';
 import { AlertTriangle } from 'lucide-react';
 
 interface TaskChecklistProps {
@@ -221,29 +222,8 @@ export function TaskChecklist({ initialTasks, projects, projectDeadlines }: Task
 
       {/* Right Column: Focus Companion & Context Workspace (4 Cols) */}
       <div className="lg:col-span-4 flex flex-col gap-space-lg">
-        {/* Focus Sprint Block */}
-        <div className="bg-surface-container-lowest dark:bg-zinc-900/50 dark:border dark:border-zinc-800/60 p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">Deep Work Sprint</span>
-            <span className="inline-flex items-center gap-1 text-on-secondary-container dark:text-emerald-300 bg-secondary-container dark:bg-emerald-950/40 px-2 py-0.5 rounded font-label-sm text-label-sm font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary dark:bg-emerald-400 animate-pulse"></span>
-              Focus Mode
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between py-space-xs">
-            <div>
-              <span className="font-display text-display font-semibold tracking-tight text-on-surface dark:text-zinc-100">25:00</span>
-              <p className="font-label-sm text-label-sm text-outline dark:text-zinc-400 mt-0.5">Session: Pomodoro Standard</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-primary text-on-primary dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[20px]">timer</span>
-            </div>
-          </div>
-          {/* Micro session bar */}
-          <div className="w-full bg-surface-container dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-secondary dark:bg-emerald-400 h-full rounded-full transition-all" style={{ width: '60%' }}></div>
-          </div>
-        </div>
+        {/* Fully Functional Pomodoro Focus Timer */}
+        <FocusTimer />
 
         {/* Interactive Notion-styled Glass Calendar Widget */}
         <div className="flex justify-center">

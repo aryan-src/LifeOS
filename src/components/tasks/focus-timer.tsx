@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { VaporCountdownDigits } from '@/components/ui/countdown-vapor-digits';
 
 export type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
 
@@ -310,12 +311,12 @@ export function FocusTimer({ className = '', onSessionComplete }: FocusTimerProp
       {/* Middle Row: Large Time Display & Main Squircle Clock Button */}
       <div className="flex items-center justify-between py-1">
         <div className="flex flex-col">
-          <span
-            className="text-5xl sm:text-6xl font-bold tracking-tight text-neutral-900 dark:text-zinc-100 font-sans select-none leading-none"
-            aria-live="polite"
-          >
-            {timeDisplay}
-          </span>
+          <VaporCountdownDigits
+            minutes={minutes}
+            seconds={seconds}
+            isRunning={isRunning}
+            digitClassName="text-5xl sm:text-6xl"
+          />
           <p className="font-mono text-xs sm:text-sm text-stone-500 dark:text-zinc-400 mt-2.5 select-none">
             {currentConfig.sessionLabel}
             {completedSprints > 0 && mode === 'focus' && ` • #${completedSprints + 1}`}

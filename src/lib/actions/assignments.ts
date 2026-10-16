@@ -135,15 +135,7 @@ export async function createAssignment(
 ): Promise<ActionResponse<AssignmentWithProject>> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
     const effectiveUserId = await getEffectiveUserId(supabase);
-    if (authError && !effectiveUserId) {
-      return { success: false, error: 'Authentication required to create assignments.' };
-    }
 
     const subject = input.subject?.trim();
     const title = input.title?.trim();

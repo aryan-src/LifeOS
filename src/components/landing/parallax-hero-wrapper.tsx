@@ -83,7 +83,13 @@ export function ParallaxHeroWrapper() {
         {/* Action Triggers */}
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link
-            href="/login"
+            href="/?view=dashboard"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
+                localStorage.setItem('lifeos_view', 'dashboard');
+              }
+            }}
             className="px-5 py-2.5 rounded-lg bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 text-[14px] font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-xs flex items-center gap-2"
           >
             <span>Launch Your Vault</span>

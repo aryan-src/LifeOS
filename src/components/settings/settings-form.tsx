@@ -2,16 +2,14 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
-import { updateProfile, signOutAction } from '@/lib/actions/profile';
+import { updateProfile } from '@/lib/actions/profile';
 import {
   User,
   Coins,
   Palette,
   Wallet,
-  LogOut,
   CheckCircle2,
   AlertCircle,
-  ShieldCheck,
   Sparkles,
 } from 'lucide-react';
 
@@ -44,7 +42,6 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
   );
 
   const [isPending, startTransition] = useTransition();
-  const [isSigningOut, startSignOutTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Sync with localStorage on client mount
@@ -95,12 +92,6 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
       } else {
         setStatusMessage({ type: 'error', text: res.error || 'Failed to update preferences.' });
       }
-    });
-  };
-
-  const handleSignOut = () => {
-    startSignOutTransition(async () => {
-      await signOutAction();
     });
   };
 
@@ -296,47 +287,6 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
           </button>
         </div>
       </form>
-
-      {/* Account Security & Sign Out Section */}
-      <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 md:p-8 flex flex-col gap-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-outline-variant/20">
-          <div className="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4 text-outline" />
-          </div>
-          <div>
-            <h2 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
-              Account & Session
-            </h2>
-            <p className="font-body-sm text-body-sm text-outline">
-              Managed via Google OAuth with server-side cookie authentication.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-surface-container-low/40 border border-outline-variant/20">
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
-              Signed in as
-            </span>
-            <span className="font-body-md text-body-md font-medium text-on-surface truncate">
-              {userEmail || 'Active Student User'}
-            </span>
-            <span className="font-label-sm text-label-sm text-outline truncate">
-              User ID: {initialProfile.id}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/20 text-red-600 hover:bg-red-500/10 hover:border-red-500/40 font-body-sm text-body-sm font-medium transition-all shrink-0 disabled:opacity-50"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>{isSigningOut ? 'Signing out...' : 'Sign Out'}</span>
-          </button>
-        </div>
-      </section>
     </div>
   );
 }

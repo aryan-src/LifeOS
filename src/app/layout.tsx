@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/app-shell';
-import { createClient } from '@/lib/supabase/server';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,24 +20,11 @@ export const metadata: Metadata = {
   description: 'Relational personal operating system for Projects, Tasks, Finances, and Notes.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let user = null;
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    user = authUser;
-  } catch (error: any) {
-    if (error?.digest === 'DYNAMIC_SERVER_USAGE' || error?.message?.includes('Dynamic server usage')) {
-      throw error;
-    }
-    console.error('RootLayout auth check error:', error);
-  }
 
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
@@ -59,7 +45,7 @@ export default async function RootLayout({
         suppressHydrationWarning
         className="bg-surface dark:bg-zinc-950 font-sans text-on-surface dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
-        <AppShell isAuthenticated={!!user}>{children}</AppShell>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

@@ -18,6 +18,13 @@ export function HeroLandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const launchWorkspace = () => {
+    if (typeof window !== 'undefined') {
+      document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
+      localStorage.setItem('lifeos_view', 'dashboard');
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#fff8f5] dark:bg-[#121110] text-[#1e1b18] dark:text-[#f5f5f0] font-sans antialiased selection:bg-[#2f5c3a] selection:text-white transition-colors">
       {/* FLOATING NOTION-STYLE NAVIGATION */}
@@ -75,7 +82,8 @@ export function HeroLandingPage() {
               <kbd className="text-[10px] text-stone-500 bg-stone-100 dark:bg-stone-800 px-1 py-0.5 rounded">⌘K</kbd>
             </button>
             <Link
-              href="/login"
+              href="/?view=dashboard"
+              onClick={launchWorkspace}
               className="px-3.5 py-1.5 rounded-md bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 text-[13px] font-medium hover:opacity-90 transition-opacity shadow-xs"
             >
               Launch Workspace
@@ -371,7 +379,8 @@ export function HeroLandingPage() {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <Link
-                href="/login"
+                href="/?view=dashboard"
+                onClick={launchWorkspace}
                 className="w-full sm:w-auto px-6 py-3 rounded-lg bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 font-medium hover:opacity-90 transition-opacity shadow-xs text-center flex items-center justify-center gap-2"
               >
                 <span>Launch Free Vault</span>

@@ -122,7 +122,18 @@ export function MotionFooterClient() {
             <span>Crafted with Inter, Newsreader &amp; JetBrains Mono</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hover:text-stone-300 transition-colors">Launch Workspace</Link>
+            <Link
+              href="/?view=dashboard"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
+                  localStorage.setItem('lifeos_view', 'dashboard');
+                }
+              }}
+              className="hover:text-stone-300 transition-colors"
+            >
+              Launch Workspace
+            </Link>
             <span className="text-stone-700">•</span>
             <span className="hover:text-stone-300 transition-colors cursor-pointer">Privacy by Architecture</span>
             <span className="text-stone-700">•</span>

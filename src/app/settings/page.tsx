@@ -1,17 +1,11 @@
 import React from 'react';
-import { createClient } from '@/lib/supabase/server';
 import { getUserProfile } from '@/lib/actions/profile';
 import { SettingsForm } from '@/components/settings/settings-form';
-import { Sparkles, Sliders } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
-  const [{ data: { user } }, profile] = await Promise.all([
-    supabase.auth.getUser(),
-    getUserProfile(),
-  ]);
+  const profile = await getUserProfile();
 
   return (
     <div className="flex flex-col w-full">
@@ -33,7 +27,7 @@ export default async function SettingsPage() {
         </div>
 
         {/* Settings Form Container */}
-        <SettingsForm initialProfile={profile} userEmail={user?.email} />
+        <SettingsForm initialProfile={profile} userEmail="student@lifeos.local" />
       </div>
     </div>
   );

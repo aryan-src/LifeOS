@@ -1,8 +1,18 @@
-import { type NextRequest } from 'next/server';
-import { updateSession } from '@/lib/supabase/middleware';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  const pathname = request.nextUrl.pathname;
+
+  // Seamlessly redirect any legacy /login bookmark or request to root
+  if (pathname.startsWith('/login')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // All routes are strictly public without auth checks
+  return NextResponse.next();
 }
 
 export const config = {

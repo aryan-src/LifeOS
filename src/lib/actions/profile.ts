@@ -46,18 +46,6 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
       };
     }
 
-    // Graceful fallback for new or unseeded profiles
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const fallbackName =
-        user?.user_metadata?.full_name ||
-        user?.user_metadata?.name ||
-        (user?.email ? user.email.split('@')[0] : 'Student');
-      defaultProfile.display_name = fallbackName;
-    } catch {
-      // Ignore auth getUser error
-    }
-
     return defaultProfile;
   } catch (err) {
     console.error('Unhandled error in getUserProfile:', err);
@@ -144,10 +132,8 @@ export async function updateProfile(
 }
 
 /**
- * Sign out current session and redirect to /login.
+ * Legacy sign out action - resets view state and redirects to root.
  */
 export async function signOutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect('/login');
+  redirect('/');
 }

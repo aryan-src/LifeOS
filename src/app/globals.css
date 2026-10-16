@@ -55,3 +55,563 @@
 ::-webkit-scrollbar { display: none; }
 * { scrollbar-width: none; }
 
+/* ==========================================================================
+   Theme A: "Crimson Dark" (Black Background Variant)
+   Primary Page: #0B0B0C
+   Elevated Surface: #141416
+   Primary Text: #FFFDD0
+   Muted Text: #D6D2B8
+   Primary Accent: #DC143C (Button text: #FFFDD0)
+   Hover/Active: #A30E2B (Glow: rgba(220, 20, 60, 0.25))
+   Standard Divider: #262629
+   Card Border: rgba(255, 253, 208, 0.12)
+   ========================================================================== */
+
+:root[data-theme="crimson-dark"],
+:root[data-theme="crimson-cream"],
+.theme-crimson-dark,
+.theme-crimson-cream {
+  --theme-bg-page: #0B0B0C;
+  --theme-bg-surface: #141416;
+  --theme-text-primary: #FFFDD0;
+  --theme-text-muted: #D6D2B8;
+  --theme-accent: #DC143C;
+  --theme-accent-hover: #A30E2B;
+  --theme-border-divider: #262629;
+  --theme-border-card: rgba(255, 253, 208, 0.12);
+  --theme-glow: rgba(220, 20, 60, 0.25);
+  --color-from: rgba(220, 20, 60, 0.6);
+  color-scheme: dark;
+}
+
+/* 1. Primary Page Background */
+html[data-theme="crimson-dark"],
+html[data-theme="crimson-cream"],
+html[data-theme="crimson-dark"] body,
+html[data-theme="crimson-cream"] body,
+[data-theme="crimson-dark"] main,
+[data-theme="crimson-cream"] main,
+[data-theme="crimson-dark"] .bg-surface,
+[data-theme="crimson-cream"] .bg-surface,
+[data-theme="crimson-dark"] .bg-background,
+[data-theme="crimson-cream"] .bg-background,
+[data-theme="crimson-dark"] .dark\:bg-zinc-950,
+[data-theme="crimson-cream"] .dark\:bg-zinc-950,
+[data-theme="crimson-dark"] .dark\:bg-neutral-950,
+[data-theme="crimson-cream"] .dark\:bg-neutral-950 {
+  background-color: #0B0B0C !important;
+}
+
+/* 2. Secondary / Elevated Surface Background (cards, sidebar, modals, inputs, nav) */
+[data-theme="crimson-dark"] .bg-surface-container-lowest,
+[data-theme="crimson-cream"] .bg-surface-container-lowest,
+[data-theme="crimson-dark"] .bg-surface-container-low,
+[data-theme="crimson-cream"] .bg-surface-container-low,
+[data-theme="crimson-dark"] .bg-surface-container,
+[data-theme="crimson-cream"] .bg-surface-container,
+[data-theme="crimson-dark"] .bg-surface-container-high,
+[data-theme="crimson-cream"] .bg-surface-container-high,
+[data-theme="crimson-dark"] .bg-surface-container-highest,
+[data-theme="crimson-cream"] .bg-surface-container-highest,
+[data-theme="crimson-dark"] .dark\:bg-stone-900,
+[data-theme="crimson-cream"] .dark\:bg-stone-900,
+[data-theme="crimson-dark"] .dark\:bg-zinc-900,
+[data-theme="crimson-cream"] .dark\:bg-zinc-900,
+[data-theme="crimson-dark"] .dark\:bg-stone-800,
+[data-theme="crimson-cream"] .dark\:bg-stone-800,
+[data-theme="crimson-dark"] .dark\:bg-zinc-800,
+[data-theme="crimson-cream"] .dark\:bg-zinc-800,
+[data-theme="crimson-dark"] .dark\:bg-neutral-900,
+[data-theme="crimson-cream"] .dark\:bg-neutral-900,
+[data-theme="crimson-dark"] .dark\:bg-neutral-900\/95,
+[data-theme="crimson-cream"] .dark\:bg-neutral-900\/95,
+[data-theme="crimson-dark"] .dark\:bg-zinc-950\/85,
+[data-theme="crimson-cream"] .dark\:bg-zinc-950\/85,
+[data-theme="crimson-dark"] .bg-card,
+[data-theme="crimson-cream"] .bg-card,
+[data-theme="crimson-dark"] header,
+[data-theme="crimson-cream"] header,
+[data-theme="crimson-dark"] aside,
+[data-theme="crimson-cream"] aside,
+[data-theme="crimson-dark"] nav,
+[data-theme="crimson-cream"] nav,
+[data-theme="crimson-dark"] [role="dialog"],
+[data-theme="crimson-cream"] [role="dialog"],
+[data-theme="crimson-dark"] [role="menu"],
+[data-theme="crimson-cream"] [role="menu"],
+[data-theme="crimson-dark"] [role="listbox"],
+[data-theme="crimson-cream"] [role="listbox"],
+[data-theme="crimson-dark"] .modal-content,
+[data-theme="crimson-cream"] .modal-content,
+[data-theme="crimson-dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="crimson-cream"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="crimson-dark"] textarea,
+[data-theme="crimson-cream"] textarea,
+[data-theme="crimson-dark"] select,
+[data-theme="crimson-cream"] select {
+  background-color: #141416 !important;
+}
+
+/* 3. Primary Text & Active Icons */
+html[data-theme="crimson-dark"],
+html[data-theme="crimson-cream"],
+[data-theme="crimson-dark"] body,
+[data-theme="crimson-cream"] body,
+[data-theme="crimson-dark"] .text-on-surface,
+[data-theme="crimson-cream"] .text-on-surface,
+[data-theme="crimson-dark"] .dark\:text-zinc-100,
+[data-theme="crimson-cream"] .dark\:text-zinc-100,
+[data-theme="crimson-dark"] .dark\:text-stone-100,
+[data-theme="crimson-cream"] .dark\:text-stone-100,
+[data-theme="crimson-dark"] .dark\:text-neutral-100,
+[data-theme="crimson-cream"] .dark\:text-neutral-100,
+[data-theme="crimson-dark"] .dark\:text-neutral-200,
+[data-theme="crimson-cream"] .dark\:text-neutral-200,
+[data-theme="crimson-dark"] .text-foreground,
+[data-theme="crimson-cream"] .text-foreground,
+[data-theme="crimson-dark"] .text-stone-900,
+[data-theme="crimson-cream"] .text-stone-900,
+[data-theme="crimson-dark"] .text-neutral-900,
+[data-theme="crimson-cream"] .text-neutral-900,
+[data-theme="crimson-dark"] .dark\:text-white,
+[data-theme="crimson-cream"] .dark\:text-white,
+[data-theme="crimson-dark"] h1,
+[data-theme="crimson-cream"] h1,
+[data-theme="crimson-dark"] h2,
+[data-theme="crimson-cream"] h2,
+[data-theme="crimson-dark"] h3,
+[data-theme="crimson-cream"] h3,
+[data-theme="crimson-dark"] h4,
+[data-theme="crimson-cream"] h4,
+[data-theme="crimson-dark"] h5,
+[data-theme="crimson-cream"] h5,
+[data-theme="crimson-dark"] h6,
+[data-theme="crimson-cream"] h6,
+[data-theme="crimson-dark"] input,
+[data-theme="crimson-cream"] input,
+[data-theme="crimson-dark"] textarea,
+[data-theme="crimson-cream"] textarea,
+[data-theme="crimson-dark"] select,
+[data-theme="crimson-cream"] select {
+  color: #FFFDD0 !important;
+}
+
+/* 4. Secondary / Muted Text & Labels */
+[data-theme="crimson-dark"] .text-outline,
+[data-theme="crimson-cream"] .text-outline,
+[data-theme="crimson-dark"] .text-outline-variant,
+[data-theme="crimson-cream"] .text-outline-variant,
+[data-theme="crimson-dark"] .text-on-surface-variant,
+[data-theme="crimson-cream"] .text-on-surface-variant,
+[data-theme="crimson-dark"] .text-muted-foreground,
+[data-theme="crimson-cream"] .text-muted-foreground,
+[data-theme="crimson-dark"] .dark\:text-zinc-400,
+[data-theme="crimson-cream"] .dark\:text-zinc-400,
+[data-theme="crimson-dark"] .dark\:text-zinc-500,
+[data-theme="crimson-cream"] .dark\:text-zinc-500,
+[data-theme="crimson-dark"] .dark\:text-stone-400,
+[data-theme="crimson-cream"] .dark\:text-stone-400,
+[data-theme="crimson-dark"] .dark\:text-stone-500,
+[data-theme="crimson-cream"] .dark\:text-stone-500,
+[data-theme="crimson-dark"] .dark\:text-neutral-400,
+[data-theme="crimson-cream"] .dark\:text-neutral-400,
+[data-theme="crimson-dark"] .dark\:text-neutral-500,
+[data-theme="crimson-cream"] .dark\:text-neutral-500 {
+  color: #D6D2B8 !important;
+}
+
+[data-theme="crimson-dark"] input::placeholder,
+[data-theme="crimson-cream"] input::placeholder,
+[data-theme="crimson-dark"] textarea::placeholder,
+[data-theme="crimson-cream"] textarea::placeholder {
+  color: #D6D2B8 !important;
+  opacity: 0.65 !important;
+}
+
+/* 5. Primary Accent & Interactive Elements */
+[data-theme="crimson-dark"] .bg-primary,
+[data-theme="crimson-cream"] .bg-primary,
+[data-theme="crimson-dark"] .bg-secondary,
+[data-theme="crimson-cream"] .bg-secondary,
+[data-theme="crimson-dark"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="crimson-cream"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="crimson-dark"] .bg-secondary-container,
+[data-theme="crimson-cream"] .bg-secondary-container,
+[data-theme="crimson-dark"] [data-state="active"],
+[data-theme="crimson-cream"] [data-state="active"],
+[data-theme="crimson-dark"] .badge-primary,
+[data-theme="crimson-cream"] .badge-primary {
+  background-color: #DC143C !important;
+  color: #FFFDD0 !important;
+}
+
+[data-theme="crimson-dark"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="crimson-cream"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="crimson-dark"] .bg-primary *,
+[data-theme="crimson-cream"] .bg-primary * {
+  color: #FFFDD0 !important;
+}
+
+[data-theme="crimson-dark"] .text-primary,
+[data-theme="crimson-cream"] .text-primary,
+[data-theme="crimson-dark"] .text-secondary,
+[data-theme="crimson-cream"] .text-secondary {
+  color: #DC143C !important;
+}
+
+/* Progress bars & habit badges */
+[data-theme="crimson-dark"] .bg-emerald-500,
+[data-theme="crimson-cream"] .bg-emerald-500,
+[data-theme="crimson-dark"] .bg-emerald-600,
+[data-theme="crimson-cream"] .bg-emerald-600,
+[data-theme="crimson-dark"] .dark\:bg-emerald-500,
+[data-theme="crimson-cream"] .dark\:bg-emerald-500,
+[data-theme="crimson-dark"] .dark\:bg-emerald-400,
+[data-theme="crimson-cream"] .dark\:bg-emerald-400 {
+  background-color: #DC143C !important;
+}
+
+[data-theme="crimson-dark"] .text-emerald-500,
+[data-theme="crimson-cream"] .text-emerald-500,
+[data-theme="crimson-dark"] .text-emerald-600,
+[data-theme="crimson-cream"] .text-emerald-600,
+[data-theme="crimson-dark"] .dark\:text-emerald-400,
+[data-theme="crimson-cream"] .dark\:text-emerald-400,
+[data-theme="crimson-dark"] .dark\:text-emerald-300,
+[data-theme="crimson-cream"] .dark\:text-emerald-300 {
+  color: #DC143C !important;
+}
+
+/* 6. Interactive Hover / Active States */
+[data-theme="crimson-dark"] .bg-primary:hover,
+[data-theme="crimson-cream"] .bg-primary:hover,
+[data-theme="crimson-dark"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="crimson-cream"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="crimson-dark"] .hover\:bg-primary\/90:hover,
+[data-theme="crimson-cream"] .hover\:bg-primary\/90:hover {
+  background-color: #A30E2B !important;
+  box-shadow: 0 0 12px rgba(220, 20, 60, 0.25) !important;
+}
+
+[data-theme="crimson-dark"] .hover\:bg-surface-container-low:hover,
+[data-theme="crimson-cream"] .hover\:bg-surface-container-low:hover,
+[data-theme="crimson-dark"] .hover\:bg-surface-container-high:hover,
+[data-theme="crimson-cream"] .hover\:bg-surface-container-high:hover,
+[data-theme="crimson-dark"] .dark\:hover\:bg-neutral-800:hover,
+[data-theme="crimson-cream"] .dark\:hover\:bg-neutral-800:hover,
+[data-theme="crimson-dark"] .dark\:hover\:bg-zinc-800:hover,
+[data-theme="crimson-cream"] .dark\:hover\:bg-zinc-800:hover,
+[data-theme="crimson-dark"] .dark\:hover\:bg-stone-800:hover,
+[data-theme="crimson-cream"] .dark\:hover\:bg-stone-800:hover {
+  background-color: rgba(220, 20, 60, 0.12) !important;
+}
+
+[data-theme="crimson-dark"] input:focus,
+[data-theme="crimson-cream"] input:focus,
+[data-theme="crimson-dark"] textarea:focus,
+[data-theme="crimson-cream"] textarea:focus,
+[data-theme="crimson-dark"] select:focus,
+[data-theme="crimson-cream"] select:focus,
+[data-theme="crimson-dark"] .focus-within\:border-primary\/40:focus-within,
+[data-theme="crimson-cream"] .focus-within\:border-primary\/40:focus-within {
+  border-color: #DC143C !important;
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.25) !important;
+}
+
+/* 7. Borders & Dividers */
+[data-theme="crimson-dark"] hr,
+[data-theme="crimson-cream"] hr,
+[data-theme="crimson-dark"] header,
+[data-theme="crimson-cream"] header,
+[data-theme="crimson-dark"] aside,
+[data-theme="crimson-cream"] aside,
+[data-theme="crimson-dark"] .border-outline-variant,
+[data-theme="crimson-cream"] .border-outline-variant,
+[data-theme="crimson-dark"] .border-outline-variant\/20,
+[data-theme="crimson-cream"] .border-outline-variant\/20,
+[data-theme="crimson-dark"] .border-outline-variant\/30,
+[data-theme="crimson-cream"] .border-outline-variant\/30,
+[data-theme="crimson-dark"] .border-outline-variant\/40,
+[data-theme="crimson-cream"] .border-outline-variant\/40,
+[data-theme="crimson-dark"] .border-outline-variant\/60,
+[data-theme="crimson-cream"] .border-outline-variant\/60,
+[data-theme="crimson-dark"] .dark\:border-zinc-800,
+[data-theme="crimson-cream"] .dark\:border-zinc-800,
+[data-theme="crimson-dark"] .dark\:border-zinc-800\/60,
+[data-theme="crimson-cream"] .dark\:border-zinc-800\/60,
+[data-theme="crimson-dark"] .dark\:border-stone-800,
+[data-theme="crimson-cream"] .dark\:border-stone-800,
+[data-theme="crimson-dark"] .dark\:border-neutral-800,
+[data-theme="crimson-cream"] .dark\:border-neutral-800,
+[data-theme="crimson-dark"] .dark\:border-neutral-800\/80,
+[data-theme="crimson-cream"] .dark\:border-neutral-800\/80,
+[data-theme="crimson-dark"] .dark\:border-neutral-700\/60,
+[data-theme="crimson-cream"] .dark\:border-neutral-700\/60 {
+  border-color: #262629 !important;
+}
+
+/* Subtle card borders */
+[data-theme="crimson-dark"] .bg-surface-container-lowest,
+[data-theme="crimson-cream"] .bg-surface-container-lowest,
+[data-theme="crimson-dark"] section.bg-surface-container-lowest,
+[data-theme="crimson-cream"] section.bg-surface-container-lowest,
+[data-theme="crimson-dark"] .rounded-2xl.border,
+[data-theme="crimson-cream"] .rounded-2xl.border,
+[data-theme="crimson-dark"] .rounded-xl.border,
+[data-theme="crimson-cream"] .rounded-xl.border {
+  border-color: rgba(255, 253, 208, 0.12) !important;
+}
+
+/* Active card selection in Settings */
+[data-theme="crimson-dark"] .border-primary,
+[data-theme="crimson-cream"] .border-primary {
+  border-color: #DC143C !important;
+}
+
+[data-theme="crimson-dark"] .ring-primary\/30,
+[data-theme="crimson-cream"] .ring-primary\/30 {
+  --tw-ring-color: rgba(220, 20, 60, 0.3) !important;
+}
+
+/* Sidebar active item in Crimson Dark */
+[data-theme="crimson-dark"] .dark\:bg-neutral-800.rounded-xl,
+[data-theme="crimson-cream"] .dark\:bg-neutral-800.rounded-xl {
+  background-color: rgba(220, 20, 60, 0.18) !important;
+  border-color: rgba(220, 20, 60, 0.35) !important;
+}
+
+/* Recharts / Habit Chart in Crimson Dark */
+[data-theme="crimson-dark"] .dark\:fill-emerald-400,
+[data-theme="crimson-cream"] .dark\:fill-emerald-400,
+[data-theme="crimson-dark"] .fill-\[\#10B981\],
+[data-theme="crimson-cream"] .fill-\[\#10B981\] {
+  fill: #DC143C !important;
+}
+
+[data-theme="crimson-dark"] .dark\:fill-emerald-500\/80,
+[data-theme="crimson-cream"] .dark\:fill-emerald-500\/80,
+[data-theme="crimson-dark"] .fill-\[\#059669\],
+[data-theme="crimson-cream"] .fill-\[\#059669\] {
+  fill: #A30E2B !important;
+}
+
+[data-theme="crimson-dark"] .dark\:fill-zinc-800,
+[data-theme="crimson-cream"] .dark\:fill-zinc-800,
+[data-theme="crimson-dark"] .fill-stone-200,
+[data-theme="crimson-cream"] .fill-stone-200 {
+  fill: #262629 !important;
+}
+
+/* Text Selection in Crimson Dark */
+[data-theme="crimson-dark"] ::selection,
+[data-theme="crimson-cream"] ::selection {
+  background-color: #DC143C !important;
+  color: #FFFDD0 !important;
+}
+
+/* ==========================================================================
+   Theme B: "Crimson Light" (Bright Cream Background Variant)
+   Primary Page: #FFFDD0
+   Elevated Surface: #FFFFE4 (Main) / #F5F2B8 (Secondary)
+   Primary Text: #0B0B0C
+   Muted Text: #3A3A3E
+   Primary Accent: #DC143C (Button text: #FFFDD0)
+   Hover/Active: #A30E2B (Glow: rgba(220, 20, 60, 0.2))
+   Standard Divider: #E2DEC1
+   Card Border: rgba(20, 20, 22, 0.12)
+   ========================================================================== */
+
+:root[data-theme="crimson-light"],
+.theme-crimson-light {
+  --theme-bg-page: #FFFDD0;
+  --theme-bg-surface: #FFFFE4;
+  --theme-text-primary: #0B0B0C;
+  --theme-text-muted: #3A3A3E;
+  --theme-accent: #DC143C;
+  --theme-accent-hover: #A30E2B;
+  --theme-border-divider: #E2DEC1;
+  --theme-border-card: rgba(20, 20, 22, 0.12);
+  --theme-glow: rgba(220, 20, 60, 0.2);
+  --color-from: rgba(220, 20, 60, 0.5);
+  color-scheme: light;
+}
+
+/* 1. Primary Page Background */
+html[data-theme="crimson-light"],
+html[data-theme="crimson-light"] body,
+[data-theme="crimson-light"] main,
+[data-theme="crimson-light"] .bg-surface,
+[data-theme="crimson-light"] .bg-background {
+  background-color: #FFFDD0 !important;
+}
+
+/* 2. Secondary / Elevated Surface Background (cards, sidebar, modals, inputs, nav) */
+[data-theme="crimson-light"] .bg-surface-container-lowest,
+[data-theme="crimson-light"] .bg-card,
+[data-theme="crimson-light"] header,
+[data-theme="crimson-light"] aside,
+[data-theme="crimson-light"] nav,
+[data-theme="crimson-light"] [role="dialog"],
+[data-theme="crimson-light"] [role="menu"],
+[data-theme="crimson-light"] [role="listbox"],
+[data-theme="crimson-light"] .modal-content,
+[data-theme="crimson-light"] .bg-neutral-100\/95 {
+  background-color: #FFFFE4 !important;
+}
+
+[data-theme="crimson-light"] .bg-surface-container-low,
+[data-theme="crimson-light"] .bg-surface-container,
+[data-theme="crimson-light"] .bg-surface-container-high,
+[data-theme="crimson-light"] .bg-surface-container-highest,
+[data-theme="crimson-light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="crimson-light"] textarea,
+[data-theme="crimson-light"] select {
+  background-color: #F5F2B8 !important;
+}
+
+/* 3. Primary Text & Active Icons */
+html[data-theme="crimson-light"],
+[data-theme="crimson-light"] body,
+[data-theme="crimson-light"] .text-on-surface,
+[data-theme="crimson-light"] .text-foreground,
+[data-theme="crimson-light"] .text-stone-900,
+[data-theme="crimson-light"] .text-neutral-900,
+[data-theme="crimson-light"] h1,
+[data-theme="crimson-light"] h2,
+[data-theme="crimson-light"] h3,
+[data-theme="crimson-light"] h4,
+[data-theme="crimson-light"] h5,
+[data-theme="crimson-light"] h6,
+[data-theme="crimson-light"] input,
+[data-theme="crimson-light"] textarea,
+[data-theme="crimson-light"] select {
+  color: #0B0B0C !important;
+}
+
+/* 4. Secondary / Muted Text & Labels */
+[data-theme="crimson-light"] .text-outline,
+[data-theme="crimson-light"] .text-outline-variant,
+[data-theme="crimson-light"] .text-on-surface-variant,
+[data-theme="crimson-light"] .text-muted-foreground,
+[data-theme="crimson-light"] .text-stone-500,
+[data-theme="crimson-light"] .text-stone-600,
+[data-theme="crimson-light"] .text-neutral-500,
+[data-theme="crimson-light"] .text-neutral-600 {
+  color: #3A3A3E !important;
+}
+
+[data-theme="crimson-light"] input::placeholder,
+[data-theme="crimson-light"] textarea::placeholder {
+  color: #3A3A3E !important;
+  opacity: 0.65 !important;
+}
+
+/* 5. Primary Accent & Interactive Elements */
+[data-theme="crimson-light"] .bg-primary,
+[data-theme="crimson-light"] .bg-secondary,
+[data-theme="crimson-light"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="crimson-light"] .bg-secondary-container,
+[data-theme="crimson-light"] [data-state="active"],
+[data-theme="crimson-light"] .badge-primary {
+  background-color: #DC143C !important;
+  color: #FFFDD0 !important;
+}
+
+[data-theme="crimson-light"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="crimson-light"] .bg-primary * {
+  color: #FFFDD0 !important;
+}
+
+[data-theme="crimson-light"] .text-primary,
+[data-theme="crimson-light"] .text-secondary {
+  color: #DC143C !important;
+}
+
+/* Progress bars & badges in Crimson Light */
+[data-theme="crimson-light"] .bg-emerald-500,
+[data-theme="crimson-light"] .bg-emerald-600 {
+  background-color: #DC143C !important;
+}
+
+[data-theme="crimson-light"] .text-emerald-500,
+[data-theme="crimson-light"] .text-emerald-600 {
+  color: #DC143C !important;
+}
+
+/* 6. Interactive Hover / Active States */
+[data-theme="crimson-light"] .bg-primary:hover,
+[data-theme="crimson-light"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="crimson-light"] .hover\:bg-primary\/90:hover {
+  background-color: #A30E2B !important;
+  box-shadow: 0 0 12px rgba(220, 20, 60, 0.2) !important;
+}
+
+[data-theme="crimson-light"] .hover\:bg-surface-container-low:hover,
+[data-theme="crimson-light"] .hover\:bg-surface-container-high:hover,
+[data-theme="crimson-light"] .hover\:bg-neutral-200\/70:hover {
+  background-color: rgba(220, 20, 60, 0.1) !important;
+}
+
+[data-theme="crimson-light"] input:focus,
+[data-theme="crimson-light"] textarea:focus,
+[data-theme="crimson-light"] select:focus,
+[data-theme="crimson-light"] .focus-within\:border-primary\/40:focus-within {
+  border-color: #DC143C !important;
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.2) !important;
+}
+
+/* 7. Borders & Dividers */
+[data-theme="crimson-light"] hr,
+[data-theme="crimson-light"] header,
+[data-theme="crimson-light"] aside,
+[data-theme="crimson-light"] .border-outline-variant,
+[data-theme="crimson-light"] .border-outline-variant\/20,
+[data-theme="crimson-light"] .border-outline-variant\/30,
+[data-theme="crimson-light"] .border-outline-variant\/40,
+[data-theme="crimson-light"] .border-outline-variant\/60,
+[data-theme="crimson-light"] .border-neutral-200\/80 {
+  border-color: #E2DEC1 !important;
+}
+
+/* Structured Card Borders */
+[data-theme="crimson-light"] .bg-surface-container-lowest,
+[data-theme="crimson-light"] section.bg-surface-container-lowest,
+[data-theme="crimson-light"] .rounded-2xl.border,
+[data-theme="crimson-light"] .rounded-xl.border {
+  border-color: rgba(20, 20, 22, 0.12) !important;
+}
+
+/* Active card selection in Settings */
+[data-theme="crimson-light"] .border-primary {
+  border-color: #DC143C !important;
+}
+
+[data-theme="crimson-light"] .ring-primary\/30 {
+  --tw-ring-color: rgba(220, 20, 60, 0.3) !important;
+}
+
+/* Sidebar active item in Crimson Light */
+[data-theme="crimson-light"] .bg-neutral-200\/80.rounded-xl {
+  background-color: rgba(220, 20, 60, 0.15) !important;
+  border-color: rgba(220, 20, 60, 0.3) !important;
+}
+
+/* Recharts in Crimson Light */
+[data-theme="crimson-light"] .fill-\[\#10B981\] {
+  fill: #DC143C !important;
+}
+
+[data-theme="crimson-light"] .fill-\[\#059669\] {
+  fill: #A30E2B !important;
+}
+
+[data-theme="crimson-light"] .fill-stone-200 {
+  fill: #E2DEC1 !important;
+}
+
+/* Text Selection in Crimson Light */
+[data-theme="crimson-light"] ::selection {
+  background-color: #DC143C !important;
+  color: #FFFDD0 !important;
+}
+

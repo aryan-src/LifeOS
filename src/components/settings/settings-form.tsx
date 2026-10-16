@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile, signOutAction } from '@/lib/actions/profile';
 import {
@@ -27,16 +27,18 @@ const CURRENCIES = [
   { symbol: '£', label: 'GBP (£ - British Pound)' },
 ];
 
-const THEMES = [
-  { id: 'stone', label: 'Warm Stone', description: 'Notion-inspired warm paper aesthetic' },
-  { id: 'light', label: 'Pure Paper', description: 'Minimalist high-contrast light mode' },
-  { id: 'dark', label: 'Obsidian', description: 'Deep slate for low-light focus' },
+const THEMES: { id: string; label: string; description: string }[] = [
+  { id: 'default', label: 'Default', description: 'Notion-inspired warm paper aesthetic' },
+  { id: 'crimson-dark', label: 'Crimson Dark', description: 'Deep obsidian black, crimson red & bright cream' },
+  { id: 'crimson-light', label: 'Crimson Light', description: 'Bright cream canvas with crimson red & obsidian text' },
 ];
 
 export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
   const [displayName, setDisplayName] = useState(initialProfile.display_name || '');
   const [currencySymbol, setCurrencySymbol] = useState(initialProfile.currency_symbol || '₹');
-  const [themePreference, setThemePreference] = useState(initialProfile.theme_preference || 'stone');
+  const [themePreference, setThemePreference] = useState<string>(
+    initialProfile.theme_preference || 'default'
+  );
   const [allowanceTarget, setAllowanceTarget] = useState(
     initialProfile.monthly_allowance_target?.toString() || '15000'
   );
@@ -44,6 +46,36 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isSigningOut, startSignOutTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Sync with localStorage on client mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('lifeos_theme');
+    if (saved === 'crimson-dark' || saved === 'crimson-light' || saved === 'default' || saved === 'crimson-cream') {
+      setThemePreference(saved === 'crimson-cream' ? 'crimson-dark' : saved);
+    }
+  }, []);
+
+  const handleThemeChange = (themeId: string) => {
+    setThemePreference(themeId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lifeos_theme', themeId);
+      if (themeId === 'crimson-dark' || themeId === 'crimson-cream') {
+        document.documentElement.setAttribute('data-theme', 'crimson-dark');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else if (themeId === 'crimson-light') {
+        document.documentElement.setAttribute('data-theme', 'crimson-light');
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        // default (existing theme)
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -211,13 +243,16 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {THEMES.map((theme) => {
-              const isSelected = themePreference === theme.id;
+              const isSelected =
+                themePreference === theme.id ||
+                (theme.id === 'default' && (themePreference === 'stone' || themePreference === 'default' || !themePreference)) ||
+                (theme.id === 'crimson-dark' && themePreference === 'crimson-cream');
               return (
                 <button
                   type="button"
                   key={theme.id}
-                  onClick={() => setThemePreference(theme.id as 'stone' | 'light' | 'dark')}
-                  className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
+                  onClick={() => handleThemeChange(theme.id)}
+                  className={`flex flex-col text-left p-4 rounded-xl border transition-all cursor-pointer ${
                     isSelected
                       ? 'border-primary bg-surface-container-high/60 ring-1 ring-primary/30'
                       : 'border-outline-variant/20 bg-surface-container-low/40 hover:bg-surface-container-low'

@@ -319,12 +319,15 @@ export function MacOSSidebar({
   const toggleTheme = () => {
     const nextDark = !isDarkMode;
     setIsDarkMode(nextDark);
+    document.documentElement.removeAttribute('data-theme');
     if (nextDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      localStorage.setItem('lifeos_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      localStorage.setItem('lifeos_theme', 'light');
     }
   };
 

@@ -77,7 +77,7 @@ export async function updateProfile(
 
   const displayName = (formData.get('displayName') as string)?.trim() || 'Student';
   const currencySymbol = (formData.get('currencySymbol') as string)?.trim() || '₹';
-  const themePreference = ((formData.get('themePreference') as string) || 'stone') as 'stone' | 'light' | 'dark';
+  const themePreference = ((formData.get('themePreference') as string) || 'default') as 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default';
   const allowanceRaw = formData.get('monthlyAllowanceTarget') as string;
 
   const parsedAllowance = parseFloat(allowanceRaw);
@@ -90,7 +90,7 @@ export async function updateProfile(
     monthly_allowance_target: monthlyAllowanceTarget,
   };
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('profiles')
     .upsert({
       id: effectiveUserId,
@@ -99,20 +99,47 @@ export async function updateProfile(
     .select()
     .single();
 
-  if (error) {
-    console.error('Error updating profile:', error);
-    return { success: false, error: formatErrorMessage(error) };
+  if (error && (themePreference === 'crimson-dark' || themePreference === 'crimson-light' || themePreference === 'crimson-cream' || themePreference === 'default')) {
+    // If the remote check constraint has not been updated yet, store standard DB fallback
+    const fallbackTheme = (themePreference === 'crimson-dark' || themePreference === 'crimson-cream') ? 'dark' : 'stone';
+    const fallbackRes = await supabase
+      .from('profiles')
+      .upsert({
+        id: effectiveUserId,
+        ...payload,
+        theme_preference: fallbackTheme,
+      })
+      .select()
+      .single();
+
+    if (!fallbackRes.error && fallbackRes.data) {
+      error = null;
+      data = { ...fallbackRes.data, theme_preference: themePreference };
+    }
   }
+
+  if (error || !data) {
+    console.error('Error updating profile:', error);
+    return { success: false, error: formatErrorMessage(error || 'Failed to update profile') };
+  }
+
+  const updatedProfile: Profile = {
+    ...data,
+    id: data.id || effectiveUserId,
+    display_name: data.display_name ?? displayName,
+    theme_preference: themePreference,
+    currency_symbol: data.currency_symbol || currencySymbol,
+    monthly_allowance_target: Number(data.monthly_allowance_target || monthlyAllowanceTarget),
+    created_at: data.created_at || new Date().toISOString(),
+    updated_at: data.updated_at || new Date().toISOString(),
+  };
 
   revalidatePath('/settings');
   revalidatePath('/');
   revalidatePath('/finances');
   return {
     success: true,
-    data: {
-      ...data,
-      monthly_allowance_target: Number(data.monthly_allowance_target),
-    },
+    data: updatedProfile,
   };
 }
 

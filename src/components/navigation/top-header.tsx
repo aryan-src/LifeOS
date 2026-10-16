@@ -48,20 +48,26 @@ export function TopHeader() {
   const setLightMode = () => {
     setTheme('light');
     setIsDarkMode(false);
+    document.documentElement.removeAttribute('data-theme');
     document.documentElement.classList.remove('dark');
     localStorage.setItem('theme', 'light');
+    localStorage.setItem('lifeos_theme', 'light');
   };
 
   const setDarkMode = () => {
     setTheme('dark');
     setIsDarkMode(true);
+    document.documentElement.removeAttribute('data-theme');
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'dark');
+    localStorage.setItem('lifeos_theme', 'dark');
   };
 
   const setSystemMode = () => {
     setTheme('system');
     localStorage.removeItem('theme');
+    localStorage.removeItem('lifeos_theme');
+    document.documentElement.removeAttribute('data-theme');
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setIsDarkMode(systemDark);
     if (systemDark) {

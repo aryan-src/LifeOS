@@ -51,7 +51,7 @@ export default async function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+            __html: `(function(){try{var lt=localStorage.getItem('lifeos_theme');var t=localStorage.getItem('theme');if(lt==='crimson-dark'||lt==='crimson-cream'){document.documentElement.setAttribute('data-theme','crimson-dark');document.documentElement.classList.add('dark');}else if(lt==='crimson-light'){document.documentElement.setAttribute('data-theme','crimson-light');document.documentElement.classList.remove('dark');}else{document.documentElement.removeAttribute('data-theme');var isDark=lt==='dark'||t==='dark'||(!lt&&!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}}catch(e){}})();`,
           }}
         />
       </head>

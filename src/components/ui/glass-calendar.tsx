@@ -14,7 +14,7 @@ import {
   startOfWeek,
   addDays,
 } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store/use-ui-store";
 

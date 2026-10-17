@@ -10,7 +10,7 @@ import {
   Tooltip,
   ReferenceLine,
 } from 'recharts';
-import { motion, useSpring, useMotionValueEvent } from 'framer-motion';
+import { motion, useSpring, useMotionValueEvent } from 'motion/react';
 import NumberFlow from '@number-flow/react';
 
 export interface HoverTraceBarItem {
@@ -108,9 +108,18 @@ export function HoverTraceBarChart({
     return Math.ceil(rawMax * 1.25);
   }, [data]);
 
+  interface BarShapeProps {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    index?: number;
+    payload?: HoverTraceBarItem;
+  }
+
   // Custom Bar Shape supporting terracotta active bars & zero-spend baseline pills
-  const renderBarShape = (props: any) => {
-    const { x, y, width, height, index, payload } = props;
+  const renderBarShape = (props: BarShapeProps) => {
+    const { x = 0, y = 0, width = 0, height = 0, index = 0, payload } = props;
     const isInactive = !payload || payload.amount <= 0;
     const isHovered = activeItem.index === index;
     const isAnyHovered = activeTooltipIndex !== null;
@@ -182,14 +191,20 @@ export function HoverTraceBarChart({
     );
   };
 
+  interface CustomTickProps {
+    x?: number | string;
+    y?: number | string;
+    payload?: { index: number; value: string };
+  }
+
   // Custom XAxis tick with today and hover highlights
-  const renderCustomTick = ({ x, y, payload }: any) => {
-    const item = data[payload.index];
+  const renderCustomTick = ({ x = 0, y = 0, payload }: CustomTickProps) => {
+    const item = payload ? data[payload.index] : undefined;
     const isToday = item?.isToday;
-    const isHovered = activeItem.index === payload.index;
+    const isHovered = payload ? activeItem.index === payload.index : false;
 
     return (
-      <g transform={`translate(${x},${y + 12})`}>
+      <g transform={`translate(${x},${Number(y) + 12})`}>
         <text
           x={0}
           y={0}
@@ -202,14 +217,18 @@ export function HoverTraceBarChart({
               : 'fill-neutral-500 dark:fill-neutral-400 font-medium'
           }`}
         >
-          {payload.value}
+          {payload?.value}
         </text>
       </g>
     );
   };
 
+  interface TraceLabelProps {
+    viewBox?: { x?: number; y?: number };
+  }
+
   // Custom reference line label badge
-  const renderTraceLabel = ({ viewBox }: any) => {
+  const renderTraceLabel = ({ viewBox }: TraceLabelProps) => {
     const x = viewBox?.x ?? 0;
     const y = viewBox?.y ?? 0;
     const text = `${currencySymbol}${Math.round(activeItem.amount)}`;
@@ -324,9 +343,10 @@ export function HoverTraceBarChart({
               <BarChart
                 data={data}
                 margin={{ top: 24, right: 12, left: 12, bottom: 0 }}
-                onMouseMove={(e: any) => {
-                  if (e?.activeTooltipIndex != null) {
-                    setActiveTooltipIndex(Number(e.activeTooltipIndex));
+                onMouseMove={(e) => {
+                  const chartEvent = e as { activeTooltipIndex?: number | string | null } | null;
+                  if (chartEvent?.activeTooltipIndex != null) {
+                    setActiveTooltipIndex(Number(chartEvent.activeTooltipIndex));
                   }
                 }}
                 onMouseLeave={handleMouseLeaveChart}

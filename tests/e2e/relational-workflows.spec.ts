@@ -12,6 +12,7 @@ const TEST_TAG_PREFIX = 'e2e-test-';
 const TEST_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
 test.describe('LifeOS Cross-Module Relational Workflows (E2E)', () => {
+  test.skip(!process.env.TEST_USER_EMAIL, 'Skipping authenticated workflows when TEST_USER_EMAIL is not configured');
   // CRITICAL CONSTRAINT (Data Teardown):
   // Clean up any test artifacts generated during test runs to prevent database pollution
   test.afterEach(async () => {

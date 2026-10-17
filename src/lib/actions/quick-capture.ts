@@ -1,12 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate } from '@/lib/utils/date';
+import { quickCaptureSchema, formatZodError } from '@/lib/validations';
 
 export interface DispatchResult {
   target: 'transaction' | 'task' | 'note' | 'assignment';
@@ -23,14 +24,15 @@ export interface DispatchResult {
 export async function dispatchQuickCapture(
   rawInput: string
 ): Promise<ActionResponse<DispatchResult>> {
-  const trimmed = rawInput.trim();
-  if (!trimmed) {
-    return { success: false, error: 'Input cannot be empty.' };
+  const validation = quickCaptureSchema.safeParse({ rawInput });
+  if (!validation.success) {
+    return { success: false, error: formatZodError(validation.error) };
   }
 
+  const trimmed = validation.data.rawInput;
   const parsed = parseQuickCapture(trimmed);
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   // 1. Resolve project_id via indexed slug lookup if present
   let resolvedProjectId: string | null = null;

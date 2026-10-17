@@ -6,6 +6,7 @@ import type { Category } from '@/types/database.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { getTodayDate } from '@/lib/utils/date';
 import { Loader2 } from 'lucide-react';
+import { useModalA11y } from '@/hooks/use-modal-a11y';
 
 interface RecordExpenseModalProps {
   isOpen: boolean;
@@ -24,6 +25,9 @@ export function RecordExpenseModal({
   onSuccess,
   currencySymbol = '₹',
 }: RecordExpenseModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isOpen, onClose, modalRef);
+
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -90,6 +94,7 @@ export function RecordExpenseModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/20 dark:bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
+        ref={modalRef}
         className="bg-surface-container-lowest dark:bg-zinc-900 text-on-surface dark:text-zinc-100 p-space-lg rounded-xl shadow-xl max-w-md w-full border border-outline-variant/30 dark:border-zinc-800 relative flex flex-col gap-space-md"
         role="dialog"
         aria-modal="true"

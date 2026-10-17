@@ -1,5 +1,4 @@
 import React from 'react';
-import { Shell } from '@/components/layout/shell';
 import { NotesGrid } from '@/components/notes/notes-grid';
 import { getNotes } from '@/lib/actions/notes';
 
@@ -9,11 +8,11 @@ export default async function NotesPage() {
   const notes = await getNotes();
 
   return (
-    <Shell>
+    <div className="flex flex-col w-full">
       <div className="w-full">
         <NotesGrid initialNotes={notes} />
       </div>
-    </Shell>
+    </div>
   );
 }
 

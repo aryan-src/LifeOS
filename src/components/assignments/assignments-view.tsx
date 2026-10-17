@@ -825,9 +825,19 @@ export function AssignmentsView({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 text-center text-xs text-stone-400 italic"
+                    className="py-12 text-center text-xs text-stone-400"
                   >
-                    No assignments found matching your filter criteria.
+                    <p className="font-medium text-stone-700 dark:text-stone-300 text-sm">No assignments found</p>
+                    <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">
+                      Keep track of coursework, project milestones, and exam submissions with grade calculation.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateOpen(true)}
+                      className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-900 text-stone-100 dark:bg-stone-100 dark:text-stone-900 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      + Add assignment
+                    </button>
                   </td>
                 </tr>
               ) : (

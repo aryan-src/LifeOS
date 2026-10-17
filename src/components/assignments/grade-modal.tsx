@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Award, CheckCircle } from 'lucide-react';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
+import { useModalA11y } from '@/hooks/use-modal-a11y';
 
 interface GradeModalProps {
   assignment: AssignmentWithProject;
@@ -12,6 +13,8 @@ interface GradeModalProps {
 }
 
 export function GradeModal({ assignment, isOpen, onClose, onGrade }: GradeModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isOpen, onClose, modalRef);
   const [marksAchieved, setMarksAchieved] = useState<string>(
     assignment.marks_achieved !== null && assignment.marks_achieved !== undefined
       ? String(assignment.marks_achieved)
@@ -55,8 +58,9 @@ export function GradeModal({ assignment, isOpen, onClose, onGrade }: GradeModalP
       setIsSubmitting(true);
       await onGrade(assignment.id, achievedNum, totalNum);
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to record grade.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to record grade.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -70,9 +74,11 @@ export function GradeModal({ assignment, isOpen, onClose, onGrade }: GradeModalP
       }}
     >
       <div
+        ref={modalRef}
         className="w-full max-w-md rounded-3xl border border-white/60 dark:border-stone-700/60 bg-[#FAF8F5]/85 dark:bg-stone-900/85 backdrop-blur-xl backdrop-saturate-150 shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 dark:ring-white/10 p-6 sm:p-8 flex flex-col gap-6 transition-all"
         role="dialog"
         aria-modal="true"
+        aria-labelledby="grade-modal-title"
       >
         <div className="flex items-start justify-between pb-1">
           <div className="flex items-center gap-3">
@@ -80,7 +86,7 @@ export function GradeModal({ assignment, isOpen, onClose, onGrade }: GradeModalP
               <Award className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base tracking-tight">
+              <h3 id="grade-modal-title" className="font-bold text-stone-900 dark:text-stone-100 text-base tracking-tight">
                 Record Grade
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1 mt-0.5">

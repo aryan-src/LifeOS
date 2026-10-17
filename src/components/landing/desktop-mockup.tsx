@@ -4,20 +4,22 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export function DesktopMockup() {
-  const [activeTab, setActiveTab] = useState<'command' | 'ledger' | 'focus' | 'kanban' | 'obsidian'>('command');
+  const [activeTab, setActiveTab] = useState<'command' | 'ledger' | 'focus' | 'kanban' | 'notes'>('command');
   
   // Interactive Pomodoro Timer (24:18 default)
   const [timerSeconds, setTimerSeconds] = useState(24 * 60 + 18);
   const [isRunning, setIsRunning] = useState(true);
 
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isRunning && timerSeconds > 0) {
       interval = setInterval(() => {
         setTimerSeconds((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isRunning, timerSeconds]);
 
   const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
@@ -48,9 +50,12 @@ export function DesktopMockup() {
             <span className="w-2.5 h-2.5 rounded-full bg-stone-300 dark:bg-stone-700 border border-stone-400/30" />
             <span className="w-2.5 h-2.5 rounded-full bg-stone-300 dark:bg-stone-700 border border-stone-400/30" />
           </div>
-          <div className="flex items-center gap-1.5 text-[12px] font-mono text-stone-600 dark:text-stone-400">
+          <div className="flex items-center gap-2 text-[12px] font-mono text-stone-600 dark:text-stone-400">
             <span className="material-symbols-outlined text-[14px] text-stone-400 dark:text-stone-500">terminal</span>
-            <span>lifeos-vault :: session_active.md</span>
+            <span>lifeos :: workspace</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-200/70 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-sans font-medium border border-stone-300/40 dark:border-stone-700/40">
+              Dashboard Preview
+            </span>
           </div>
         </div>
 
@@ -102,14 +107,14 @@ export function DesktopMockup() {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('obsidian')}
+            onClick={() => setActiveTab('notes')}
             className={`px-2.5 py-1 rounded-md transition-all ${
-              activeTab === 'obsidian'
+              activeTab === 'notes'
                 ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-medium shadow-xs'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
             }`}
           >
-            Obsidian Sync
+            Markdown Notes
           </button>
         </div>
 
@@ -265,7 +270,7 @@ export function DesktopMockup() {
                 </div>
                 <div className="p-2.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 space-y-1">
                   <div className="text-[11px] font-mono text-stone-500">Audio Craft</div>
-                  <div className="text-[13px] font-medium text-stone-900 dark:text-stone-100 font-sans">Rust Synthesizer DSP</div>
+                  <div className="text-[13px] font-medium text-stone-900 dark:text-stone-100 font-sans">Interactive Audio DSP</div>
                   <div className="flex items-center justify-between text-[11px] font-mono text-stone-500 pt-1">
                     <span>Alpha Build</span>
                     <span className="text-stone-500">45%</span>
@@ -400,23 +405,25 @@ export function DesktopMockup() {
           </div>
         )}
 
-        {/* TAB 5: OBSIDIAN SYNC */}
-        {activeTab === 'obsidian' && (
+        {/* TAB 5: MARKDOWN NOTES WITH CHECKLIST PROMOTION */}
+        {activeTab === 'notes' && (
           <div className="p-4 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 space-y-3 font-mono text-[12px] animate-in fade-in duration-200">
             <div className="flex items-center justify-between text-stone-500 border-b border-stone-200 dark:border-stone-800 pb-2">
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[15px] text-[#2f5c3a]">folder_open</span>
-                <span>~/lifeos-vault/atomic_notes/dieter_rams.md</span>
+                <span className="material-symbols-outlined text-[15px] text-[#2f5c3a]">edit_note</span>
+                <span>notes / autonomous_agents.md</span>
               </span>
-              <span className="text-[#2f5c3a] dark:text-emerald-400">● Synced with Obsidian</span>
+              <span className="text-[#2f5c3a] dark:text-emerald-400">● Markdown &amp; Checklists</span>
             </div>
-            <div className="text-stone-400">---</div>
-            <div className="text-stone-400">title: Calm Computing Principles</div>
-            <div className="text-stone-400">updated: 2026-10-07 02:45</div>
-            <div className="text-stone-400">---</div>
-            <div className="pt-2 font-sans text-[14px] text-stone-800 dark:text-stone-200 leading-relaxed">
-              # Good software is unobtrusive.<br /><br />
-              A tool should behave like a fine mechanical pencil or a well-balanced Japanese drafting blade. You do not carry out a conversation with the tool; you think directly through it.
+            <div className="text-stone-400"># Autonomous Agent Project</div>
+            <div className="text-stone-700 dark:text-stone-200 space-y-1 font-mono text-[13px] pt-1">
+              <div>- [x] Configure Supabase Auth &amp; SSR session cookies</div>
+              <div>- [x] Apply Row-Level Security on all 9 tables</div>
+              <div>- [ ] Deploy production release build</div>
+            </div>
+            <div className="pt-2 font-sans text-[13px] text-stone-600 dark:text-stone-400 flex items-center justify-between border-t border-stone-200 dark:border-stone-800">
+              <span>Atomic RPC extracts checklists into Kanban tasks in a single PostgreSQL transaction.</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-[#2f5c3a] dark:text-emerald-400 font-mono text-[11px] font-medium">1-Click Promote</span>
             </div>
           </div>
         )}
@@ -430,9 +437,9 @@ export function DesktopMockup() {
           <span className="hidden sm:inline">REPO: CLEAN (main)</span>
         </div>
         <div className="flex items-center gap-3">
-          <span>MEM: 18.2 MB</span>
+          <span>RLS: ENFORCED</span>
           <span>•</span>
-          <span>CORE: Rust WebAssembly</span>
+          <span>ENGINE: Next.js &amp; Postgres</span>
         </div>
       </div>
     </div>

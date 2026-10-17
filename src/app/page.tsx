@@ -1,34 +1,20 @@
 import React from 'react';
-import { cookies } from 'next/headers';
-import { DashboardCommandCenter } from '@/components/dashboard/dashboard-command-center';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 import { HeroLandingPage } from '@/components/landing/hero-landing-page';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RootPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ view?: string }>;
-}) {
-  try {
-    const params = await searchParams;
-    const cookieStore = await cookies();
-    const viewCookie = cookieStore.get('lifeos_view')?.value;
+export default async function RootPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (params?.view === 'landing') {
-      return <HeroLandingPage />;
-    }
-
-    if (params?.view === 'dashboard' || viewCookie === 'dashboard') {
-      return <DashboardCommandCenter />;
-    }
-
-    return <HeroLandingPage />;
-  } catch (error: any) {
-    if (error?.digest === 'DYNAMIC_SERVER_USAGE' || error?.message?.includes('Dynamic server usage')) {
-      throw error;
-    }
-    console.error('RootPage initialization error:', error);
-    return <HeroLandingPage />;
+  // Logged-in users navigating to / automatically redirect to /dashboard
+  if (user) {
+    redirect('/dashboard');
   }
+
+  return <HeroLandingPage />;
 }

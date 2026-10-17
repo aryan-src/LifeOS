@@ -1,9 +1,8 @@
 import React from 'react';
-import { Shell } from '@/components/layout/shell';
 
 export default function NotesLoading() {
   return (
-    <Shell>
+    <div className="flex flex-col w-full">
       <div className="w-full max-w-7xl mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-xl flex flex-col gap-space-xl animate-pulse">
         {/* Header Skeleton */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
@@ -38,6 +37,6 @@ export default function NotesLoading() {
           ))}
         </div>
       </div>
-    </Shell>
+    </div>
   );
 }

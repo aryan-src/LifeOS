@@ -1,17 +1,82 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/lib/store/use-ui-store';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import { dispatchQuickCapture } from '@/lib/actions/quick-capture';
-import { Command, ArrowRight, X, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  queueCapture,
+  isBrowserOffline,
+  flushQueuedCaptures,
+  getQueuedCaptures,
+} from '@/lib/offline/capture-queue';
+import {
+  Command,
+  ArrowRight,
+  X,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  WifiOff,
+  Zap,
+} from 'lucide-react';
 
 export function QuickCaptureOmnibar() {
+  const router = useRouter();
   const { isQuickCaptureOpen, closeQuickCapture, quickCaptureInitialValue } = useUIStore();
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [queuedCount, setQueuedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Monitor network online/offline status & queue size
+  const syncOfflineQueue = useCallback(async () => {
+    const queue = getQueuedCaptures();
+    setQueuedCount(queue.length);
+
+    if (navigator.onLine && queue.length > 0) {
+      const { synced, failed } = await flushQueuedCaptures(dispatchQuickCapture);
+      setQueuedCount(getQueuedCaptures().length);
+      if (synced > 0) {
+        setFeedback({
+          type: 'success',
+          message: `Reconnected — synced ${synced} offline item${synced > 1 ? 's' : ''}${failed > 0 ? ` (${failed} pending)` : ''}.`,
+        });
+        router.refresh();
+      }
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    setIsOffline(isBrowserOffline());
+    setQueuedCount(getQueuedCaptures().length);
+
+    const handleOnline = () => {
+      setIsOffline(false);
+      syncOfflineQueue();
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      setQueuedCount(getQueuedCaptures().length);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial sync check on mount
+    syncOfflineQueue();
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [syncOfflineQueue]);
 
   // Global Keyboard Shortcuts (Cmd+K / Ctrl+K and Escape)
   useEffect(() => {
@@ -36,8 +101,7 @@ export function QuickCaptureOmnibar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isQuickCaptureOpen, closeQuickCapture]);
 
-  // CRITICAL CONSTRAINT (Focus Management):
-  // When summoned, the input element must immediately and automatically receive focus.
+  // Focus Management when opened
   useEffect(() => {
     if (isQuickCaptureOpen) {
       if (quickCaptureInitialValue) {
@@ -56,8 +120,13 @@ export function QuickCaptureOmnibar() {
     }
   }, [isQuickCaptureOpen, quickCaptureInitialValue]);
 
-  // Real-time Parser Preview Pill (Updates as user types)
-  const parsed = parseQuickCapture(input);
+  // Real, Measured Quick-Capture Latency Metrics via performance.now()
+  const { parsed, parseDurationMs } = useMemo(() => {
+    const start = performance.now();
+    const result = parseQuickCapture(input);
+    const duration = performance.now() - start;
+    return { parsed: result, parseDurationMs: duration };
+  }, [input]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,18 +135,66 @@ export function QuickCaptureOmnibar() {
     setIsSubmitting(true);
     setFeedback(null);
 
-    const res = await dispatchQuickCapture(input);
-    setIsSubmitting(false);
-
-    if (res.success && res.data) {
-      setFeedback({ type: 'success', message: res.data.message });
+    // If browser is currently offline, queue immediately without crashing
+    if (isBrowserOffline()) {
+      queueCapture(input);
+      setQueuedCount(getQueuedCaptures().length);
+      setIsSubmitting(false);
+      setFeedback({
+        type: 'success',
+        message: 'Saved offline — will sync automatically when back online.',
+      });
       setInput('');
       setTimeout(() => {
         closeQuickCapture();
         setFeedback(null);
-      }, 1500);
-    } else {
-      setFeedback({ type: 'error', message: res.error || 'Failed to dispatch entry.' });
+      }, 1600);
+      return;
+    }
+
+    try {
+      const res = await dispatchQuickCapture(input);
+      setIsSubmitting(false);
+
+      if (res.success && res.data) {
+        setFeedback({ type: 'success', message: res.data.message });
+        setInput('');
+        setTimeout(() => {
+          closeQuickCapture();
+          setFeedback(null);
+        }, 1500);
+      } else {
+        // Fallback: If network connection failed, queue offline
+        if (res.error?.includes('network') || res.error?.includes('fetch failed')) {
+          queueCapture(input);
+          setQueuedCount(getQueuedCaptures().length);
+          setFeedback({
+            type: 'success',
+            message: 'Saved offline — will sync automatically when back online.',
+          });
+          setInput('');
+          setTimeout(() => {
+            closeQuickCapture();
+            setFeedback(null);
+          }, 1600);
+        } else {
+          setFeedback({ type: 'error', message: res.error || 'Failed to dispatch entry.' });
+        }
+      }
+    } catch (_err) {
+      // Unhandled network exception fallback to offline queue
+      queueCapture(input);
+      setQueuedCount(getQueuedCaptures().length);
+      setIsSubmitting(false);
+      setFeedback({
+        type: 'success',
+        message: 'Saved offline — will sync automatically when back online.',
+      });
+      setInput('');
+      setTimeout(() => {
+        closeQuickCapture();
+        setFeedback(null);
+      }, 1600);
     }
   };
 
@@ -105,6 +222,15 @@ export function QuickCaptureOmnibar() {
               placeholder="Type anything: '$50 hosting #cloud' or 'todo: Ship v1 @tomorrow'..."
               className="w-full bg-transparent text-sm text-on-surface dark:text-zinc-100 placeholder:text-outline dark:placeholder:text-zinc-500 focus:outline-none"
             />
+
+            {/* Offline or Queue Indicator */}
+            {(isOffline || queuedCount > 0) && (
+              <span className="flex items-center gap-1 font-mono text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded mr-2 shrink-0 border border-amber-500/20">
+                <WifiOff size={11} />
+                <span>{isOffline ? 'Offline' : `${queuedCount} queued`}</span>
+              </span>
+            )}
+
             {input && (
               <button
                 type="button"
@@ -114,28 +240,41 @@ export function QuickCaptureOmnibar() {
                 <X size={15} />
               </button>
             )}
+
             <button
               type="submit"
               disabled={isSubmitting || !input.trim()}
               className="flex items-center gap-1.5 rounded-lg bg-primary dark:bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-on-primary dark:text-zinc-900 shadow-xs hover:opacity-90 dark:hover:bg-zinc-200 disabled:opacity-40 transition shrink-0 cursor-pointer"
             >
-              <span>{isSubmitting ? 'Routing...' : 'Capture'}</span>
+              <span>{isSubmitting ? 'Routing...' : isOffline ? 'Save Offline' : 'Capture'}</span>
               <ArrowRight size={13} />
             </button>
           </div>
 
-          {/* Dynamic Summary Pill Feedback Mechanism */}
+          {/* Dynamic Summary Pill & Real Latency Benchmark Feedback */}
           <div className="flex items-center justify-between px-4 py-2.5 bg-surface-container-low/70 dark:bg-zinc-950/60 text-xs border-b border-outline-variant/15 dark:border-zinc-800/60 gap-2">
             <div className="flex items-center gap-2 min-w-0 truncate">
               <Sparkles size={13} className="text-secondary dark:text-emerald-400 shrink-0" />
               <span className="font-mono text-[11px] text-on-surface-variant dark:text-zinc-300 truncate">
-                {input.trim() ? parsed.summaryPill : 'Examples: "$45 dinner", "todo: File taxes @tomorrow #ops", "Note ideas..."'}
+                {input.trim()
+                  ? parsed.summaryPill
+                  : 'Examples: "$45 dinner", "todo: File taxes @tomorrow #ops", "Note ideas..."'}
               </span>
             </div>
-            <div className="flex items-center gap-2 shrink-0 text-[10px] text-outline dark:text-zinc-500 font-mono">
-              <span>ESC to cancel</span>
-              <span>•</span>
-              <span>ENTER to log</span>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              {/* Real Measured Parse Time */}
+              {input.trim() && (
+                <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  <Zap size={10} className="fill-current" />
+                  <span>Parsed in {parseDurationMs < 0.1 ? '<0.1' : parseDurationMs.toFixed(2)}ms</span>
+                </span>
+              )}
+              <div className="flex items-center gap-2 text-[10px] text-outline dark:text-zinc-500 font-mono">
+                <span>ESC to cancel</span>
+                <span>•</span>
+                <span>ENTER to log</span>
+              </div>
             </div>
           </div>
         </form>
@@ -149,11 +288,7 @@ export function QuickCaptureOmnibar() {
                 : 'border-error/20 dark:border-rose-800/40 bg-error-container dark:bg-rose-950/40 text-on-error-container dark:text-rose-300'
             }`}
           >
-            {feedback.type === 'success' ? (
-              <CheckCircle2 size={15} />
-            ) : (
-              <AlertCircle size={15} />
-            )}
+            {feedback.type === 'success' ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
             <span>{feedback.message}</span>
           </div>
         )}

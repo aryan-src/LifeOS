@@ -1,21 +1,24 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
+import { useIsMac } from '@/hooks/use-is-mac';
 
 export function MotionFooterClient() {
   const footerRef = useRef<HTMLElement>(null);
+  const isMac = useIsMac();
+  const shouldReduceMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: footerRef,
     offset: ['start end', 'end end'],
   });
 
-  // Kinetic typography scroll-linked character scale & letter spacing
-  const letterSpacing = useTransform(scrollYProgress, [0, 1], ['-0.06em', '0.02em']);
-  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0.15, 0.35, 0.7]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.95, 1]);
+  // Kinetic typography scroll-linked character scale & letter spacing (disabled under reduced motion)
+  const letterSpacing = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? ['0em', '0em'] : ['-0.06em', '0.02em']);
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], shouldReduceMotion ? [0.6, 0.6, 0.6] : [0.15, 0.35, 0.7]);
+  const scale = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [1, 1] : [0.95, 1]);
 
   return (
     <footer
@@ -37,14 +40,14 @@ export function MotionFooterClient() {
         <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-stone-800 text-[12px] font-mono">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-stone-300">Vault Engine: Operational (Local SQLite)</span>
+            <span className="text-stone-300">Engine: Next.js &amp; Supabase Postgres</span>
             <span className="text-stone-600">•</span>
-            <span className="text-stone-400">Zero Cloud Telemetry</span>
+            <span className="text-stone-400">Zero Tracking Scripts</span>
           </div>
           <div className="flex items-center gap-2 text-stone-400">
             <span>Shortcuts:</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">⌘K Search</kbd>
-            <kbd className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">⌥Space Capture</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">{isMac ? '⌘K' : 'Ctrl+K'} Search</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">{isMac ? '⌥Space' : 'Alt+Space'} Capture</kbd>
             <kbd className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">? Keys</kbd>
           </div>
         </div>
@@ -62,7 +65,7 @@ export function MotionFooterClient() {
               Archival-grade personal computing. Conceived for students, researchers, and craftspeople who seek deliberate cognitive quiet.
             </p>
             <div className="font-mono text-[11px] text-stone-500 pt-2">
-              © 2026 LifeOS Lab • Distributed under Archival Open Source License
+              © 2026 Aryan Prajapati • Distributed under MIT License
             </div>
           </div>
 
@@ -70,28 +73,28 @@ export function MotionFooterClient() {
             <div className="space-y-3">
               <div className="font-mono text-[11px] uppercase tracking-wider text-stone-500">Architecture</div>
               <ul className="space-y-2 text-stone-400">
-                <li><span className="hover:text-white transition-colors cursor-pointer">Local SQLite Engine</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Obsidian Bi-directional</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Student Safe-Pace</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Rust WebAssembly Core</span></li>
+                <li><a href="#preview" className="hover:text-white transition-colors">Built on Next.js and Postgres</a></li>
+                <li><a href="#preview" className="hover:text-white transition-colors">Markdown Notes &amp; Checklists</a></li>
+                <li><a href="#preview" className="hover:text-white transition-colors">Student Safe-Pace</a></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Row-Level Security (RLS)</Link></li>
               </ul>
             </div>
             <div className="space-y-3">
               <div className="font-mono text-[11px] uppercase tracking-wider text-stone-500">Modules</div>
               <ul className="space-y-2 text-stone-400">
-                <li><span className="hover:text-white transition-colors cursor-pointer">Global HUD</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Pocket Ledger (INR)</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Deep Work Sprint</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Kanban Horizon</span></li>
+                <li><Link href="/dashboard" className="hover:text-white transition-colors">Global HUD</Link></li>
+                <li><Link href="/finances" className="hover:text-white transition-colors">Pocket Ledger (INR)</Link></li>
+                <li><Link href="/tasks" className="hover:text-white transition-colors">Deep Work Sprint</Link></li>
+                <li><Link href="/projects" className="hover:text-white transition-colors">Kanban Horizon</Link></li>
               </ul>
             </div>
             <div className="space-y-3">
               <div className="font-mono text-[11px] uppercase tracking-wider text-stone-500">Manifesto</div>
               <ul className="space-y-2 text-stone-400">
-                <li><span className="hover:text-white transition-colors cursor-pointer">Quiet Computing</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Dieter Rams&apos; 10th Law</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">50-Year Plain Text</span></li>
-                <li><span className="hover:text-white transition-colors cursor-pointer">Release Notes (v3.8)</span></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Quiet Computing</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Architecture</Link></li>
+                <li><Link href="/license" className="hover:text-white transition-colors">MIT Open Source</Link></li>
+                <li><Link href="/changelog" className="hover:text-white transition-colors">Release Notes (v1.0.0)</Link></li>
               </ul>
             </div>
           </div>
@@ -123,21 +126,23 @@ export function MotionFooterClient() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/?view=dashboard"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
-                  localStorage.setItem('lifeos_view', 'dashboard');
-                }
-              }}
+              href="/dashboard"
               className="hover:text-stone-300 transition-colors"
             >
               Launch Workspace
             </Link>
             <span className="text-stone-700">•</span>
-            <span className="hover:text-stone-300 transition-colors cursor-pointer">Privacy by Architecture</span>
+            <Link href="/privacy" className="hover:text-stone-300 transition-colors">
+              Privacy Statement
+            </Link>
             <span className="text-stone-700">•</span>
-            <span className="hover:text-stone-300 transition-colors cursor-pointer">Security Verified</span>
+            <Link href="/license" className="hover:text-stone-300 transition-colors">
+              MIT License
+            </Link>
+            <span className="text-stone-700">•</span>
+            <Link href="/changelog" className="hover:text-stone-300 transition-colors">
+              Changelog
+            </Link>
           </div>
         </div>
       </div>

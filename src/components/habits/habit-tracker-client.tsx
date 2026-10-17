@@ -184,7 +184,7 @@ export function HabitTrackerClient({
     const tempId = `temp-${Date.now()}`;
     const newHabit: HabitWithLog = {
       id: tempId,
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: '',
       title,
       description: newDescription.trim() || null,
       created_at: new Date().toISOString(),
@@ -384,8 +384,16 @@ export function HabitTrackerClient({
         {/* Interactive Habit Checklist */}
         <div className="divide-y divide-stone-100 dark:divide-zinc-800/60 pt-2">
           {optimisticHabits.length === 0 ? (
-            <div className="py-10 text-center text-stone-400 dark:text-zinc-500 font-mono text-xs">
-              No habits configured. Create your first habit above to track routines!
+            <div className="py-10 text-center flex flex-col items-center gap-2">
+              <p className="text-sm font-medium text-stone-700 dark:text-zinc-300">No habits configured yet.</p>
+              <p className="text-xs text-stone-500 max-w-sm">Build daily streaks for focus blocks, reading, workouts, or problem sets.</p>
+              <button
+                type="button"
+                onClick={() => setIsAddingOpen(true)}
+                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-900 text-stone-100 dark:bg-stone-100 dark:text-stone-900 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                + Add your first habit
+              </button>
             </div>
           ) : (
             optimisticHabits.map((habit) => {

@@ -1,7 +1,7 @@
 {
-  "name": "log",
+  "name": "lifeos",
   "version": "1.0.0",
-  "description": "",
+  "description": "Minimalist, zero-latency daily personal OS with academic planning, task tracking, finance management, habits, and notes.",
   "main": "index.js",
   "scripts": {
     "dev": "next dev --webpack",
@@ -9,24 +9,31 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:push": "supabase db push",
+    "db:types": "supabase gen types typescript --linked > src/types/database.ts",
+    "verify:rls": "node scripts/verify-phase-1.mjs"
   },
-  "keywords": [],
+  "keywords": [
+    "lifeos",
+    "productivity",
+    "tasks",
+    "finance",
+    "habits",
+    "notes",
+    "nextjs",
+    "supabase"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
-    "@hugeicons/core-free-icons": "^4.3.5",
-    "@hugeicons/react": "^1.1.10",
     "@number-flow/react": "^0.6.2",
-    "@studio-freight/lenis": "^1.0.42",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "framer-motion": "^14.0.0",
-    "gsap": "^3.15.0",
     "lucide-react": "^1.52.0",
     "motion": "^14.0.0",
     "next": "^16.3.8",
@@ -35,6 +42,7 @@
     "react-dom": "^19.3.0",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
+    "zod": "^3.23.8",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

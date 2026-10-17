@@ -1,9 +1,8 @@
 import React from 'react';
-import { Shell } from '@/components/layout/shell';
 
 export default function ProjectsLoading() {
   return (
-    <Shell>
+    <div className="flex flex-col w-full">
       <div className="w-full animate-pulse flex flex-col gap-6">
         {/* Header & Tabs Skeleton */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-space-lg pt-space-lg">
@@ -52,6 +51,6 @@ export default function ProjectsLoading() {
           ))}
         </div>
       </div>
-    </Shell>
+    </div>
   );
 }

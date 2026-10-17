@@ -2,26 +2,27 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import {
+  Menu,
+  Search,
+  Moon,
+  Sun,
+  Monitor,
+  SlidersHorizontal,
+  User,
+  LogOut,
+} from 'lucide-react';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { signOutAction } from '@/lib/actions/profile';
+import { useTheme } from '@/lib/theme/use-theme';
 
 export function TopHeader() {
   const { toggleMobileMenu, isSidebarCollapsed } = useUIStore();
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, isDark, setTheme, toggleLightDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
-    const isDark = document.documentElement.classList.contains('dark') ||
-      (typeof window !== 'undefined' && (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)));
-    setIsDarkMode(isDark);
-    if (saved === 'dark' || saved === 'light') {
-      setTheme(saved);
-    } else {
-      setTheme('system');
-    }
-  }, []);
+  const isDarkMode = isDark;
 
   // Handle click outside & Escape to close menu
   useEffect(() => {
@@ -45,45 +46,10 @@ export function TopHeader() {
     }
   }, [isMenuOpen]);
 
-  const setLightMode = () => {
-    setTheme('light');
-    setIsDarkMode(false);
-    document.documentElement.removeAttribute('data-theme');
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-    localStorage.setItem('lifeos_theme', 'light');
-  };
-
-  const setDarkMode = () => {
-    setTheme('dark');
-    setIsDarkMode(true);
-    document.documentElement.removeAttribute('data-theme');
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-    localStorage.setItem('lifeos_theme', 'dark');
-  };
-
-  const setSystemMode = () => {
-    setTheme('system');
-    localStorage.removeItem('theme');
-    localStorage.removeItem('lifeos_theme');
-    document.documentElement.removeAttribute('data-theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDarkMode(systemDark);
-    if (systemDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
-  const toggleTheme = () => {
-    if (isDarkMode) {
-      setLightMode();
-    } else {
-      setDarkMode();
-    }
-  };
+  const setLightMode = () => setTheme('light');
+  const setDarkMode = () => setTheme('dark');
+  const setSystemMode = () => setTheme('default');
+  const toggleTheme = () => toggleLightDark();
 
   return (
     <header
@@ -96,14 +62,19 @@ export function TopHeader() {
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0 cursor-pointer"
+            className="lg:hidden p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
             type="button"
             aria-label="Toggle navigation drawer"
           >
-            <span className="material-symbols-outlined text-[20px]">menu</span>
+            <Menu className="size-5" />
           </button>
           <div className="flex items-center gap-1.5 text-outline dark:text-zinc-500 font-label-sm text-label-sm truncate">
-            <span className="hover:text-on-surface dark:hover:text-zinc-300 cursor-pointer transition-colors">LifeOS</span>
+            <Link
+              href="/dashboard"
+              className="hover:text-on-surface dark:hover:text-zinc-300 transition-colors"
+            >
+              LifeOS
+            </Link>
             <span className="text-outline/60 dark:text-zinc-600">/</span>
             <span className="text-on-surface dark:text-zinc-200 font-medium truncate">Workspace</span>
           </div>
@@ -112,13 +83,12 @@ export function TopHeader() {
         {/* Right side: Search, Burger Theme Switcher, Settings, Avatar */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <div className="relative flex items-center min-w-0">
-            <span className="material-symbols-outlined absolute left-2.5 text-[16px] text-outline dark:text-zinc-500 pointer-events-none">
-              search
-            </span>
+            <Search className="absolute left-2.5 size-4 text-outline dark:text-zinc-500 pointer-events-none" />
             <input
-              className="bg-surface-container-low dark:bg-zinc-900/60 pl-9 pr-3 py-1.5 rounded-lg font-body-sm text-body-sm text-on-surface dark:text-zinc-100 placeholder:text-outline dark:placeholder:text-zinc-500 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-900 focus:ring-1 focus:ring-outline/40 dark:focus:ring-zinc-700/60 transition-all w-36 sm:w-52 md:w-64 border border-transparent dark:border-zinc-800/60"
+              className="bg-surface-container-low dark:bg-zinc-900/60 pl-9 pr-3 py-1.5 rounded-lg font-body-sm text-body-sm text-on-surface dark:text-zinc-100 placeholder:text-outline dark:placeholder:text-zinc-500 focus:outline-none focus:bg-surface-container-lowest dark:focus:bg-zinc-900 focus:ring-1 focus:ring-outline/40 dark:focus:ring-zinc-700/60 transition-all w-32 sm:w-52 md:w-64 border border-transparent dark:border-zinc-800/60"
               placeholder="Search anything..."
               type="text"
+              aria-label="Search records"
             />
           </div>
 
@@ -127,7 +97,7 @@ export function TopHeader() {
             <button
               type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`flex items-center justify-center p-2 rounded-lg transition-all cursor-pointer border ${
+              className={`flex items-center justify-center p-2 rounded-lg transition-all cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 ${
                 isMenuOpen
                   ? 'bg-surface-container dark:bg-zinc-800 border-outline-variant/60 dark:border-zinc-700 text-on-surface dark:text-zinc-100 shadow-xs'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-900'
@@ -179,9 +149,11 @@ export function TopHeader() {
                   className="flex items-center justify-between p-2 rounded-xl bg-surface-container-low dark:bg-zinc-800/60 hover:bg-surface-container dark:hover:bg-zinc-800 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px] text-on-surface-variant dark:text-zinc-400">
-                      {isDarkMode ? 'dark_mode' : 'light_mode'}
-                    </span>
+                    {isDarkMode ? (
+                      <Moon className="size-4 text-on-surface-variant dark:text-zinc-400" />
+                    ) : (
+                      <Sun className="size-4 text-on-surface-variant dark:text-zinc-400" />
+                    )}
                     <div className="flex flex-col">
                       <span className="text-xs font-medium text-on-surface dark:text-zinc-200">
                         Dark Mode
@@ -207,39 +179,39 @@ export function TopHeader() {
                   <button
                     type="button"
                     onClick={setLightMode}
-                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
                       theme === 'light'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'
                         : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[14px]">light_mode</span>
+                    <Sun className="size-3.5" />
                     <span>Light</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={setDarkMode}
-                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
-                      theme === 'dark'
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
+                      theme === 'dark' || theme === 'crimson-dark'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'
                         : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[14px]">dark_mode</span>
+                    <Moon className="size-3.5" />
                     <span>Dark</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={setSystemMode}
-                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
-                      theme === 'system'
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
+                      theme === 'default'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'
                         : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[14px]">desktop_windows</span>
+                    <Monitor className="size-3.5" />
                     <span>Auto</span>
                   </button>
                 </div>
@@ -250,19 +222,29 @@ export function TopHeader() {
           <Link
             href="/settings"
             prefetch={true}
-            className="text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center justify-center p-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0"
+            className="text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center justify-center p-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
             aria-label="View settings"
           >
-            <span className="material-symbols-outlined text-[18px]">tune</span>
+            <SlidersHorizontal className="size-4" />
           </Link>
           <Link
             href="/settings"
             prefetch={true}
-            className="w-8 h-8 rounded-full bg-primary dark:bg-zinc-100 flex items-center justify-center shrink-0 shadow-sm hover:ring-2 hover:ring-outline-variant/50 dark:hover:ring-zinc-700 transition-all"
+            className="w-8 h-8 rounded-full bg-primary dark:bg-zinc-100 flex items-center justify-center shrink-0 shadow-sm hover:ring-2 hover:ring-outline-variant/50 dark:hover:ring-zinc-700 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 text-on-primary dark:text-zinc-900"
             aria-label="User Profile Settings"
           >
-            <span className="material-symbols-outlined text-on-primary dark:text-zinc-900 text-[18px]">person</span>
+            <User className="size-4" />
           </Link>
+          <form action={signOutAction} className="shrink-0 flex items-center">
+            <button
+              type="submit"
+              className="text-on-surface-variant hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 flex items-center justify-center p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </div>
     </header>

@@ -1,11 +1,19 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Assignment, AssignmentStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import {
+  createAssignmentSchema,
+  updateAssignmentStatusSchema,
+  gradeAssignmentSchema,
+  deleteAssignmentSchema,
+  uuidSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface AssignmentWithProject extends Assignment {
   project?: {
@@ -51,37 +59,7 @@ export interface GetAssignmentsResult {
 export async function getAssignments(): Promise<AssignmentWithProject[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
-
-    const { data, error } = await supabase
-      .from('assignments')
-      .select(`
-        *,
-        project:projects(id, title, slug)
-      `)
-      .eq('user_id', effectiveUserId)
-      .order('due_date', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: false });
-
-    if (error || !data) {
-      if (error) console.error('Error fetching assignments:', error);
-      return [];
-    }
-
-    return (data as any) || [];
-  } catch (err) {
-    console.error('Unhandled error in getAssignments:', err);
-    return [];
-  }
-}
-
-/**
- * Fetches assignments and captures explicit schema or network diagnostics.
- */
-export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> {
-  try {
-    const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('assignments')
@@ -94,29 +72,63 @@ export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> 
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Error fetching assignments:', error);
+      return [];
+    }
+
+    return (data as unknown as AssignmentWithProject[]) || [];
+  } catch (err) {
+    console.error('Unhandled error in getAssignments:', err);
+    return [];
+  }
+}
+
+/**
+ * Enhanced fetcher returning structured status including missing table detection.
+ */
+export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> {
+  try {
+    const supabase = await createClient();
+    const effectiveUserId = await requireUserId(supabase);
+
+    const { data, error } = await supabase
+      .from('assignments')
+      .select(`
+        *,
+        project:projects(id, title, slug)
+      `)
+      .eq('user_id', effectiveUserId)
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      const errCode = (error as { code?: string })?.code;
       const isSchemaMissing =
-        (error as any)?.code === 'PGRST205' ||
-        error.message?.includes('schema cache') ||
+        errCode === 'PGRST205' ||
+        errCode === '42P01' ||
         error.message?.includes('does not exist') ||
-        error.message?.includes('relation "public.');
+        error.message?.includes('relation "public.assignments"');
 
       return {
         assignments: [],
-        error: formatErrorMessage(error),
-        isSchemaMissing,
+        error: isSchemaMissing ? null : formatErrorMessage(error),
+        isSchemaMissing: Boolean(isSchemaMissing),
       };
     }
 
     return {
-      assignments: (data as any) || [],
+      assignments: (data as unknown as AssignmentWithProject[]) || [],
       error: null,
       isSchemaMissing: false,
     };
   } catch (err) {
     const isSchemaMissing =
-      String(err).includes('PGRST205') ||
-      String(err).includes('schema cache') ||
-      String(err).includes('does not exist');
+      typeof err === 'object' &&
+      err !== null &&
+      'message' in err &&
+      typeof (err as { message: unknown }).message === 'string' &&
+      ((err as { message: string }).message.includes('relation "public.assignments"') ||
+        (err as { message: string }).message.includes('does not exist'));
 
     return {
       assignments: [],
@@ -127,39 +139,40 @@ export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> 
 }
 
 /**
- * Creates a new assignment.
- * Enforces explicit session verification and strict YYYY-MM-DD date storage.
+ * Creates a new assignment with Zod validation.
  */
 export async function createAssignment(
   input: CreateAssignmentInput
 ): Promise<ActionResponse<AssignmentWithProject>> {
+  const parsed = createAssignmentSchema.safeParse({
+    subject: input.subject,
+    title: input.title,
+    due_date: normalizeDateString(input.due_date),
+    status: input.status || 'not_started',
+    project_id: input.project_id || null,
+    marks_achieved: input.marks_achieved,
+    total_marks: input.total_marks,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
-
-    const subject = input.subject?.trim();
-    const title = input.title?.trim();
-
-    if (!subject) {
-      return { success: false, error: 'Subject is required.' };
-    }
-    if (!title) {
-      return { success: false, error: 'Assignment title is required.' };
-    }
-
-    const cleanDueDate = normalizeDateString(input.due_date);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data: assignment, error: insertError } = await supabase
       .from('assignments')
       .insert({
         user_id: effectiveUserId,
-        subject,
-        title,
-        due_date: cleanDueDate,
-        status: input.status || 'not_started',
-        project_id: input.project_id || null,
-        marks_achieved: typeof input.marks_achieved === 'number' ? input.marks_achieved : null,
-        total_marks: typeof input.total_marks === 'number' ? input.total_marks : null,
+        subject: parsed.data.subject,
+        title: parsed.data.title,
+        due_date: parsed.data.due_date || null,
+        status: parsed.data.status,
+        project_id: parsed.data.project_id || null,
+        marks_achieved: typeof parsed.data.marks_achieved === 'number' ? parsed.data.marks_achieved : null,
+        total_marks: typeof parsed.data.total_marks === 'number' ? parsed.data.total_marks : null,
       })
       .select(`
         *,
@@ -173,9 +186,10 @@ export async function createAssignment(
     }
 
     revalidatePath('/assignments');
+    revalidatePath('/dashboard');
     revalidatePath('/');
 
-    return { success: true, data: assignment as any };
+    return { success: true, data: assignment as unknown as AssignmentWithProject };
   } catch (err) {
     console.error('Unhandled error in createAssignment:', err);
     return { success: false, error: formatErrorMessage(err) };
@@ -183,20 +197,25 @@ export async function createAssignment(
 }
 
 /**
- * Updates the status of an assignment (e.g. from Kanban drag-and-drop or single-click action).
+ * Updates the status of an assignment with Zod validation.
  */
 export async function updateAssignmentStatus(
   id: string,
   status: AssignmentStatus
 ): Promise<ActionResponse<AssignmentWithProject>> {
+  const parsed = updateAssignmentStatusSchema.safeParse({ id, status });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('assignments')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id)
+      .update({ status: parsed.data.status, updated_at: new Date().toISOString() })
+      .eq('id', parsed.data.id)
       .eq('user_id', effectiveUserId)
       .select(`
         *,
@@ -210,9 +229,10 @@ export async function updateAssignmentStatus(
     }
 
     revalidatePath('/assignments');
+    revalidatePath('/dashboard');
     revalidatePath('/');
 
-    return { success: true, data: data as any };
+    return { success: true, data: data as unknown as AssignmentWithProject };
   } catch (err) {
     console.error('Unhandled error in updateAssignmentStatus:', err);
     return { success: false, error: formatErrorMessage(err) };
@@ -220,37 +240,36 @@ export async function updateAssignmentStatus(
 }
 
 /**
- * Records marks achieved and total marks for an assignment, automatically transitioning
- * status to 'graded'.
+ * Records marks achieved and total marks for an assignment with Zod validation.
  */
 export async function gradeAssignment(
   id: string,
   marksAchieved: number,
   totalMarks: number
 ): Promise<ActionResponse<AssignmentWithProject>> {
-  try {
-    if (typeof marksAchieved !== 'number' || isNaN(marksAchieved) || marksAchieved < 0) {
-      return { success: false, error: 'Marks achieved must be a non-negative number.' };
-    }
-    if (typeof totalMarks !== 'number' || isNaN(totalMarks) || totalMarks <= 0) {
-      return { success: false, error: 'Total marks must be greater than zero.' };
-    }
-    if (marksAchieved > totalMarks) {
-      return { success: false, error: 'Marks achieved cannot exceed total marks.' };
-    }
+  const parsed = gradeAssignmentSchema.safeParse({
+    id,
+    marks_achieved: marksAchieved,
+    total_marks: totalMarks,
+  });
 
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
+  try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('assignments')
       .update({
-        marks_achieved: marksAchieved,
-        total_marks: totalMarks,
+        marks_achieved: parsed.data.marks_achieved,
+        total_marks: parsed.data.total_marks,
         status: 'graded',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq('id', parsed.data.id)
       .eq('user_id', effectiveUserId)
       .select(`
         *,
@@ -264,9 +283,10 @@ export async function gradeAssignment(
     }
 
     revalidatePath('/assignments');
+    revalidatePath('/dashboard');
     revalidatePath('/');
 
-    return { success: true, data: data as any };
+    return { success: true, data: data as unknown as AssignmentWithProject };
   } catch (err) {
     console.error('Unhandled error in gradeAssignment:', err);
     return { success: false, error: formatErrorMessage(err) };
@@ -280,9 +300,14 @@ export async function updateAssignment(
   id: string,
   updates: Partial<CreateAssignmentInput>
 ): Promise<ActionResponse<AssignmentWithProject>> {
+  const idParsed = uuidSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: 'Invalid assignment ID.' };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const updatePayload: import('@/types/database.types').UpdateAssignment = {
       updated_at: new Date().toISOString(),
@@ -299,7 +324,7 @@ export async function updateAssignment(
     const { data, error } = await supabase
       .from('assignments')
       .update(updatePayload)
-      .eq('id', id)
+      .eq('id', idParsed.data)
       .eq('user_id', effectiveUserId)
       .select(`
         *,
@@ -313,9 +338,10 @@ export async function updateAssignment(
     }
 
     revalidatePath('/assignments');
+    revalidatePath('/dashboard');
     revalidatePath('/');
 
-    return { success: true, data: data as any };
+    return { success: true, data: data as unknown as AssignmentWithProject };
   } catch (err) {
     console.error('Unhandled error in updateAssignment:', err);
     return { success: false, error: formatErrorMessage(err) };
@@ -326,14 +352,19 @@ export async function updateAssignment(
  * Deletes an assignment by id.
  */
 export async function deleteAssignment(id: string): Promise<ActionResponse<void>> {
+  const idParsed = deleteAssignmentSchema.safeParse({ id });
+  if (!idParsed.success) {
+    return { success: false, error: formatZodError(idParsed.error) };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { error } = await supabase
       .from('assignments')
       .delete()
-      .eq('id', id)
+      .eq('id', idParsed.data.id)
       .eq('user_id', effectiveUserId);
 
     if (error) {
@@ -342,6 +373,7 @@ export async function deleteAssignment(id: string): Promise<ActionResponse<void>
     }
 
     revalidatePath('/assignments');
+    revalidatePath('/dashboard');
     revalidatePath('/');
 
     return { success: true };

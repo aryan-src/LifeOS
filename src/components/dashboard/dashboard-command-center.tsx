@@ -54,7 +54,7 @@ export async function DashboardCommandCenter() {
               Welcome, {profile?.display_name || 'Student'}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant dark:text-zinc-400 max-w-2xl leading-relaxed">
-              Real-time telemetry across academics, daily tasks, finances, and ideas. Balanced for calm focus.
+              Academics, tasks, finances, and notes—in one calm workspace.
             </p>
           </div>
           <div className="flex items-center gap-3 self-start md:self-auto shrink-0 flex-wrap">

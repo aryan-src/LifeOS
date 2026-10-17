@@ -24,8 +24,16 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Local environment files (DO NOT COMMIT SECRETS)
-.env*.local
 .env
+.env.*
+.env*.local
+!.env.example
+
+# Database backups, data exports, and dumps
+backups/
+*.dump
+*.sql.bak
+*.csv
 
 # Vercel
 .vercel

@@ -483,11 +483,18 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                           {provided.placeholder}
 
                           {columnProjects.length === 0 && (
-                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500">
-                              <span className="material-symbols-outlined text-[24px] mb-1">
+                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500 gap-1.5">
+                              <span className="material-symbols-outlined text-[24px]">
                                 inbox
                               </span>
                               <span className="font-label-sm text-label-sm">No cards yet</span>
+                              <button
+                                type="button"
+                                onClick={() => setIsCreateOpen(true)}
+                                className="mt-1 text-xs font-medium text-primary dark:text-zinc-300 hover:underline cursor-pointer"
+                              >
+                                + Add project
+                              </button>
                             </div>
                           )}
                         </div>

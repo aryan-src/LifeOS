@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { ParallaxHeroWrapper } from './parallax-hero-wrapper';
 import { MotionFooterClient } from './motion-footer-client';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useIsMac } from '@/hooks/use-is-mac';
 
 export function HeroLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const isMac = useIsMac();
   const openQuickCapture = useUIStore((s) => s.openQuickCapture);
 
   useEffect(() => {
@@ -18,12 +20,7 @@ export function HeroLandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const launchWorkspace = () => {
-    if (typeof window !== 'undefined') {
-      document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
-      localStorage.setItem('lifeos_view', 'dashboard');
-    }
-  };
+
 
   return (
     <div className="w-full min-h-screen bg-[#fff8f5] dark:bg-[#121110] text-[#1e1b18] dark:text-[#f5f5f0] font-sans antialiased selection:bg-[#2f5c3a] selection:text-white transition-colors">
@@ -45,7 +42,7 @@ export function HeroLandingPage() {
                 LifeOS
               </span>
               <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-stone-200/60 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-300/40 dark:border-stone-700/40">
-                v3.8
+                v1.0.0
               </span>
             </Link>
 
@@ -79,11 +76,10 @@ export function HeroLandingPage() {
             >
               <span className="text-[13px] material-symbols-outlined text-stone-400">terminal</span>
               <span>Quick Find</span>
-              <kbd className="text-[10px] text-stone-500 bg-stone-100 dark:bg-stone-800 px-1 py-0.5 rounded">⌘K</kbd>
+              <kbd className="text-[10px] text-stone-500 bg-stone-100 dark:bg-stone-800 px-1 py-0.5 rounded">{isMac ? '⌘K' : 'Ctrl+K'}</kbd>
             </button>
             <Link
-              href="/?view=dashboard"
-              onClick={launchWorkspace}
+              href="/dashboard"
               className="px-3.5 py-1.5 rounded-md bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 text-[13px] font-medium hover:opacity-90 transition-opacity shadow-xs"
             >
               Launch Workspace
@@ -105,7 +101,7 @@ export function HeroLandingPage() {
                 Archival Materiality
               </div>
               <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-stone-900 dark:text-stone-100">
-                Physical serenity meets local-first computation.
+                Physical serenity meets deliberate computation.
               </h2>
               <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
                 Inspired by mid-century bookbinders, Dieter Rams’ functionalism, and Japanese drafting stationery, LifeOS brings the warm tactile reassurance of physical tools back to personal computing.
@@ -117,7 +113,7 @@ export function HeroLandingPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span className="material-symbols-outlined text-[#2f5c3a] dark:text-emerald-400 text-[18px]">check_circle</span>
-                  <span>Completely offline-first with immediate local storage writes.</span>
+                  <span>Your data is private to your account. Export to Markdown, CSV, or JSON anytime — zero cloud lock-in.</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span className="material-symbols-outlined text-[#2f5c3a] dark:text-emerald-400 text-[18px]">check_circle</span>
@@ -128,6 +124,7 @@ export function HeroLandingPage() {
 
             <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="rounded-xl overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-sm bg-white dark:bg-stone-900 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt="Minimalist calm desk with analog paper notebook and quiet lighting"
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
@@ -140,6 +137,7 @@ export function HeroLandingPage() {
               </div>
 
               <div className="rounded-xl overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-sm bg-white dark:bg-stone-900 sm:translate-y-6 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt="Archival drafting tools, mechanical pencil and brass ruler on oak wood"
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
@@ -180,20 +178,20 @@ export function HeroLandingPage() {
                 </div>
                 <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">Global Command Center</h3>
                 <p className="text-[14px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                  Real-time unified telemetry across courses, personal projects, and financial burn. Replaces dozens of bloated browser tabs with a clean HUD.
+                  Real-time unified telemetry across academic assignments, deadlines, personal projects, and daily financial velocity. Replaces dozens of bloated tabs.
                 </p>
               </div>
               <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200/60 dark:border-stone-800/80 space-y-2 font-mono text-[12px]">
                 <div className="flex items-center justify-between">
-                  <span>Cognitive Load Index</span>
-                  <span className="text-[#2f5c3a] dark:text-emerald-400 font-medium">Optimal (24%)</span>
+                  <span>Assignments &amp; Projects</span>
+                  <span className="text-[#2f5c3a] dark:text-emerald-400 font-medium">Synced</span>
                 </div>
                 <div className="w-full bg-stone-200 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-[#2f5c3a] h-full rounded-full" style={{ width: '24%' }} />
+                  <div className="bg-[#2f5c3a] h-full rounded-full" style={{ width: '65%' }} />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
-                  <span>3 active projects</span>
-                  <span>4 deep blocks planned</span>
+                  <span>Academic deadlines</span>
+                  <span>Marks tracking</span>
                   <span>Safe pace active</span>
                 </div>
               </div>
@@ -208,7 +206,7 @@ export function HeroLandingPage() {
                   </div>
                   <span className="text-[11px] font-mono text-[#2f5c3a] dark:text-emerald-400 font-semibold">MODULE 02</span>
                 </div>
-                <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">2-Second Pocket Ledger</h3>
+                <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">Safe-Pace Pocket Ledger</h3>
                 <p className="text-[14px] text-stone-600 dark:text-stone-400 leading-relaxed">
                   Frictionless student micro-allowance logging. Dynamic daily safe spending calculations in INR (₹) prevent end-of-month financial crises.
                 </p>
@@ -262,23 +260,23 @@ export function HeroLandingPage() {
               </div>
             </div>
 
-            {/* Card 5: Obsidian & Markdown Sync (Span 4) */}
+            {/* Card 5: Markdown Notes & Checklist-to-Task Promotion (Span 4) */}
             <div className="md:col-span-4 p-6 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 shadow-xs space-y-4 flex flex-col justify-between hover:border-stone-400/50 transition-colors">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="w-8 h-8 rounded bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-800 dark:text-stone-200">
-                    <span className="material-symbols-outlined text-[18px]">sync_alt</span>
+                    <span className="material-symbols-outlined text-[18px]">edit_note</span>
                   </div>
                   <span className="text-[11px] font-mono text-[#2f5c3a] dark:text-emerald-400 font-semibold">MODULE 05</span>
                 </div>
-                <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">Vault &amp; Notes</h3>
+                <h3 className="text-xl font-medium text-stone-900 dark:text-stone-100">Markdown Notes</h3>
                 <p className="text-[14px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                  Instant spark capture with tags. 1-click promotion directly into active project pipelines and task trees.
+                  Write rich Markdown notes with instant spark capture and tags. 1-click promotion turns checklists directly into active projects and tasks via atomic RPC.
                 </p>
               </div>
               <div className="pt-2 text-[12px] font-mono text-stone-500 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] text-[#2f5c3a] dark:text-emerald-400">lock_open</span>
-                <span>Raw text files forever</span>
+                <span className="material-symbols-outlined text-[16px] text-[#2f5c3a] dark:text-emerald-400">task_alt</span>
+                <span>Checklist-to-Task Promotion</span>
               </div>
             </div>
           </div>
@@ -316,7 +314,7 @@ export function HeroLandingPage() {
                     <span className="material-symbols-outlined text-[14px]">check</span>
                     <span>LifeOS</span>
                   </div>
-                  <p className="text-stone-800 dark:text-stone-200 font-sans">Zero badges. Zero streaks. Opens in 15ms, executes deliberately, and gets out of your way.</p>
+                  <p className="text-stone-800 dark:text-stone-200 font-sans">Zero badges. Zero intrusive streaks. Opens instantly, executes deliberately, and gets out of your way.</p>
                 </div>
               </div>
 
@@ -336,7 +334,7 @@ export function HeroLandingPage() {
                     <span className="material-symbols-outlined text-[14px]">check</span>
                     <span>LifeOS</span>
                   </div>
-                  <p className="text-stone-800 dark:text-stone-200 font-sans">Local relational database and raw Markdown sitting right on your disk. You own your words forever.</p>
+                  <p className="text-stone-800 dark:text-stone-200 font-sans">Dedicated Postgres database with Row-Level Security. Your data is private to your account.</p>
                 </div>
               </div>
 
@@ -356,7 +354,7 @@ export function HeroLandingPage() {
                     <span className="material-symbols-outlined text-[14px]">check</span>
                     <span>LifeOS</span>
                   </div>
-                  <p className="text-stone-800 dark:text-stone-200 font-sans">Keyboard-first command palette. Instant sub-15ms modal capture anywhere via ⌘K or custom shortcut.</p>
+                  <p className="text-stone-800 dark:text-stone-200 font-sans">Keyboard-first command palette. Instant modal capture anywhere via ⌘K with natural language parsing.</p>
                 </div>
               </div>
             </div>
@@ -374,21 +372,20 @@ export function HeroLandingPage() {
                 Reclaim your cognitive bandwidth today.
               </h2>
               <p className="text-base text-stone-600 dark:text-stone-400">
-                Personal computing without the distraction. Local-first, private, and built for life.
+                Personal computing without the distraction. Private, deliberate, and built for life.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <Link
-                href="/?view=dashboard"
-                onClick={launchWorkspace}
+                href="/dashboard"
                 className="w-full sm:w-auto px-6 py-3 rounded-lg bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 font-medium hover:opacity-90 transition-opacity shadow-xs text-center flex items-center justify-center gap-2"
               >
-                <span>Launch Free Vault</span>
+                <span>Launch Workspace</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
               <div className="flex items-center gap-1.5 font-mono text-[12px] text-stone-500 bg-stone-100 dark:bg-stone-800 px-3 py-3 rounded-lg border border-stone-200 dark:border-stone-700">
                 <span>Press</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 font-medium">⌘</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 font-medium">{isMac ? '⌘' : 'Ctrl'}</kbd>
                 <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 font-medium">K</kbd>
                 <span>anywhere</span>
               </div>

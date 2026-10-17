@@ -20,7 +20,7 @@ export interface WeeklyHabitChartProps {
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: any[];
+  payload?: Array<{ payload: WeeklyHabitStat }>;
   label?: string;
 }
 

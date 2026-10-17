@@ -375,7 +375,22 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      promote_to_project: {
+        Args: {
+          p_note_id: string;
+          p_title: string;
+          p_slug: string;
+          p_description: string | null;
+          p_priority: number;
+          p_budget: number;
+          p_initial_tasks: { title: string }[];
+        };
+        Returns: {
+          project_id: string;
+          slug: string;
+          tasks_created: number;
+        };
+      };
     };
     Enums: {
       assignment_status: AssignmentStatus;

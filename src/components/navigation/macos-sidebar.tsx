@@ -1,288 +1,64 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import React, { useState, useEffect, useMemo, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useTransform,
-  useSpring,
-  type MotionValue,
-} from 'framer-motion';
-import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  PlusSignIcon,
-  SidebarLeftIcon,
-  DashboardSquare01Icon,
-  KanbanIcon,
-  TaskDaily01Icon,
-  AssignmentsIcon,
-  Wallet01Icon,
-  NoteEditIcon,
-  Settings02Icon,
-  UserCircleIcon,
-} from '@hugeicons/core-free-icons';
-import { CheckCircle2 } from 'lucide-react';
+  LayoutDashboard,
+  Kanban,
+  CheckSquare,
+  CheckCircle2,
+  GraduationCap,
+  Wallet,
+  FileText,
+  Settings,
+  Plus,
+  PanelLeft,
+} from 'lucide-react';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useIsMac } from '@/hooks/use-is-mac';
+import {
+  type NavItemConfig,
+  calculateDockScale,
+  DockNavLane,
+} from './sidebar-nav-item';
+import { SidebarThemeToggle } from './sidebar-theme-toggle';
+import { SidebarUserFooter } from './sidebar-user-footer';
 
-export interface NavItemConfig {
-  label: string;
-  href: string;
-  icon: any;
-}
+export { calculateDockScale };
+export type { NavItemConfig };
 
 export const DEFAULT_NAV_ITEMS: NavItemConfig[] = [
-  { label: 'Dashboard', href: '/', icon: DashboardSquare01Icon },
-  { label: 'Projects', href: '/projects', icon: KanbanIcon },
-  { label: 'Daily Tasks', href: '/tasks', icon: TaskDaily01Icon },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Projects', href: '/projects', icon: Kanban },
+  { label: 'Daily Tasks', href: '/tasks', icon: CheckSquare },
   { label: 'Habits', href: '/habits', icon: CheckCircle2 },
-  { label: 'Assignments', href: '/assignments', icon: AssignmentsIcon },
-  { label: 'Finances', href: '/finances', icon: Wallet01Icon },
-  { label: 'Ideas & Notes', href: '/notes', icon: NoteEditIcon },
-  { label: 'Settings', href: '/settings', icon: Settings02Icon },
+  { label: 'Assignments', href: '/assignments', icon: GraduationCap },
+  { label: 'Finances', href: '/finances', icon: Wallet },
+  { label: 'Ideas & Notes', href: '/notes', icon: FileText },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
-/**
- * Mathematical proximity formula used by the dock zoom effect.
- * Directly hovered center: 1.12 (max 1.16 in collapsed mode) [Doubled zoom factor]
- * Immediate vertical neighbor (~42px): 1.044
- * Edge boundary (>=85px): 1.0
- */
-export function calculateDockScale(distance: number, isCollapsed = false): number {
-  if (!isFinite(distance)) return 1;
-  const absDist = Math.abs(distance);
-  const maxScale = isCollapsed ? 1.16 : 1.12;
-  const neighborScale = 1.044;
-  const maxRange = 85;
-  const midRange = 42;
-
-  if (absDist >= maxRange) return 1;
-  if (absDist <= midRange) {
-    const t = absDist / midRange;
-    return maxScale - t * (maxScale - neighborScale);
-  }
-  const t = (absDist - midRange) / (maxRange - midRange);
-  return neighborScale - t * (neighborScale - 1);
-}
-
-interface DockNavItemProps {
-  item: NavItemConfig;
-  index: number;
-  isSelected: boolean;
-  hoveredIndex: number | null;
-  setHoveredIndex: (idx: number | null) => void;
-  mouseY: MotionValue<number>;
-  onSelect: () => void;
-  isCollapsed: boolean;
-}
-
-function DockNavItem({
-  item,
-  index,
-  isSelected,
-  hoveredIndex,
-  setHoveredIndex,
-  mouseY,
-  onSelect,
-  isCollapsed,
-}: DockNavItemProps) {
-  const itemRef = useRef<HTMLDivElement>(null);
-
-  // Measure vertical distance from mouse cursor to item center in viewport space
-  const distance = useTransform(mouseY, (val: number) => {
-    if (val === Infinity || !itemRef.current) return Infinity;
-    const bounds = itemRef.current.getBoundingClientRect();
-    const centerY = bounds.top + bounds.height / 2;
-    return val - centerY;
-  });
-
-  // Calculate doubled magnification (1.12 expanded, 1.16 collapsed)
-  const maxTargetScale = isCollapsed ? 1.16 : 1.12;
-  const rawScale = useTransform(
-    distance,
-    [-85, -42, 0, 42, 85],
-    [1, 1.044, maxTargetScale, 1.044, 1],
-    { clamp: true }
-  );
-
-  // Apply fluid physical spring elasticity without visual lag
-  const scale = useSpring(rawScale, {
-    mass: 0.1,
-    stiffness: 260,
-    damping: 20,
-  });
-
-  return (
-    <motion.div
-      ref={itemRef}
-      style={{
-        scale,
-        transformOrigin: 'center center',
-        willChange: 'transform',
-      }}
-      className={`relative box-border ${
-        isCollapsed ? 'w-full flex justify-center' : 'w-full max-w-full px-1'
-      }`}
-      onMouseEnter={() => setHoveredIndex(index)}
-    >
-      <Link
-        href={item.href}
-        prefetch={true}
-        onClick={onSelect}
-        title={isCollapsed ? item.label : undefined}
-        className={`relative cursor-pointer block transition-colors group select-none box-border ${
-          isCollapsed
-            ? 'flex items-center justify-center size-10 rounded-xl'
-            : 'w-full rounded-xl overflow-hidden'
-        }`}
-      >
-        {/* Active Route Selection Pill */}
-        <AnimatePresence>
-          {isSelected && (
-            <motion.div
-              layoutId={isCollapsed ? 'sidebar-active-pill-collapsed' : 'sidebar-active-pill-expanded'}
-              className="absolute inset-0 z-0 bg-neutral-200/80 dark:bg-neutral-800 rounded-xl shadow-xs border border-neutral-300/40 dark:border-neutral-700/60"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Hover Pill Background */}
-        <AnimatePresence>
-          {hoveredIndex === index && !isSelected && (
-            <motion.span
-              layoutId={isCollapsed ? 'sidebar-hover-bg-collapsed' : 'sidebar-hover-bg-expanded'}
-              className="absolute inset-0 z-0 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 350,
-                damping: 30,
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Item Label and Icon */}
-        {(() => {
-          const renderIcon = (extraClass: string) => {
-            if (
-              typeof item.icon === 'function' ||
-              (typeof item.icon === 'object' && item.icon !== null && ('render' in item.icon || '$$typeof' in item.icon))
-            ) {
-              const IconComp = item.icon;
-              return <IconComp className={extraClass} />;
-            }
-            return <HugeiconsIcon icon={item.icon} className={extraClass} />;
-          };
-
-          return isCollapsed ? (
-            renderIcon(
-              `size-5 z-10 shrink-0 transition-colors ${
-                isSelected
-                  ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                  : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
-              }`
-            )
-          ) : (
-            <div className="relative z-10 flex items-center gap-3 px-3 py-2 min-w-0 w-full box-border">
-              {renderIcon(
-                `size-5 shrink-0 transition-colors ${
-                  isSelected
-                    ? 'text-neutral-950 dark:text-neutral-100'
-                    : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
-                }`
-              )}
-              <span
-                className={`tracking-tight text-sm transition-colors truncate flex-1 min-w-0 ${
-                  isSelected
-                    ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                    : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-neutral-100 font-normal'
-                }`}
-              >
-                {item.label}
-              </span>
-            </div>
-          );
-        })()}
-      </Link>
-    </motion.div>
-  );
-}
-
-interface DockNavLaneProps {
-  items: NavItemConfig[];
-  selectedIndex: number;
-  setSelectedIndex: (idx: number) => void;
-  isCollapsed: boolean;
-  onItemClick: () => void;
-}
-
-export function DockNavLane({
-  items,
-  selectedIndex,
-  setSelectedIndex,
-  isCollapsed,
-  onItemClick,
-}: DockNavLaneProps) {
-  // Continuous pointer tracker across the vertical navigation container
-  const mouseY = useMotionValue(Infinity);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  return (
-    <nav
-      onMouseMove={(e) => mouseY.set(e.clientY)}
-      onMouseLeave={() => {
-        mouseY.set(Infinity);
-        setHoveredIndex(null);
-      }}
-      className={`flex flex-col ${
-        isCollapsed ? 'items-center gap-1.5' : 'gap-1'
-      } mt-3 w-full relative z-10`}
-    >
-      {items.map((item, index) => (
-        <DockNavItem
-          key={item.href}
-          item={item}
-          index={index}
-          isSelected={selectedIndex === index}
-          hoveredIndex={hoveredIndex}
-          setHoveredIndex={setHoveredIndex}
-          mouseY={mouseY}
-          onSelect={() => {
-            setSelectedIndex(index);
-            onItemClick();
-          }}
-          isCollapsed={isCollapsed}
-        />
-      ))}
-    </nav>
-  );
-}
-
 export interface MacOSSidebarProps {
-  items?: (string | NavItemConfig)[];
-  defaultOpen?: boolean;
+  items?: (NavItemConfig | string)[];
   initialSelectedIndex?: number;
-  children?: ReactNode;
+  initialCollapsed?: boolean;
+  onSelect?: (index: number) => void;
   className?: string;
+  children?: ReactNode;
 }
 
 export function MacOSSidebar({
-  items,
-  defaultOpen = true,
+  items = DEFAULT_NAV_ITEMS,
   initialSelectedIndex = 0,
-  children,
+  initialCollapsed,
+  onSelect,
   className = '',
+  children,
 }: MacOSSidebarProps) {
   const pathname = usePathname();
+  const isMac = useIsMac();
   const {
     isSidebarCollapsed,
     toggleSidebar,
@@ -291,45 +67,11 @@ export function MacOSSidebar({
     closeMobileMenu,
   } = useUIStore();
 
-  const [isOpen, setIsOpen] = useState<boolean>(
-    typeof defaultOpen === 'boolean' ? defaultOpen : !isSidebarCollapsed
-  );
+  const [isOpen, setIsOpen] = useState(!isSidebarCollapsed);
 
-  // Sync internal open state with global store
   useEffect(() => {
     setIsOpen(!isSidebarCollapsed);
   }, [isSidebarCollapsed]);
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const checkDark = () => {
-      const isDark =
-        document.documentElement.classList.contains('dark') ||
-        (typeof window !== 'undefined' && localStorage.getItem('theme') === 'dark');
-      setIsDarkMode(isDark);
-    };
-    checkDark();
-
-    const observer = new MutationObserver(checkDark);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleTheme = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    document.documentElement.removeAttribute('data-theme');
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      localStorage.setItem('lifeos_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      localStorage.setItem('lifeos_theme', 'light');
-    }
-  };
 
   const handleToggle = () => {
     const next = !isOpen;
@@ -339,9 +81,8 @@ export function MacOSSidebar({
     }
   };
 
-  // Resolve navigation items to NavItemConfig array
+  // Resolve strings to NavItemConfig objects
   const resolvedItems: NavItemConfig[] = useMemo(() => {
-    if (!items || items.length === 0) return DEFAULT_NAV_ITEMS;
     return items.map((item) => {
       if (typeof item === 'string') {
         const found = DEFAULT_NAV_ITEMS.find(
@@ -350,8 +91,8 @@ export function MacOSSidebar({
         if (found) return found;
         return {
           label: item,
-          href: item === 'Dashboard' ? '/' : `/${item.toLowerCase().replace(/\s+/g, '-')}`,
-          icon: DashboardSquare01Icon,
+          href: item === 'Dashboard' ? '/dashboard' : `/${item.toLowerCase().replace(/\s+/g, '-')}`,
+          icon: LayoutDashboard,
         };
       }
       return item;
@@ -361,8 +102,8 @@ export function MacOSSidebar({
   // Sync selectedIndex with current pathname
   const activeRouteIndex = useMemo(() => {
     const index = resolvedItems.findIndex((item) => {
-      if (item.href === '/') {
-        return pathname === '/';
+      if (item.href === '/dashboard' || item.href === '/') {
+        return pathname === '/dashboard' || pathname === '/';
       }
       return pathname === item.href || pathname.startsWith(item.href + '/');
     });
@@ -394,10 +135,10 @@ export function MacOSSidebar({
               <>
                 {/* Brand & App Title */}
                 <Link
-                  href="/"
+                  href="/dashboard"
                   prefetch={true}
                   onClick={closeMobileMenu}
-                  className="flex items-center gap-2.5 min-w-0 group cursor-pointer"
+                  className="flex items-center gap-2.5 min-w-0 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 rounded-md p-0.5"
                 >
                   <div className="w-6 h-6 rounded-md bg-neutral-900 text-neutral-100 dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                     L
@@ -415,19 +156,21 @@ export function MacOSSidebar({
                       closeMobileMenu();
                       openQuickCapture();
                     }}
-                    title="Quick Capture (⌘K)"
-                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                    title={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                    aria-label={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
                   >
-                    <HugeiconsIcon className="size-5" icon={PlusSignIcon} />
+                    <Plus className="size-5" />
                   </button>
                   <motion.button
                     layout
                     type="button"
                     onClick={handleToggle}
                     title="Collapse sidebar"
-                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                    aria-label="Collapse sidebar"
+                    className="p-1 rounded-md text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
                   >
-                    <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
+                    <PanelLeft className="size-5" />
                   </motion.button>
                 </div>
               </>
@@ -438,9 +181,10 @@ export function MacOSSidebar({
                   type="button"
                   onClick={handleToggle}
                   title="Expand sidebar"
-                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  aria-label="Expand sidebar"
+                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
                 >
-                  <HugeiconsIcon className="size-5" icon={SidebarLeftIcon} />
+                  <PanelLeft className="size-5" />
                 </button>
                 <button
                   type="button"
@@ -448,123 +192,48 @@ export function MacOSSidebar({
                     closeMobileMenu();
                     openQuickCapture();
                   }}
-                  title="Quick Capture (⌘K)"
-                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  title={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                  aria-label={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
+                  className="p-1.5 rounded-lg text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
                 >
-                  <HugeiconsIcon className="size-5" icon={PlusSignIcon} />
+                  <Plus className="size-5" />
                 </button>
               </>
             )}
           </div>
 
-          {/* Refactored Navigation Items with MacBook-style Dock Zoom Effect */}
+          {/* Dock Navigation Items */}
           <AnimatePresence mode="wait">
             <DockNavLane
               key={effectivelyOpen ? 'expanded-dock' : 'collapsed-dock'}
               items={resolvedItems}
               selectedIndex={selectedIndex}
-              setSelectedIndex={setSelectedIndex}
               isCollapsed={!effectivelyOpen}
-              onItemClick={closeMobileMenu}
+              onSelect={(index) => {
+                setSelectedIndex(index);
+                onSelect?.(index);
+              }}
+              onItemClick={() => {
+                if (isMobile) {
+                  closeMobileMenu();
+                }
+              }}
             />
           </AnimatePresence>
         </div>
 
-        {/* Bottom Profile / Personal Workspace Section */}
-        {effectivelyOpen ? (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full box-border flex flex-col gap-2">
-            {/* Quick Theme Switcher Pill in Sidebar / Mobile Drawer */}
-            <div className="flex items-center justify-between p-1.5 rounded-xl bg-neutral-200/40 dark:bg-neutral-800/40 text-xs">
-              <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 ml-1">
-                <span className="material-symbols-outlined text-[15px]">
-                  {isDarkMode ? 'dark_mode' : 'light_mode'}
-                </span>
-                <span>Theme</span>
-              </span>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isDarkMode) toggleTheme();
-                  }}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all ${
-                    !isDarkMode
-                      ? 'bg-white text-neutral-900 shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                  }`}
-                  aria-label="Switch to light theme"
-                >
-                  Light
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isDarkMode) toggleTheme();
-                  }}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-all ${
-                    isDarkMode
-                      ? 'bg-neutral-900 text-white dark:bg-neutral-700 shadow-xs'
-                      : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                  }`}
-                  aria-label="Switch to dark theme"
-                >
-                  Dark
-                </button>
-              </div>
-            </div>
-
-            <Link
-              href="/settings"
-              prefetch={true}
-              onClick={closeMobileMenu}
-              className="flex items-center justify-between p-2 rounded-xl bg-neutral-200/40 hover:bg-neutral-200/80 dark:bg-neutral-800/40 dark:hover:bg-neutral-800 transition-colors cursor-pointer group w-full box-border"
-              title="Personal Workspace — Settings"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-full bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 flex items-center justify-center shrink-0 shadow-xs">
-                  <HugeiconsIcon icon={UserCircleIcon} className="size-4" />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
-                    Personal Workspace
-                  </span>
-                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
-                    Student Settings
-                  </span>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-200 text-[16px] shrink-0 ml-1 transition-colors">
-                tune
-              </span>
-            </Link>
-          </div>
-        ) : (
-          <div className="mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex flex-col items-center gap-2 box-border">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="size-10 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer box-border"
-              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              <span className="material-symbols-outlined text-[18px] text-neutral-700 dark:text-neutral-200">
-                {isDarkMode ? 'light_mode' : 'dark_mode'}
-              </span>
-            </button>
-            <Link
-              href="/settings"
-              prefetch={true}
-              onClick={closeMobileMenu}
-              className="size-10 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer box-border"
-              title="Personal Workspace — Settings"
-            >
-              <HugeiconsIcon
-                icon={UserCircleIcon}
-                className="size-5 text-neutral-700 dark:text-neutral-200"
-              />
-            </Link>
-          </div>
-        )}
+        {/* Bottom User Profile & Theme Quick-Toggles */}
+        <div className={`mt-auto pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 w-full flex flex-col gap-2 box-border ${effectivelyOpen ? '' : 'items-center'}`}>
+          <SidebarThemeToggle isCollapsed={!effectivelyOpen} />
+          <SidebarUserFooter
+            isCollapsed={!effectivelyOpen}
+            onItemClick={() => {
+              if (isMobile) {
+                closeMobileMenu();
+              }
+            }}
+          />
+        </div>
       </div>
     );
   };

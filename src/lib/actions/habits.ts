@@ -1,12 +1,18 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Habit, HabitLog } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import {
+  createHabitSchema,
+  toggleHabitLogSchema,
+  deleteHabitSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface HabitWithLog extends Habit {
   is_completed_today: boolean;
@@ -34,7 +40,7 @@ export interface GetHabitsResult {
 const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
   {
     id: 'starter-1',
-    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    user_id: '',
     title: 'Morning Sunlight & Hydration',
     description: '10 mins sunlight + 500ml water right after waking up',
     created_at: new Date().toISOString(),
@@ -45,7 +51,7 @@ const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
   },
   {
     id: 'starter-2',
-    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    user_id: '',
     title: 'Deep Work Sprint (Pomodoro 25m)',
     description: 'Zero notification focus block on core project',
     created_at: new Date().toISOString(),
@@ -56,7 +62,7 @@ const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
   },
   {
     id: 'starter-3',
-    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    user_id: '',
     title: 'Read 20 Pages',
     description: 'Non-fiction reading or technical documentation',
     created_at: new Date().toISOString(),
@@ -67,7 +73,7 @@ const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
   },
   {
     id: 'starter-4',
-    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    user_id: '',
     title: 'Evening Review & Next-Day Plan',
     description: 'Review completed tasks and select top 3 tomorrow priorities',
     created_at: new Date().toISOString(),
@@ -115,7 +121,7 @@ export async function getHabits(): Promise<GetHabitsResult> {
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     // 1. Fetch habits
     const { data: habitsData, error: habitsError } = await supabase
@@ -126,7 +132,7 @@ export async function getHabits(): Promise<GetHabitsResult> {
 
     if (habitsError) {
       const isSchemaMissing =
-        (habitsError as any)?.code === 'PGRST205' ||
+        (habitsError as { code?: string })?.code === 'PGRST205' ||
         habitsError.message?.includes('schema cache') ||
         habitsError.message?.includes('does not exist') ||
         habitsError.message?.includes('relation "public.habits"');
@@ -242,31 +248,37 @@ export async function toggleHabitLog(
     ? dateStr
     : getTodayDate();
 
+  const parsed = toggleHabitLogSchema.safeParse({ habitId, dateStr: targetDate });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     // Check for existing log entry
     const { data: existingLog, error: fetchError } = await supabase
       .from('habit_logs')
       .select('id, is_completed')
-      .eq('habit_id', habitId)
-      .eq('date', targetDate)
+      .eq('habit_id', parsed.data.habitId)
+      .eq('date', parsed.data.dateStr)
       .maybeSingle();
 
-    if (fetchError && (fetchError as any)?.code !== 'PGRST116') {
+    if (fetchError && (fetchError as { code?: string })?.code !== 'PGRST116') {
       const isSchemaMissing =
-        (fetchError as any)?.code === 'PGRST205' ||
+        (fetchError as { code?: string })?.code === 'PGRST205' ||
         fetchError.message?.includes('schema cache') ||
         fetchError.message?.includes('does not exist');
 
       if (isSchemaMissing) {
         // Fallback for demo / offline environment
         revalidatePath('/habits');
+        revalidatePath('/dashboard');
         revalidatePath('/');
         return {
           success: true,
-          data: { habit_id: habitId, date: targetDate, is_completed: true },
+          data: { habit_id: parsed.data.habitId, date: parsed.data.dateStr, is_completed: true },
         };
       }
 
@@ -290,9 +302,9 @@ export async function toggleHabitLog(
       const { error: insertError } = await supabase
         .from('habit_logs')
         .insert({
-          habit_id: habitId,
+          habit_id: parsed.data.habitId,
           user_id: effectiveUserId,
-          date: targetDate,
+          date: parsed.data.dateStr,
           is_completed: true,
         });
 
@@ -303,12 +315,13 @@ export async function toggleHabitLog(
     }
 
     revalidatePath('/habits');
+    revalidatePath('/dashboard');
     revalidatePath('/');
     return {
       success: true,
       data: {
-        habit_id: habitId,
-        date: targetDate,
+        habit_id: parsed.data.habitId,
+        date: parsed.data.dateStr,
         is_completed: nextState,
       },
     };
@@ -316,7 +329,7 @@ export async function toggleHabitLog(
     console.error('Unhandled error in toggleHabitLog:', err);
     return {
       success: true,
-      data: { habit_id: habitId, date: targetDate, is_completed: true },
+      data: { habit_id: parsed.data.habitId, date: parsed.data.dateStr, is_completed: true },
     };
   }
 }
@@ -355,29 +368,31 @@ export async function getWeeklyHabitStats(): Promise<WeeklyHabitStat[]> {
 }
 
 /**
- * Creates a new habit definition.
+ * Creates a new habit definition with Zod validation.
  */
 export async function createHabit(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Habit>> {
-  const title = (formData.get('title') as string)?.trim();
-  const description = (formData.get('description') as string)?.trim() || null;
+  const parsed = createHabitSchema.safeParse({
+    title: formData.get('title'),
+    description: formData.get('description') || null,
+  });
 
-  if (!title) {
-    return { success: false, error: 'Habit title is required.' };
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
   }
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('habits')
       .insert({
         user_id: effectiveUserId,
-        title,
-        description,
+        title: parsed.data.title,
+        description: parsed.data.description || null,
       })
       .select()
       .single();
@@ -388,6 +403,7 @@ export async function createHabit(
     }
 
     revalidatePath('/habits');
+    revalidatePath('/dashboard');
     revalidatePath('/');
     return { success: true, data: data as Habit };
   } catch (err) {
@@ -400,14 +416,19 @@ export async function createHabit(
  * Deletes a habit and cascaded daily completion logs.
  */
 export async function deleteHabit(habitId: string): Promise<ActionResponse> {
+  const parsed = deleteHabitSchema.safeParse({ habitId });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { error } = await supabase
       .from('habits')
       .delete()
-      .eq('id', habitId)
+      .eq('id', parsed.data.habitId)
       .eq('user_id', effectiveUserId);
 
     if (error) {
@@ -416,6 +437,7 @@ export async function deleteHabit(habitId: string): Promise<ActionResponse> {
     }
 
     revalidatePath('/habits');
+    revalidatePath('/dashboard');
     revalidatePath('/');
     return { success: true };
   } catch (err) {

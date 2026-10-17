@@ -1,13 +1,19 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { getUserProfile } from '@/lib/actions/profile';
 import { revalidatePath } from 'next/cache';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import {
+  createTransactionSchema,
+  updateTransactionSchema,
+  deleteTransactionSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface TransactionWithRelations {
   id: string;
@@ -108,7 +114,7 @@ import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
 export async function getCategories(): Promise<Category[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     let { data, error } = await supabase
       .from('categories')
@@ -180,7 +186,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTransactions(): Promise<TransactionWithRelations[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('transactions')
@@ -199,9 +205,9 @@ export async function getTransactions(): Promise<TransactionWithRelations[]> {
       return [];
     }
 
-    return data.map((t: any) => ({
+    return (data as unknown as TransactionWithRelations[]).map((t) => ({
       ...t,
-      amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0,
+      amount: typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount)) || 0,
     }));
   } catch (err) {
     console.error('Unhandled error in getTransactions:', err);
@@ -256,7 +262,7 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
 
     for (const t of (transactions || [])) {
       if (!t) continue;
-      const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any);
+      const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount));
       const amt = Math.abs(isNaN(rawAmt) ? 0 : rawAmt);
       const isIncome = t.type === 'income' || (typeof t.amount === 'number' && t.amount > 0);
       const txDate = typeof t.date === 'string' ? t.date : todayStr;
@@ -376,49 +382,40 @@ export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
  * Create a new transaction with cross-linking foreign key support for projects and categories.
  */
 export async function createTransaction(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse> {
+  const parsed = createTransactionSchema.safeParse({
+    description: formData.get('description'),
+    amount: formData.get('amount'),
+    type: formData.get('type') || 'expense',
+    date: formData.get('date') || null,
+    categoryId: formData.get('categoryId') || null,
+    projectId: formData.get('projectId') || null,
+    payeeOrSource: formData.get('payeeOrSource') || null,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
-
-  const description = (formData.get('description') as string)?.trim();
-  const amountRaw = formData.get('amount') as string;
-  const type = ((formData.get('type') as string) || 'expense') as TransactionType;
-  const dateRaw = (formData.get('date') as string)?.trim();
-  const categoryIdRaw = (formData.get('categoryId') as string)?.trim();
-  const projectIdRaw = (formData.get('projectId') as string)?.trim();
-  const payeeOrSource = (formData.get('payeeOrSource') as string)?.trim() || null;
-
-  if (!description) {
-    return { success: false, error: 'Description is required.' };
-  }
-
-  const parsedAmount = parseFloat(amountRaw);
-  if (isNaN(parsedAmount) || parsedAmount <= 0) {
-    return { success: false, error: 'Please enter a valid positive amount.' };
-  }
+  const effectiveUserId = await requireUserId(supabase);
 
   // Expenses stored with signed negative amounts or positive based on type
-  const finalAmount = type === 'income' ? parsedAmount : -parsedAmount;
-
-  let finalDate = getTodayDate();
-  if (dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
-    finalDate = dateRaw;
-  }
-
-  const categoryId = categoryIdRaw && categoryIdRaw !== 'none' ? categoryIdRaw : null;
-  const projectId = projectIdRaw && projectIdRaw !== 'none' ? projectIdRaw : null;
+  const parsedAmount = parsed.data.amount;
+  const finalAmount = parsed.data.type === 'income' ? parsedAmount : -parsedAmount;
+  const finalDate = parsed.data.date || getTodayDate();
 
   const newTx: InsertTransaction = {
     user_id: effectiveUserId,
     amount: finalAmount,
-    type,
-    description,
+    type: parsed.data.type,
+    description: parsed.data.description,
     date: finalDate,
-    category_id: categoryId,
-    project_id: projectId, // Feeds into Phase 4 project burn calculations
-    payee_or_source: payeeOrSource,
+    category_id: parsed.data.categoryId || null,
+    project_id: parsed.data.projectId || null,
+    payee_or_source: parsed.data.payeeOrSource || null,
   };
 
   const { error } = await supabase.from('transactions').insert(newTx);
@@ -430,6 +427,7 @@ export async function createTransaction(
 
   revalidatePath('/finances');
   revalidatePath('/projects');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true };
 }
@@ -438,13 +436,18 @@ export async function createTransaction(
  * Delete a transaction.
  */
 export async function deleteTransaction(transactionId: string): Promise<ActionResponse> {
+  const parsed = deleteTransactionSchema.safeParse({ transactionId });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('transactions')
     .delete()
-    .eq('id', transactionId)
+    .eq('id', parsed.data.transactionId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -454,6 +457,7 @@ export async function deleteTransaction(transactionId: string): Promise<ActionRe
 
   revalidatePath('/finances');
   revalidatePath('/projects');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true };
 }
@@ -465,55 +469,41 @@ export async function updateTransaction(
   id: string,
   formData: FormData
 ): Promise<ActionResponse<TransactionWithRelations>> {
-  if (!id) {
-    return { success: false, error: 'Transaction ID is required.' };
+  const parsed = updateTransactionSchema.safeParse({
+    id,
+    description: formData.get('description'),
+    amount: formData.get('amount'),
+    type: formData.get('type') || 'expense',
+    date: formData.get('date') || null,
+    categoryId: formData.get('categoryId') || null,
+    projectId: formData.get('projectId') || null,
+    payeeOrSource: formData.get('payeeOrSource') || null,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
-
-  const description = (formData.get('description') as string)?.trim();
-  const amountRaw = formData.get('amount') as string;
-  const type = ((formData.get('type') as string) || 'expense') as TransactionType;
-  const dateRaw = (formData.get('date') as string)?.trim();
-  const categoryIdRaw = (formData.get('categoryId') as string)?.trim();
-  const projectIdRaw = (formData.get('projectId') as string)?.trim();
-  const payeeOrSource = (formData.get('payeeOrSource') as string)?.trim() || null;
-
-  if (!description) {
-    return { success: false, error: 'Description is required.' };
-  }
-
-  const parsedAmount = parseFloat(amountRaw);
-  if (isNaN(parsedAmount) || parsedAmount <= 0) {
-    return { success: false, error: 'Please enter a valid positive amount.' };
-  }
+  const effectiveUserId = await requireUserId(supabase);
 
   // Preserve PostgreSQL numeric(12, 2) precision using safe float parsing
-  const preciseAmount = parseFloat(parsedAmount.toFixed(2));
-  const finalAmount = type === 'income' ? preciseAmount : -preciseAmount;
-
-  let finalDate = getTodayDate();
-  if (dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
-    finalDate = dateRaw;
-  }
-
-  // Handle foreign key updates cleanly if the user changes category_id or links/unlinks project_id
-  const categoryId = categoryIdRaw && categoryIdRaw !== 'none' && categoryIdRaw !== '' ? categoryIdRaw : null;
-  const projectId = projectIdRaw && projectIdRaw !== 'none' && projectIdRaw !== '' ? projectIdRaw : null;
+  const preciseAmount = parseFloat(parsed.data.amount.toFixed(2));
+  const finalAmount = parsed.data.type === 'income' ? preciseAmount : -preciseAmount;
+  const finalDate = parsed.data.date || getTodayDate();
 
   const { data, error } = await supabase
     .from('transactions')
     .update({
       amount: finalAmount,
-      type,
-      description,
+      type: parsed.data.type,
+      description: parsed.data.description,
       date: finalDate,
-      category_id: categoryId,
-      project_id: projectId,
-      payee_or_source: payeeOrSource,
+      category_id: parsed.data.categoryId || null,
+      project_id: parsed.data.projectId || null,
+      payee_or_source: parsed.data.payeeOrSource || null,
     })
-    .eq('id', id)
+    .eq('id', parsed.data.id)
     .eq('user_id', effectiveUserId)
     .select(`
       *,
@@ -533,6 +523,7 @@ export async function updateTransaction(
 
   revalidatePath('/finances');
   revalidatePath('/projects');
+  revalidatePath('/dashboard');
   revalidatePath('/');
 
   return { success: true, data: data as TransactionWithRelations };

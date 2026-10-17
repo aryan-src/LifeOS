@@ -19,7 +19,7 @@ interface LedgerTableProps {
   activeTab?: 'today' | 'this_week' | 'monthly' | 'all';
   onTabChange?: (tab: 'today' | 'this_week' | 'monthly' | 'all') => void;
   activeTimeframe?: string;
-  onTimeframeChange?: (tf: any) => void;
+  onTimeframeChange?: (tf: string) => void;
   viewMode?: 'table' | 'cards';
   onViewModeChange?: (mode: 'table' | 'cards') => void;
   onRecordExpense?: () => void;
@@ -237,11 +237,20 @@ export function LedgerTable({
 
       {/* Main Ledger Table */}
       {optimisticTransactions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-outline-variant/40 dark:border-zinc-800/80 p-12 text-center bg-surface-container-low/50 dark:bg-zinc-900/40">
+        <div className="rounded-xl border border-dashed border-outline-variant/40 dark:border-zinc-800/80 p-8 sm:p-12 text-center bg-surface-container-low/50 dark:bg-zinc-900/40 flex flex-col items-center gap-2">
           <p className="text-body-md text-on-surface-variant dark:text-zinc-300 font-medium">No expenses recorded for this period</p>
-          <p className="mt-1 text-label-sm text-outline dark:text-zinc-500">
-            Click &ldquo;Record Expense&rdquo; above or use Quick Capture (⌘K) to add one.
+          <p className="text-label-sm text-outline dark:text-zinc-500 max-w-sm">
+            Keep student finances deliberate. Record daily expenses, groceries, and allowance splits.
           </p>
+          {onRecordExpense && (
+            <button
+              type="button"
+              onClick={onRecordExpense}
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-on-surface text-surface dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer shadow-xs"
+            >
+              <span>+ Record your first expense</span>
+            </button>
+          )}
         </div>
       ) : (
         <>

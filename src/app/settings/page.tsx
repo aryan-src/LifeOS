@@ -1,6 +1,7 @@
 import React from 'react';
 import { getUserProfile } from '@/lib/actions/profile';
 import { SettingsForm } from '@/components/settings/settings-form';
+import { DataExportCard } from '@/components/settings/data-export-card';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,11 @@ export default async function SettingsPage() {
 
         {/* Settings Form Container */}
         <SettingsForm initialProfile={profile} userEmail="student@lifeos.local" />
+
+        {/* Data Ownership & Export */}
+        <div className="w-full max-w-3xl">
+          <DataExportCard />
+        </div>
       </div>
     </div>
   );

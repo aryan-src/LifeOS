@@ -15,9 +15,31 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://life-os-ghost-a56a.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'LifeOS — A Quiet Operating System for Builders, Thinkers & Students',
-  description: 'Relational personal operating system for Projects, Tasks, Finances, and Notes.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'LifeOS — A Quiet Personal Dashboard for Students and Builders',
+    template: '%s | LifeOS',
+  },
+  description:
+    'A quiet personal dashboard for students and builders: tasks, projects, assignments, habits, and an allowance-aware ledger, protected by Postgres Row-Level Security.',
+  openGraph: {
+    title: 'LifeOS — A Quiet Personal Dashboard for Students and Builders',
+    description:
+      'A quiet personal dashboard for students and builders: tasks, projects, assignments, habits, and an allowance-aware ledger, protected by Postgres Row-Level Security.',
+    url: siteUrl,
+    siteName: 'LifeOS',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LifeOS — A Quiet Personal Dashboard for Students and Builders',
+    description:
+      'A quiet personal dashboard for students and builders: tasks, projects, assignments, habits, and an allowance-aware ledger, protected by Postgres Row-Level Security.',
+  },
 };
 
 export default function RootLayout({
@@ -29,15 +51,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var lt=localStorage.getItem('lifeos_theme');var t=localStorage.getItem('theme');if(lt==='crimson-dark'||lt==='crimson-cream'){document.documentElement.setAttribute('data-theme','crimson-dark');document.documentElement.classList.add('dark');}else if(lt==='crimson-light'){document.documentElement.setAttribute('data-theme','crimson-light');document.documentElement.classList.remove('dark');}else{document.documentElement.removeAttribute('data-theme');var isDark=lt==='dark'||t==='dark'||(!lt&&!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme');if(t==='crimson-dark'||t==='crimson-cream'){document.documentElement.setAttribute('data-theme','crimson-dark');document.documentElement.classList.add('dark');}else if(t==='crimson-light'){document.documentElement.setAttribute('data-theme','crimson-light');document.documentElement.classList.remove('dark');}else if(t==='dark'){document.documentElement.removeAttribute('data-theme');document.documentElement.classList.add('dark');}else if(t==='light'){document.documentElement.removeAttribute('data-theme');document.documentElement.classList.remove('dark');}else{document.documentElement.removeAttribute('data-theme');var isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}}catch(e){}})();`,
           }}
         />
       </head>

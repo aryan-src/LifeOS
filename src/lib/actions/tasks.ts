@@ -1,11 +1,18 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Task, InsertTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import {
+  createTaskSchema,
+  toggleTaskSchema,
+  updateTaskPrioritySchema,
+  deleteTaskSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface TaskWithProject extends Task {
   project?: {
@@ -21,7 +28,7 @@ export interface TaskWithProject extends Task {
 export async function getTasks(): Promise<TaskWithProject[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('tasks')
@@ -39,7 +46,7 @@ export async function getTasks(): Promise<TaskWithProject[]> {
       return [];
     }
 
-    return (data as any) || [];
+    return (data as unknown as TaskWithProject[]) || [];
   } catch (err) {
     console.error('Unhandled error in getTasks:', err);
     return [];
@@ -47,43 +54,34 @@ export async function getTasks(): Promise<TaskWithProject[]> {
 }
 
 /**
- * Create a new task.
- * Note: due_date is handled strictly as an absolute ISO date string (YYYY-MM-DD)
- * to avoid timezone drift between client browser and PostgreSQL date column.
+ * Create a new task with strict Zod validation.
  */
 export async function createTask(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Task>> {
+  const parsed = createTaskSchema.safeParse({
+    title: formData.get('title'),
+    description: formData.get('description'),
+    dueDate: formData.get('dueDate') || null,
+    priority: formData.get('priority'),
+    projectId: formData.get('projectId') || null,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
-
-  const title = (formData.get('title') as string)?.trim();
-  const description = (formData.get('description') as string)?.trim() || null;
-  const dueDateRaw = (formData.get('dueDate') as string)?.trim();
-  const priorityRaw = formData.get('priority');
-  const projectIdRaw = (formData.get('projectId') as string)?.trim();
-
-  if (!title) {
-    return { success: false, error: 'Task title is required.' };
-  }
-
-  // Validate YYYY-MM-DD date string format strictly without creating Date() object
-  let dueDate: string | null = null;
-  if (dueDateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dueDateRaw)) {
-    dueDate = dueDateRaw;
-  }
-
-  const priority = priorityRaw ? Math.min(Math.max(parseInt(priorityRaw.toString(), 10), 1), 4) : 2;
-  const projectId = projectIdRaw && projectIdRaw !== 'none' ? projectIdRaw : null;
+  const effectiveUserId = await requireUserId(supabase);
 
   const newTask: InsertTask = {
     user_id: effectiveUserId,
-    title,
-    description,
-    due_date: dueDate,
-    priority,
-    project_id: projectId,
+    title: parsed.data.title,
+    description: parsed.data.description || null,
+    due_date: parsed.data.dueDate || null,
+    priority: parsed.data.priority,
+    project_id: parsed.data.projectId || null,
     is_completed: false,
     sort_order: 0,
   };
@@ -100,30 +98,35 @@ export async function createTask(
   }
 
   revalidatePath('/tasks');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true, data: data as Task };
 }
 
 /**
  * Toggle task completion state.
- * Returns standardized ActionResponse envelope.
  */
 export async function toggleTask(
   taskId: string,
   targetCompletedState: boolean
 ): Promise<ActionResponse<{ id: string; is_completed: boolean }>> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const parsed = toggleTaskSchema.safeParse({ taskId, targetCompletedState });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
 
-  const completedAt = targetCompletedState ? new Date().toISOString() : null;
+  const supabase = await createClient();
+  const effectiveUserId = await requireUserId(supabase);
+
+  const completedAt = parsed.data.targetCompletedState ? new Date().toISOString() : null;
 
   const { data, error } = await supabase
     .from('tasks')
     .update({
-      is_completed: targetCompletedState,
+      is_completed: parsed.data.targetCompletedState,
       completed_at: completedAt,
     })
-    .eq('id', taskId)
+    .eq('id', parsed.data.taskId)
     .eq('user_id', effectiveUserId)
     .select('id, is_completed')
     .single();
@@ -134,6 +137,7 @@ export async function toggleTask(
   }
 
   revalidatePath('/tasks');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true, data };
 }
@@ -145,15 +149,18 @@ export async function updateTaskPriority(
   taskId: string,
   priority: number
 ): Promise<ActionResponse> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const parsed = updateTaskPrioritySchema.safeParse({ taskId, priority });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
 
-  const validPriority = Math.min(Math.max(priority, 1), 4);
+  const supabase = await createClient();
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('tasks')
-    .update({ priority: validPriority })
-    .eq('id', taskId)
+    .update({ priority: parsed.data.priority })
+    .eq('id', parsed.data.taskId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -169,13 +176,18 @@ export async function updateTaskPriority(
  * Delete task by ID.
  */
 export async function deleteTask(taskId: string): Promise<ActionResponse> {
+  const parsed = deleteTaskSchema.safeParse({ taskId });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('tasks')
     .delete()
-    .eq('id', taskId)
+    .eq('id', parsed.data.taskId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -184,6 +196,7 @@ export async function deleteTask(taskId: string): Promise<ActionResponse> {
   }
 
   revalidatePath('/tasks');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true };
 }

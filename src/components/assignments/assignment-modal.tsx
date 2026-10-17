@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, Edit3 } from 'lucide-react';
 import type { AssignmentWithProject, CreateAssignmentInput } from '@/lib/actions/assignments';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import type { AssignmentStatus } from '@/types/database.types';
+import { useModalA11y } from '@/hooks/use-modal-a11y';
 
 interface AssignmentModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export function AssignmentModal({
   defaultStatus,
   projects,
 }: AssignmentModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y(isOpen, onClose, modalRef);
   const isEditing = Boolean(initialAssignment);
 
   const [subject, setSubject] = useState(initialAssignment?.subject || '');
@@ -83,8 +86,9 @@ export function AssignmentModal({
       setIsSubmitting(true);
       await onSubmit(payload, initialAssignment?.id);
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to save assignment.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save assignment.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -98,9 +102,11 @@ export function AssignmentModal({
       }}
     >
       <div
+        ref={modalRef}
         className="w-full max-w-lg rounded-3xl border border-white/60 dark:border-stone-700/60 bg-[#FAF8F5]/85 dark:bg-stone-900/85 backdrop-blur-xl backdrop-saturate-150 shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-black/5 dark:ring-white/10 p-6 sm:p-8 flex flex-col gap-6 transition-all"
         role="dialog"
         aria-modal="true"
+        aria-labelledby="assignment-modal-title"
       >
         {/* Header */}
         <div className="flex items-start justify-between pb-1">
@@ -109,7 +115,7 @@ export function AssignmentModal({
               {isEditing ? <Edit3 size={18} /> : <Plus size={18} />}
             </div>
             <div>
-              <h3 className="font-bold text-stone-900 dark:text-stone-100 text-base tracking-tight">
+              <h3 id="assignment-modal-title" className="font-bold text-stone-900 dark:text-stone-100 text-base tracking-tight">
                 {isEditing ? 'Edit Assignment' : 'New Assignment'}
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">

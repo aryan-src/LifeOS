@@ -1,11 +1,18 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Note, InsertNote } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import {
+  createNoteSchema,
+  togglePinNoteSchema,
+  deleteNoteSchema,
+  promoteNoteSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface NoteWithProject extends Note {
   project?: {
@@ -21,7 +28,7 @@ export interface NoteWithProject extends Note {
 export async function getNotes(): Promise<NoteWithProject[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     const { data, error } = await supabase
       .from('notes')
@@ -38,7 +45,7 @@ export async function getNotes(): Promise<NoteWithProject[]> {
       return [];
     }
 
-    return (data as any) || [];
+    return (data as unknown as NoteWithProject[]) || [];
   } catch (err) {
     console.error('Unhandled error in getNotes:', err);
     return [];
@@ -46,31 +53,38 @@ export async function getNotes(): Promise<NoteWithProject[]> {
 }
 
 /**
- * Create a new note.
+ * Create a new note with strict Zod validation.
  */
 export async function createNote(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Note>> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
-
-  const title = (formData.get('title') as string)?.trim() || 'Untitled Note';
-  const content = (formData.get('content') as string)?.trim() || '';
   const tagsRaw = (formData.get('tags') as string)?.trim() || '';
-
-  const tags = tagsRaw
+  const parsedTags = tagsRaw
     ? tagsRaw
         .split(',')
         .map((t) => t.trim().replace(/^#/, ''))
         .filter(Boolean)
     : [];
 
+  const parsed = createNoteSchema.safeParse({
+    title: (formData.get('title') as string)?.trim() || 'Untitled Note',
+    content: (formData.get('content') as string)?.trim() || '',
+    tags: parsedTags,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const effectiveUserId = await requireUserId(supabase);
+
   const newNote: InsertNote = {
     user_id: effectiveUserId,
-    title,
-    content,
-    tags: tags as any,
+    title: parsed.data.title,
+    content: parsed.data.content,
+    tags: parsed.data.tags,
     is_pinned: false,
     is_archived: false,
   };
@@ -87,6 +101,7 @@ export async function createNote(
   }
 
   revalidatePath('/notes');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true, data: data as Note };
 }
@@ -98,13 +113,18 @@ export async function togglePinNote(
   noteId: string,
   isPinned: boolean
 ): Promise<ActionResponse> {
+  const parsed = togglePinNoteSchema.safeParse({ noteId, isPinned });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('notes')
-    .update({ is_pinned: isPinned })
-    .eq('id', noteId)
+    .update({ is_pinned: parsed.data.isPinned })
+    .eq('id', parsed.data.noteId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -120,13 +140,18 @@ export async function togglePinNote(
  * Delete a note.
  */
 export async function deleteNote(noteId: string): Promise<ActionResponse> {
+  const parsed = deleteNoteSchema.safeParse({ noteId });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('notes')
     .delete()
-    .eq('id', noteId)
+    .eq('id', parsed.data.noteId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -135,6 +160,7 @@ export async function deleteNote(noteId: string): Promise<ActionResponse> {
   }
 
   revalidatePath('/notes');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true };
 }
@@ -152,14 +178,26 @@ export async function promoteNoteToProject(
     budget?: number;
   }
 ): Promise<ActionResponse<{ project_id: string; slug: string; tasks_created: number }>> {
+  const parsed = promoteNoteSchema.safeParse({
+    noteId,
+    title: overrides?.title,
+    description: overrides?.description,
+    priority: overrides?.priority,
+    budget: overrides?.budget,
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   // 1. Fetch note to extract title, content and markdown checklist items
   const { data: note, error: fetchErr } = await supabase
     .from('notes')
     .select('id, title, content, user_id')
-    .eq('id', noteId)
+    .eq('id', parsed.data.noteId)
     .eq('user_id', effectiveUserId)
     .single();
 
@@ -167,8 +205,8 @@ export async function promoteNoteToProject(
     return { success: false, error: 'Note not found.' };
   }
 
-  const projectTitle = (overrides?.title || note.title || 'Promoted Project').trim();
-  const projectDesc = overrides?.description ?? note.content;
+  const projectTitle = (parsed.data.title || note.title || 'Promoted Project').trim();
+  const projectDesc = parsed.data.description ?? note.content;
 
   // Generate URL-safe slug base
   const slugBase = projectTitle
@@ -189,13 +227,13 @@ export async function promoteNoteToProject(
   }
 
   // 3. Execute atomic PostgreSQL RPC procedure (ACID transaction)
-  const { data: rpcResult, error: rpcErr } = await (supabase.rpc as any)('promote_to_project', {
-    p_note_id: noteId,
+  const { data: rpcResult, error: rpcErr } = await supabase.rpc('promote_to_project', {
+    p_note_id: parsed.data.noteId,
     p_title: projectTitle,
     p_slug: slugBase,
     p_description: projectDesc,
-    p_priority: overrides?.priority ?? 2,
-    p_budget: overrides?.budget ?? 0.00,
+    p_priority: parsed.data.priority ?? 2,
+    p_budget: parsed.data.budget ?? 0.00,
     p_initial_tasks: parsedTasks,
   });
 
@@ -207,6 +245,7 @@ export async function promoteNoteToProject(
   revalidatePath('/notes');
   revalidatePath('/projects');
   revalidatePath('/tasks');
+  revalidatePath('/dashboard');
   revalidatePath('/');
 
   return {

@@ -127,7 +127,7 @@ export function FinancialChartsClient({ analytics }: FinancialChartsProps) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, 'Amount']}
+                    formatter={(value: unknown) => [`₹${Number(value).toLocaleString()}`, 'Amount']}
                     contentStyle={{
                       backgroundColor: '#0f172a',
                       borderColor: '#1e293b',
@@ -187,7 +187,7 @@ export function FinancialChartsClient({ analytics }: FinancialChartsProps) {
                   tickFormatter={(val) => `₹${val}`}
                 />
                 <Tooltip
-                  formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, 'Amount']}
+                  formatter={(value: unknown) => [`₹${Number(value).toLocaleString()}`, 'Amount']}
                   contentStyle={{
                     backgroundColor: '#0f172a',
                     borderColor: '#1e293b',

@@ -1,12 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Profile, UpdateProfile } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { updateProfileSchema, formatZodError } from '@/lib/validations';
 import { cache } from 'react';
 
 /**
@@ -14,8 +15,11 @@ import { cache } from 'react';
  * Deduplicates across RSC passes to eliminate redundant database calls.
  */
 export const getUserProfile = cache(async (): Promise<Profile> => {
+  const supabase = await createClient();
+  const effectiveUserId = await requireUserId(supabase);
+
   const defaultProfile: Profile = {
-    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    id: effectiveUserId,
     display_name: 'Student',
     theme_preference: 'stone',
     currency_symbol: '₹',
@@ -25,10 +29,6 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
   };
 
   try {
-    const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
-    defaultProfile.id = effectiveUserId;
-
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -57,19 +57,27 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
  * Update student profile preferences with strict validation.
  */
 export async function updateProfile(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Profile>> {
+  const parsed = updateProfileSchema.safeParse({
+    displayName: formData.get('displayName'),
+    currencySymbol: formData.get('currencySymbol'),
+    themePreference: formData.get('themePreference'),
+    monthlyAllowanceTarget: formData.get('monthlyAllowanceTarget'),
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
-  const displayName = (formData.get('displayName') as string)?.trim() || 'Student';
-  const currencySymbol = (formData.get('currencySymbol') as string)?.trim() || '₹';
-  const themePreference = ((formData.get('themePreference') as string) || 'default') as 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default';
-  const allowanceRaw = formData.get('monthlyAllowanceTarget') as string;
-
-  const parsedAllowance = parseFloat(allowanceRaw);
-  const monthlyAllowanceTarget = isNaN(parsedAllowance) || parsedAllowance < 0 ? 15000.00 : parsedAllowance;
+  const displayName = parsed.data.displayName;
+  const currencySymbol = parsed.data.currencySymbol;
+  const themePreference = parsed.data.themePreference;
+  const monthlyAllowanceTarget = parsed.data.monthlyAllowanceTarget;
 
   const payload: UpdateProfile = {
     display_name: displayName,
@@ -132,8 +140,10 @@ export async function updateProfile(
 }
 
 /**
- * Legacy sign out action - resets view state and redirects to root.
+ * Sign out action - terminates Supabase session and redirects to /login.
  */
 export async function signOutAction() {
-  redirect('/');
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect('/login');
 }

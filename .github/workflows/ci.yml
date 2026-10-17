@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'fix/*'
+  pull_request:
+    branches:
+      - main
+      - 'fix/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, Typecheck, Test, Build & E2E
+    runs-on: ubuntu-latest
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://eaawdzqfnwuokfjdyvpq.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.mock-ci-anon-key' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 1. ESLint Check (Zero 'any' allowed)
+        run: npm run lint
+
+      - name: 2. TypeScript Static Check
+        run: npx tsc --noEmit
+
+      - name: 3. Unit & Validation Test Suite (Vitest)
+        run: npm test
+
+      - name: 4. Next.js Production Build
+        run: npm run build
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: 5. Playwright E2E Route Guard & Smoke Tests
+        run: npx playwright test tests/e2e/auth-guards.spec.ts

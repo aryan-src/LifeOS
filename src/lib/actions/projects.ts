@@ -1,12 +1,18 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getEffectiveUserId } from '@/lib/auth/user';
+import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Project, InsertProject, ProjectStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate } from '@/lib/utils/date';
+import {
+  createProjectSchema,
+  updateProjectStatusSchema,
+  deleteProjectSchema,
+  formatZodError,
+} from '@/lib/validations';
 
 export interface ProjectWithMetrics extends Project {
   total_tasks: number;
@@ -22,7 +28,7 @@ export interface ProjectWithMetrics extends Project {
 export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await getEffectiveUserId(supabase);
+    const effectiveUserId = await requireUserId(supabase);
 
     // 1. Fetch projects
     const { data: projects, error: projErr } = await supabase
@@ -63,7 +69,7 @@ export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
 
       const projTransactions = transactions?.filter((tx) => tx.project_id === project.id) || [];
       const totalSpend = projTransactions.reduce((acc, tx) => {
-        const rawAmt = typeof tx.amount === 'number' ? tx.amount : parseFloat(tx.amount as any);
+        const rawAmt = typeof tx.amount === 'number' ? tx.amount : parseFloat(String(tx.amount));
         const amt = isNaN(rawAmt) ? 0 : rawAmt;
         if (tx.type === 'expense' || amt < 0) {
           return acc + Math.abs(amt);
@@ -92,13 +98,18 @@ export async function updateProjectStatus(
   projectId: string,
   status: ProjectStatus
 ): Promise<ActionResponse<{ id: string; status: ProjectStatus }>> {
+  const parsed = updateProjectStatusSchema.safeParse({ projectId, status });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { data, error } = await supabase
     .from('projects')
-    .update({ status })
-    .eq('id', projectId)
+    .update({ status: parsed.data.status })
+    .eq('id', parsed.data.projectId)
     .eq('user_id', effectiveUserId)
     .select('id, status')
     .single();
@@ -109,33 +120,36 @@ export async function updateProjectStatus(
   }
 
   revalidatePath('/projects');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true, data };
 }
 
 /**
- * Create a new project.
+ * Create a new project with Zod validation.
  */
 export async function createProject(
-  prevState: any,
+  prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Project>> {
-  const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const parsed = createProjectSchema.safeParse({
+    title: formData.get('title'),
+    description: formData.get('description'),
+    status: formData.get('status') || 'active',
+    priority: formData.get('priority') || '2',
+    budget: formData.get('budget') || '0',
+    targetDate: formData.get('targetDate') || null,
+  });
 
-  const title = (formData.get('title') as string)?.trim();
-  const description = (formData.get('description') as string)?.trim() || null;
-  const status = ((formData.get('status') as string) || 'active') as ProjectStatus;
-  const priority = parseInt((formData.get('priority') as string) || '2', 10);
-  const budget = parseFloat((formData.get('budget') as string) || '0');
-  const targetDateRaw = (formData.get('targetDate') as string)?.trim();
-
-  if (!title) {
-    return { success: false, error: 'Project title is required.' };
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
   }
 
+  const supabase = await createClient();
+  const effectiveUserId = await requireUserId(supabase);
+
   // Base slug from title
-  const slugBase = title
+  const slugBase = parsed.data.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '') || 'project';
@@ -156,21 +170,16 @@ export async function createProject(
     counter++;
   }
 
-  let targetDate: string | null = null;
-  if (targetDateRaw && /^\d{4}-\d{2}-\d{2}$/.test(targetDateRaw)) {
-    targetDate = targetDateRaw;
-  }
-
   const newProject: InsertProject = {
     user_id: effectiveUserId,
-    title,
+    title: parsed.data.title,
     slug: finalSlug,
-    description,
-    status,
-    priority,
-    budget: isNaN(budget) ? 0 : budget,
+    description: parsed.data.description || null,
+    status: parsed.data.status,
+    priority: parsed.data.priority,
+    budget: parsed.data.budget,
     start_date: getTodayDate(),
-    target_date: targetDate,
+    target_date: parsed.data.targetDate || null,
   };
 
   const { data, error } = await supabase
@@ -185,6 +194,9 @@ export async function createProject(
   }
 
   revalidatePath('/projects');
+  revalidatePath('/tasks');
+  revalidatePath('/finances');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true, data: data as Project };
 }
@@ -193,13 +205,18 @@ export async function createProject(
  * Delete a project. Child tasks and transactions set project_id to NULL automatically.
  */
 export async function deleteProject(projectId: string): Promise<ActionResponse> {
+  const parsed = deleteProjectSchema.safeParse({ projectId });
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
   const supabase = await createClient();
-  const effectiveUserId = await getEffectiveUserId(supabase);
+  const effectiveUserId = await requireUserId(supabase);
 
   const { error } = await supabase
     .from('projects')
     .delete()
-    .eq('id', projectId)
+    .eq('id', parsed.data.projectId)
     .eq('user_id', effectiveUserId);
 
   if (error) {
@@ -210,6 +227,7 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
   revalidatePath('/projects');
   revalidatePath('/tasks');
   revalidatePath('/finances');
+  revalidatePath('/dashboard');
   revalidatePath('/');
   return { success: true };
 }

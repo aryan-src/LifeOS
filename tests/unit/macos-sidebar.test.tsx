@@ -21,7 +21,7 @@ describe('MacOSSidebar Config & Nav Items', () => {
 
     const routes = DEFAULT_NAV_ITEMS.map((item) => item.href);
     expect(routes).toEqual([
-      '/',
+      '/dashboard',
       '/projects',
       '/tasks',
       '/habits',

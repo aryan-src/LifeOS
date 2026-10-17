@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile } from '@/lib/actions/profile';
+import { saveTheme } from '@/lib/theme/use-theme';
 import {
   User,
   Coins,
@@ -55,23 +56,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
 
   const handleThemeChange = (themeId: string) => {
     setThemePreference(themeId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('lifeos_theme', themeId);
-      if (themeId === 'crimson-dark' || themeId === 'crimson-cream') {
-        document.documentElement.setAttribute('data-theme', 'crimson-dark');
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else if (themeId === 'crimson-light') {
-        document.documentElement.setAttribute('data-theme', 'crimson-light');
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      } else {
-        // default (existing theme)
-        document.documentElement.removeAttribute('data-theme');
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    }
+    saveTheme(themeId);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

@@ -160,4 +160,83 @@ describe('parseQuickCapture (TDD Engine)', () => {
       expect(res.payload.dueDate).toBe('2026-10-20');
     });
   });
+
+  describe('Edge Cases & Defensive Tokenizer', () => {
+    it('handles malformed negative currency like "$-50 dinner" and "-$50 lunch"', () => {
+      const res1 = parseQuickCapture('$-50 dinner');
+      expect(res1.target).toBe('transaction');
+      expect(res1.payload.amount).toBe(-50);
+      expect(res1.payload.type).toBe('expense');
+      expect(res1.payload.description).toBe('dinner');
+
+      const res2 = parseQuickCapture('-$50 lunch');
+      expect(res2.target).toBe('transaction');
+      expect(res2.payload.amount).toBe(-50);
+      expect(res2.payload.type).toBe('expense');
+      expect(res2.payload.description).toBe('lunch');
+    });
+
+    it('handles explicit positive currency like "$+100 dividend" and "+$250"', () => {
+      const res1 = parseQuickCapture('$+100 dividend');
+      expect(res1.target).toBe('transaction');
+      expect(res1.payload.amount).toBe(100);
+      expect(res1.payload.type).toBe('income');
+      expect(res1.payload.description).toBe('dividend');
+
+      const res2 = parseQuickCapture('+$250 refund');
+      expect(res2.target).toBe('transaction');
+      expect(res2.payload.amount).toBe(250);
+      expect(res2.payload.type).toBe('income');
+    });
+
+    it('handles multiple hashtags and selects first non-assignment slug as project', () => {
+      const res = parseQuickCapture('todo: Write spec #backend #urgent #v2');
+      expect(res.target).toBe('task');
+      expect(res.projectSlug).toBe('backend');
+      expect(res.payload.title).toBe('Write spec');
+    });
+
+    it('handles multiple date tags gracefully by picking the first and stripping all', () => {
+      const res = parseQuickCapture('todo: Review sprint backlog @today @tomorrow');
+      expect(res.target).toBe('task');
+      expect(res.payload.dueDate).toBe(getTodayDate());
+      expect(res.payload.title).toBe('Review sprint backlog');
+    });
+
+    it('handles missing titles on task prefixes gracefully', () => {
+      const res1 = parseQuickCapture('todo:');
+      expect(res1.target).toBe('task');
+      expect(res1.payload.title).toBe('Untitled Task');
+
+      const res2 = parseQuickCapture('[ ]    ');
+      expect(res2.target).toBe('task');
+      expect(res2.payload.title).toBe('Untitled Task');
+    });
+
+    it('handles special characters, unicode emojis, and HTML tags without crashing', () => {
+      const input = 'todo: 🚀 Launch v2.0 <script>alert(1)</script> & enjoy! #prod';
+      const res = parseQuickCapture(input);
+      expect(res.target).toBe('task');
+      expect(res.payload.title).toBe('🚀 Launch v2.0 <script>alert(1)</script> & enjoy!');
+      expect(res.projectSlug).toBe('prod');
+    });
+
+    it('handles oversized strings (5000+ chars) gracefully without throwing', () => {
+      const giantContent = 'A'.repeat(5500);
+      const res = parseQuickCapture(giantContent);
+      expect(res.target).toBe('note');
+      expect(res.payload.content?.length).toBe(5500);
+      expect(res.payload.title?.endsWith('...')).toBe(true);
+    });
+
+    it('handles empty input or pure whitespace', () => {
+      const resEmpty = parseQuickCapture('');
+      expect(resEmpty.target).toBe('note');
+      expect(resEmpty.summaryPill).toBe('Type to capture anything...');
+
+      const resWhitespace = parseQuickCapture('     ');
+      expect(resWhitespace.target).toBe('note');
+      expect(resWhitespace.summaryPill).toBe('Type to capture anything...');
+    });
+  });
 });

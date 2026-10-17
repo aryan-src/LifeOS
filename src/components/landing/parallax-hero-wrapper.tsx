@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'motion/react';
 import Link from 'next/link';
 import { DesktopMockup } from './desktop-mockup';
 import { useUIStore } from '@/lib/store/use-ui-store';
@@ -64,53 +64,52 @@ export function ParallaxHeroWrapper() {
         {/* Ambient Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 dark:bg-stone-900/90 border border-stone-200/70 dark:border-stone-800 text-[12px] font-mono text-stone-600 dark:text-stone-400 shadow-xs">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2f5c3a] dark:bg-emerald-400 animate-pulse" />
-          <span>Local-first architecture for cognitive calm</span>
+          <span>Postgres architecture for cognitive calm</span>
           <span className="text-stone-300 dark:text-stone-700">•</span>
-          <span className="text-[#2f5c3a] dark:text-emerald-400 font-medium">Sub-15ms Latency</span>
+          <span className="text-[#2f5c3a] dark:text-emerald-400 font-medium">Row-Level Security</span>
         </div>
 
         {/* Editorial Headline */}
         <h1 className="text-4xl sm:text-6xl md:text-[68px] md:leading-[1.12] tracking-[-0.035em] font-normal text-stone-900 dark:text-stone-100 max-w-3xl mx-auto">
-          A quiet operating system for students, builders, and{' '}
+          A quiet personal dashboard for students, builders, and{' '}
           <span className="font-serif italic font-normal text-[#2f5c3a] dark:text-emerald-400">thinkers</span>.
         </h1>
 
         {/* Quiet Subtext */}
         <p className="text-base sm:text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto font-normal leading-relaxed">
-          Discard bloated SaaS suites, fragmented notes, and anxious spreadsheets. LifeOS brings tactile physical clarity to your everyday computing with an offline-first personal command center.
+          A quiet personal dashboard for students and builders: tasks, projects, assignments, habits, and an allowance-aware ledger.
         </p>
 
         {/* Action Triggers */}
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <Link
-            href="/?view=dashboard"
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                document.cookie = 'lifeos_view=dashboard; path=/; max-age=31536000';
-                localStorage.setItem('lifeos_view', 'dashboard');
-              }
-            }}
+            href="/dashboard"
             className="px-5 py-2.5 rounded-lg bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 text-[14px] font-medium hover:opacity-90 active:scale-[0.99] transition-all shadow-xs flex items-center gap-2"
           >
-            <span>Launch Your Vault</span>
+            <span>Launch Workspace</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => openQuickCapture()}
-            className="px-4 py-2.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 text-stone-800 dark:text-stone-200 text-[14px] font-medium hover:bg-stone-50 dark:hover:bg-stone-800/60 transition-colors shadow-xs flex items-center gap-2"
+          <a
+            href="#preview"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('preview');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="px-4 py-2.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 text-stone-800 dark:text-stone-200 text-[14px] font-medium hover:bg-stone-50 dark:hover:bg-stone-800/60 transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px] text-stone-400">play_circle</span>
-            <span>2-Minute Walkthrough</span>
-            <kbd className="text-[11px] font-mono text-stone-400 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded ml-1 border border-stone-200/60 dark:border-stone-700/60">⌘K</kbd>
-          </button>
+            <span>Explore Interactive Preview</span>
+          </a>
         </div>
 
         {/* Live Metrics Micro-Ticker */}
         <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-[12px] font-mono text-stone-400 dark:text-stone-500">
           <div className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">database</span>
-            <span>Zero cloud lock-in</span>
+            <span>Next.js &amp; Postgres</span>
           </div>
           <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
           <div className="flex items-center gap-1.5">
@@ -119,8 +118,8 @@ export function ParallaxHeroWrapper() {
           </div>
           <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">description</span>
-            <span>Raw Markdown &amp; Obsidian</span>
+            <span className="material-symbols-outlined text-[15px] text-[#2f5c3a] dark:text-emerald-400">shield</span>
+            <span>Row-Level Security</span>
           </div>
         </div>
       </motion.div>
@@ -152,7 +151,7 @@ export function ParallaxHeroWrapper() {
           </div>
         </motion.div>
 
-        {/* Right Background Card: Storage Telemetry */}
+        {/* Right Background Card: Database Security */}
         <motion.div
           style={{ y: bgRightY }}
           animate={{
@@ -163,23 +162,24 @@ export function ParallaxHeroWrapper() {
           className="hidden lg:flex flex-col gap-2 absolute top-20 -right-6 w-64 p-4 rounded-xl bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-stone-200/70 dark:border-stone-800 shadow-sm text-left z-0 pointer-events-none"
         >
           <div className="flex items-center justify-between text-[11px] font-mono text-stone-400 dark:text-stone-500">
-            <span>STORAGE TELEMETRY</span>
+            <span>DATABASE SECURITY</span>
             <span className="w-2 h-2 rounded-full bg-[#2f5c3a] dark:bg-emerald-400" />
           </div>
           <div className="font-mono text-[13px] text-stone-900 dark:text-stone-100 font-medium">
-            ~/.lifeos/vault/atomic/
+            Postgres RLS Enforced
           </div>
           <p className="text-[12px] text-stone-600 dark:text-stone-400 font-normal leading-relaxed">
-            SQLite indexing 4,281 local notes in 4.2ms. Bi-directional sync with Obsidian enabled.
+            Your data is private to your account. Export to Markdown, CSV, or JSON anytime — zero cloud lock-in.
           </p>
           <div className="flex items-center justify-between pt-1 border-t border-stone-200/60 dark:border-stone-800 text-[11px] font-mono text-[#2f5c3a] dark:text-emerald-400">
-            <span>100% Offline Capable</span>
-            <span>0 B Sent to Cloud</span>
+            <span>Owner Full Access</span>
+            <span>Multi-Tenant Isolated</span>
           </div>
         </motion.div>
 
         {/* LAYER 2: MID-GROUND MAIN FOCAL UI (The Desktop Mockup Window) */}
         <motion.div
+          id="preview"
           style={{
             y: mockupY,
             scale: mockupScale,
@@ -189,7 +189,7 @@ export function ParallaxHeroWrapper() {
             x: mousePos.x * 0.18,
           }}
           transition={{ type: 'spring', damping: 30, stiffness: 100 }}
-          className="relative z-10 w-full will-change-transform"
+          className="relative z-10 w-full will-change-transform scroll-mt-24"
         >
           <DesktopMockup />
         </motion.div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion, type MotionStyle, type Transition } from 'framer-motion';
+import { motion, type MotionStyle, type Transition } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 export interface BorderBeamProps {

@@ -2,14 +2,43 @@ import { cache } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
 
-export const SEED_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+export class UnauthorizedError extends Error {
+  constructor(message = 'Unauthorized: user is not authenticated') {
+    super(message);
+    this.name = 'UnauthorizedError';
+  }
+}
 
 /**
- * Public Mode: Returns the default seed user UUID for all database queries and mutations.
- * Bypasses Supabase auth checks entirely without network latency.
+ * Strict User Resolution:
+ * Retrieves the currently authenticated user ID via supabase.auth.getUser().
+ * Throws an UnauthorizedError if no authenticated session exists.
  */
-export const getEffectiveUserId = cache(
-  async (_supabase?: SupabaseClient<Database>): Promise<string> => {
-    return SEED_USER_ID;
+export const requireUserId = cache(
+  async (supabase: SupabaseClient<Database>): Promise<string> => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user?.id) {
+      throw new UnauthorizedError(error?.message || 'Unauthorized');
+    }
+
+    return user.id;
+  }
+);
+
+/**
+ * Optional User Resolution:
+ * Retrieves the authenticated user ID if present, or null if unauthenticated.
+ */
+export const getOptionalUserId = cache(
+  async (supabase: SupabaseClient<Database>): Promise<string | null> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    return user?.id ?? null;
   }
 );

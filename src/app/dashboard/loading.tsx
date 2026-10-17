@@ -11,18 +11,15 @@ export default function DashboardLoading() {
     <div className="flex flex-col w-full animate-pulse">
       <div className="px-4 sm:px-6 md:px-10 py-8 flex flex-col gap-8 max-w-[1360px] mx-auto w-full">
         {/* Header Skeleton */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-outline-variant/20 dark:border-zinc-800/60">
-          <div className="flex flex-col gap-2 min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-36 bg-surface-container-high dark:bg-zinc-800 rounded" />
-              <div className="h-4 w-24 bg-surface-container-low dark:bg-zinc-800/60 rounded" />
-            </div>
-            <div className="h-8 w-64 bg-surface-container-high dark:bg-zinc-800 rounded-lg" />
-            <div className="h-4 w-96 max-w-full bg-surface-container-low dark:bg-zinc-800/60 rounded" />
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-stone-200/80 dark:border-stone-800/80">
+          <div className="flex flex-col min-w-0">
+            <div className="h-3.5 w-24 bg-stone-200 dark:bg-stone-800 rounded mb-1.5" />
+            <div className="h-8 w-56 sm:w-64 bg-stone-200 dark:bg-stone-800 rounded-lg" />
+            <div className="h-4 w-80 max-w-full bg-stone-200/70 dark:bg-stone-800/60 rounded mt-1" />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-28 bg-surface-container-low dark:bg-zinc-800/60 rounded-lg" />
-            <div className="h-9 w-28 bg-surface-container-high dark:bg-zinc-800 rounded-lg" />
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+            <div className="h-10 w-32 bg-stone-200/80 dark:bg-stone-800/60 rounded-xl" />
+            <div className="h-10 w-28 bg-stone-200 dark:bg-stone-800 rounded-xl" />
           </div>
         </header>
 

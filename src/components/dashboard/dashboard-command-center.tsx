@@ -27,6 +27,7 @@ import { getUserProfile } from '@/lib/actions/profile';
 import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
 import { GlowCard } from '@/components/ui/spotlight-card';
 import Link from 'next/link';
+import { SlidersHorizontal, Plus } from 'lucide-react';
 
 export async function DashboardCommandCenter() {
   const profile = await getUserProfile();
@@ -34,50 +35,37 @@ export async function DashboardCommandCenter() {
   return (
     <div className="flex flex-col w-full">
       <div className="px-4 sm:px-6 md:px-10 py-8 flex flex-col gap-8 max-w-[1360px] mx-auto w-full">
-        {/* Header Section: Understated Notion Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-outline-variant/20 dark:border-zinc-800/60">
-          <div className="flex flex-col gap-1.5 min-w-0">
-            <div className="flex items-center gap-2 text-outline dark:text-zinc-500 flex-wrap">
-              <span className="material-symbols-outlined text-[18px] text-on-surface-variant dark:text-zinc-400 shrink-0">
-                compass_calibration
-              </span>
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-500">
-                LifeOS Command Engine
-              </span>
-              <span className="text-outline-variant dark:text-zinc-700">•</span>
-              <span className="font-label-sm text-label-sm text-secondary dark:text-emerald-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary dark:bg-emerald-400 inline-block"></span>
-                <span>Telemetry Sync Active</span>
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 tracking-tight font-medium">
+        {/* Header Section: Calm Editorial Header */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-stone-200/80 dark:border-stone-800/80">
+          <div className="flex flex-col min-w-0">
+            <span
+              suppressHydrationWarning
+              className="text-xs font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1.5"
+            >
+              {formatCalendarDate(getTodayDate(), 'header')}
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
               Welcome, {profile?.display_name || 'Student'}
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant dark:text-zinc-400 max-w-2xl leading-relaxed">
+            <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
               Academics, tasks, finances, and notes—in one calm workspace.
             </p>
           </div>
-          <div className="flex items-center gap-3 self-start md:self-auto shrink-0 flex-wrap">
-            <div className="hidden sm:flex flex-col items-end mr-1 text-right">
-              <span suppressHydrationWarning className="font-label-sm text-label-sm text-outline dark:text-zinc-500">
-                {formatCalendarDate(getTodayDate(), 'header')}
-              </span>
-              <span className="font-label-md text-label-md text-on-surface-variant dark:text-zinc-400 font-medium">IST Active</span>
-            </div>
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
             <Link
               href="/projects"
               prefetch={true}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-outline-variant/30 dark:border-zinc-800/60 bg-surface-container-lowest dark:bg-zinc-900/60 hover:bg-surface-container dark:hover:bg-zinc-800/60 text-on-surface dark:text-zinc-200 font-label-md text-label-md transition-colors shadow-xs"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl text-sm font-medium bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 border border-stone-200/90 dark:border-stone-800 shadow-2xs hover:bg-stone-50 dark:hover:bg-stone-800/70 hover:border-stone-300 transition-all duration-150 font-sans tracking-tight"
             >
-              <span className="material-symbols-outlined text-[16px] text-outline dark:text-zinc-500">tune</span>
+              <SlidersHorizontal className="w-4 h-4 text-stone-500 dark:text-stone-400" />
               <span>Workspaces</span>
             </Link>
             <Link
               href="/tasks"
               prefetch={true}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary dark:bg-zinc-100 text-on-primary dark:text-zinc-900 hover:opacity-90 dark:hover:bg-zinc-200 font-label-md text-label-md transition-opacity shadow-xs"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 shadow-xs hover:bg-stone-800 dark:hover:bg-white active:scale-[0.99] transition-all duration-150 font-sans tracking-tight"
             >
-              <span className="material-symbols-outlined text-[16px] text-on-primary dark:text-zinc-900">add</span>
+              <Plus className="w-4 h-4" />
               <span>Quick Add</span>
             </Link>
           </div>

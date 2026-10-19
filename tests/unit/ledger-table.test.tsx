@@ -76,7 +76,7 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
     expect(html).toContain('Actions');
 
     // Content & Decimal Precision
-    console.log('HTML CONTENT:', html); expect(html).toContain('Noodles');
+    expect(html).toContain('Noodles');
     expect(html).toContain('Junk Food');
     expect(html).toContain('-₹167.00');
 

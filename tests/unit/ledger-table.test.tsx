@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { LedgerTable, getCategoryBadge, getPaginationPages } from '@/components/finances/ledger-table';
-import type { TransactionWithRelations } from '@/lib/actions/finances';
+import { FinancesClientView } from '@/components/finances/finances-client-view';
+import type { TransactionWithRelations, FinancialAnalytics } from '@/lib/actions/finances';
 
 describe('LifeOSLedgerTable Component & Helpers', () => {
   const mockTransactions: TransactionWithRelations[] = [
@@ -88,11 +89,12 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
     expect(html).toContain('tabular-nums');
   });
 
-  it('renders the 4-card KPI strip with metrics', () => {
+  it('renders the 4-card KPI strip with metrics when showKpiStrip is true', () => {
     const html = renderToString(
       <LedgerTable
         transactions={mockTransactions}
         onDelete={vi.fn().mockResolvedValue({ success: true })}
+        showKpiStrip={true}
       />
     );
 
@@ -104,6 +106,19 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
     // Sum of 167 + 40 = 207
     expect(html).toContain('-₹207.00');
     expect(html).toContain('Noodles');
+  });
+
+  it('hides the KPI strip when showKpiStrip is false', () => {
+    const html = renderToString(
+      <LedgerTable
+        transactions={mockTransactions}
+        onDelete={vi.fn().mockResolvedValue({ success: true })}
+        showKpiStrip={false}
+      />
+    );
+
+    expect(html).not.toContain('data-purpose="quick-metrics"');
+    expect(html).not.toContain('Total Spent');
   });
 
   it('renders the search input and keyboard shortcut hint', () => {
@@ -156,6 +171,50 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
 
     it('returns double ellipsis when in the middle of a large list', () => {
       expect(getPaginationPages(5, 10)).toEqual([1, 'ellipsis-start', 4, 5, 6, 'ellipsis-end', 10]);
+    });
+  });
+
+  describe('Finances Toolbar & Chart Toggle Controls', () => {
+    const mockAnalytics: FinancialAnalytics = {
+      dailySafeToSpend: 150,
+      monthlyAllowance: 5000,
+      totalSpentThisMonth: 207,
+      spentToday: 207,
+      remainingMonthlyBudget: 4793,
+      categoryBreakdown: [
+        { name: 'Junk Food', amount: 167, percentage: 80.7, color: '#f97316' },
+        { name: 'Juice', amount: 40, percentage: 19.3, color: '#eab308' },
+      ],
+      currentDate: '2026-10-19',
+      currencySymbol: '₹',
+      weeklyTrend: [],
+      projectExpenses: [],
+    };
+
+    it('renders the cleaned header without Next.js Code or currency toggle', () => {
+      const html = renderToString(
+        <FinancesClientView
+          initialTransactions={mockTransactions}
+          analytics={mockAnalytics}
+          categories={[]}
+          projects={[]}
+        />
+      );
+
+      // Verify removed header controls
+      expect(html).not.toContain('Next.js Code');
+      expect(html).not.toContain('INR (₹)');
+      expect(html).not.toContain('INR');
+
+      // Verify retained elements
+      expect(html).toContain('LifeOS');
+      expect(html).toContain('Personal Vault');
+      expect(html).toContain('Ledger');
+      expect(html).toContain('Hide Charts');
+
+      // Verify main ledger table is rendered unconditionally
+      expect(html).toContain('table-search-input');
+      expect(html).toContain('Noodles');
     });
   });
 });

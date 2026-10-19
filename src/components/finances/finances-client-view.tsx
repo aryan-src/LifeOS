@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AllowanceHeroCard } from './allowance-hero-card';
 import { LedgerTable } from './ledger-table';
 import { StudentExpenseFeed } from './student-expense-feed';
@@ -17,10 +18,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Home,
-  Code2,
-  Copy,
-  Check,
-  X,
   BarChart2,
   Table as TableIcon,
 } from 'lucide-react';
@@ -59,96 +56,6 @@ function getWeekRange(dateStr: string): { startOfWeek: string; endOfWeek: string
   };
 }
 
-const REACT_CODE_SNIPPET = `'use client';
-
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Trash2 } from 'lucide-react';
-
-interface Expense {
-  id: string;
-  date: string;
-  description: string;
-  category: string;
-  project?: string;
-  amount: number;
-}
-
-const CATEGORY_STYLES: Record<string, string> = {
-  'Junk Food': 'bg-rose-50 text-rose-700 border-rose-200/60',
-  'Juice': 'bg-amber-50 text-amber-700 border-amber-200/60',
-  'Vegetable': 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
-  'Grocery': 'bg-teal-50 text-teal-700 border-teal-200/60',
-  'Commute': 'bg-sky-50 text-sky-700 border-sky-200/60',
-};
-
-export default function LifeOSLedgerTable() {
-  const [items, setItems] = useState<Expense[]>([]);
-
-  const handleDelete = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  return (
-    <div className="rounded-2xl border border-stone-200/80 bg-white/90 backdrop-blur-sm shadow-sm overflow-hidden">
-      <table className="w-full text-left">
-        <thead className="bg-stone-50/70 border-b border-stone-200/70 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-          <tr>
-            <th className="py-3 px-6">Date</th>
-            <th className="py-3 px-6">Description</th>
-            <th className="py-3 px-6">Category</th>
-            <th className="py-3 px-6">Project</th>
-            <th className="py-3 px-6 text-right">Amount</th>
-            <th className="py-3 px-6 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-stone-100">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {items.map((row, index) => (
-              <motion.tr
-                key={row.id}
-                layout
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{
-                  opacity: 0,
-                  y: -10,
-                  filter: 'blur(4px)',
-                  transition: { duration: 0.2 },
-                }}
-                transition={{
-                  type: 'spring',
-                  bounce: 0,
-                  duration: 0.4,
-                  delay: index * 0.03,
-                }}
-                className="group hover:bg-stone-50/80 transition-colors"
-              >
-                <td className="py-3 px-6 font-mono text-xs text-stone-500">{row.date}</td>
-                <td className="py-3 px-6 font-medium text-stone-800">{row.description}</td>
-                <td className="py-3 px-6">
-                  <span className={\`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium border \${CATEGORY_STYLES[row.category] || 'bg-stone-50 text-stone-700'}\`}>
-                    {row.category}
-                  </span>
-                </td>
-                <td className="py-3 px-6 text-stone-300">{row.project || '—'}</td>
-                <td className="py-3 px-6 text-right font-mono text-rose-600 font-medium tabular-nums">
-                  -₹{row.amount.toFixed(2)}
-                </td>
-                <td className="py-3 px-6 text-right">
-                  <button onClick={() => handleDelete(row.id)} className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-rose-600">
-                    <Trash2 size={14} />
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
-          </AnimatePresence>
-        </tbody>
-      </table>
-    </div>
-  );
-}`;
-
 export function FinancesClientView({
   initialTransactions,
   analytics,
@@ -157,9 +64,7 @@ export function FinancesClientView({
 }: FinancesClientViewProps) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
-  const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
-  const [hasCopiedCode, setHasCopiedCode] = useState(false);
-  const [showAnalyticsOverview, setShowAnalyticsOverview] = useState(false);
+  const [isChartsVisible, setIsChartsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<TimeFilterTab>('monthly');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -236,16 +141,6 @@ export function FinancesClientView({
   const handleError = (errorMsg: string) => {
     setTransactions(initialTransactions);
     showToast(errorMsg, 'error');
-  };
-
-  const copyReactCode = async () => {
-    try {
-      await navigator.clipboard.writeText(REACT_CODE_SNIPPET);
-      setHasCopiedCode(true);
-      setTimeout(() => setHasCopiedCode(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy code:', err);
-    }
   };
 
   // Base monthly budget (fallback to 5000 if not configured)
@@ -379,36 +274,21 @@ export function FinancesClientView({
           </span>
         </div>
 
-        {/* Quick Utilities: Code Switcher, Trends & Currency Indicator */}
+        {/* Quick Utilities: Functional Chart Toggle */}
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            id="toggle-code-view-btn"
-            data-purpose="code-modal-trigger"
-            onClick={() => setIsCodeDrawerOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800 border border-stone-200/80 dark:border-zinc-800 rounded-lg shadow-2xs transition-all active:scale-95 cursor-pointer"
-          >
-            <Code2 className="w-3.5 h-3.5 text-stone-500 dark:text-zinc-400" />
-            <span>Next.js Code</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowAnalyticsOverview((prev) => !prev)}
+            id="toggle-charts-btn"
+            onClick={() => setIsChartsVisible((prev) => !prev)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-lg transition-all cursor-pointer ${
-              showAnalyticsOverview
+              isChartsVisible
                 ? 'bg-stone-900 text-white border-stone-900 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs'
                 : 'bg-white dark:bg-zinc-900 text-stone-600 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800 border-stone-200/80 dark:border-zinc-800 shadow-2xs'
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5" />
-            <span>{showAnalyticsOverview ? 'Hide Charts' : 'Analytics & Charts'}</span>
+            <span>{isChartsVisible ? 'Hide Charts' : 'Show Charts'}</span>
           </button>
-
-          <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-stone-200/80 dark:border-zinc-800 text-xs text-stone-400 dark:text-zinc-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600" />
-            <span>INR ({analytics.currencySymbol || '₹'})</span>
-          </div>
         </div>
       </header>
 
@@ -428,24 +308,32 @@ export function FinancesClientView({
         </div>
       )}
 
-      {/* Optional Collapsible Analytics Hero Card (Charts & Safe Daily Limit) */}
-      {showAnalyticsOverview && (
-        <div className="transition-all animate-in fade-in slide-in-from-top-2 duration-200">
-          <AllowanceHeroCard
-            analytics={analytics}
-            onEditAllowance={handleEditAllowance}
-            activeTab={activeTab}
-            filteredSpent={filteredSpent}
-            filteredRemaining={filteredRemaining}
-            filteredLimit={filteredLimit}
-            filteredCategoryBreakdown={filteredCategoryBreakdown}
-            filteredTransactionsCount={filteredTransactions.length}
-            recordedCyclesCount={recordedCyclesCount}
-          />
-        </div>
-      )}
+      {/* Collapsible Analytics Hero Card (Charts & Safe Daily Limit) */}
+      <AnimatePresence initial={false}>
+        {isChartsVisible && (
+          <motion.div
+            key="finances-chart-section"
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <AllowanceHeroCard
+              analytics={analytics}
+              onEditAllowance={handleEditAllowance}
+              activeTab={activeTab}
+              filteredSpent={filteredSpent}
+              filteredRemaining={filteredRemaining}
+              filteredLimit={filteredLimit}
+              filteredCategoryBreakdown={filteredCategoryBreakdown}
+              filteredTransactionsCount={filteredTransactions.length}
+              recordedCyclesCount={recordedCyclesCount}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Main Ledger Table or Grid Feed */}
+      {/* Main Ledger Table or Grid Feed - Rendered unconditionally so it is fully visible by default */}
       {viewMode === 'table' ? (
         <LedgerTable
           transactions={filteredTransactions}
@@ -461,7 +349,7 @@ export function FinancesClientView({
           onViewModeChange={handleViewModeChange}
           onRecordExpense={() => setIsRecordModalOpen(true)}
           analytics={analytics}
-          showKpiStrip={true}
+          showKpiStrip={isChartsVisible}
         />
       ) : (
         <div className="flex flex-col gap-6">
@@ -512,65 +400,6 @@ export function FinancesClientView({
         onOptimisticUpdate={handleOptimisticUpdate}
         onError={handleError}
       />
-
-      {/* Next.js Code Drawer Modal */}
-      {isCodeDrawerOpen && (
-        <div
-          id="code-preview-modal"
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/30 backdrop-blur-xs animate-in fade-in duration-200"
-        >
-          <div className="w-full max-w-3xl bg-[#1e1e1e] border border-stone-800 rounded-2xl shadow-2xl p-6 text-stone-200 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
-                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                <span className="ml-2 text-xs font-mono text-stone-400">
-                  LifeOSLedgerTable.tsx
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCodeDrawerOpen(false)}
-                className="p-1 rounded-md text-stone-400 hover:text-white hover:bg-stone-800 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="mt-4 flex-1 overflow-y-auto rounded-xl bg-[#141414] p-4 border border-stone-800/80 font-mono text-xs text-stone-300 leading-relaxed select-all">
-              <pre className="whitespace-pre">
-                <code>{REACT_CODE_SNIPPET}</code>
-              </pre>
-            </div>
-
-            <div className="mt-4 flex justify-between items-center text-xs">
-              <span className="text-stone-500">
-                Includes fluid FLIP transitions & Framer Motion physics
-              </span>
-              <button
-                type="button"
-                onClick={copyReactCode}
-                className="px-4 py-1.5 rounded-lg bg-stone-100 text-stone-900 hover:bg-white font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                {hasCopiedCode ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Component</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Floating Toast Notification */}
       {toast && (

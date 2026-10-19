@@ -444,80 +444,90 @@ export function LedgerTable({
       {/* END: PageTitleAndActions */}
 
       {/* BEGIN: KPI Strip (Subtle Notion Metadata Style) */}
-      {showKpiStrip && (
-        <div
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-          data-purpose="quick-metrics"
-        >
-          {/* Card 1: Total Spent */}
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
-              Total Spent
-            </span>
-            <div className="mt-1 flex items-baseline gap-1.5">
-              <span
-                id="kpi-total"
-                className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums"
-              >
-                {`-${currencySymbol}${totalSpent.toFixed(2)}`}
-              </span>
-              <span className="text-[11px] text-rose-500 font-medium">
-                {timeframePillLabel}
-              </span>
-            </div>
-          </div>
-
-          {/* Card 2: Daily Average */}
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
-              Daily Average
-            </span>
-            <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums">
-                {`${currencySymbol}${dailyAverage.toFixed(2)}`}
-              </span>
-              <span className="text-[11px] text-stone-400 dark:text-zinc-500">
-                / day
-              </span>
-            </div>
-          </div>
-
-          {/* Card 3: Top Outlay Category */}
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
-              Top Outlay Category
-            </span>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span
-                className={`w-2 h-2 rounded-full shrink-0 ${topCategoryBadge.dot}`}
-              />
-              <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 truncate">
-                {topCategoryData.name}{' '}
-                <span className="font-mono text-xs text-stone-500 dark:text-zinc-400">
-                  ({currencySymbol}
-                  {topCategoryData.amount.toFixed(0)})
+      <AnimatePresence initial={false}>
+        {showKpiStrip && (
+          <motion.div
+            key="ledger-kpi-strip"
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <div
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+              data-purpose="quick-metrics"
+            >
+              {/* Card 1: Total Spent */}
+              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+                  Total Spent
                 </span>
-              </span>
-            </div>
-          </div>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span
+                    id="kpi-total"
+                    className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums"
+                  >
+                    {`-${currencySymbol}${totalSpent.toFixed(2)}`}
+                  </span>
+                  <span className="text-[11px] text-rose-500 font-medium">
+                    {timeframePillLabel}
+                  </span>
+                </div>
+              </div>
 
-          {/* Card 4: Monthly Budget Cap */}
-          <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
-              Monthly Budget Cap
-            </span>
-            <div className="mt-1 flex items-baseline justify-between">
-              <span className="text-sm font-semibold font-mono text-stone-800 dark:text-zinc-200 tabular-nums">
-                {budgetUsagePercent.toFixed(1)}%
-              </span>
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium font-mono">
-                {currencySymbol}
-                {monthlyCap.toLocaleString()} max
-              </span>
+              {/* Card 2: Daily Average */}
+              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+                  Daily Average
+                </span>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums">
+                    {`${currencySymbol}${dailyAverage.toFixed(2)}`}
+                  </span>
+                  <span className="text-[11px] text-stone-400 dark:text-zinc-500">
+                    / day
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 3: Top Outlay Category */}
+              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+                  Top Outlay Category
+                </span>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${topCategoryBadge.dot}`}
+                  />
+                  <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 truncate">
+                    {topCategoryData.name}{' '}
+                    <span className="font-mono text-xs text-stone-500 dark:text-zinc-400">
+                      ({currencySymbol}
+                      {topCategoryData.amount.toFixed(0)})
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 4: Monthly Budget Cap */}
+              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+                  Monthly Budget Cap
+                </span>
+                <div className="mt-1 flex items-baseline justify-between">
+                  <span className="text-sm font-semibold font-mono text-stone-800 dark:text-zinc-200 tabular-nums">
+                    {budgetUsagePercent.toFixed(1)}%
+                  </span>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium font-mono">
+                    {currencySymbol}
+                    {monthlyCap.toLocaleString()} max
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* END: KPI Strip */}
 
       {/* BEGIN: Search & Filter Inline Toolbar */}

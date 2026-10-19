@@ -2,11 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfile } from '@/lib/actions/profile';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
+import { cache } from 'react';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import { computeFinancialAnalytics } from '@/lib/finances/compute';
 import {
   createTransactionSchema,
   updateTransactionSchema,
@@ -222,168 +226,110 @@ export async function getTransactions(): Promise<TransactionWithRelations[]> {
   }
 }
 
+
+
+/**
+ * Edge-cached financial analytics aggregator.
+ * Caches calculated KPIs on Vercel's edge network with revalidate: 60s per user tenant.
+ */
+const getCachedFinancialAnalytics = (userId: string, accessToken: string) => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    '';
+
+  return unstable_cache(
+    async () => {
+      const client = createSupabaseClient<Database>(supabaseUrl, supabaseKey, {
+        global: {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+        auth: { persistSession: false },
+      });
+
+      const [{ data: transactions }, { data: profile }] = await Promise.all([
+        client
+          .from('transactions')
+          .select(`
+            *,
+            category:categories(id, name, color),
+            project:projects(id, title, slug)
+          `)
+          .eq('user_id', userId)
+          .order('date', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(100),
+        client
+          .from('profiles')
+          .select('monthly_allowance_target, currency_symbol')
+          .eq('id', userId)
+          .maybeSingle(),
+      ]);
+
+      const formattedTxs = ((transactions || []) as unknown as TransactionWithRelations[]).map((t) => ({
+        ...t,
+        amount: typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount)) || 0,
+      }));
+
+      return computeFinancialAnalytics(
+        formattedTxs,
+        Number(profile?.monthly_allowance_target || 0),
+        profile?.currency_symbol || '₹'
+      );
+    },
+    ['user-financial-kpis', userId],
+    {
+      revalidate: 60,
+      tags: [`user-${userId}-finances`, 'finances-kpi'],
+    }
+  )();
+};
+
 /**
  * Compute aggregate financial analytics and chart series.
  * Optimized for Student Pocket Money tracking: Daily, Weekly, and Monthly breakdowns.
- * Strictly applies Number(value.toFixed(2)) to final sums to prevent binary floating-point bugs.
+ * Uses React request cache and Edge Data Cache (revalidate: 60) for instant dashboard paints.
  */
-export async function getFinancialAnalytics(): Promise<FinancialAnalytics> {
+export const getFinancialAnalytics = cache(async (): Promise<FinancialAnalytics> => {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return getFallbackFinancialAnalytics();
+
+    // Check for session access token to run through edge-cached compute
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    if (accessToken && process.env.NEXT_RUNTIME && !process.env.VITEST) {
+      try {
+        const cached = await getCachedFinancialAnalytics(user.id, accessToken);
+        if (cached) return cached;
+      } catch (cacheErr) {
+        // Fall back to direct query if cache retrieval errors
+      }
+    }
+
     const [transactions, profile] = await Promise.all([
       getTransactions(),
       getUserProfile(),
     ]);
 
-    const currencySymbol = profile?.currency_symbol || '₹';
-
-    // Current date boundary calculations (Timezone safe YYYY-MM-DD strings in IST)
-    const todayStr = getTodayDate();
-    const [currentYear, currentMonthNum, currentDayNum] = todayStr.split('-').map(Number);
-    const currentYearMonth = todayStr.substring(0, 7); // e.g. "2026-10"
-
-    // Days in current month and days remaining (including today)
-    const totalDaysInMonth = new Date(currentYear, currentMonthNum, 0).getDate();
-    const rawDaysLeft = totalDaysInMonth - currentDayNum + 1;
-    const daysLeftInMonth = isNaN(rawDaysLeft) || rawDaysLeft < 1 ? 1 : rawDaysLeft;
-
-    // Trailing 7 days structure for weekly tracker in IST
-    const rawWeeklyDays = getTrailingDays(7);
-    const weeklyDays: WeeklyDayData[] = rawWeeklyDays.map((d) => ({
-      ...d,
-      spent: 0,
-    }));
-    const weeklyDayMap = new Map<string, WeeklyDayData>();
-    for (const item of weeklyDays) {
-      weeklyDayMap.set(item.date, item);
-    }
-
-    let totalInflow = 0;
-    let totalOutflow = 0;
-    let monthlyAllowance = 0;
-    let monthlySpent = 0;
-    let todaySpent = 0;
-    let weekSpent = 0;
-    let projectSpendTotal = 0;
-
-    const categoryMap = new Map<string, { value: number; color: string; count: number }>();
-
-    for (const t of (transactions || [])) {
-      if (!t) continue;
-      const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount));
-      const amt = Math.abs(isNaN(rawAmt) ? 0 : rawAmt);
-      const isIncome = t.type === 'income' || (typeof t.amount === 'number' && t.amount > 0);
-      const txDate = typeof t.date === 'string' ? t.date : todayStr;
-      const isCurrentMonth = txDate.startsWith(currentYearMonth);
-
-      if (isIncome) {
-        totalInflow += amt;
-        if (isCurrentMonth) {
-          monthlyAllowance += amt;
-        }
-      } else {
-        totalOutflow += amt;
-        if (isCurrentMonth) {
-          monthlySpent += amt;
-        }
-
-        if (txDate === todayStr) {
-          todaySpent += amt;
-        }
-
-        const weekDay = weeklyDayMap.get(txDate);
-        if (weekDay) {
-          weekDay.spent = Number((weekDay.spent + amt).toFixed(2));
-          weekSpent += amt;
-        }
-
-        if (t.project_id) {
-          projectSpendTotal += amt;
-        }
-
-        const catName = t.category?.name || 'Personal & Misc';
-        const catColor = t.category?.color || '#a855f7';
-        const existing = categoryMap.get(catName);
-        if (existing) {
-          existing.value += amt;
-          existing.count += 1;
-        } else {
-          categoryMap.set(catName, { value: amt, color: catColor, count: 1 });
-        }
-      }
-    }
-
-    // Use profile's custom monthly allowance target if no allowance income logged this month yet
-    if (monthlyAllowance === 0) {
-      const profileTarget = Number(profile?.monthly_allowance_target || 0);
-      if (profileTarget > 0) {
-        monthlyAllowance = profileTarget;
-      } else if (totalInflow > 0) {
-        monthlyAllowance = totalInflow;
-      } else {
-        monthlyAllowance = 15000.00;
-      }
-    }
-
-    if (monthlySpent === 0 && totalOutflow > 0) {
-      monthlySpent = totalOutflow;
-    }
-
-    const remainingAllowance = Number((monthlyAllowance - monthlySpent).toFixed(2));
-    const allowanceUsagePercent =
-      monthlyAllowance > 0
-        ? Math.min(100, Math.round((monthlySpent / monthlyAllowance) * 100))
-        : monthlySpent > 0
-        ? 100
-        : 0;
-
-    // Safe daily budget target recommendation
-    const safeDaysLeft = Math.max(1, daysLeftInMonth);
-    const safeDailyBudget =
-      remainingAllowance > 0
-        ? Number((remainingAllowance / safeDaysLeft).toFixed(2))
-        : 0;
-
-    const categoryBreakdown: CategoryBreakdownItem[] = Array.from(categoryMap.entries())
-      .map(([name, data]) => ({
-        name,
-        value: Number(data.value.toFixed(2)),
-        color: data.color,
-        count: data.count,
-        percentage: monthlySpent > 0 ? Math.round((data.value / monthlySpent) * 100) : 0,
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    const netCashflow = Number((totalInflow - totalOutflow).toFixed(2));
-
-    const cashflowComparison = [
-      { name: 'Pocket Money (In)', amount: Number(monthlyAllowance.toFixed(2)), fill: '#10b981' },
-      { name: 'Spent (Out)', amount: Number(monthlySpent.toFixed(2)), fill: '#f43f5e' },
-    ];
-
-    return {
-      currentDate: todayStr,
-      currencySymbol,
-      monthlyAllowance: Number(monthlyAllowance.toFixed(2)),
-      monthlySpent: Number(monthlySpent.toFixed(2)),
-      remainingAllowance,
-      allowanceUsagePercent,
-      todaySpent: Number(todaySpent.toFixed(2)),
-      safeDailyBudget,
-      daysLeftInMonth: safeDaysLeft,
-      weekSpent: Number(weekSpent.toFixed(2)),
-      weeklyDays,
-      categoryBreakdown,
-      projectSpendTotal: Number(projectSpendTotal.toFixed(2)),
-      totalInflow: Number(totalInflow.toFixed(2)),
-      totalOutflow: Number(totalOutflow.toFixed(2)),
-      netCashflow,
-      cashflowComparison,
-    };
+    return computeFinancialAnalytics(
+      transactions,
+      Number(profile?.monthly_allowance_target || 0),
+      profile?.currency_symbol || '₹'
+    );
   } catch (error) {
     console.error('Unhandled error in getFinancialAnalytics, returning safe fallback:', error);
     return getFallbackFinancialAnalytics();
   }
-}
+});
 
 /**
  * Create a new transaction with cross-linking foreign key support for projects and categories.
@@ -440,6 +386,12 @@ export async function createTransaction(
   revalidatePath('/projects');
   revalidatePath('/dashboard');
   revalidatePath('/');
+    try {
+      revalidateTag('finances-kpi', 'max');
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
   return { success: true };
 }
 
@@ -474,6 +426,12 @@ export async function deleteTransaction(transactionId: string): Promise<ActionRe
   revalidatePath('/projects');
   revalidatePath('/dashboard');
   revalidatePath('/');
+    try {
+      revalidateTag('finances-kpi', 'max');
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
   return { success: true };
 }
 
@@ -544,6 +502,12 @@ export async function updateTransaction(
   revalidatePath('/projects');
   revalidatePath('/dashboard');
   revalidatePath('/');
+    try {
+      revalidateTag('finances-kpi', 'max');
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
 
   return { success: true, data: data as TransactionWithRelations };
 }

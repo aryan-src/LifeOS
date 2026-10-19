@@ -1,6 +1,12 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { NotesGrid } from '@/components/notes/notes-grid';
 import { getNotes } from '@/lib/actions/notes';
+
+export const metadata: Metadata = {
+  title: 'Notes',
+  description: 'Scratchpad and idea capture with one-click promotion to active projects.',
+};
 
 export const dynamic = 'force-dynamic';
 

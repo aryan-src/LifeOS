@@ -5,7 +5,7 @@ import { HabitTrackerClient } from '@/components/habits/habit-tracker-client';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Habit Tracker | LifeOS',
+  title: 'Habits',
   description: 'Zero-latency daily routines, streaks, and weekly consistency tracking.',
 };
 

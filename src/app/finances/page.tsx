@@ -1,7 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { FinancesClientView } from '@/components/finances/finances-client-view';
 import { getTransactions, getFinancialAnalytics, getCategories } from '@/lib/actions/finances';
 import { getProjectOptions } from '@/lib/actions/projects-options';
+
+export const metadata: Metadata = {
+  title: 'Finances',
+  description: 'Pocket money tracker and allowance-aware ledger for students and builders.',
+};
 
 export const dynamic = 'force-dynamic';
 

@@ -1,7 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getUserProfile } from '@/lib/actions/profile';
 import { SettingsForm } from '@/components/settings/settings-form';
 import { DataExportCard } from '@/components/settings/data-export-card';
+
+export const metadata: Metadata = {
+  title: 'Settings',
+  description: 'Personal preferences, theme selection, and budget goals.',
+};
 
 export const dynamic = 'force-dynamic';
 

@@ -5,7 +5,7 @@ import { AssignmentsView } from '@/components/assignments/assignments-view';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Assignment Tracker | LifeOS',
+  title: 'Assignments',
   description: 'Manage academic assignments, submission pending workflows, and grades.',
 };
 

@@ -1,8 +1,14 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { TaskChecklist } from '@/components/tasks/task-checklist';
 import { getTasks } from '@/lib/actions/tasks';
 import { getProjectOptions } from '@/lib/actions/projects-options';
 import { getProjectsWithMetrics } from '@/lib/actions/projects';
+
+export const metadata: Metadata = {
+  title: 'Tasks',
+  description: 'Zero-latency daily task checklist and deliverables tracker.',
+};
 
 export const dynamic = 'force-dynamic';
 

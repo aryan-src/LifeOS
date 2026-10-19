@@ -1,7 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
+import { cache } from 'react';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 import type { Project, InsertProject, ProjectStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
@@ -12,19 +15,79 @@ import {
   deleteProjectSchema,
   formatZodError,
 } from '@/lib/validations';
+import {
+  computeProjectsMetrics,
+  type ProjectWithMetrics,
+  type RawProjectTask,
+  type RawProjectTransaction,
+} from '@/lib/projects/compute';
 
-export interface ProjectWithMetrics extends Project {
-  total_tasks: number;
-  completed_tasks: number;
-  completion_percentage: number;
-  total_spend: number;
-}
+export type { ProjectWithMetrics, RawProjectTask, RawProjectTransaction };
+
+/**
+ * Next.js Edge Data Cache (revalidate: 60) for project metrics.
+ * Strictly partitioned by userId to guarantee multi-tenant isolation.
+ */
+const getCachedProjectsWithMetrics = (userId: string, accessToken: string) => {
+  return unstable_cache(
+    async () => {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+      const client = createSupabaseClient<Database>(supabaseUrl, supabaseKey, {
+        global: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      });
+
+      const { data: projects, error: projErr } = await client
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (projErr || !projects || projects.length === 0) {
+        return [];
+      }
+
+      const projectIds = projects.map((p) => p.id);
+
+      const [{ data: tasks }, { data: transactions }] = await Promise.all([
+        client
+          .from('tasks')
+          .select('id, project_id, is_completed')
+          .eq('user_id', userId)
+          .in('project_id', projectIds),
+        client
+          .from('transactions')
+          .select('id, project_id, amount, type')
+          .eq('user_id', userId)
+          .in('project_id', projectIds),
+      ]);
+
+      return computeProjectsMetrics(
+        projects as Project[],
+        (tasks || []) as RawProjectTask[],
+        (transactions || []) as RawProjectTransaction[]
+      );
+    },
+    ['user-projects-metrics', userId],
+    {
+      revalidate: 60,
+      tags: [`user-${userId}-projects`, 'projects-metrics'],
+    }
+  )();
+};
 
 /**
  * Fetch projects with calculated metrics for the authenticated user.
  * CRITICAL: Uses NULLIF(total_tasks, 0) logic to prevent NaN / divide-by-zero errors.
+ * Uses React request cache and Edge Data Cache (revalidate: 60) for instant paints.
  */
-export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
+export const getProjectsWithMetrics = cache(async (): Promise<ProjectWithMetrics[]> => {
   try {
     const supabase = await createClient();
     const {
@@ -32,6 +95,20 @@ export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) throw new Error('Unauthorized');
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    if (accessToken && process.env.NEXT_RUNTIME && !process.env.VITEST) {
+      try {
+        const cached = await getCachedProjectsWithMetrics(user.id, accessToken);
+        if (cached) return cached;
+      } catch (cacheErr) {
+        // Fall back to direct query if cache retrieval errors
+      }
+    }
 
     // 1. Fetch projects
     const { data: projects, error: projErr } = await supabase
@@ -62,39 +139,16 @@ export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
         .in('project_id', projectIds),
     ]);
 
-    // Aggregate metrics per project with divide-by-zero safeguards
-    return projects.map((project) => {
-      const projTasks = tasks?.filter((t) => t.project_id === project.id) || [];
-      const totalTasks = projTasks.length;
-      const completedTasks = projTasks.filter((t) => t.is_completed).length;
-
-      // NULLIF(totalTasks, 0) safeguard:
-      const completionPercentage =
-        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-      const projTransactions = transactions?.filter((tx) => tx.project_id === project.id) || [];
-      const totalSpend = projTransactions.reduce((acc, tx) => {
-        const rawAmt = typeof tx.amount === 'number' ? tx.amount : parseFloat(String(tx.amount));
-        const amt = isNaN(rawAmt) ? 0 : rawAmt;
-        if (tx.type === 'expense' || amt < 0) {
-          return acc + Math.abs(amt);
-        }
-        return acc;
-      }, 0);
-
-      return {
-        ...project,
-        total_tasks: totalTasks,
-        completed_tasks: completedTasks,
-        completion_percentage: completionPercentage,
-        total_spend: totalSpend,
-      };
-    });
+    return computeProjectsMetrics(
+      projects as Project[],
+      (tasks || []) as RawProjectTask[],
+      (transactions || []) as RawProjectTransaction[]
+    );
   } catch (err) {
     console.error('Unhandled error in getProjectsWithMetrics:', err);
     return [];
   }
-}
+});
 
 /**
  * Update project Kanban status column.
@@ -132,6 +186,11 @@ export async function updateProjectStatus(
     revalidatePath('/projects');
     revalidatePath('/dashboard');
     revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
     return {
       success: true,
       data: data || { id: projectId, status },
@@ -220,6 +279,11 @@ export async function createProject(
     revalidatePath('/finances');
     revalidatePath('/dashboard');
     revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
     return { success: true, data: data as Project };
   } catch (err) {
     console.error('Unhandled error in createProject:', err);
@@ -259,5 +323,10 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
   revalidatePath('/finances');
   revalidatePath('/dashboard');
   revalidatePath('/');
+  try {
+    revalidateTag('projects-metrics', 'max');
+  } catch {
+    // Invariant: outside Next.js request context (e.g. tests)
+  }
   return { success: true };
 }

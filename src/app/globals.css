@@ -11,6 +11,22 @@
 }
 
 @layer base {
+  :root {
+    --faint: #9a9184;
+    /* Overridden to match LifeOS Stone/Charcoal aesthetic */
+    --ruri: #282724; 
+    --ruri-soft: #e2dfd8;
+    --deep: #fdfcfb;
+  }
+
+  .dark {
+    --faint: #7e7869;
+    /* Overridden to match LifeOS Dark aesthetic */
+    --ruri: #e9e5dc;
+    --ruri-soft: #3d3b36;
+    --deep: #0f0e0d;
+  }
+
   html, body {
     margin: 0;
     padding: 0;

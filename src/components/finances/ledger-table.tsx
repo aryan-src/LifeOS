@@ -15,6 +15,15 @@ import {
   Plus,
   AlertTriangle,
 } from 'lucide-react';
+import {
+  GlassPagination,
+  GlassPaginationContent,
+  GlassPaginationItem,
+  GlassPaginationLink,
+  GlassPaginationPrevious,
+  GlassPaginationNext,
+  GlassPaginationEllipsis,
+} from '@/components/ui/glass-pagination';
 
 export interface LedgerTableProps {
   transactions: TransactionWithRelations[];
@@ -108,6 +117,25 @@ export function getCategoryBadge(name?: string | null) {
     pill: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900/60',
     dot: 'bg-purple-500',
   };
+}
+
+export function getPaginationPages(
+  currentPage: number,
+  totalPages: number
+): (number | 'ellipsis-start' | 'ellipsis-end')[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 'ellipsis-end', totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, 'ellipsis-start', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, 'ellipsis-start', currentPage - 1, currentPage, currentPage + 1, 'ellipsis-end', totalPages];
 }
 
 export function LedgerTable({
@@ -235,6 +263,10 @@ export function LedgerTable({
   const paginatedTransactions = filteredItems.slice(
     startIndex,
     startIndex + itemsPerPage
+  );
+  const paginationPages = useMemo(
+    () => getPaginationPages(currentPage, totalPages),
+    [currentPage, totalPages]
   );
 
   // Dynamic titles and labels
@@ -684,7 +716,7 @@ export function LedgerTable({
 
         {/* BEGIN: TableFooterPagination */}
         <div
-          className="px-4 sm:px-6 py-3.5 border-t border-stone-200/60 dark:border-zinc-800/60 bg-stone-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs"
+          className="px-4 sm:px-6 py-4 border-t border-stone-200/60 dark:border-zinc-800/60 bg-stone-50/40 dark:bg-zinc-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs"
           data-purpose="table-pagination"
         >
           <p
@@ -712,43 +744,53 @@ export function LedgerTable({
             entries
           </p>
 
-          <div className="flex items-center gap-1.5 font-medium">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
+          <GlassPagination className="w-auto mx-0 justify-center sm:justify-end">
+            <GlassPaginationContent>
+              <GlassPaginationItem>
+                <GlassPaginationPrevious
+                  disabled={currentPage <= 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage((p) => p - 1);
+                  }}
+                />
+              </GlassPaginationItem>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
-              const isActive = currentPage === num;
-              return (
-                <button
-                  key={num}
-                  type="button"
-                  onClick={() => setCurrentPage(num)}
-                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
-                    isActive
-                      ? 'bg-stone-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-medium shadow-2xs'
-                      : 'text-stone-600 dark:text-zinc-400 hover:bg-stone-200/50 dark:hover:bg-zinc-800 hover:text-stone-900 dark:hover:text-zinc-100'
-                  }`}
-                >
-                  {num}
-                </button>
-              );
-            })}
+              {paginationPages.map((page, index) => {
+                if (typeof page === 'string') {
+                  return (
+                    <GlassPaginationItem key={`ellipsis-${index}`}>
+                      <GlassPaginationEllipsis />
+                    </GlassPaginationItem>
+                  );
+                }
 
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-2.5 py-1.5 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 hover:bg-stone-200/50 dark:hover:bg-zinc-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
+                return (
+                  <GlassPaginationItem key={page}>
+                    <GlassPaginationLink
+                      isActive={currentPage === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(page);
+                      }}
+                    >
+                      {page}
+                    </GlassPaginationLink>
+                  </GlassPaginationItem>
+                );
+              })}
+
+              <GlassPaginationItem>
+                <GlassPaginationNext
+                  disabled={currentPage >= totalPages}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
+                  }}
+                />
+              </GlassPaginationItem>
+            </GlassPaginationContent>
+          </GlassPagination>
         </div>
         {/* END: TableFooterPagination */}
       </div>

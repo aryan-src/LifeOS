@@ -106,14 +106,14 @@ export function DockNavItem({
           onSelect(index);
           onItemClick?.();
         }}
-        className={`group relative flex items-center w-full rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 ${
+        className={`group relative flex items-center w-full rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 ${
           isCollapsed
             ? 'justify-center h-10 w-10 mx-auto'
             : 'h-10 px-1'
         } ${
           isSelected
-            ? 'font-medium text-neutral-900 dark:text-neutral-100'
-            : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+            ? 'font-medium text-stone-900 dark:text-stone-100'
+            : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50'
         }`}
         title={item.label}
         aria-label={item.label}
@@ -128,7 +128,7 @@ export function DockNavItem({
                 stiffness: 450,
                 damping: 35,
               }}
-              className="absolute inset-0 rounded-xl bg-neutral-200/80 dark:bg-neutral-800/80 shadow-xs z-0"
+              className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-zinc-800 z-0"
             />
           )}
         </AnimatePresence>
@@ -138,8 +138,8 @@ export function DockNavItem({
           <IconComponent
             className={`size-5 z-10 shrink-0 transition-colors ${
               isSelected
-                ? 'text-neutral-950 dark:text-neutral-100 font-semibold'
-                : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+                ? 'text-stone-900 dark:text-stone-100 font-semibold'
+                : 'text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-200'
             }`}
           />
         ) : (
@@ -147,15 +147,15 @@ export function DockNavItem({
             <IconComponent
               className={`size-5 shrink-0 transition-colors ${
                 isSelected
-                  ? 'text-neutral-950 dark:text-neutral-100'
-                  : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200'
+                  ? 'text-stone-900 dark:text-stone-100'
+                  : 'text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-200'
               }`}
             />
             <span
               className={`text-sm truncate transition-colors ${
                 isSelected
-                  ? 'text-neutral-950 dark:text-neutral-100 font-medium'
-                  : 'text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-950 dark:group-hover:text-white'
+                  ? 'text-stone-900 dark:text-stone-100 font-medium'
+                  : 'text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100'
               }`}
             >
               {item.label}
@@ -165,7 +165,7 @@ export function DockNavItem({
 
         {/* Minimal macOS notification tooltip in collapsed mode */}
         {isCollapsed && (
-          <div className="pointer-events-none fixed left-[84px] ml-1 hidden rounded-md bg-neutral-900/90 dark:bg-neutral-100/90 px-2 py-1 text-xs font-medium text-white dark:text-neutral-900 shadow-md backdrop-blur-xs group-hover:block z-50 whitespace-nowrap">
+          <div className="pointer-events-none fixed left-[84px] ml-1 hidden rounded-md bg-stone-900/90 dark:bg-stone-100/90 px-2 py-1 text-xs font-medium text-white dark:text-stone-900 shadow-md backdrop-blur-xs group-hover:block z-50 whitespace-nowrap">
             {item.label}
           </div>
         )}

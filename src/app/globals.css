@@ -375,7 +375,9 @@ html[data-theme="crimson-cream"],
 
 /* Sidebar active item in Crimson Dark */
 [data-theme="crimson-dark"] .dark\:bg-neutral-800.rounded-xl,
-[data-theme="crimson-cream"] .dark\:bg-neutral-800.rounded-xl {
+[data-theme="crimson-cream"] .dark\:bg-neutral-800.rounded-xl,
+[data-theme="crimson-dark"] .dark\:bg-zinc-800.rounded-xl,
+[data-theme="crimson-cream"] .dark\:bg-zinc-800.rounded-xl {
   background-color: rgba(220, 20, 60, 0.18) !important;
   border-color: rgba(220, 20, 60, 0.35) !important;
 }
@@ -591,7 +593,8 @@ html[data-theme="crimson-light"],
 }
 
 /* Sidebar active item in Crimson Light */
-[data-theme="crimson-light"] .bg-neutral-200\/80.rounded-xl {
+[data-theme="crimson-light"] .bg-neutral-200\/80.rounded-xl,
+[data-theme="crimson-light"] .bg-white.rounded-xl {
   background-color: rgba(220, 20, 60, 0.15) !important;
   border-color: rgba(220, 20, 60, 0.3) !important;
 }

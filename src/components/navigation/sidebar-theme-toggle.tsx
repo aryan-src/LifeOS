@@ -16,14 +16,14 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
       <button
         type="button"
         onClick={toggleLightDark}
-        className="size-10 rounded-xl bg-neutral-200/60 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+        className="size-10 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
         title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {isDark ? (
-          <Sun className="size-4 text-neutral-700 dark:text-neutral-200" />
+          <Sun className="size-4 text-stone-700 dark:text-stone-200" />
         ) : (
-          <Moon className="size-4 text-neutral-700 dark:text-neutral-200" />
+          <Moon className="size-4 text-stone-700 dark:text-stone-200" />
         )}
       </button>
     );
@@ -32,7 +32,7 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
   return (
     <div
       onClick={toggleLightDark}
-      className="flex items-center justify-between p-2 rounded-xl bg-neutral-200/40 hover:bg-neutral-200/80 dark:bg-neutral-800/40 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+      className="flex items-center justify-between p-2 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -43,7 +43,7 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
       }}
       aria-label="Toggle theme mode"
     >
-      <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
+      <div className="flex items-center gap-2 text-stone-700 dark:text-stone-300">
         {isDark ? (
           <Moon className="size-4" />
         ) : (
@@ -54,11 +54,11 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
       <div
         className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-200 ease-in-out flex items-center ${
           isDark
-            ? 'bg-neutral-800 dark:bg-neutral-200 justify-end'
-            : 'bg-neutral-300 dark:bg-neutral-700 justify-start'
+            ? 'bg-zinc-800 dark:bg-stone-200 justify-end'
+            : 'bg-stone-300 dark:bg-zinc-700 justify-start'
         }`}
       >
-        <div className="w-3 h-3 rounded-full bg-white dark:bg-neutral-900 shadow-xs" />
+        <div className="w-3 h-3 rounded-full bg-white dark:bg-zinc-900 shadow-xs" />
       </div>
     </div>
   );

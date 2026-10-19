@@ -103,15 +103,25 @@ export default function LifeOSLedgerTable() {
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
-          <AnimatePresence initial={false}>
-            {items.map((row) => (
+          <AnimatePresence mode="popLayout" initial={false}>
+            {items.map((row, index) => (
               <motion.tr
                 key={row.id}
                 layout
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, height: 0 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{
+                  opacity: 0,
+                  y: -10,
+                  filter: 'blur(4px)',
+                  transition: { duration: 0.2 },
+                }}
+                transition={{
+                  type: 'spring',
+                  bounce: 0,
+                  duration: 0.4,
+                  delay: index * 0.03,
+                }}
                 className="group hover:bg-stone-50/80 transition-colors"
               >
                 <td className="py-3 px-6 font-mono text-xs text-stone-500">{row.date}</td>

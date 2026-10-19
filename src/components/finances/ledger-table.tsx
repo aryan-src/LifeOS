@@ -609,8 +609,8 @@ export function LedgerTable({
                   </td>
                 </tr>
               ) : (
-                <AnimatePresence initial={false}>
-                  {paginatedTransactions.map((row) => {
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {paginatedTransactions.map((row, index) => {
                     const isIncome = row.type === 'income' || row.amount > 0;
                     const parsedAmount = Math.abs(
                       parseFloat(String(row.amount || 0))
@@ -621,10 +621,20 @@ export function LedgerTable({
                       <motion.tr
                         key={row.id}
                         layout
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.96, height: 0 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{
+                          opacity: 0,
+                          y: -10,
+                          filter: 'blur(4px)',
+                          transition: { duration: 0.2 },
+                        }}
+                        transition={{
+                          type: 'spring',
+                          bounce: 0,
+                          duration: 0.4,
+                          delay: index * 0.03,
+                        }}
                         className="group transition-colors duration-150 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40"
                       >
                         {/* Date */}

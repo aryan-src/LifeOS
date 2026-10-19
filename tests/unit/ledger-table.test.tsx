@@ -176,19 +176,26 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
 
   describe('Finances Toolbar & Chart Toggle Controls', () => {
     const mockAnalytics: FinancialAnalytics = {
-      dailySafeToSpend: 150,
-      monthlyAllowance: 5000,
-      totalSpentThisMonth: 207,
-      spentToday: 207,
-      remainingMonthlyBudget: 4793,
-      categoryBreakdown: [
-        { name: 'Junk Food', amount: 167, percentage: 80.7, color: '#f97316' },
-        { name: 'Juice', amount: 40, percentage: 19.3, color: '#eab308' },
-      ],
       currentDate: '2026-10-19',
       currencySymbol: '₹',
-      weeklyTrend: [],
-      projectExpenses: [],
+      monthlyAllowance: 5000,
+      monthlySpent: 207,
+      remainingAllowance: 4793,
+      allowanceUsagePercent: 4.14,
+      todaySpent: 207,
+      safeDailyBudget: 150,
+      daysLeftInMonth: 12,
+      weekSpent: 207,
+      weeklyDays: [],
+      categoryBreakdown: [
+        { name: 'Junk Food', value: 167, count: 1, percentage: 80.7, color: '#f97316' },
+        { name: 'Juice', value: 40, count: 1, percentage: 19.3, color: '#eab308' },
+      ],
+      projectSpendTotal: 0,
+      totalInflow: 5000,
+      totalOutflow: 207,
+      netCashflow: 4793,
+      cashflowComparison: [],
     };
 
     it('renders the cleaned header without Next.js Code or currency toggle', () => {

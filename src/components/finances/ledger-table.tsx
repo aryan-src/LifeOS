@@ -562,7 +562,7 @@ export function LedgerTable({
         className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-subtle overflow-hidden"
         data-purpose="ledger-table-wrapper"
       >
-        <div className="overflow-x-auto min-h-[460px]">
+        <div className="overflow-x-auto min-h-[580px]">
           <table
             className="w-full text-left border-collapse"
             id="spending-ledger-table"
@@ -598,55 +598,67 @@ export function LedgerTable({
             </thead>
 
             {/* Table Body with Dynamic Content & Framer Motion Physics */}
-            <tbody
-              className="divide-y divide-stone-100/90 dark:divide-zinc-800/60 text-sm"
-              id="ledger-table-body"
-            >
-              {paginatedTransactions.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="py-16 text-center text-stone-400 dark:text-zinc-500"
-                  >
-                    <p className="font-medium text-sm text-stone-600 dark:text-zinc-300">
-                      No transactions found
-                    </p>
-                    <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">
-                      {searchQuery
-                        ? 'Try adjusting your search filter'
-                        : 'Record a new student expense to start tracking'}
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {paginatedTransactions.map((row, index) => {
-                    const isIncome = row.type === 'income' || row.amount > 0;
-                    const parsedAmount = Math.abs(
-                      parseFloat(String(row.amount || 0))
-                    );
-                    const badge = getCategoryBadge(row.category?.name);
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.tbody
+                key={currentPage}
+                className="divide-y divide-stone-100/90 dark:divide-zinc-800/60 text-sm"
+                id="ledger-table-body"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.98,
+                  transition: { duration: 0.15 },
+                }}
+                transition={{ duration: 0.2 }}
+              >
+                {paginatedTransactions.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="py-16 text-center text-stone-400 dark:text-zinc-500"
+                    >
+                      <p className="font-medium text-sm text-stone-600 dark:text-zinc-300">
+                        No transactions found
+                      </p>
+                      <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1">
+                        {searchQuery
+                          ? 'Try adjusting your search filter'
+                          : 'Record a new student expense to start tracking'}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  <AnimatePresence initial={false}>
+                    {paginatedTransactions.map((row, index) => {
+                      const isIncome = row.type === 'income' || row.amount > 0;
+                      const parsedAmount = Math.abs(
+                        parseFloat(String(row.amount || 0))
+                      );
+                      const badge = getCategoryBadge(row.category?.name);
 
-                    return (
-                      <motion.tr
-                        key={row.id}
-                        layout
-                        initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{
-                          opacity: 0,
-                          y: -10,
-                          filter: 'blur(4px)',
-                          transition: { duration: 0.2 },
-                        }}
-                        transition={{
-                          type: 'spring',
-                          bounce: 0,
-                          duration: 0.4,
-                          delay: index * 0.03,
-                        }}
-                        className="group transition-colors duration-150 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40"
-                      >
+                      return (
+                        <motion.tr
+                          key={row.id}
+                          custom={currentPage}
+                          layout
+                          initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{
+                            opacity: 0,
+                            scale: 0.96,
+                            height: 0,
+                            filter: 'blur(4px)',
+                            transition: { duration: 0.2 },
+                          }}
+                          transition={{
+                            type: 'spring',
+                            bounce: 0,
+                            duration: 0.4,
+                            delay: index * 0.03,
+                          }}
+                          className="group transition-colors duration-150 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40"
+                        >
                         {/* Date */}
                         <td className="py-3 px-4 sm:px-6 font-mono text-xs text-stone-500 dark:text-zinc-400 whitespace-nowrap">
                           {row.date}
@@ -730,7 +742,8 @@ export function LedgerTable({
                   })}
                 </AnimatePresence>
               )}
-            </tbody>
+            </motion.tbody>
+          </AnimatePresence>
           </table>
         </div>
 

@@ -3,12 +3,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
-import type { Task, InsertTask } from '@/types/database.types';
+import type { Task, InsertTask, UpdateTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import {
   createTaskSchema,
   toggleTaskSchema,
+  updateTaskStatusSchema,
   updateTaskPrioritySchema,
   deleteTaskSchema,
   formatZodError,
@@ -103,14 +104,21 @@ export async function createTask(
   return { success: true, data: data as Task };
 }
 
+export interface TaskStatusResponse {
+  id: string;
+  is_completed: boolean;
+  in_progress: boolean;
+}
+
 /**
- * Toggle task completion state.
+ * Update task status (is_completed and/or in_progress).
+ * Executed silently in the background with zero-latency optimistic UI support.
  */
-export async function toggleTask(
+export async function updateTaskStatus(
   taskId: string,
-  targetCompletedState: boolean
-): Promise<ActionResponse<{ id: string; is_completed: boolean }>> {
-  const parsed = toggleTaskSchema.safeParse({ taskId, targetCompletedState });
+  updates: { is_completed?: boolean; in_progress?: boolean }
+): Promise<ActionResponse<TaskStatusResponse>> {
+  const parsed = updateTaskStatusSchema.safeParse({ taskId, ...updates });
   if (!parsed.success) {
     return { success: false, error: formatZodError(parsed.error) };
   }
@@ -118,28 +126,78 @@ export async function toggleTask(
   const supabase = await createClient();
   const effectiveUserId = await requireUserId(supabase);
 
-  const completedAt = parsed.data.targetCompletedState ? new Date().toISOString() : null;
+  const updateData: UpdateTask = {};
+  if (typeof parsed.data.is_completed === 'boolean') {
+    updateData.is_completed = parsed.data.is_completed;
+    updateData.completed_at = parsed.data.is_completed ? new Date().toISOString() : null;
+    if (parsed.data.is_completed) {
+      updateData.in_progress = false;
+    }
+  }
+  if (typeof parsed.data.in_progress === 'boolean') {
+    updateData.in_progress = parsed.data.in_progress;
+    if (parsed.data.in_progress) {
+      updateData.is_completed = false;
+      updateData.completed_at = null;
+    }
+  }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('tasks')
-    .update({
-      is_completed: parsed.data.targetCompletedState,
-      completed_at: completedAt,
-    })
+    .update(updateData)
     .eq('id', parsed.data.taskId)
     .eq('user_id', effectiveUserId)
-    .select('id, is_completed')
+    .select('id, is_completed, in_progress')
     .single();
 
+  // Graceful fallback if database column hasn't migrated yet on remote
+  if (error && error.message?.includes('in_progress')) {
+    const fallbackUpdate: UpdateTask = {
+      is_completed: updateData.is_completed,
+      completed_at: updateData.completed_at,
+    };
+    const fallbackRes = await supabase
+      .from('tasks')
+      .update(fallbackUpdate)
+      .eq('id', parsed.data.taskId)
+      .eq('user_id', effectiveUserId)
+      .select('id, is_completed')
+      .single();
+    data = fallbackRes.data
+      ? {
+          ...fallbackRes.data,
+          in_progress: (updateData.in_progress as boolean) ?? false,
+        }
+      : null;
+    error = fallbackRes.error;
+  }
+
   if (error) {
-    console.error('Error toggling task:', error);
+    console.error('Error updating task status:', error);
     return { success: false, error: formatErrorMessage(error) };
   }
 
   revalidatePath('/tasks');
   revalidatePath('/dashboard');
   revalidatePath('/');
-  return { success: true, data };
+  return {
+    success: true,
+    data: {
+      id: data?.id || taskId,
+      is_completed: data?.is_completed ?? ((updateData.is_completed as boolean) ?? false),
+      in_progress: data?.in_progress ?? ((updateData.in_progress as boolean) ?? false),
+    },
+  };
+}
+
+/**
+ * Toggle task completion state (backward compatible wrapper around updateTaskStatus).
+ */
+export async function toggleTask(
+  taskId: string,
+  targetCompletedState: boolean
+): Promise<ActionResponse<{ id: string; is_completed: boolean; in_progress: boolean }>> {
+  return updateTaskStatus(taskId, { is_completed: targetCompletedState });
 }
 
 /**

@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import type { Task, InsertTask, UpdateTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
@@ -120,6 +120,11 @@ export async function createTask(
     revalidatePath('/tasks');
     revalidatePath('/dashboard');
     revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
     return { success: true, data: createdTask };
   } catch (err) {
     console.error('Unhandled error in createTask:', err);
@@ -210,6 +215,11 @@ export async function updateTaskStatus(
     revalidatePath('/tasks');
     revalidatePath('/dashboard');
     revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
     return {
       success: true,
       data: {
@@ -304,6 +314,11 @@ export async function deleteTask(taskId: string): Promise<ActionResponse> {
     revalidatePath('/tasks');
     revalidatePath('/dashboard');
     revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
     return { success: true };
   } catch (err) {
     console.error('Unhandled error in deleteTask:', err);

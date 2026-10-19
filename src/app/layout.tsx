@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/app-shell';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -62,6 +63,7 @@ export default function RootLayout({
         className="bg-surface dark:bg-zinc-950 font-sans text-on-surface dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );

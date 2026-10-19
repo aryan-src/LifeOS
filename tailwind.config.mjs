@@ -70,6 +70,12 @@ export default {
         'ring': '#3c6847',
         'destructive': '#ba1a1a',
         'destructive-foreground': '#ffffff',
+
+        // Glass Pagination color tokens (mapped to CSS variables)
+        'faint': 'var(--faint)',
+        'ruri': 'var(--ruri)',
+        'ruri-soft': 'var(--ruri-soft)',
+        'deep': 'var(--deep)',
       },
       borderRadius: {
         DEFAULT: '0.125rem',

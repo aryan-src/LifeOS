@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { LedgerTable, getCategoryBadge } from '@/components/finances/ledger-table';
+import { LedgerTable, getCategoryBadge, getPaginationPages } from '@/components/finances/ledger-table';
 import type { TransactionWithRelations } from '@/lib/actions/finances';
 
 describe('LifeOSLedgerTable Component & Helpers', () => {
@@ -119,4 +119,45 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
     expect(html).toContain('⌘ + N');
     expect(html).toContain('Auto-synced');
   });
+
+  it('renders the GlassPagination component with navigation controls', () => {
+    const html = renderToString(
+      <LedgerTable
+        transactions={mockTransactions}
+        onDelete={vi.fn().mockResolvedValue({ success: true })}
+      />
+    );
+
+    expect(html).toContain('role="navigation"');
+    expect(html).toContain('aria-label="pagination"');
+    expect(html).toContain('aria-label="Go to previous page"');
+    expect(html).toContain('aria-label="Go to next page"');
+    expect(html).toContain('aria-current="page"');
+  });
+
+  describe('getPaginationPages Logic', () => {
+    it('returns all pages when totalPages <= 5', () => {
+      expect(getPaginationPages(1, 3)).toEqual([1, 2, 3]);
+      expect(getPaginationPages(1, 5)).toEqual([1, 2, 3, 4, 5]);
+      expect(getPaginationPages(3, 5)).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('returns ellipsis at the end when on early pages and totalPages > 5', () => {
+      expect(getPaginationPages(1, 8)).toEqual([1, 2, 3, 4, 'ellipsis-end', 8]);
+      expect(getPaginationPages(2, 8)).toEqual([1, 2, 3, 4, 'ellipsis-end', 8]);
+      expect(getPaginationPages(3, 8)).toEqual([1, 2, 3, 4, 'ellipsis-end', 8]);
+    });
+
+    it('returns ellipsis at the start when on late pages and totalPages > 5', () => {
+      expect(getPaginationPages(8, 8)).toEqual([1, 'ellipsis-start', 5, 6, 7, 8]);
+      expect(getPaginationPages(7, 8)).toEqual([1, 'ellipsis-start', 5, 6, 7, 8]);
+      expect(getPaginationPages(6, 8)).toEqual([1, 'ellipsis-start', 5, 6, 7, 8]);
+    });
+
+    it('returns double ellipsis when in the middle of a large list', () => {
+      expect(getPaginationPages(5, 10)).toEqual([1, 'ellipsis-start', 4, 5, 6, 'ellipsis-end', 10]);
+    });
+  });
 });
+
+

@@ -158,7 +158,7 @@ export function MacOSSidebar({
                     }}
                     title={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
                     aria-label={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
-                    className="p-1 rounded-md text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    className="p-1 rounded-md text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-amber-900/5 dark:hover:bg-white/5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                   >
                     <Plus className="size-5" />
                   </button>
@@ -168,7 +168,7 @@ export function MacOSSidebar({
                     onClick={handleToggle}
                     title="Collapse sidebar"
                     aria-label="Collapse sidebar"
-                    className="p-1 rounded-md text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    className="p-1 rounded-md text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-amber-900/5 dark:hover:bg-white/5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                   >
                     <PanelLeft className="size-5" />
                   </motion.button>
@@ -182,7 +182,7 @@ export function MacOSSidebar({
                   onClick={handleToggle}
                   title="Expand sidebar"
                   aria-label="Expand sidebar"
-                  className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                  className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-amber-900/5 dark:hover:bg-white/5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                 >
                   <PanelLeft className="size-5" />
                 </button>
@@ -194,7 +194,7 @@ export function MacOSSidebar({
                   }}
                   title={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
                   aria-label={`Quick Capture (${isMac ? '⌘K' : 'Ctrl+K'})`}
-                  className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                  className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-amber-900/5 dark:hover:bg-white/5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                 >
                   <Plus className="size-5" />
                 </button>
@@ -223,7 +223,7 @@ export function MacOSSidebar({
         </div>
 
         {/* Bottom User Profile & Theme Quick-Toggles */}
-        <div className={`mt-auto pt-3 border-t border-stone-200/60 dark:border-zinc-800/60 w-full flex flex-col gap-2 box-border ${effectivelyOpen ? '' : 'items-center'}`}>
+        <div className={`mt-auto pt-3 border-t border-amber-900/5 dark:border-white/5 w-full flex flex-col gap-2 box-border ${effectivelyOpen ? '' : 'items-center'}`}>
           <SidebarThemeToggle isCollapsed={!effectivelyOpen} />
           <SidebarUserFooter
             isCollapsed={!effectivelyOpen}
@@ -242,10 +242,10 @@ export function MacOSSidebar({
   if (children) {
     return (
       <div
-        className={`flex bg-stone-200 dark:bg-zinc-950 rounded-3xl p-3 relative w-full sm:min-w-[480px] overflow-hidden ${className}`}
+        className={`flex bg-amber-50/30 dark:bg-zinc-950 rounded-3xl p-3 relative w-full sm:min-w-[480px] overflow-hidden ${className}`}
       >
         <div
-          className={`shrink-0 flex flex-col justify-between h-full box-border border-r border-stone-200/60 dark:border-zinc-800/60 bg-stone-100 dark:bg-zinc-900 backdrop-blur-md overflow-x-hidden p-3.5 transition-[width] duration-300 ${
+          className={`shrink-0 flex flex-col justify-between h-full box-border border-r border-amber-900/5 dark:border-white/5 bg-[#FDFCF9] dark:bg-[#121110] overflow-x-hidden p-3.5 transition-[width] duration-300 ${
             isOpen ? 'w-[260px]' : 'w-20'
           }`}
         >
@@ -265,7 +265,7 @@ export function MacOSSidebar({
       <motion.aside
         animate={{ width: isOpen ? 260 : 80 }}
         transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-        className="hidden lg:flex fixed left-0 top-0 bottom-0 z-40 h-screen box-border border-r border-stone-200/60 dark:border-zinc-800/60 bg-stone-100 dark:bg-zinc-900 backdrop-blur-md overflow-x-hidden p-3.5 flex-col justify-between"
+        className="hidden lg:flex fixed left-0 top-0 bottom-0 z-40 h-screen box-border border-r border-amber-900/5 dark:border-white/5 bg-[#FDFCF9] dark:bg-[#121110] overflow-x-hidden p-3.5 flex-col justify-between"
       >
         {renderSidebarContent(false)}
       </motion.aside>
@@ -279,7 +279,7 @@ export function MacOSSidebar({
             onClick={closeMobileMenu}
           />
           {/* Drawer content */}
-          <div className="relative h-full w-[260px] max-w-[85vw] box-border border-r border-stone-200/60 dark:border-zinc-800/60 bg-stone-100 dark:bg-zinc-900 backdrop-blur-md overflow-x-hidden p-3.5 z-10 animate-in slide-in-from-left duration-200 flex flex-col justify-between">
+          <div className="relative h-full w-[260px] max-w-[85vw] box-border border-r border-amber-900/5 dark:border-white/5 bg-[#FDFCF9] dark:bg-[#121110] overflow-x-hidden p-3.5 z-10 animate-in slide-in-from-left duration-200 flex flex-col justify-between">
             {renderSidebarContent(true)}
           </div>
         </div>

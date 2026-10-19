@@ -39,22 +39,22 @@ describe('MacOSSidebar Config & Nav Items', () => {
   });
 
   describe('Dock Zoom Magnification Physics', () => {
-    it('applies doubled maximum scale at direct center distance (1.12 expanded, 1.16 collapsed)', () => {
+    it('applies constrained maximum scale at direct center distance (1.06 expanded, 1.08 collapsed)', () => {
       const expandedScale = calculateDockScale(0, false);
       const collapsedScale = calculateDockScale(0, true);
 
-      expect(expandedScale).toBe(1.12);
-      expect(collapsedScale).toBe(1.16);
-      expect(expandedScale).toBeLessThanOrEqual(1.16);
-      expect(collapsedScale).toBeLessThanOrEqual(1.16);
+      expect(expandedScale).toBe(1.06);
+      expect(collapsedScale).toBe(1.08);
+      expect(expandedScale).toBeLessThanOrEqual(1.08);
+      expect(collapsedScale).toBeLessThanOrEqual(1.08);
     });
 
-    it('scales immediate vertical neighbors (~1.044)', () => {
+    it('scales immediate vertical neighbors (~1.02)', () => {
       const neighborScale = calculateDockScale(42, false);
-      expect(neighborScale).toBeCloseTo(1.044, 3);
+      expect(neighborScale).toBeCloseTo(1.02, 3);
 
       const negNeighborScale = calculateDockScale(-42, false);
-      expect(negNeighborScale).toBeCloseTo(1.044, 3);
+      expect(negNeighborScale).toBeCloseTo(1.02, 3);
     });
 
     it('returns 1.0 for distances outside the magnification radius or when mouse leaves', () => {

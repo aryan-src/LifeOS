@@ -377,7 +377,9 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-dark"] .dark\:bg-neutral-800.rounded-xl,
 [data-theme="crimson-cream"] .dark\:bg-neutral-800.rounded-xl,
 [data-theme="crimson-dark"] .dark\:bg-zinc-800.rounded-xl,
-[data-theme="crimson-cream"] .dark\:bg-zinc-800.rounded-xl {
+[data-theme="crimson-cream"] .dark\:bg-zinc-800.rounded-xl,
+[data-theme="crimson-dark"] .dark\:bg-zinc-800\/80.rounded-xl,
+[data-theme="crimson-cream"] .dark\:bg-zinc-800\/80.rounded-xl {
   background-color: rgba(220, 20, 60, 0.18) !important;
   border-color: rgba(220, 20, 60, 0.35) !important;
 }

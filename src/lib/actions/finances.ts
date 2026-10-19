@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { getUserProfile } from '@/lib/actions/profile';
 import { revalidatePath } from 'next/cache';
 import type { Category, InsertTransaction, TransactionType } from '@/types/database.types';
@@ -114,12 +113,16 @@ import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
 export async function getCategories(): Promise<Category[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     let { data, error } = await supabase
       .from('categories')
       .select('*')
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('name', { ascending: true });
 
     if (error) {
@@ -137,7 +140,7 @@ export async function getCategories(): Promise<Category[]> {
         await supabase
           .from('categories')
           .delete()
-          .eq('user_id', effectiveUserId)
+          .eq('user_id', user.id)
           .in('name', OBSOLETE_CATEGORIES);
       }
 
@@ -147,7 +150,7 @@ export async function getCategories(): Promise<Category[]> {
           .from('categories')
           .insert(
             missingCategories.map((c) => ({
-              user_id: effectiveUserId,
+              user_id: user.id,
               name: c.name,
               type: c.type,
               color: c.color,
@@ -159,7 +162,7 @@ export async function getCategories(): Promise<Category[]> {
       const refreshed = await supabase
         .from('categories')
         .select('*')
-        .eq('user_id', effectiveUserId)
+        .eq('user_id', user.id)
         .order('name', { ascending: true });
 
       if (refreshed.data) {
@@ -186,7 +189,11 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTransactions(): Promise<TransactionWithRelations[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('transactions')
@@ -195,7 +202,7 @@ export async function getTransactions(): Promise<TransactionWithRelations[]> {
         category:categories(id, name, color),
         project:projects(id, title, slug)
       `)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(100);
@@ -400,7 +407,11 @@ export async function createTransaction(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   // Expenses stored with signed negative amounts or positive based on type
   const parsedAmount = parsed.data.amount;
@@ -408,7 +419,7 @@ export async function createTransaction(
   const finalDate = parsed.data.date || getTodayDate();
 
   const newTx: InsertTransaction = {
-    user_id: effectiveUserId,
+    user_id: user.id,
     amount: finalAmount,
     type: parsed.data.type,
     description: parsed.data.description,
@@ -442,13 +453,17 @@ export async function deleteTransaction(transactionId: string): Promise<ActionRe
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const { error } = await supabase
     .from('transactions')
     .delete()
     .eq('id', parsed.data.transactionId)
-    .eq('user_id', effectiveUserId);
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error deleting transaction:', error);
@@ -485,7 +500,11 @@ export async function updateTransaction(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   // Preserve PostgreSQL numeric(12, 2) precision using safe float parsing
   const preciseAmount = parseFloat(parsed.data.amount.toFixed(2));
@@ -504,13 +523,13 @@ export async function updateTransaction(
       payee_or_source: parsed.data.payeeOrSource || null,
     })
     .eq('id', parsed.data.id)
-    .eq('user_id', effectiveUserId)
+    .eq('user_id', user.id)
     .select(`
       *,
       category:categories(*),
       project:projects(id, title, slug)
     `)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error updating transaction:', error);

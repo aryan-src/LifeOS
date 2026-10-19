@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Note, InsertNote } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -28,7 +27,11 @@ export interface NoteWithProject extends Note {
 export async function getNotes(): Promise<NoteWithProject[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('notes')
@@ -36,7 +39,7 @@ export async function getNotes(): Promise<NoteWithProject[]> {
         *,
         project:projects(id, title, slug)
       `)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('is_pinned', { ascending: false })
       .order('updated_at', { ascending: false });
 
@@ -78,10 +81,14 @@ export async function createNote(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const newNote: InsertNote = {
-    user_id: effectiveUserId,
+    user_id: user.id,
     title: parsed.data.title,
     content: parsed.data.content,
     tags: parsed.data.tags,
@@ -93,7 +100,7 @@ export async function createNote(
     .from('notes')
     .insert(newNote)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error creating note:', error);
@@ -119,13 +126,17 @@ export async function togglePinNote(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const { error } = await supabase
     .from('notes')
     .update({ is_pinned: parsed.data.isPinned })
     .eq('id', parsed.data.noteId)
-    .eq('user_id', effectiveUserId);
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error toggling pin:', error);
@@ -146,13 +157,17 @@ export async function deleteNote(noteId: string): Promise<ActionResponse> {
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const { error } = await supabase
     .from('notes')
     .delete()
     .eq('id', parsed.data.noteId)
-    .eq('user_id', effectiveUserId);
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error deleting note:', error);
@@ -191,15 +206,19 @@ export async function promoteNoteToProject(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   // 1. Fetch note to extract title, content and markdown checklist items
   const { data: note, error: fetchErr } = await supabase
     .from('notes')
     .select('id, title, content, user_id')
     .eq('id', parsed.data.noteId)
-    .eq('user_id', effectiveUserId)
-    .single();
+    .eq('user_id', user.id)
+    .maybeSingle();
 
   if (fetchErr || !note) {
     return { success: false, error: 'Note not found.' };

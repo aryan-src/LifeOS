@@ -10,7 +10,7 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
   const mockTasks: TaskWithProject[] = [
     {
       id: 'd9b2d62d-0b1a-4d76-92e1-456789abcdef',
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: 'usr-test-deliverables',
       project_id: 'p-1',
       title: 'Complete Java',
       description: 'Core syntax and OOP exercises',
@@ -26,7 +26,7 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
     },
     {
       id: 'e1c3e73e-1c2b-5e87-a3f2-567890bcdef0',
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: 'usr-test-deliverables',
       project_id: null,
       title: 'Hacker Rank Python (3 Questions)',
       description: null,
@@ -42,7 +42,7 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
     },
     {
       id: 'f2d4f84f-2d3c-6f98-b403-678901cdef01',
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: 'usr-test-deliverables',
       project_id: null,
       title: 'Html (20 Pages)',
       description: 'Web development practice',

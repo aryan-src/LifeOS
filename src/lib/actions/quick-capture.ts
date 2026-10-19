@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
@@ -32,7 +31,11 @@ export async function dispatchQuickCapture(
   const trimmed = validation.data.rawInput;
   const parsed = parseQuickCapture(trimmed);
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   // 1. Resolve project_id via indexed slug lookup if present
   let resolvedProjectId: string | null = null;
@@ -42,7 +45,7 @@ export async function dispatchQuickCapture(
     const { data: project } = await supabase
       .from('projects')
       .select('id, title, slug')
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .eq('slug', parsed.projectSlug)
       .maybeSingle();
 
@@ -62,7 +65,7 @@ export async function dispatchQuickCapture(
     const { data: tx, error: txErr } = await supabase
       .from('transactions')
       .insert({
-        user_id: effectiveUserId,
+        user_id: user.id,
         amount,
         type,
         description,
@@ -70,7 +73,7 @@ export async function dispatchQuickCapture(
         project_id: resolvedProjectId,
       })
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (txErr || !tx) {
       console.error('Quick capture transaction error:', txErr);
@@ -102,7 +105,7 @@ export async function dispatchQuickCapture(
     const { data: task, error: taskErr } = await supabase
       .from('tasks')
       .insert({
-        user_id: effectiveUserId,
+        user_id: user.id,
         title,
         due_date: dueDate,
         priority,
@@ -110,7 +113,7 @@ export async function dispatchQuickCapture(
         is_completed: false,
       })
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (taskErr || !task) {
       console.error('Quick capture task error:', taskErr);
@@ -142,7 +145,7 @@ export async function dispatchQuickCapture(
     const { data: assignment, error: assignmentErr } = await supabase
       .from('assignments')
       .insert({
-        user_id: effectiveUserId,
+        user_id: user.id,
         title,
         subject,
         due_date: dueDate,
@@ -150,7 +153,7 @@ export async function dispatchQuickCapture(
         project_id: resolvedProjectId,
       })
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (assignmentErr || !assignment) {
       console.error('Quick capture assignment error:', assignmentErr);
@@ -181,14 +184,14 @@ export async function dispatchQuickCapture(
   const { data: note, error: noteErr } = await supabase
     .from('notes')
     .insert({
-      user_id: effectiveUserId,
+      user_id: user.id,
       title: noteTitle,
       content,
       tags: parsed.projectSlug ? [parsed.projectSlug] : [],
       project_id: resolvedProjectId,
     })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (noteErr || !note) {
     console.error('Quick capture note error:', noteErr);

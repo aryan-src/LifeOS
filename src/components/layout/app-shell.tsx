@@ -3,13 +3,11 @@
 import React, { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
-import { MacOSSidebar } from '@/components/navigation/macos-sidebar';
 import { TopHeader } from '@/components/navigation/top-header';
-import { useUIStore } from '@/lib/store/use-ui-store';
+import { FloatingDock } from '@/components/ui/floating-dock';
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isSidebarCollapsed = useUIStore((state) => state.isSidebarCollapsed);
 
   // Standalone public pages (landing, auth, legal/static pages)
   const isStandalonePage =
@@ -33,16 +31,14 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <QuickCaptureOmnibar />
-      <MacOSSidebar />
-      <div
-        className={`min-h-screen transition-[padding] duration-300 ease-out flex flex-col ${
-          isSidebarCollapsed ? 'pl-0 lg:pl-20' : 'pl-0 lg:pl-[260px]'
-        }`}
-      >
+      <div className="min-h-screen flex flex-col">
         <TopHeader />
-        <main className="w-full pt-14 bg-surface dark:bg-zinc-950 min-h-screen flex-1 text-on-surface dark:text-zinc-100 transition-colors duration-200">
+        <main className="w-full pt-14 pb-28 bg-surface dark:bg-zinc-950 min-h-screen flex-1 text-on-surface dark:text-zinc-100 transition-colors duration-200">
           {children}
         </main>
+      </div>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <FloatingDock />
       </div>
     </>
   );

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import Link from 'next/link';
 import {
   motion,
   AnimatePresence,
   useSpring,
+  useTransform,
   useMotionValue,
   type MotionValue,
 } from 'motion/react';
@@ -18,15 +19,15 @@ export interface NavItemConfig {
 
 /**
  * Mathematical proximity formula used by the dock zoom effect.
- * Directly hovered center: 1.12 (max 1.16 in collapsed mode) [Doubled zoom factor]
- * Immediate vertical neighbor (~42px): 1.044
+ * Directly hovered center: 1.06 (max 1.08 in collapsed mode)
+ * Immediate vertical neighbor (~42px): 1.02
  * Edge boundary (>=85px): 1.0
  */
 export function calculateDockScale(distance: number, isCollapsed = false): number {
   if (!isFinite(distance)) return 1;
   const absDist = Math.abs(distance);
-  const maxScale = isCollapsed ? 1.16 : 1.12;
-  const neighborScale = 1.044;
+  const maxScale = isCollapsed ? 1.08 : 1.06;
+  const neighborScale = 1.02;
   const maxRange = 85;
   const midRange = 42;
 
@@ -59,26 +60,20 @@ export function DockNavItem({
   onItemClick,
 }: DockNavItemProps) {
   const itemRef = useRef<HTMLAnchorElement>(null);
-  const [distance, setDistance] = useState<number>(Infinity);
 
-  // Update distance when mouse moves
-  useEffect(() => {
-    return mouseY.on('change', (y) => {
-      if (!itemRef.current || y === -1) {
-        setDistance(Infinity);
-        return;
-      }
-      const rect = itemRef.current.getBoundingClientRect();
-      const itemCenterY = rect.top + rect.height / 2;
-      setDistance(y - itemCenterY);
-    });
-  }, [mouseY]);
+  // Directly transform pointer Y distance without triggering React component re-renders
+  const distance = useTransform(mouseY, (val: number) => {
+    if (!itemRef.current || val === -1 || !isFinite(val)) {
+      return Infinity;
+    }
+    const rect = itemRef.current.getBoundingClientRect();
+    const itemCenterY = rect.top + rect.height / 2;
+    return val - itemCenterY;
+  });
 
-  // Derived scale from distance
-  const targetScale = useMemo(() => {
-    if (distance === Infinity) return 1.0;
-    return calculateDockScale(distance, isCollapsed);
-  }, [distance, isCollapsed]);
+  const targetScale = useTransform(distance, (dist: number) => {
+    return calculateDockScale(dist, isCollapsed);
+  });
 
   // Spring physics for authentic macOS tactile bounce
   const springScale = useSpring(targetScale, {
@@ -113,7 +108,7 @@ export function DockNavItem({
         } ${
           isSelected
             ? 'font-medium text-stone-900 dark:text-stone-100'
-            : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/50'
+            : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-amber-900/5 dark:hover:bg-white/5'
         }`}
         title={item.label}
         aria-label={item.label}
@@ -128,7 +123,7 @@ export function DockNavItem({
                 stiffness: 450,
                 damping: 35,
               }}
-              className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-zinc-800 z-0"
+              className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-zinc-800/80 z-0"
             />
           )}
         </AnimatePresence>

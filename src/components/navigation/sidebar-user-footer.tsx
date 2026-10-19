@@ -18,7 +18,7 @@ export function SidebarUserFooter({ isCollapsed = false, onItemClick }: SidebarU
           href="/settings"
           prefetch={true}
           onClick={onItemClick}
-          className="size-10 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+          className="size-10 rounded-xl bg-amber-900/5 hover:bg-amber-900/10 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
           title="Personal Workspace — Settings"
           aria-label="Personal Workspace — Settings"
         >
@@ -27,7 +27,7 @@ export function SidebarUserFooter({ isCollapsed = false, onItemClick }: SidebarU
         <form action={signOutAction}>
           <button
             type="submit"
-            className="size-10 rounded-xl bg-stone-200/40 hover:bg-red-50 hover:text-red-600 dark:bg-zinc-800/40 dark:hover:bg-red-950/40 dark:hover:text-red-400 text-stone-700 dark:text-stone-200 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+            className="size-10 rounded-xl bg-amber-900/5 hover:bg-red-50 hover:text-red-600 dark:bg-white/5 dark:hover:bg-red-950/40 dark:hover:text-red-400 text-stone-700 dark:text-stone-200 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
             title="Sign Out"
             aria-label="Sign Out"
           >
@@ -44,7 +44,7 @@ export function SidebarUserFooter({ isCollapsed = false, onItemClick }: SidebarU
         href="/settings"
         prefetch={true}
         onClick={onItemClick}
-        className="flex items-center justify-between p-2 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 transition-colors cursor-pointer group flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+        className="flex items-center justify-between p-2 rounded-xl bg-amber-900/5 hover:bg-amber-900/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors cursor-pointer group flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
         title="Personal Workspace — Settings"
         aria-label="Personal Workspace — Settings"
       >
@@ -68,7 +68,7 @@ export function SidebarUserFooter({ isCollapsed = false, onItemClick }: SidebarU
           type="submit"
           title="Sign Out"
           aria-label="Sign Out"
-          className="p-2 rounded-xl bg-stone-200/40 hover:bg-red-50 hover:text-red-600 dark:bg-zinc-800/40 dark:hover:bg-red-950/40 dark:hover:text-red-400 text-stone-500 dark:text-stone-400 transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+          className="p-2 rounded-xl bg-amber-900/5 hover:bg-red-50 hover:text-red-600 dark:bg-white/5 dark:hover:bg-red-950/40 dark:hover:text-red-400 text-stone-500 dark:text-stone-400 transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
           <LogOut className="size-4" />
         </button>

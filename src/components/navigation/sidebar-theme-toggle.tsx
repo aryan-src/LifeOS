@@ -16,7 +16,7 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
       <button
         type="button"
         onClick={toggleLightDark}
-        className="size-10 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+        className="size-10 rounded-xl bg-amber-900/5 hover:bg-amber-900/10 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer box-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
         title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
@@ -32,7 +32,7 @@ export function SidebarThemeToggle({ isCollapsed = false }: SidebarThemeTogglePr
   return (
     <div
       onClick={toggleLightDark}
-      className="flex items-center justify-between p-2 rounded-xl bg-stone-200/40 hover:bg-stone-200/70 dark:bg-zinc-800/40 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+      className="flex items-center justify-between p-2 rounded-xl bg-amber-900/5 hover:bg-amber-900/10 dark:bg-white/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

@@ -72,6 +72,7 @@ export interface Database {
           title: string;
           description: string | null;
           is_completed: boolean;
+          in_progress?: boolean;
           due_date: string | null;
           priority: number;
           sort_order: number;
@@ -86,6 +87,7 @@ export interface Database {
           title: string;
           description?: string | null;
           is_completed?: boolean;
+          in_progress?: boolean;
           due_date?: string | null;
           priority?: number;
           sort_order?: number;
@@ -100,6 +102,7 @@ export interface Database {
           title?: string;
           description?: string | null;
           is_completed?: boolean;
+          in_progress?: boolean;
           due_date?: string | null;
           priority?: number;
           sort_order?: number;

@@ -49,6 +49,12 @@ export const toggleTaskSchema = z.object({
   targetCompletedState: z.boolean(),
 });
 
+export const updateTaskStatusSchema = z.object({
+  taskId: uuidSchema,
+  is_completed: z.boolean().optional(),
+  in_progress: z.boolean().optional(),
+});
+
 export const updateTaskPrioritySchema = z.object({
   taskId: uuidSchema,
   priority: z.coerce.number().int().min(1).max(4),

@@ -7,15 +7,27 @@ import { getProjectsWithMetrics } from '@/lib/actions/projects';
 export const dynamic = 'force-dynamic';
 
 export default async function TasksPage() {
-  const [tasks, projects, projectsWithMetrics] = await Promise.all([
-    getTasks(),
-    getProjectOptions(),
-    getProjectsWithMetrics(),
-  ]);
+  let tasks: Awaited<ReturnType<typeof getTasks>> = [];
+  let projects: Awaited<ReturnType<typeof getProjectOptions>> = [];
+  let projectsWithMetrics: Awaited<ReturnType<typeof getProjectsWithMetrics>> = [];
 
-  const completedTodayCount = tasks.filter((t) => t.is_completed).length;
-  const pendingCount = tasks.filter((t) => !t.is_completed).length;
-  const totalCount = tasks.length;
+  try {
+    const results = await Promise.all([
+      getTasks(),
+      getProjectOptions(),
+      getProjectsWithMetrics(),
+    ]);
+    tasks = Array.isArray(results[0]) ? results[0] : [];
+    projects = Array.isArray(results[1]) ? results[1] : [];
+    projectsWithMetrics = Array.isArray(results[2]) ? results[2] : [];
+  } catch (err) {
+    console.error('Error loading tasks page data:', err);
+  }
+
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const completedTodayCount = safeTasks.filter((t) => t.is_completed).length;
+  const pendingCount = safeTasks.filter((t) => !t.is_completed).length;
+  const totalCount = safeTasks.length;
   const velocityPercent = totalCount > 0 ? Math.round((completedTodayCount / totalCount) * 100) : 0;
 
   return (
@@ -78,7 +90,7 @@ export default async function TasksPage() {
       {/* Main Content Layout */}
       <div className="w-full px-space-lg lg:px-margin pb-space-xl">
         <TaskChecklist
-          initialTasks={tasks}
+          initialTasks={safeTasks}
           projects={projects}
           projectDeadlines={projectsWithMetrics}
         />

@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Profile, UpdateProfile } from '@/types/database.types';
@@ -15,11 +14,8 @@ import { cache } from 'react';
  * Deduplicates across RSC passes to eliminate redundant database calls.
  */
 export const getUserProfile = cache(async (): Promise<Profile> => {
-  const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
-
   const defaultProfile: Profile = {
-    id: effectiveUserId,
+    id: 'unauthenticated',
     display_name: 'Student',
     theme_preference: 'stone',
     currency_symbol: '₹',
@@ -29,10 +25,19 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
   };
 
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return defaultProfile;
+    }
+
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', effectiveUserId)
+      .eq('id', user.id)
       .maybeSingle();
 
     if (error) {
@@ -46,7 +51,11 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
       };
     }
 
-    return defaultProfile;
+    return {
+      ...defaultProfile,
+      id: user.id,
+      display_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Student',
+    };
   } catch (err) {
     console.error('Unhandled error in getUserProfile:', err);
     return defaultProfile;
@@ -72,7 +81,11 @@ export async function updateProfile(
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const displayName = parsed.data.displayName;
   const currencySymbol = parsed.data.currencySymbol;
@@ -89,11 +102,11 @@ export async function updateProfile(
   let { data, error } = await supabase
     .from('profiles')
     .upsert({
-      id: effectiveUserId,
+      id: user.id,
       ...payload,
     })
     .select()
-    .single();
+    .maybeSingle();
 
   if (error && (themePreference === 'crimson-dark' || themePreference === 'crimson-light' || themePreference === 'crimson-cream' || themePreference === 'default')) {
     // If the remote check constraint has not been updated yet, store standard DB fallback
@@ -101,12 +114,12 @@ export async function updateProfile(
     const fallbackRes = await supabase
       .from('profiles')
       .upsert({
-        id: effectiveUserId,
+        id: user.id,
         ...payload,
         theme_preference: fallbackTheme,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (!fallbackRes.error && fallbackRes.data) {
       error = null;
@@ -121,7 +134,7 @@ export async function updateProfile(
 
   const updatedProfile: Profile = {
     ...data,
-    id: data.id || effectiveUserId,
+    id: data.id || user.id,
     display_name: data.display_name ?? displayName,
     theme_preference: themePreference,
     currency_symbol: data.currency_symbol || currencySymbol,

@@ -363,21 +363,21 @@ begin
         execute format('drop policy if exists %I on %I.%I;', r.policyname, r.schemaname, r.tablename);
     end loop;
 
-    -- Enable RLS and create owner policy on the 8 user_id tables
+    -- Enable RLS and create explicit SELECT, INSERT, UPDATE, DELETE policies on the 8 user_id tables
     foreach tbl in array user_id_tables loop
         execute format('alter table public.%I enable row level security;', tbl);
-        execute format(
-            'create policy "owner full access" on public.%I for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));',
-            tbl
-        );
+        execute format('create policy "%s_select_own" on public.%I for select to authenticated using (auth.uid() = user_id);', tbl, tbl);
+        execute format('create policy "%s_insert_own" on public.%I for insert to authenticated with check (auth.uid() = user_id);', tbl, tbl);
+        execute format('create policy "%s_update_own" on public.%I for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);', tbl, tbl);
+        execute format('create policy "%s_delete_own" on public.%I for delete to authenticated using (auth.uid() = user_id);', tbl, tbl);
     end loop;
 
-    -- Enable RLS and create policy on profiles
+    -- Enable RLS and create explicit policies on profiles
     alter table public.profiles enable row level security;
-    create policy "own profile" on public.profiles
-        for all to authenticated
-        using (id = (select auth.uid()))
-        with check (id = (select auth.uid()));
+    create policy "profiles_select_own" on public.profiles for select to authenticated using (auth.uid() = id);
+    create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (auth.uid() = id);
+    create policy "profiles_update_own" on public.profiles for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+    create policy "profiles_delete_own" on public.profiles for delete to authenticated using (auth.uid() = id);
 end $$;
 
 -- ====================================================================

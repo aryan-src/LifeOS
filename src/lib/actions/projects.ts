@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Project, InsertProject, ProjectStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -28,13 +27,17 @@ export interface ProjectWithMetrics extends Project {
 export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     // 1. Fetch projects
     const { data: projects, error: projErr } = await supabase
       .from('projects')
       .select('*')
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('priority', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -50,10 +53,12 @@ export async function getProjectsWithMetrics(): Promise<ProjectWithMetrics[]> {
       supabase
         .from('tasks')
         .select('id, project_id, is_completed')
+        .eq('user_id', user.id)
         .in('project_id', projectIds),
       supabase
         .from('transactions')
         .select('id, project_id, amount, type')
+        .eq('user_id', user.id)
         .in('project_id', projectIds),
     ]);
 
@@ -98,31 +103,43 @@ export async function updateProjectStatus(
   projectId: string,
   status: ProjectStatus
 ): Promise<ActionResponse<{ id: string; status: ProjectStatus }>> {
-  const parsed = updateProjectStatusSchema.safeParse({ projectId, status });
-  if (!parsed.success) {
-    return { success: false, error: formatZodError(parsed.error) };
+  try {
+    const parsed = updateProjectStatusSchema.safeParse({ projectId, status });
+    if (!parsed.success) {
+      return { success: false, error: formatZodError(parsed.error) };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
+
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ status: parsed.data.status })
+      .eq('id', parsed.data.projectId)
+      .eq('user_id', user.id)
+      .select('id, status')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error updating project status:', error);
+      return { success: false, error: formatErrorMessage(error) };
+    }
+
+    revalidatePath('/projects');
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+    return {
+      success: true,
+      data: data || { id: projectId, status },
+    };
+  } catch (err) {
+    console.error('Unhandled error in updateProjectStatus:', err);
+    return { success: false, error: formatErrorMessage(err) };
   }
-
-  const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
-
-  const { data, error } = await supabase
-    .from('projects')
-    .update({ status: parsed.data.status })
-    .eq('id', parsed.data.projectId)
-    .eq('user_id', effectiveUserId)
-    .select('id, status')
-    .single();
-
-  if (error) {
-    console.error('Error updating project status:', error);
-    return { success: false, error: formatErrorMessage(error) };
-  }
-
-  revalidatePath('/projects');
-  revalidatePath('/dashboard');
-  revalidatePath('/');
-  return { success: true, data };
 }
 
 /**
@@ -132,73 +149,82 @@ export async function createProject(
   prevState: unknown,
   formData: FormData
 ): Promise<ActionResponse<Project>> {
-  const parsed = createProjectSchema.safeParse({
-    title: formData.get('title'),
-    description: formData.get('description'),
-    status: formData.get('status') || 'active',
-    priority: formData.get('priority') || '2',
-    budget: formData.get('budget') || '0',
-    targetDate: formData.get('targetDate') || null,
-  });
+  try {
+    const parsed = createProjectSchema.safeParse({
+      title: formData.get('title'),
+      description: formData.get('description'),
+      status: formData.get('status') || 'active',
+      priority: formData.get('priority') || '2',
+      budget: formData.get('budget') || '0',
+      targetDate: formData.get('targetDate') || null,
+    });
 
-  if (!parsed.success) {
-    return { success: false, error: formatZodError(parsed.error) };
-  }
+    if (!parsed.success) {
+      return { success: false, error: formatZodError(parsed.error) };
+    }
 
-  const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
-  // Base slug from title
-  const slugBase = parsed.data.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '') || 'project';
+    // Base slug from title
+    const slugBase = parsed.data.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '') || 'project';
 
-  // Check unique slug for user
-  let finalSlug = slugBase;
-  let counter = 1;
-  while (true) {
-    const { data: existing } = await supabase
+    // Check unique slug for user
+    let finalSlug = slugBase;
+    let counter = 1;
+    while (true) {
+      const { data: existing } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('slug', finalSlug)
+        .maybeSingle();
+
+      if (!existing) break;
+      finalSlug = `${slugBase}-${counter}`;
+      counter++;
+    }
+
+    const newProject: InsertProject = {
+      user_id: user.id,
+      title: parsed.data.title,
+      slug: finalSlug,
+      description: parsed.data.description || null,
+      status: parsed.data.status,
+      priority: parsed.data.priority,
+      budget: parsed.data.budget,
+      start_date: getTodayDate(),
+      target_date: parsed.data.targetDate || null,
+    };
+
+    const { data, error } = await supabase
       .from('projects')
-      .select('id')
-      .eq('user_id', effectiveUserId)
-      .eq('slug', finalSlug)
+      .insert(newProject)
+      .select()
       .maybeSingle();
 
-    if (!existing) break;
-    finalSlug = `${slugBase}-${counter}`;
-    counter++;
+    if (error || !data) {
+      if (error) console.error('Error creating project:', error);
+      return { success: false, error: formatErrorMessage(error || 'Failed to create project') };
+    }
+
+    revalidatePath('/projects');
+    revalidatePath('/tasks');
+    revalidatePath('/finances');
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+    return { success: true, data: data as Project };
+  } catch (err) {
+    console.error('Unhandled error in createProject:', err);
+    return { success: false, error: formatErrorMessage(err) };
   }
-
-  const newProject: InsertProject = {
-    user_id: effectiveUserId,
-    title: parsed.data.title,
-    slug: finalSlug,
-    description: parsed.data.description || null,
-    status: parsed.data.status,
-    priority: parsed.data.priority,
-    budget: parsed.data.budget,
-    start_date: getTodayDate(),
-    target_date: parsed.data.targetDate || null,
-  };
-
-  const { data, error } = await supabase
-    .from('projects')
-    .insert(newProject)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating project:', error);
-    return { success: false, error: formatErrorMessage(error) };
-  }
-
-  revalidatePath('/projects');
-  revalidatePath('/tasks');
-  revalidatePath('/finances');
-  revalidatePath('/dashboard');
-  revalidatePath('/');
-  return { success: true, data: data as Project };
 }
 
 /**
@@ -211,13 +237,17 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
   }
 
   const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Unauthorized');
 
   const { error } = await supabase
     .from('projects')
     .delete()
     .eq('id', parsed.data.projectId)
-    .eq('user_id', effectiveUserId);
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error deleting project:', error);

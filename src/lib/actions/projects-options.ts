@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 
 export interface ProjectOption {
   id: string;
@@ -10,19 +9,28 @@ export interface ProjectOption {
 }
 
 export async function getProjectOptions(): Promise<ProjectOption[]> {
-  const supabase = await createClient();
-  const effectiveUserId = await requireUserId(supabase);
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
-  const { data, error } = await supabase
-    .from('projects')
-    .select('id, title, slug')
-    .eq('user_id', effectiveUserId)
-    .order('title', { ascending: true });
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, title, slug')
+      .eq('user_id', user.id)
+      .order('title', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching project options:', error);
+    if (error) {
+      console.error('Error fetching project options:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Unhandled error in getProjectOptions:', err);
     return [];
   }
-
-  return data || [];
 }

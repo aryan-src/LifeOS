@@ -10,7 +10,7 @@ describe('Habits Module — Architecture & Consistency', () => {
   const mockHabits: HabitWithLog[] = [
     {
       id: 'h-1',
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: 'usr-test-habits',
       title: 'Morning Sunlight & Hydration',
       description: '500ml water right after waking up',
       created_at: '2026-10-01T00:00:00Z',
@@ -25,7 +25,7 @@ describe('Habits Module — Architecture & Consistency', () => {
     },
     {
       id: 'h-2',
-      user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      user_id: 'usr-test-habits',
       title: 'Read 20 Pages',
       description: 'Technical reading',
       created_at: '2026-10-01T00:00:00Z',

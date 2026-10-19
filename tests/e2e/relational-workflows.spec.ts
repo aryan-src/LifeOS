@@ -9,7 +9,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_ANON_KE
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const TEST_TAG_PREFIX = 'e2e-test-';
-const TEST_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+const TEST_USER_ID = process.env.TEST_USER_ID || '00000000-0000-0000-0000-000000000001';
 
 test.describe('LifeOS Cross-Module Relational Workflows (E2E)', () => {
   test.skip(!process.env.TEST_USER_EMAIL, 'Skipping authenticated workflows when TEST_USER_EMAIL is not configured');

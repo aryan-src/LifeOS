@@ -1,12 +1,12 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { getUserProfile } from '@/lib/actions/profile';
-import { SettingsForm } from '@/components/settings/settings-form';
-import { DataExportCard } from '@/components/settings/data-export-card';
+import { BentoSettings } from '@/components/settings/bento-settings';
 
 export const metadata: Metadata = {
-  title: 'Settings',
-  description: 'Personal preferences, theme selection, and budget goals.',
+  title: 'Settings & Personalization — LifeOS',
+  description:
+    'Calibrate your student identity, daily liquidity constraints, aesthetic atmosphere, and portable data vault.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -16,31 +16,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full max-w-7xl mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-xl flex flex-col gap-space-xl">
-        {/* Header */}
-        <div className="flex flex-col gap-space-xs max-w-2xl">
-          <div className="flex items-center gap-space-sm text-outline font-label-sm text-label-sm uppercase tracking-wider">
-            <span className="inline-block w-2 h-2 rounded-full bg-secondary"></span>
-            <span>Workspace Preferences</span>
-            <span>·</span>
-            <span>Multi-Tenant</span>
-          </div>
-          <h1 className="font-display text-display text-on-surface font-semibold tracking-tight">
-            Settings & Personalization
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Customize your student workspace identity, default currency symbol, and monthly allowance target.
-          </p>
-        </div>
-
-        {/* Settings Form Container */}
-        <SettingsForm initialProfile={profile} userEmail="student@lifeos.local" />
-
-        {/* Data Ownership & Export */}
-        <div className="w-full max-w-3xl">
-          <DataExportCard />
-        </div>
-      </div>
+      <BentoSettings initialProfile={profile} />
     </div>
   );
 }

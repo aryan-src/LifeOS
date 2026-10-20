@@ -636,3 +636,156 @@ html[data-theme="crimson-light"],
   color: #FFFDD0 !important;
 }
 
+/* ==========================================================================
+   Bento Grid & Atmosphere Theme Tokens for Settings
+   ========================================================================== */
+
+:root, [data-theme="default"] {
+  --color-bg-canvas: #FAF9F6;
+  --color-bg-header: rgba(250, 249, 246, 0.92);
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #F6F4EE;
+  --color-bg-button-subtle: #F0ECE1;
+  --color-bg-button-subtle-hover: #E8E2D5;
+  --color-text-primary: #191919;
+  --color-text-secondary: #78716C;
+  --color-text-muted: #A8A29E;
+  --color-border: #E7E5E4;
+  --color-border-card: rgba(231, 229, 228, 0.9);
+  --color-input-bg: #FCFBF9;
+  --color-input-border: #E5E2DC;
+  --color-input-focus-border: #1C1917;
+  --color-input-focus-ring: rgba(28, 25, 23, 0.08);
+  --color-btn-primary-bg: #0C0A09;
+  --color-btn-primary-hover: #292524;
+  --color-btn-primary-text: #FFFFFF;
+  --color-accent: #10B981;
+  --color-dock-bg: rgba(255, 255, 255, 0.96);
+  --color-dock-border: #E7E5E4;
+  --color-dock-active-bg: rgba(245, 245, 244, 0.95);
+  --color-dock-active-ring: rgba(214, 211, 209, 0.85);
+  --color-dock-active-text: #0C0A09;
+  --color-dock-text: #78716C;
+  --color-icon-bg: #F5F5F4;
+  --color-icon-border: rgba(231, 229, 228, 0.6);
+  --color-icon-fg: #44403C;
+  --selection-bg: #E8E5DD;
+  --selection-color: #111111;
+}
+
+[data-theme="crimson-dark"] {
+  --color-bg-canvas: #09090B;
+  --color-bg-header: rgba(9, 9, 11, 0.9);
+  --color-bg-card: #131217;
+  --color-bg-subtle: #191820;
+  --color-bg-button-subtle: #24222C;
+  --color-bg-button-subtle-hover: #2E2B38;
+  --color-text-primary: #FAF7F2;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+  --color-border: #27272A;
+  --color-border-card: #2B2630;
+  --color-input-bg: #0F0E13;
+  --color-input-border: #332B32;
+  --color-input-focus-border: #DC2626;
+  --color-input-focus-ring: rgba(220, 38, 38, 0.25);
+  --color-btn-primary-bg: #DC2626;
+  --color-btn-primary-hover: #B91C1C;
+  --color-btn-primary-text: #FFF5F5;
+  --color-accent: #EF4444;
+  --color-dock-bg: rgba(18, 17, 23, 0.94);
+  --color-dock-border: #332B32;
+  --color-dock-active-bg: rgba(220, 38, 38, 0.16);
+  --color-dock-active-ring: rgba(220, 38, 38, 0.4);
+  --color-dock-active-text: #F87171;
+  --color-dock-text: #A1A1AA;
+  --color-icon-bg: #211E26;
+  --color-icon-border: rgba(220, 38, 38, 0.2);
+  --color-icon-fg: #FCA5A5;
+  --selection-bg: #4C0519;
+  --selection-color: #FECDD3;
+}
+
+[data-theme="crimson-light"] {
+  --color-bg-canvas: #FAF8F5;
+  --color-bg-header: rgba(250, 248, 245, 0.92);
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #FFF8F8;
+  --color-bg-button-subtle: #FFE4E6;
+  --color-bg-button-subtle-hover: #FECDD3;
+  --color-text-primary: #18181B;
+  --color-text-secondary: #71717A;
+  --color-text-muted: #A1A1AA;
+  --color-border: #F3E8E8;
+  --color-border-card: #FEE2E2;
+  --color-input-bg: #FFFDFD;
+  --color-input-border: #FCA5A5;
+  --color-input-focus-border: #DC2626;
+  --color-input-focus-ring: rgba(220, 38, 38, 0.15);
+  --color-btn-primary-bg: #DC2626;
+  --color-btn-primary-hover: #BE123C;
+  --color-btn-primary-text: #FFFFFF;
+  --color-accent: #DC2626;
+  --color-dock-bg: rgba(255, 255, 255, 0.96);
+  --color-dock-border: #FECDD3;
+  --color-dock-active-bg: #FFF1F2;
+  --color-dock-active-ring: #FDA4AF;
+  --color-dock-active-text: #DC2626;
+  --color-dock-text: #71717A;
+  --color-icon-bg: #FFF1F2;
+  --color-icon-border: #FECDD3;
+  --color-icon-fg: #DC2626;
+  --selection-bg: #FFE4E6;
+  --selection-color: #9F1239;
+}
+
+[data-theme="system"] {
+  --color-bg-canvas: #F4F4F5;
+  --color-bg-header: rgba(244, 244, 245, 0.92);
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #EBEBEF;
+  --color-bg-button-subtle: #E2E2E7;
+  --color-bg-button-subtle-hover: #D5D5DB;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-border: #E5E7EB;
+  --color-border-card: #E5E7EB;
+  --color-input-bg: #F9FAFB;
+  --color-input-border: #D1D5DB;
+  --color-input-focus-border: #2563EB;
+  --color-input-focus-ring: rgba(37, 99, 235, 0.15);
+  --color-btn-primary-bg: #1F2937;
+  --color-btn-primary-hover: #111827;
+  --color-btn-primary-text: #FFFFFF;
+  --color-accent: #2563EB;
+  --color-dock-bg: rgba(255, 255, 255, 0.96);
+  --color-dock-border: #E5E7EB;
+  --color-dock-active-bg: rgba(243, 244, 246, 0.95);
+  --color-dock-active-ring: #D1D5DB;
+  --color-dock-active-text: #111827;
+  --color-dock-text: #6B7280;
+  --color-icon-bg: #F3F4F6;
+  --color-icon-border: #E5E7EB;
+  --color-icon-fg: #374151;
+  --selection-bg: #DBEAFE;
+  --selection-color: #1E40AF;
+}
+
+.theme-transition {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, fill 0.25s ease;
+}
+
+.shadow-subtle {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 4px 14px 0 rgba(0, 0, 0, 0.02);
+}
+
+.shadow-floating {
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+}
+
+

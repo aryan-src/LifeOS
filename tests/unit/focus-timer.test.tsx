@@ -1,25 +1,49 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { FocusTimer } from '@/components/tasks/focus-timer';
+import { FocusTimer } from '@/components/focus/focus-timer';
 import { logFocusSession, startTaskFocus } from '@/lib/actions/tasks';
 
-describe('FocusTimer Component', () => {
-  it('renders initial state matching the static Notion-style mockup', () => {
+describe('Scandinavian Minimal Zen Focus Timer Component', () => {
+  it('renders initial Zen & Flow State UI matching the prototype', () => {
     const html = renderToString(<FocusTimer />);
 
-    // Header & badge
-    expect(html).toContain('DEEP WORK SPRINT');
-    expect(html).toContain('Focus Mode');
+    // Header Zen flow status and ambient sound
+    expect(html).toContain('Deep Flow');
+    expect(html).toContain('Forest Rain');
 
-    // Default 25:00 Pomodoro interval
+    // Telemetry metric strip
+    expect(html).toContain('Focus Goal');
+    expect(html).toContain('Flow Index');
+    expect(html).toContain('94%');
+    expect(html).toContain('Peak flow');
+
+    // Serene centerpiece circular progress and display
+    expect(html).toContain('Stay Present');
     expect(html).toContain('25:00');
+    expect(html).toContain('Ready · 0% completed');
+    expect(html).toContain('zen-progress-ring');
+    expect(html).toContain('stroke-dasharray="653.45"');
 
-    // Flat progress bar track and initial 0% progress
-    expect(html).toContain('style="width:0%"');
+    // Action button with Focus label
+    expect(html).toContain('Focus');
 
-    // Action button with timer icon
-    expect(html).toContain('timer');
+    // Preset options
+    expect(html).toContain('15m');
+    expect(html).toContain('25m');
+    expect(html).toContain('50m');
+    expect(html).toContain('5m Rest');
+    expect(html).toContain('15m Long');
+    expect(html).toContain('Custom flow duration');
+
+    // Notion-style task callout footer
+    expect(html).toContain('Current Page');
+    expect(html).toContain('🍅 2/4 Pomos');
+
+    // Keyboard shortcut hints
+    expect(html).toContain('Space');
+    expect(html).toContain('M');
+    expect(html).toContain('R');
   });
 
   it('contains accessible ARIA role and label', () => {
@@ -28,62 +52,20 @@ describe('FocusTimer Component', () => {
     expect(html).toContain('aria-label="Pomodoro Focus Timer"');
   });
 
-  it('renders progress bar with custom Notion cream track and deep forest sage fill', () => {
+  it('renders completion finish estimate readout', () => {
     const html = renderToString(<FocusTimer />);
-    expect(html).toContain('bg-[#F4ECE3]');
-    expect(html).toContain('bg-[#2D6A4F]');
+    expect(html).toContain('Finishes at');
+    expect(html).toContain('0m elapsed');
   });
 
-  it('renders muted sage green status badge for Focus Mode', () => {
-    const html = renderToString(<FocusTimer />);
-    expect(html).toContain('bg-[#CBEBD6]');
-    expect(html).toContain('text-[#2A6041]');
-  });
-
-  it('renders squircle main action button with accessible title', () => {
-    const html = renderToString(<FocusTimer />);
-    expect(html).toContain('rounded-2xl');
-    expect(html).toContain('Start Focus Timer (Space)');
-  });
-
-  it('renders quick protocol interval presets and custom button', () => {
-    const html = renderToString(<FocusTimer />);
-    expect(html).toContain('15m');
-    expect(html).toContain('25m');
-    expect(html).toContain('50m');
-    expect(html).toContain('Custom');
-  });
-
-  it('renders context binding prompt for task and project association', () => {
-    const html = renderToString(<FocusTimer />);
-    expect(html).toContain('Binding to: Select Task or #Project...');
-  });
-
-  it('renders daily sprint streak strip and cumulative focus metric', () => {
-    const html = renderToString(<FocusTimer />);
-    expect(html).toContain('/4 Sprints');
-    expect(html).toContain('focused today');
-  });
-
-  it('renders bound task context when task is selected', () => {
+  it('renders bound task title when tasks and boundTaskId are provided', () => {
     const html = renderToString(
       <FocusTimer
-        tasks={[{ id: 't-1', title: 'Calculus Assignment 4' }]}
-        projects={[{ id: 'p-1', title: 'Math Studies', slug: 'math' }]}
+        tasks={[{ id: 't-100', title: 'Scandinavian Minimal Architecture Spec' }]}
+        boundTaskId="t-100"
       />
     );
-    expect(html).toContain('Pomodoro Focus Timer');
-  });
-
-  it('renders bound task title and chip when boundTaskId is provided via props', () => {
-    const html = renderToString(
-      <FocusTimer
-        tasks={[{ id: 't-1', title: 'Calculus Assignment 4' }]}
-        boundTaskId="t-1"
-      />
-    );
-    expect(html).toContain('Bound to:');
-    expect(html).toContain('Calculus Assignment 4');
+    expect(html).toContain('Scandinavian Minimal Architecture Spec');
   });
 
   describe('Focus Telemetry & Task Data Access Layer', () => {

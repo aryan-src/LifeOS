@@ -21,10 +21,7 @@ import {
   Square,
 } from 'lucide-react';
 
-export type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
-export type DisplayStyle = 'dot-matrix' | 'monospace' | 'flip-clock';
-export type AccentTheme = 'sage' | 'amber' | 'charcoal' | 'crimson';
-export type ChimeSound = 'bowl' | 'bell' | 'digital' | 'silent';
+export type TimerMode = 'focus' | 'break' | 'rest';
 
 export interface FocusTimerProps {
   className?: string;
@@ -33,8 +30,26 @@ export interface FocusTimerProps {
   boundTaskId?: string | null;
   onBindTask?: (task: { id: string; title: string } | null) => void;
   onTaskStatusChange?: (taskId: string, inProgress: boolean) => void;
-  onSessionComplete?: (mode: TimerMode, completedSprints: number) => void;
+  onSessionComplete?: (mode: string, completedSprints: number) => void;
 }
+
+export interface PresetOption {
+  label: string;
+  seconds: number;
+  mode: TimerMode;
+  name: string;
+}
+
+export const PRESET_OPTIONS: PresetOption[] = [
+  { label: '15m', seconds: 900, mode: 'focus', name: 'Micro-Flow' },
+  { label: '25m', seconds: 1500, mode: 'focus', name: 'Pomodoro' },
+  { label: '50m', seconds: 3000, mode: 'focus', name: 'Deep Flow' },
+  { label: '5m Rest', seconds: 300, mode: 'break', name: 'Short Pause' },
+  { label: '15m Long', seconds: 900, mode: 'rest', name: 'Resting Flow' },
+];
+
+// Circular SVG Progress: Radius = 104 -> Circumference = 2 * PI * 104 ≈ 653.45
+export const CIRCUMFERENCE = 653.45;
 
 const MODE_CONFIG: Record<
   TimerMode,

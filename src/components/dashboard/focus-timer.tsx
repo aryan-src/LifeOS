@@ -358,15 +358,25 @@ export function FocusTimer({
       }
     } catch {}
   }, [todayStr]);
-      if (savedTheme && THEME_STYLES[savedTheme]) setAccentTheme(savedTheme);
+  // Format MM:SS helper
+  const formatTime = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
-      const savedStyle = localStorage.getItem('lifeos_focus_style') as DisplayStyle;
-      if (savedStyle) setDisplayStyle(savedStyle);
+  // Real-time "Finishes at [HH:MM AM/PM]"
+  const [finishTimeText, setFinishTimeText] = useState<string>('10:45 AM');
 
-      const savedChime = localStorage.getItem('lifeos_focus_chime') as ChimeSound;
-      if (savedChime) setChimeSound(savedChime);
-    } catch {}
-  }, [todayStr]);
+  useEffect(() => {
+    const targetDate = new Date(Date.now() + remainingSeconds * 1000);
+    const hours = targetDate.getHours();
+    const mins = targetDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+    const formattedMins = String(mins).padStart(2, '0');
+    setFinishTimeText(`${formattedHours}:${formattedMins} ${ampm}`);
+  }, [remainingSeconds, isRunning]);
 
   // Fetch binding candidates if not passed as props
   useEffect(() => {

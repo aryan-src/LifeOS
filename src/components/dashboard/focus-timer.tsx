@@ -51,6 +51,77 @@ export const PRESET_OPTIONS: PresetOption[] = [
 // Circular SVG Progress: Radius = 104 -> Circumference = 2 * PI * 104 ≈ 653.45
 export const CIRCUMFERENCE = 653.45;
 
+/**
+ * 100% Offline Ambient Sound Synthesizer via Web Audio API.
+ * Synthesizes tranquil forest rain noise with organic lowpass filtering.
+ */
+export class ForestRainAudioEngine {
+  private ctx: AudioContext | null = null;
+  private noiseNode: AudioNode | null = null;
+  private isPlaying = false;
+
+  start() {
+    if (this.isPlaying || typeof window === 'undefined') return;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+      const bufferSize = this.ctx.sampleRate * 2;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Pink/brownian organic noise simulation
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = data[i];
+        data[i] *= 2.5;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // Organic lowpass filter mimicking canopy rain drops
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      noise.start();
+      this.noiseNode = noise;
+      this.isPlaying = true;
+    } catch {
+      // Audio autoplay restrictions or headless test runners
+    }
+  }
+
+  stop() {
+    if (!this.isPlaying) return;
+    try {
+      if (this.ctx) {
+        this.ctx.close();
+        this.ctx = null;
+      }
+      this.isPlaying = false;
+      this.noiseNode = null;
+    } catch {
+      // Audio teardown safe fallback
+    }
+  }
+}
+
+export const ambientAudioEngine = new ForestRainAudioEngine();
+
 const MODE_CONFIG: Record<
   TimerMode,
   {

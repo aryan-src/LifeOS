@@ -66,9 +66,16 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
  * Update student profile preferences with strict validation.
  */
 export async function updateProfile(
-  prevState: unknown,
-  formData: FormData
+  prevStateOrFormData: unknown,
+  maybeFormData?: FormData
 ): Promise<ActionResponse<Profile>> {
+  const formData =
+    maybeFormData instanceof FormData
+      ? maybeFormData
+      : prevStateOrFormData instanceof FormData
+      ? prevStateOrFormData
+      : new FormData();
+
   const parsed = updateProfileSchema.safeParse({
     displayName: formData.get('displayName'),
     currencySymbol: formData.get('currencySymbol'),
@@ -108,9 +115,19 @@ export async function updateProfile(
     .select()
     .maybeSingle();
 
-  if (error && (themePreference === 'crimson-dark' || themePreference === 'crimson-light' || themePreference === 'crimson-cream' || themePreference === 'default')) {
+  if (
+    error &&
+    (themePreference === 'crimson-dark' ||
+      themePreference === 'crimson-light' ||
+      themePreference === 'crimson-cream' ||
+      themePreference === 'default' ||
+      themePreference === 'system')
+  ) {
     // If the remote check constraint has not been updated yet, store standard DB fallback
-    const fallbackTheme = (themePreference === 'crimson-dark' || themePreference === 'crimson-cream') ? 'dark' : 'stone';
+    const fallbackTheme =
+      themePreference === 'crimson-dark' || themePreference === 'crimson-cream'
+        ? 'dark'
+        : 'stone';
     const fallbackRes = await supabase
       .from('profiles')
       .upsert({
@@ -151,6 +168,8 @@ export async function updateProfile(
     data: updatedProfile,
   };
 }
+
+export const updateUserProfile = updateProfile;
 
 /**
  * Sign out action - terminates Supabase session and redirects to /login.

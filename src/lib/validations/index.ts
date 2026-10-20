@@ -315,6 +315,7 @@ export const themePreferenceEnum = z.enum([
   'crimson-dark',
   'crimson-light',
   'default',
+  'system',
 ]);
 
 export const updateProfileSchema = z.object({

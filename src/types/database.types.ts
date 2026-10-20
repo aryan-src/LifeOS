@@ -251,7 +251,7 @@ export interface Database {
         Row: {
           id: string;
           display_name: string | null;
-          theme_preference: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default';
+          theme_preference: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
           currency_symbol: string;
           monthly_allowance_target: number;
           created_at: string;
@@ -260,7 +260,7 @@ export interface Database {
         Insert: {
           id: string;
           display_name?: string | null;
-          theme_preference?: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default';
+          theme_preference?: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
           currency_symbol?: string;
           monthly_allowance_target?: number;
           created_at?: string;
@@ -269,7 +269,7 @@ export interface Database {
         Update: {
           id?: string;
           display_name?: string | null;
-          theme_preference?: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default';
+          theme_preference?: 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
           currency_symbol?: string;
           monthly_allowance_target?: number;
           created_at?: string;

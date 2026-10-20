@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type LifeOSTheme = 'light' | 'dark' | 'crimson-dark' | 'crimson-light' | 'default';
+export type LifeOSTheme = 'light' | 'dark' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
 
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
@@ -17,6 +17,14 @@ export function applyThemeToDOM(theme: string) {
   } else if (theme === 'crimson-light') {
     root.setAttribute('data-theme', 'crimson-light');
     root.classList.remove('dark');
+  } else if (theme === 'system') {
+    root.setAttribute('data-theme', 'system');
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
   } else if (theme === 'dark') {
     root.removeAttribute('data-theme');
     root.classList.add('dark');
@@ -24,14 +32,9 @@ export function applyThemeToDOM(theme: string) {
     root.removeAttribute('data-theme');
     root.classList.remove('dark');
   } else {
-    // Default / system
-    root.removeAttribute('data-theme');
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    // Default / Notion warm paper
+    root.setAttribute('data-theme', 'default');
+    root.classList.remove('dark');
   }
 }
 

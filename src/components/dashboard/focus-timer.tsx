@@ -452,55 +452,56 @@ export function FocusTimer({
       role="region"
       aria-label="Pomodoro Focus Timer"
     >
-      {/* 1. Header: Phase Title, Daily Sprints Streak Strip & Settings Popover */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="font-mono text-xs font-semibold text-outline dark:text-zinc-400 uppercase tracking-widest select-none truncate">
-            {MODE_CONFIG[mode].header}
-          </span>
-          {/* Daily Sprint Streak Strip (● ● ◌ ◌) */}
+      {/* 1. Header: Top-Left Metric Badge, Mode Badge & Controls Icon */}
+      <div className="flex items-center justify-between gap-3 mb-4 w-full">
+        {/* Hidden accessible phase header for screen readers and SSR compatibility */}
+        <span className="sr-only">{MODE_CONFIG[mode].header}</span>
+
+        {/* Top-Left Metric Badge: Sprint Dots & Cumulative Focus Time */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100/80 dark:bg-zinc-800/80 border border-stone-200/60 dark:border-zinc-700/60 text-xs font-mono text-stone-600 dark:text-zinc-300 select-none shrink-0 whitespace-nowrap">
+          {/* Sprint Streak Dots (● ● ◌ ◌) */}
           <div
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container dark:bg-zinc-800/80 text-[11px] font-mono select-none"
+            className="flex items-center gap-1 shrink-0"
             title={`${completedSprints} sprints completed today`}
           >
-            <div className="flex items-center gap-1">
-              {[0, 1, 2, 3].map((idx) => (
-                <span
-                  key={idx}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    idx < completedSprints % 4 || (completedSprints > 0 && completedSprints % 4 === 0)
-                      ? `${activeTheme.dot} scale-110`
-                      : 'bg-stone-300 dark:bg-zinc-600'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] text-outline dark:text-zinc-400 font-medium">
-              {completedSprints % 4}/4 Sprints
-            </span>
+            {[0, 1, 2, 3].map((idx) => (
+              <span
+                key={idx}
+                className={`w-1.5 h-1.5 rounded-full transition-all shrink-0 ${
+                  idx < completedSprints % 4 || (completedSprints > 0 && completedSprints % 4 === 0)
+                    ? `${activeTheme.dot} scale-110`
+                    : 'bg-stone-300 dark:bg-zinc-600'
+                }`}
+              />
+            ))}
           </div>
-        </div>
 
-        {/* Header Right: Focus Mode Badge & Settings Trigger */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Cumulative Focus Metric Badge */}
+          <span className="sr-only">{completedSprints % 4}/4 Sprints</span>
+
+          {/* Subtle Vertical Divider */}
+          <div className="h-3 w-px bg-stone-300 dark:bg-zinc-700 shrink-0" />
+
+          {/* Cumulative Focus Metric */}
           <span
-            className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[11px] bg-surface-container dark:bg-zinc-800 text-outline dark:text-zinc-400"
+            className="text-xs font-medium text-stone-600 dark:text-zinc-300 shrink-0 whitespace-nowrap"
             title="Total focus time accumulated today"
           >
-            <span>{todayFocusMinutes}m focused today</span>
+            {todayFocusMinutes}m focused today
           </span>
+        </div>
 
+        {/* Header Right: Mode Badge & Controls Icon */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Mode Pill Badge */}
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-medium transition-all select-none ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-medium transition-all select-none whitespace-nowrap ${
               isBreakMode
                 ? 'text-[#92400E] bg-[#FEF3C7] dark:bg-amber-950/60 dark:text-amber-300 border border-[#FDE68A]/60 dark:border-amber-800/50'
                 : activeTheme.badge
             }`}
           >
             <span
-              className={`w-1.5 h-1.5 rounded-full ${
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 isBreakMode ? 'bg-[#D97706] dark:bg-amber-400' : activeTheme.dot
               } ${isRunning ? 'animate-pulse' : ''}`}
             />

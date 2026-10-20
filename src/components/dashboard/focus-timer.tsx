@@ -666,58 +666,87 @@ export function FocusTimer({
       p.slug.toLowerCase().includes(contextSearchQuery.toLowerCase())
   );
 
-  const isRunning = timerState === 'running';
-  const isPaused = timerState === 'paused';
-  const isBreakMode = mode !== 'focus';
-  const todayFocusMinutes = Math.floor(cumulativeSecondsToday / 60);
+  const isBreakMode = currentMode !== 'focus';
+  const sessionOrdinal = (completedSprints % 4) + 1;
+  const sessionStatusTitle =
+    currentMode === 'focus'
+      ? 'Deep Flow'
+      : currentMode === 'break'
+      ? 'Short Pause'
+      : 'Resting Flow';
 
   return (
-    <div
-      className={`relative bg-surface-container-lowest dark:bg-zinc-900/50 border border-outline-variant/30 dark:border-zinc-800/60 p-6 sm:p-7 rounded-3xl shadow-xs flex flex-col gap-5 transition-all duration-300 ${
-        isVisualAlerting
-          ? 'ring-2 ring-emerald-500/60 border-emerald-400/80 animate-pulse'
-          : ''
-      } ${className}`}
+    <section
+      className={`w-full bg-[#FBFBF9] dark:bg-zinc-900 rounded-[32px] border border-[#ECEAE3] dark:border-zinc-800 shadow-[0_20px_48px_-12px_rgba(28,25,23,0.05),0_1px_3px_rgba(28,25,23,0.02)] p-7 sm:p-9 space-y-7 transition-all duration-300 ${className}`}
       role="region"
       aria-label="Pomodoro Focus Timer"
+      data-purpose="timer-card"
     >
-      {/* 1. Header: Top-Left Metric Badge, Mode Badge & Controls Icon */}
-      <div className="flex items-center justify-between gap-3 mb-4 w-full">
-        {/* Hidden accessible phase header for screen readers and SSR compatibility */}
-        <span className="sr-only">{MODE_CONFIG[mode].header}</span>
-
-        {/* Top-Left Metric Badge: Sprint Dots & Cumulative Focus Time */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100/80 dark:bg-zinc-800/80 border border-stone-200/60 dark:border-zinc-700/60 text-xs font-mono text-stone-600 dark:text-zinc-300 select-none shrink-0 whitespace-nowrap">
-          {/* Sprint Streak Dots (● ● ◌ ◌) */}
-          <div
-            className="flex items-center gap-1 shrink-0"
-            title={`${completedSprints} sprints completed today`}
-          >
-            {[0, 1, 2, 3].map((idx) => (
-              <span
-                key={idx}
-                className={`w-1.5 h-1.5 rounded-full transition-all shrink-0 ${
-                  idx < completedSprints % 4 || (completedSprints > 0 && completedSprints % 4 === 0)
-                    ? `${activeTheme.dot} scale-110`
-                    : 'bg-stone-300 dark:bg-zinc-600'
-                }`}
-              />
-            ))}
-          </div>
-
-          <span className="sr-only">{completedSprints % 4}/4 Sprints</span>
-
-          {/* Subtle Vertical Divider */}
-          <div className="h-3 w-px bg-stone-300 dark:bg-zinc-700 shrink-0" />
-
-          {/* Cumulative Focus Metric */}
-          <span
-            className="text-xs font-medium text-stone-600 dark:text-zinc-300 shrink-0 whitespace-nowrap"
-            title="Total focus time accumulated today"
-          >
-            {todayFocusMinutes}m focused today
+      {/* 1. Header: Zen Flow Badges & Ambient Sound Pill */}
+      <header className="flex items-center justify-between gap-3 text-xs">
+        {/* Flow status & session progression indicator */}
+        <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#F3F2EC] dark:bg-zinc-800/80 border border-[#E7E5DC] dark:border-zinc-700/60 text-stone-600 dark:text-zinc-300 font-mono text-[11px] shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] select-none">
+          <span className="relative flex h-2 w-2">
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                isBreakMode ? 'bg-amber-400' : 'bg-emerald-400'
+              } opacity-60 ${isRunning ? '' : 'hidden'}`}
+              id="flow-dot-ping"
+            />
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                isBreakMode ? 'bg-amber-500' : 'bg-emerald-600/90'
+              }`}
+              id="flow-dot"
+            />
+          </span>
+          <span className="font-medium text-stone-700 dark:text-zinc-200 tracking-tight" id="session-status-text">
+            {sessionStatusTitle}
+          </span>
+          <span className="text-stone-300 dark:text-zinc-600">·</span>
+          <span className="text-stone-500 dark:text-zinc-400 font-normal">
+            Session {sessionOrdinal} of 4
           </span>
         </div>
+
+        {/* Ambient sound & Settings toggles */}
+        <div className="flex items-center gap-1.5">
+          {/* Ambient Sound Toggle Badge */}
+          <button
+            type="button"
+            onClick={toggleAmbient}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-[#E7E5DD] dark:border-zinc-700 text-[11px] font-sans transition-colors cursor-pointer group ${
+              isAmbientPlaying
+                ? 'bg-[#EFECE3] dark:bg-zinc-800 text-stone-900 dark:text-zinc-100 font-medium'
+                : 'bg-[#F5F4EE] hover:bg-[#EFECE3] dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-stone-600 dark:text-zinc-400 opacity-80'
+            }`}
+            id="ambient-btn"
+            title="Toggle Forest Rain audio (Press M)"
+          >
+            <CloudRain
+              className={`w-3.5 h-3.5 transition-colors ${
+                isAmbientPlaying
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-stone-400 group-hover:text-stone-700 dark:text-zinc-500 dark:group-hover:text-zinc-300'
+              }`}
+            />
+            <span className="tracking-tight text-[11.5px]" id="ambient-label">
+              {isAmbientPlaying ? 'Forest Rain' : 'Muted'}
+            </span>
+          </button>
+
+          {/* Zen Settings / Custom Time Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsCustomOpen(!isCustomOpen)}
+            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-zinc-500 dark:hover:text-zinc-200 hover:bg-[#F3F1EB] dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            id="settings-btn"
+            title="Focus duration settings"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
 
         {/* Header Right: Mode Badge & Controls Icon */}
         <div className="flex items-center gap-2 shrink-0">

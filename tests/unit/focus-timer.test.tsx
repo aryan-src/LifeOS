@@ -44,4 +44,33 @@ describe('FocusTimer Component', () => {
     expect(html).toContain('rounded-2xl');
     expect(html).toContain('Start Focus Timer (Space)');
   });
+
+  it('renders quick protocol interval presets and custom button', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('15m');
+    expect(html).toContain('25m');
+    expect(html).toContain('50m');
+    expect(html).toContain('Custom');
+  });
+
+  it('renders context binding prompt for task and project association', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('Binding to: Select Task or #Project...');
+  });
+
+  it('renders daily sprint streak strip and cumulative focus metric', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('/4 Sprints');
+    expect(html).toContain('focused today');
+  });
+
+  it('renders bound task context when task is selected', () => {
+    const html = renderToString(
+      <FocusTimer
+        tasks={[{ id: 't-1', title: 'Calculus Assignment 4' }]}
+        projects={[{ id: 'p-1', title: 'Math Studies', slug: 'math' }]}
+      />
+    );
+    expect(html).toContain('Pomodoro Focus Timer');
+  });
 });

@@ -153,14 +153,35 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
       expect(html).toContain('line-through');
       expect(html).toContain('text-stone-400');
     });
+
+    it('renders "Due Today" badge with organic sage green styling', () => {
+      const dueTodayTask: TaskWithProject = {
+        ...mockTasks[1],
+        due_date: '2026-10-20',
+      };
+      const html = renderToString(
+        <TaskItem
+          task={dueTodayTask}
+          onToggle={vi.fn()}
+          onToggleInProgress={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      );
+
+      expect(html).toContain('Due Today');
+      expect(html).toContain('text-emerald-700');
+      expect(html).toContain('bg-emerald-50/80');
+      expect(html).toContain('border-emerald-200/60');
+    });
   });
 
   describe('TaskChecklist Segregation (Deliverables vs. Completed)', () => {
-    it('segregates active and in-progress tasks into Deliverables and completed tasks into Completed Tasks', () => {
+    it('segregates active and in-progress tasks into Deliverables and completed tasks into Completed Tasks for selected date', () => {
       const html = renderToString(
         <TaskChecklist
           initialTasks={mockTasks}
           projects={[]}
+          initialSelectedDate="2026-10-19"
         />
       );
 
@@ -171,11 +192,28 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
       expect(html).toContain('Complete Java');
       expect(html).toContain('Hacker Rank Python');
 
-      // Section 2: Completed Tasks
+      // Section 2: Completed Tasks (rendered for 2026-10-19)
       expect(html).toContain('data-purpose="completed-tasks-section"');
       expect(html).toContain('Completed Tasks');
       expect(html).toContain('1 item'); // Html (20 Pages)
       expect(html).toContain('Html (20 Pages)');
+    });
+
+    it('strictly isolates completed tasks so yesterday completed tasks do NOT appear on today view', () => {
+      const html = renderToString(
+        <TaskChecklist
+          initialTasks={mockTasks}
+          projects={[]}
+          initialSelectedDate="2026-10-20"
+        />
+      );
+
+      // Section 1: Deliverables (overdue items still shown in deliverables)
+      expect(html).toContain('Deliverables');
+      expect(html).toContain('Complete Java');
+
+      // Section 2: Html (20 Pages) was completed on 2026-10-19, so it must NOT appear on 2026-10-20
+      expect(html).not.toContain('Html (20 Pages)');
     });
   });
 });

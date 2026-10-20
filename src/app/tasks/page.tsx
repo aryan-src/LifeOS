@@ -4,6 +4,7 @@ import { TaskChecklist } from '@/components/tasks/task-checklist';
 import { getTasks } from '@/lib/actions/tasks';
 import { getProjectOptions } from '@/lib/actions/projects-options';
 import { getProjectsWithMetrics } from '@/lib/actions/projects';
+import { getTodayDate, getLocalDateString } from '@/lib/utils/date';
 
 export const metadata: Metadata = {
   title: 'Tasks',
@@ -12,7 +13,13 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function TasksPage() {
+export default async function TasksPage(props: {
+  searchParams?: Promise<{ date?: string }>;
+}) {
+  const searchParams = props.searchParams ? await props.searchParams : undefined;
+  const todayStr = getTodayDate();
+  const selectedDate = searchParams?.date || todayStr;
+
   let tasks: Awaited<ReturnType<typeof getTasks>> = [];
   let projects: Awaited<ReturnType<typeof getProjectOptions>> = [];
   let projectsWithMetrics: Awaited<ReturnType<typeof getProjectsWithMetrics>> = [];
@@ -31,9 +38,13 @@ export default async function TasksPage() {
   }
 
   const safeTasks = Array.isArray(tasks) ? tasks : [];
-  const completedTodayCount = safeTasks.filter((t) => t.is_completed).length;
+  const completedTodayCount = safeTasks.filter((t) => {
+    if (!t.is_completed) return false;
+    const taskCompletedDate = getLocalDateString(t.completed_at || t.created_at);
+    return taskCompletedDate === selectedDate;
+  }).length;
   const pendingCount = safeTasks.filter((t) => !t.is_completed).length;
-  const totalCount = safeTasks.length;
+  const totalCount = pendingCount + completedTodayCount;
   const velocityPercent = totalCount > 0 ? Math.round((completedTodayCount / totalCount) * 100) : 0;
 
   return (
@@ -99,6 +110,7 @@ export default async function TasksPage() {
           initialTasks={safeTasks}
           projects={projects}
           projectDeadlines={projectsWithMetrics}
+          initialSelectedDate={selectedDate}
         />
       </div>
     </div>

@@ -146,20 +146,26 @@ export function TaskItem({
             {task.due_date && (
               <span
                 suppressHydrationWarning
-                className={`flex items-center gap-1 font-medium ${
+                className={`inline-flex items-center gap-1 font-medium transition-colors ${
                   task.is_completed
                     ? 'text-stone-400 dark:text-zinc-500'
                     : isOverdue
                     ? 'text-rose-600 dark:text-rose-400 font-semibold'
                     : isDueToday
-                    ? 'text-amber-700 dark:text-amber-400'
+                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60 px-1.5 py-0.5 rounded-md'
                     : 'text-stone-500 dark:text-zinc-400'
                 }`}
               >
                 {isOverdue && !task.is_completed ? (
-                  <AlertCircle className="w-3.5 h-3.5" />
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                 ) : (
-                  <Clock className="w-3.5 h-3.5" />
+                  <Clock
+                    className={`w-3.5 h-3.5 ${
+                      isDueToday
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-stone-400 dark:text-zinc-500'
+                    }`}
+                  />
                 )}
                 {isOverdue && !task.is_completed
                   ? `Overdue: ${task.due_date}`

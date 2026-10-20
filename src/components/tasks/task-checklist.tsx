@@ -10,7 +10,7 @@ import {
   type TaskWithProject,
 } from '@/lib/actions/tasks';
 import type { ProjectOption } from '@/lib/actions/projects-options';
-import { getTodayDate } from '@/lib/utils/date';
+import { getTodayDate, getLocalDateString } from '@/lib/utils/date';
 import {
   GlassCalendar,
   type CalendarProjectItem,
@@ -22,6 +22,7 @@ interface TaskChecklistProps {
   initialTasks: TaskWithProject[];
   projects: ProjectOption[];
   projectDeadlines?: CalendarProjectItem[];
+  initialSelectedDate?: string;
 }
 
 type FilterTab = 'today' | 'upcoming' | 'completed' | 'all';
@@ -35,11 +36,14 @@ export function TaskChecklist({
   initialTasks,
   projects,
   projectDeadlines,
+  initialSelectedDate,
 }: TaskChecklistProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('today');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const todayStr = getTodayDate();
-  const [selectedDueDate, setSelectedDueDate] = useState<string>(todayStr);
+  const [selectedDueDate, setSelectedDueDate] = useState<string>(
+    initialSelectedDate || todayStr
+  );
   const [, startTransition] = useTransition();
 
   // Non-blocking tab change using React 19 concurrent transitions
@@ -146,44 +150,55 @@ export function TaskChecklist({
     });
   };
 
-  // Filter tasks based on current tab
-  const filteredTasks = useMemo(() => {
+  // Active deliverables (tasks that are NOT completed)
+  const deliverables = useMemo(() => {
+    if (activeTab === 'completed') return [];
     return optimisticTasks.filter((task) => {
-      if (activeTab === 'completed') {
-        return task.is_completed;
-      }
+      if (task.is_completed) return false;
       if (activeTab === 'upcoming') {
-        return task.due_date && task.due_date > todayStr;
+        return task.due_date && task.due_date > selectedDueDate;
       }
       if (activeTab === 'today') {
-        return !task.due_date || task.due_date <= todayStr;
+        return !task.due_date || task.due_date <= selectedDueDate;
       }
       return true; // 'all'
     });
-  }, [optimisticTasks, activeTab, todayStr]);
+  }, [optimisticTasks, activeTab, selectedDueDate]);
 
-  // Segregate active deliverables vs completed tasks
-  const deliverables = useMemo(() => {
-    if (activeTab === 'completed') return [];
-    return filteredTasks.filter((task) => !task.is_completed);
-  }, [filteredTasks, activeTab]);
-
+  // Completed tasks (strictly date-segregated by localized completed_at)
+  // A task appears in the Completed Tasks section ONLY on the date it was completed.
   const completedTasks = useMemo(() => {
-    return filteredTasks.filter((task) => task.is_completed);
-  }, [filteredTasks]);
+    return optimisticTasks.filter((task) => {
+      if (!task.is_completed) return false;
+      if (activeTab === 'all') {
+        return true;
+      }
+      // For both 'today' (default view) and 'completed' tab:
+      // Strictly match localized YYYY-MM-DD from completed_at against selectedDueDate.
+      const taskCompletedDate = getLocalDateString(task.completed_at || task.created_at);
+      return taskCompletedDate === selectedDueDate;
+    });
+  }, [optimisticTasks, activeTab, selectedDueDate]);
 
-  // Memoize tab counts
+  // Total items shown in current view
+  const totalItemsShown = deliverables.length + completedTasks.length;
+
+  // Memoize tab counts strictly localized to selected date view
   const counts = useMemo(
     () => ({
       today: optimisticTasks.filter(
-        (t) => (!t.due_date || t.due_date <= todayStr) && !t.is_completed
+        (t) => (!t.due_date || t.due_date <= selectedDueDate) && !t.is_completed
       ).length,
       upcoming: optimisticTasks.filter(
-        (t) => !t.is_completed && t.due_date && t.due_date > todayStr
+        (t) => !t.is_completed && t.due_date && t.due_date > selectedDueDate
       ).length,
-      completed: optimisticTasks.filter((t) => t.is_completed).length,
+      completed: optimisticTasks.filter((t) => {
+        if (!t.is_completed) return false;
+        const taskCompletedDate = getLocalDateString(t.completed_at || t.created_at);
+        return taskCompletedDate === selectedDueDate;
+      }).length,
     }),
-    [optimisticTasks, todayStr]
+    [optimisticTasks, selectedDueDate]
   );
 
   return (
@@ -273,7 +288,7 @@ export function TaskChecklist({
           </div>
 
           <div className="flex items-center gap-1 text-outline dark:text-zinc-400 font-label-sm text-label-sm">
-            <span>{filteredTasks.length} items shown</span>
+            <span>{totalItemsShown} items shown</span>
           </div>
         </div>
 
@@ -403,6 +418,13 @@ export function TaskChecklist({
           <GlassCalendar
             tasks={optimisticTasks}
             projects={projectDeadlines || []}
+            selectedDate={new Date(selectedDueDate + 'T00:00:00')}
+            onDateSelect={(date) => {
+              const formatted = getLocalDateString(date);
+              if (formatted) {
+                setSelectedDueDate(formatted);
+              }
+            }}
             onOpenTaskInput={(dateStr) => {
               setSelectedDueDate(dateStr);
             }}

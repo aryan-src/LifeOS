@@ -23,6 +23,28 @@ export function getTodayDate(date: Date = new Date()): string {
 }
 
 /**
+ * Extracts a localized YYYY-MM-DD date string from an ISO timestamp, string, or Date in IST.
+ * Returns null if the input is null, undefined, or invalid.
+ * Prevents UTC timezone offsets from drifting completed dates across day boundaries.
+ */
+export function getLocalDateString(dateInput?: string | Date | null): string | null {
+  if (!dateInput) return null;
+  if (typeof dateInput === 'string') {
+    // If it's already a strict YYYY-MM-DD date string without time
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      return dateInput;
+    }
+  }
+  try {
+    const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    if (isNaN(d.getTime())) return null;
+    return istDateFormatter.format(d);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Returns tomorrow's date formatted as YYYY-MM-DD in IST.
  */
 export function getTomorrowDate(): string {

@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import type { Task, InsertTask, UpdateTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { getLocalDateString, getTodayDate } from '@/lib/utils/date';
 import {
   createTaskSchema,
   toggleTaskSchema,
@@ -25,8 +26,12 @@ export interface TaskWithProject extends Task {
 /**
  * Fetch tasks for the authenticated user, optionally with linked project data.
  * Safe query returning an array of tasks with zero unhandled exceptions.
+ *
+ * When querying for a specific date view (`selectedDate`, e.g., '2026-10-20'),
+ * completed tasks are strictly segregated: a completed task appears ONLY on the
+ * date it was actually completed (completed_at), regardless of original due_date.
  */
-export async function getTasks(): Promise<TaskWithProject[]> {
+export async function getTasks(selectedDate?: string): Promise<TaskWithProject[]> {
   try {
     const supabase = await createClient();
     const {
@@ -55,11 +60,39 @@ export async function getTasks(): Promise<TaskWithProject[]> {
       return [];
     }
 
-    return data as unknown as TaskWithProject[];
+    const tasks = data as unknown as TaskWithProject[];
+
+    // When querying for a specific date view, strictly segregate completed tasks:
+    // A completed task must appear only on the date it was completed_at.
+    if (selectedDate) {
+      return tasks.filter((task) => {
+        if (!task.is_completed) return true;
+        const taskCompletedDate = getLocalDateString(task.completed_at || task.created_at);
+        return taskCompletedDate === selectedDate;
+      });
+    }
+
+    return tasks;
   } catch (err) {
     console.error('Unhandled error in getTasks:', err);
     return [];
   }
+}
+
+/**
+ * Fetch completed tasks for a specific localized date.
+ * Prevents UTC timezone drift by comparing localized YYYY-MM-DD from completed_at.
+ */
+export async function getCompletedTasksForDate(
+  selectedDate?: string
+): Promise<TaskWithProject[]> {
+  const targetDate = selectedDate || getTodayDate();
+  const allTasks = await getTasks();
+  return allTasks.filter(
+    (t) =>
+      t.is_completed &&
+      getLocalDateString(t.completed_at || t.created_at) === targetDate
+  );
 }
 
 /**

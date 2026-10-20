@@ -1092,6 +1092,30 @@ export function FocusTimer({
           </div>
         )}
       </div>
-    </div>
+
+      {/* 6. Subtle Keyboard Shortcut Hints Footer */}
+      <footer className="pt-1 flex items-center justify-center gap-3 sm:gap-4 text-[11px] font-mono text-stone-400 dark:text-zinc-500 select-none">
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded-md bg-[#EDEBE2] dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-[#DDD9CE] dark:border-zinc-700 text-[10px]">
+            Space
+          </kbd>{' '}
+          {isRunning ? 'Pause' : 'Focus'}
+        </span>
+        <span className="text-stone-300 dark:text-zinc-700">·</span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded-md bg-[#EDEBE2] dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-[#DDD9CE] dark:border-zinc-700 text-[10px]">
+            M
+          </kbd>{' '}
+          {isAmbientPlaying ? 'Mute' : 'Rain'}
+        </span>
+        <span className="text-stone-300 dark:text-zinc-700">·</span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded-md bg-[#EDEBE2] dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-[#DDD9CE] dark:border-zinc-700 text-[10px]">
+            R
+          </kbd>{' '}
+          Reset
+        </span>
+      </footer>
+    </section>
   );
 }

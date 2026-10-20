@@ -17,6 +17,9 @@ import {
   type CalendarProjectItem,
 } from '@/components/ui/glass-calendar';
 import { FocusTimer } from './focus-timer';
+import { WeeklyVelocityCard } from './weekly-velocity-card';
+import { LinkedProjectsCard } from './linked-projects-card';
+import { HourlyTimeblocks } from './hourly-timeblocks';
 import { AlertTriangle, CheckCircle2, Target, ChevronDown } from 'lucide-react';
 
 interface TaskChecklistProps {
@@ -491,6 +494,12 @@ export function TaskChecklist({
             </AnimatePresence>
           </div>
         )}
+
+        {/* 5. Weekly Work Velocity & Routines Card */}
+        <WeeklyVelocityCard />
+
+        {/* 6. Linked Project Tracks (Active Projects & Roadmap Link) */}
+        <LinkedProjectsCard projects={projectDeadlines} />
       </div>
 
       {/* Right Column: Focus Companion & Context Workspace (4 Cols) */}
@@ -531,6 +540,9 @@ export function TaskChecklist({
             }}
           />
         </div>
+
+        {/* Hourly Focus Blocks & Time Allocation Timeline */}
+        <HourlyTimeblocks />
       </div>
     </div>
   );

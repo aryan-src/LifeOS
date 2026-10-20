@@ -90,20 +90,20 @@ describe('Middleware Route Guards (updateSession)', () => {
       });
     });
 
-    it('redirects authenticated user from / to /dashboard', async () => {
+    it('allows authenticated access to public route /', async () => {
       const req = new NextRequest(new URL('http://localhost:3000/'));
       const res = await updateSession(req);
 
-      expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/dashboard');
+      // / is a public route, so middleware allows it through
+      expect(res.headers.get('location')).toBeNull();
     });
 
-    it('redirects authenticated user from /login to /dashboard', async () => {
+    it('redirects authenticated user from /login to /', async () => {
       const req = new NextRequest(new URL('http://localhost:3000/login'));
       const res = await updateSession(req);
 
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/dashboard');
+      expect(res.headers.get('location')).toBe('http://localhost:3000/');
     });
 
     for (const route of PROTECTED_ROUTES) {

@@ -40,6 +40,7 @@ export function TaskChecklist({
 }: TaskChecklistProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('today');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [boundTaskId, setBoundTaskId] = useState<string | null>(null);
   const todayStr = getTodayDate();
   const [selectedDueDate, setSelectedDueDate] = useState<string>(
     initialSelectedDate || todayStr
@@ -136,6 +137,16 @@ export function TaskChecklist({
         );
       }
     });
+  };
+
+  // Toggle in-progress with dynamic Focus Timer binding synchronization
+  const handleToggleTaskInProgressWithBinding = (taskId: string, inProgress: boolean) => {
+    handleToggleInProgress(taskId, inProgress);
+    if (inProgress) {
+      setBoundTaskId(taskId);
+    } else if (boundTaskId === taskId) {
+      setBoundTaskId(null);
+    }
   };
 
   const handleDelete = (taskId: string) => {
@@ -340,7 +351,7 @@ export function TaskChecklist({
                       <TaskItem
                         task={task}
                         onToggle={handleToggleComplete}
-                        onToggleInProgress={handleToggleInProgress}
+                        onToggleInProgress={handleToggleTaskInProgressWithBinding}
                         onDelete={handleDelete}
                       />
                     </motion.div>
@@ -396,7 +407,7 @@ export function TaskChecklist({
                       <TaskItem
                         task={task}
                         onToggle={handleToggleComplete}
-                        onToggleInProgress={handleToggleInProgress}
+                        onToggleInProgress={handleToggleTaskInProgressWithBinding}
                         onDelete={handleDelete}
                       />
                     </motion.div>
@@ -410,8 +421,24 @@ export function TaskChecklist({
 
       {/* Right Column: Focus Companion & Context Workspace (4 Cols) */}
       <div className="lg:col-span-4 flex flex-col gap-space-lg">
-        {/* Fully Functional Pomodoro Focus Timer */}
-        <FocusTimer />
+        {/* Fully Functional Pomodoro Focus Timer with Dynamic Task Status Binding */}
+        <FocusTimer
+          tasks={optimisticTasks
+            .filter((t) => !t.is_completed)
+            .map((t) => ({ id: t.id, title: t.title }))}
+          projects={projects.map((p) => ({
+            id: p.id,
+            title: p.title,
+            slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          }))}
+          boundTaskId={boundTaskId}
+          onBindTask={(task) => {
+            setBoundTaskId(task ? task.id : null);
+          }}
+          onTaskStatusChange={(taskId, inProgress) => {
+            handleToggleInProgress(taskId, inProgress);
+          }}
+        />
 
         {/* Interactive Notion-styled Glass Calendar Widget */}
         <div className="flex justify-center">

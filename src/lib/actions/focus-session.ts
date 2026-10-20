@@ -29,6 +29,14 @@ export async function logFocusSession(
   params: LogFocusSessionParams
 ): Promise<ActionResponse<FocusSessionResult>> {
   try {
+    // Gracefully reject partial sessions under 1 minute without database writes
+    if (!params.durationMinutes || params.durationMinutes < 1) {
+      return {
+        success: false,
+        error: 'Session under 1m not logged',
+      };
+    }
+
     const supabase = await createClient();
     const {
       data: { user },

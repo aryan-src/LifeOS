@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { VaporCountdownDigits } from '@/components/ui/countdown-vapor-digits';
 import { logFocusSession, getFocusBindingContext } from '@/lib/actions/focus-session';
+import { updateTaskStatus } from '@/lib/actions/tasks';
 import { getTodayDate } from '@/lib/utils/date';
 import {
   Volume2,
@@ -17,6 +18,7 @@ import {
   Play,
   RotateCcw,
   Sliders,
+  Square,
 } from 'lucide-react';
 
 export type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
@@ -28,6 +30,9 @@ export interface FocusTimerProps {
   className?: string;
   tasks?: Array<{ id: string; title: string }>;
   projects?: Array<{ id: string; title: string; slug: string }>;
+  boundTaskId?: string | null;
+  onBindTask?: (task: { id: string; title: string } | null) => void;
+  onTaskStatusChange?: (taskId: string, inProgress: boolean) => void;
   onSessionComplete?: (mode: TimerMode, completedSprints: number) => void;
 }
 
@@ -183,6 +188,9 @@ export function FocusTimer({
   className = '',
   tasks: propTasks,
   projects: propProjects,
+  boundTaskId: propBoundTaskId,
+  onBindTask,
+  onTaskStatusChange,
   onSessionComplete,
 }: FocusTimerProps) {
   // Core Timer State
@@ -206,7 +214,11 @@ export function FocusTimer({
   const [telemetryFeedback, setTelemetryFeedback] = useState<string | null>(null);
 
   // Context Binding State
-  const [boundTask, setBoundTask] = useState<{ id: string; title: string } | null>(null);
+  const initialBoundTask =
+    propBoundTaskId && propTasks
+      ? propTasks.find((t) => t.id === propBoundTaskId) || null
+      : null;
+  const [boundTask, setBoundTask] = useState<{ id: string; title: string } | null>(initialBoundTask);
   const [boundProject, setBoundProject] = useState<{ id: string; title: string; slug: string } | null>(null);
   const [isContextDropdownOpen, setIsContextDropdownOpen] = useState<boolean>(false);
   const [contextSearchQuery, setContextSearchQuery] = useState<string>('');
@@ -261,6 +273,33 @@ export function FocusTimer({
     }
   }, [propTasks, propProjects]);
 
+  // Sync available tasks when propTasks changes
+  useEffect(() => {
+    if (propTasks && propTasks.length > 0) {
+      setAvailableTasks(propTasks);
+    }
+  }, [propTasks]);
+
+  // Sync available projects when propProjects changes
+  useEffect(() => {
+    if (propProjects && propProjects.length > 0) {
+      setAvailableProjects(propProjects);
+    }
+  }, [propProjects]);
+
+  // Sync boundTaskId from parent prop
+  useEffect(() => {
+    if (propBoundTaskId) {
+      const found = availableTasks.find((t) => t.id === propBoundTaskId);
+      if (found) {
+        setBoundTask(found);
+        setBoundProject(null);
+      }
+    } else if (propBoundTaskId === null && boundTask && availableTasks.some((t) => t.id === boundTask.id)) {
+      setBoundTask(null);
+    }
+  }, [propBoundTaskId, availableTasks]);
+
   // Outside click listener for menus
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -285,6 +324,17 @@ export function FocusTimer({
     100,
     Math.max(0, ((totalDuration - remainingSeconds) / totalDuration) * 100)
   );
+
+  // Automatically trigger task in_progress status update
+  const handleTaskStart = (taskId: string) => {
+    if (onTaskStatusChange) {
+      onTaskStatusChange(taskId, true);
+    } else {
+      startTransition(async () => {
+        await updateTaskStatus(taskId, { in_progress: true });
+      });
+    }
+  };
 
   // Switch to Preset Interval
   const handleSelectPreset = (durationSec: number, presetTitle?: string) => {
@@ -314,15 +364,78 @@ export function FocusTimer({
     } else if (timerState === 'paused') {
       endTimeRef.current = Date.now() + remainingSeconds * 1000;
       setTimerState('running');
+      if (boundTask) {
+        handleTaskStart(boundTask.id);
+      }
     } else {
       const targetSeconds = remainingSeconds === 0 ? totalDuration : remainingSeconds;
       setRemainingSeconds(targetSeconds);
       endTimeRef.current = Date.now() + targetSeconds * 1000;
       setTimerState('running');
+      if (boundTask) {
+        handleTaskStart(boundTask.id);
+      }
     }
   };
 
-  // Reset Timer
+  // Mid-Session "Quit & Log" Action:
+  // Immediately stops the countdown, calculates exact elapsed focus time, logs telemetry,
+  // updates daily accumulation, and returns timer to idle state.
+  const handleQuitAndLog = () => {
+    // 1. Calculate exact elapsed focus time:
+    // elapsedSeconds = totalDurationSeconds - remainingSeconds
+    // elapsedMinutes = floor(elapsedSeconds / 60)
+    const elapsedSeconds = Math.max(0, totalDuration - remainingSeconds);
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+
+    // Stop countdown and return timer to idle state
+    setTimerState('idle');
+    endTimeRef.current = null;
+    setRemainingSeconds(totalDuration);
+
+    if (elapsedMinutes >= 1) {
+      // 2. Optimistically add elapsedMinutes to today's cumulative focus total
+      const addedSeconds = elapsedMinutes * 60;
+      const nextTotalSeconds = cumulativeSecondsToday + addedSeconds;
+      setCumulativeSecondsToday(nextTotalSeconds);
+
+      try {
+        localStorage.setItem(
+          'lifeos_focus_seconds_today',
+          nextTotalSeconds.toString()
+        );
+      } catch {}
+
+      // 3. Telemetry Server Action
+      startTransition(async () => {
+        const res = await logFocusSession({
+          durationMinutes: elapsedMinutes,
+          taskId: boundTask?.id || null,
+          projectId: boundProject?.id || null,
+          mode: mode,
+        });
+
+        const contextLabel = boundTask
+          ? boundTask.title
+          : boundProject
+          ? `#${boundProject.slug}`
+          : 'general';
+
+        if (res.success) {
+          setTelemetryFeedback(`Logged ${elapsedMinutes}m to ${contextLabel}`);
+        } else {
+          setTelemetryFeedback(res.error || 'Failed to log focus session');
+        }
+        setTimeout(() => setTelemetryFeedback(null), 3500);
+      });
+    } else {
+      // Graceful notice for partial session under 1 minute
+      setTelemetryFeedback('Session under 1m not logged');
+      setTimeout(() => setTelemetryFeedback(null), 3500);
+    }
+  };
+
+  // Reset Timer (separate action to abandon session without recording elapsed minutes)
   const handleReset = () => {
     setTimerState('idle');
     setRemainingSeconds(totalDuration);
@@ -817,18 +930,32 @@ export function FocusTimer({
           )}
         </div>
 
-        {/* Main Action Control (Play / Pause / Reset) */}
+        {/* Main Action Control (Play / Pause / Quit & Log / Reset) */}
         <div className="flex items-center gap-2">
-          {/* Reset button when paused or timer has run */}
-          {(isPaused || remainingSeconds !== totalDuration) && (
+          {/* Reset button: separate action to abandon session without recording minutes */}
+          {(isPaused || isRunning || remainingSeconds !== totalDuration) && (
             <button
               type="button"
               onClick={handleReset}
-              className="w-9 h-9 rounded-xl text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
-              title="Reset Timer"
+              className="w-10 h-10 rounded-xl text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
+              title="Reset without logging (abandon session)"
               aria-label="Reset Timer"
             >
               <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Dedicated "Quit & Log" Button when timer is active */}
+          {(isRunning || isPaused) && (
+            <button
+              type="button"
+              onClick={handleQuitAndLog}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all cursor-pointer shadow-2xs shrink-0"
+              title="Quit & Log current focus session"
+              aria-label="Quit and Log"
+            >
+              <Square className="w-3.5 h-3.5 fill-current" />
+              <span>Quit &amp; Log</span>
             </button>
           )}
 
@@ -899,6 +1026,7 @@ export function FocusTimer({
                   onClick={() => {
                     setBoundTask(null);
                     setBoundProject(null);
+                    onBindTask?.(null);
                   }}
                   className="ml-1 p-0.5 rounded hover:bg-stone-200 dark:hover:bg-zinc-700 text-outline hover:text-on-surface cursor-pointer"
                   title="Clear context binding"
@@ -921,8 +1049,14 @@ export function FocusTimer({
 
           {/* Telemetry save notification pill */}
           {telemetryFeedback && (
-            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 animate-in fade-in">
-              {telemetryFeedback} ✓
+            <span
+              className={`text-[11px] font-mono animate-in fade-in ${
+                telemetryFeedback.includes('under 1m')
+                  ? 'text-amber-700 dark:text-amber-400 font-medium'
+                  : 'text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
+              {telemetryFeedback} {telemetryFeedback.includes('under 1m') ? '•' : '✓'}
             </span>
           )}
         </div>
@@ -959,6 +1093,10 @@ export function FocusTimer({
                         setBoundTask(t);
                         setBoundProject(null);
                         setIsContextDropdownOpen(false);
+                        onBindTask?.(t);
+                        if (timerState === 'running') {
+                          handleTaskStart(t.id);
+                        }
                       }}
                       className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-800 text-left transition cursor-pointer"
                     >
@@ -983,6 +1121,7 @@ export function FocusTimer({
                         setBoundProject(p);
                         setBoundTask(null);
                         setIsContextDropdownOpen(false);
+                        onBindTask?.(null);
                       }}
                       className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-800 text-left transition cursor-pointer"
                     >

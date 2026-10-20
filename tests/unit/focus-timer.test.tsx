@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { FocusTimer } from '@/components/tasks/focus-timer';
+import { logFocusSession, startTaskFocus } from '@/lib/actions/tasks';
 
 describe('FocusTimer Component', () => {
   it('renders initial state matching the static Notion-style mockup', () => {
@@ -72,5 +73,28 @@ describe('FocusTimer Component', () => {
       />
     );
     expect(html).toContain('Pomodoro Focus Timer');
+  });
+
+  it('renders bound task title and chip when boundTaskId is provided via props', () => {
+    const html = renderToString(
+      <FocusTimer
+        tasks={[{ id: 't-1', title: 'Calculus Assignment 4' }]}
+        boundTaskId="t-1"
+      />
+    );
+    expect(html).toContain('Bound to:');
+    expect(html).toContain('Calculus Assignment 4');
+  });
+
+  describe('Focus Telemetry & Task Data Access Layer', () => {
+    it('provides startTaskFocus helper in tasks action module', () => {
+      expect(typeof startTaskFocus).toBe('function');
+    });
+
+    it('rejects partial focus sessions under 1 minute without database writes', async () => {
+      const res = await logFocusSession({ durationMinutes: 0 });
+      expect(res.success).toBe(false);
+      expect(res.error).toBe('Session under 1m not logged');
+    });
   });
 });

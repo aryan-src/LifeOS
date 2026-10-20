@@ -358,3 +358,30 @@ export async function deleteTask(taskId: string): Promise<ActionResponse> {
     return { success: false, error: formatErrorMessage(err) };
   }
 }
+
+import {
+  logFocusSession as logFocusSessionInternal,
+  type LogFocusSessionParams,
+  type FocusSessionResult,
+} from './focus-session';
+
+export type { LogFocusSessionParams, FocusSessionResult };
+
+/**
+ * Bind and mark a task as in_progress when focus session starts.
+ * Revalidates relevant paths and triggers zero-latency UI updates.
+ */
+export async function startTaskFocus(
+  taskId: string
+): Promise<ActionResponse<TaskStatusResponse>> {
+  return updateTaskStatus(taskId, { in_progress: true });
+}
+
+/**
+ * Telemetry Server Action wrapper: Records completed focus session telemetry in Supabase.
+ */
+export async function logFocusSession(
+  params: LogFocusSessionParams
+): Promise<ActionResponse<FocusSessionResult>> {
+  return logFocusSessionInternal(params);
+}

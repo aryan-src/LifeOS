@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? searchParams.get('redirectTo') ?? '/dashboard';
+  const next = searchParams.get('next') ?? searchParams.get('redirectTo') ?? '/';
 
   const forwardedHost = request.headers.get('x-forwarded-host');
   const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https';

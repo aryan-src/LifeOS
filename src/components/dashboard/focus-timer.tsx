@@ -789,107 +789,86 @@ export function FocusTimer({
         </div>
       </div>
 
-      {/* 2. Dynamic Interval Presets & Custom Stepper Pills */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {PROTOCOL_PRESETS.map((preset) => {
-            const isActive = mode === 'focus' && totalDuration === preset.duration;
+      {/* 4. Subdued Presets & Dynamic Completion Readout */}
+      <div className="space-y-2">
+        {/* Dynamic Completion Estimate Badge */}
+        <div className="flex items-center justify-center -mt-1 mb-2" id="session-finish-readout">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EE] dark:bg-zinc-800/80 border border-[#E7E5DD] dark:border-zinc-700/60 text-[11px] font-mono text-stone-500 dark:text-zinc-400 shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+            <span>Finishes at {finishTimeText}</span>
+            <span className="text-stone-300 dark:text-zinc-600">·</span>
+            <span className="text-stone-400 dark:text-zinc-500">
+              {`${Math.floor(elapsedSeconds / 60)}m elapsed`}
+            </span>
+          </div>
+        </div>
+
+        {/* Segmented Preset Duration Track */}
+        <nav
+          aria-label="Preset timer durations"
+          className="flex items-center justify-between p-1 rounded-2xl bg-[#F2F1EA]/80 dark:bg-zinc-800/80 border border-[#E6E4DC] dark:border-zinc-700/60 text-xs font-mono select-none"
+          id="presets-container"
+        >
+          {PRESET_OPTIONS.map((preset) => {
+            const isActive =
+              currentMode === preset.mode && totalDurationSeconds === preset.seconds;
             return (
               <button
                 key={preset.label}
                 type="button"
-                onClick={() => handleSelectPreset(preset.duration, preset.title)}
-                className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium border transition-all cursor-pointer ${
+                onClick={() => handleReset(preset.seconds, preset.mode)}
+                className={`preset-btn px-3 py-1.5 rounded-xl transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? `${activeTheme.badge} shadow-xs font-semibold`
-                    : 'bg-surface-container-low/50 dark:bg-zinc-800/40 border-outline-variant/30 dark:border-zinc-800 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:border-outline-variant'
+                    ? 'bg-[#FBFBF9] dark:bg-zinc-900 text-stone-900 dark:text-zinc-100 font-medium shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] border border-[#E3E1D7] dark:border-zinc-700'
+                    : 'text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
-                title={preset.title}
               >
                 {preset.label}
               </button>
             );
           })}
+        </nav>
 
-          {/* Break Presets */}
+        {/* Custom duration drawer toggle & cycle progress */}
+        <div className="flex items-center justify-between px-1 text-[11px] font-mono text-stone-400 dark:text-zinc-500">
           <button
             type="button"
-            onClick={() => {
-              setTimerState('idle');
-              setMode('shortBreak');
-              setTotalDuration(5 * 60);
-              setRemainingSeconds(5 * 60);
-            }}
-            className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium border transition-all cursor-pointer ${
-              mode === 'shortBreak'
-                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 font-semibold shadow-xs'
-                : 'bg-surface-container-low/50 dark:bg-zinc-800/40 border-outline-variant/30 dark:border-zinc-800 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
-            }`}
+            onClick={() => setIsCustomOpen(!isCustomOpen)}
+            className="inline-flex items-center gap-1.5 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+            id="custom-toggle"
           >
-            5m Break
+            <Plus className="w-3 h-3" />
+            <span>Custom flow duration</span>
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTimerState('idle');
-              setMode('longBreak');
-              setTotalDuration(15 * 60);
-              setRemainingSeconds(15 * 60);
-            }}
-            className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium border transition-all cursor-pointer ${
-              mode === 'longBreak'
-                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 font-semibold shadow-xs'
-                : 'bg-surface-container-low/50 dark:bg-zinc-800/40 border-outline-variant/30 dark:border-zinc-800 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200'
-            }`}
-          >
-            15m Rest
-          </button>
+          <span className="tracking-tight">Cycle {sessionOrdinal} / 4 completed</span>
         </div>
 
-        {/* Custom Duration Input Stepper Trigger */}
-        <div className="relative">
-          {isCustomInputOpen ? (
-            <form
-              onSubmit={handleApplyCustomMinutes}
-              className="flex items-center gap-1 bg-surface-container-lowest dark:bg-zinc-900 border border-outline-variant/50 dark:border-zinc-700 rounded-lg p-0.5 shadow-sm"
-            >
-              <input
-                type="number"
-                min="1"
-                max="120"
-                autoFocus
-                value={customMinutesInput}
-                onChange={(e) => setCustomMinutesInput(e.target.value)}
-                className="w-12 px-1.5 py-0.5 text-xs font-mono text-center bg-transparent border-none text-on-surface dark:text-zinc-100 outline-none"
-                placeholder="25"
-              />
-              <span className="text-[10px] font-mono text-outline pr-1">m</span>
-              <button
-                type="submit"
-                className="px-1.5 py-0.5 rounded bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-semibold cursor-pointer"
-              >
-                Set
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCustomInputOpen(false)}
-                className="p-1 text-outline hover:text-on-surface cursor-pointer"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </form>
-          ) : (
+        {/* Custom Input Drawer Panel */}
+        {isCustomOpen && (
+          <form
+            onSubmit={handleApplyCustom}
+            className="pt-1 flex items-center gap-2 p-2 rounded-xl bg-[#F4F3ED] dark:bg-zinc-800 border border-[#E6E4DC] dark:border-zinc-700 text-xs font-mono animate-in fade-in"
+            id="custom-panel"
+          >
+            <span className="text-stone-500 dark:text-zinc-400 pl-1">Minutes:</span>
+            <input
+              type="number"
+              min="1"
+              max="180"
+              value={customMinutesInput}
+              onChange={(e) => setCustomMinutesInput(e.target.value)}
+              className="w-16 px-2 py-1 bg-[#FBFBF9] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg text-center text-xs text-stone-900 dark:text-zinc-100 focus:ring-1 focus:ring-stone-400 focus:outline-none"
+              id="custom-minutes"
+            />
             <button
-              type="button"
-              onClick={() => setIsCustomInputOpen(true)}
-              className="inline-flex items-center gap-1 text-[11px] font-mono text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:underline cursor-pointer"
-              title="Set custom duration (1 - 120m)"
+              type="submit"
+              className="px-3 py-1 bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:text-zinc-900 text-white rounded-lg text-xs font-medium transition cursor-pointer"
+              id="apply-custom"
             >
-              <Sliders className="w-3 h-3" />
-              <span>Custom</span>
+              Set
             </button>
-          )}
-        </div>
+          </form>
+        )}
       </div>
 
       {/* 3. Centerpiece: Circular Minimal Flow Ring & High-Contrast Serene Typography */}

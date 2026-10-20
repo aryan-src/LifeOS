@@ -892,110 +892,119 @@ export function FocusTimer({
         </div>
       </div>
 
-      {/* 3. Middle Row: Digits Display (Dot-Matrix, Monospace, or Flip-Clock) & Main Action Controls */}
-      <div className="flex items-center justify-between py-1">
-        <div
-          className="flex items-center cursor-pointer select-none"
-          onClick={() => {
-            if (timerState === 'idle') setIsCustomInputOpen(true);
-          }}
-          title={timerState === 'idle' ? 'Click to customize duration' : undefined}
-        >
-          {/* Style 1: Retro Dot-Matrix */}
-          {displayStyle === 'dot-matrix' && (
-            <VaporCountdownDigits
-              minutes={minutes}
-              seconds={seconds}
-              isRunning={isRunning}
-              digitClassName="text-5xl sm:text-6xl"
+      {/* 3. Centerpiece: Circular Minimal Flow Ring & High-Contrast Serene Typography */}
+      <div className="flex flex-col items-center justify-center py-2 relative" data-purpose="centerpiece-display">
+        <div className="relative w-64 h-64 sm:w-68 sm:h-68 flex items-center justify-center">
+          {/* Subtle outer breathing atmosphere ring */}
+          <div className="absolute inset-0 rounded-full border border-stone-300/40 dark:border-zinc-700/40 animate-pulse pointer-events-none" />
+
+          {/* SVG Circular Progress Ring */}
+          <svg className="w-full h-full p-2 -rotate-90 origin-center" viewBox="0 0 240 240">
+            {/* Background base track */}
+            <circle
+              cx="120"
+              cy="120"
+              fill="none"
+              r="104"
+              stroke="#ECEAE2"
+              strokeWidth="2.5"
+              className="dark:stroke-zinc-800"
             />
-          )}
+            {/* Active progress ring */}
+            <circle
+              cx="120"
+              cy="120"
+              fill="none"
+              r="104"
+              stroke={isBreakMode ? '#b45309' : '#262422'}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              strokeWidth="3"
+              className="transition-[stroke-dashoffset] duration-700 ease-out dark:stroke-zinc-200"
+              id="zen-progress-ring"
+            />
+          </svg>
 
-          {/* Style 2: Minimalist Monospace */}
-          {displayStyle === 'monospace' && (
-            <div className="font-mono text-5xl sm:text-6xl font-bold tracking-tight text-on-surface dark:text-zinc-100 tabular-nums">
-              {timeDisplay}
-            </div>
-          )}
-
-          {/* Style 3: Clean Flip-Clock Cards */}
-          {displayStyle === 'flip-clock' && (
-            <div className="flex items-center gap-1.5">
-              <div className="relative px-3 py-2 rounded-xl bg-surface-container dark:bg-zinc-800 border border-outline-variant/30 dark:border-zinc-700/60 shadow-xs">
-                <span className="font-mono text-4xl sm:text-5xl font-bold tracking-tight text-on-surface dark:text-zinc-100 tabular-nums">
-                  {String(minutes).padStart(2, '0')}
-                </span>
-                <div className="absolute inset-x-0 top-1/2 h-px bg-outline-variant/30 dark:bg-zinc-900 pointer-events-none" />
-              </div>
-              <span className="font-mono text-3xl font-bold text-outline animate-pulse">:</span>
-              <div className="relative px-3 py-2 rounded-xl bg-surface-container dark:bg-zinc-800 border border-outline-variant/30 dark:border-zinc-700/60 shadow-xs">
-                <span className="font-mono text-4xl sm:text-5xl font-bold tracking-tight text-on-surface dark:text-zinc-100 tabular-nums">
-                  {String(seconds).padStart(2, '0')}
-                </span>
-                <div className="absolute inset-x-0 top-1/2 h-px bg-outline-variant/30 dark:bg-zinc-900 pointer-events-none" />
-              </div>
-            </div>
-          )}
+          {/* Core Numbers Display Inside Circle */}
+          <div className="absolute flex flex-col items-center justify-center select-none text-center">
+            <span
+              className="text-[9px] font-mono tracking-widest uppercase text-stone-400 dark:text-zinc-500 mb-1"
+              id="mode-subtitle"
+            >
+              {modeSubtitle}
+            </span>
+            <span
+              className="font-sans font-light tracking-[-0.04em] text-6xl sm:text-7xl text-stone-900 dark:text-zinc-100 leading-none tabular-nums"
+              id="timer-display"
+            >
+              {formatTime(remainingSeconds)}
+            </span>
+            <span
+              className="text-xs font-mono text-stone-400 dark:text-zinc-500 mt-2 font-light tracking-tight"
+              id="zen-secondary-label"
+            >
+              {isRunning
+                ? `${percentCompleted}% · ${formatTime(remainingSeconds)} left`
+                : remainingSeconds === totalDurationSeconds
+                ? 'Ready · 0% completed'
+                : `Paused · ${percentCompleted}%`}
+            </span>
+          </div>
         </div>
 
-        {/* Main Action Control (Play / Pause / Quit & Log / Reset) */}
-        <div className="flex items-center gap-2">
-          {/* Reset button: separate action to abandon session without recording minutes */}
-          {(isPaused || isRunning || remainingSeconds !== totalDuration) && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="w-10 h-10 rounded-xl text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
-              title="Reset without logging (abandon session)"
-              aria-label="Reset Timer"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          )}
+        {/* Tactile Quiet Interaction CTA: Minimal Smooth Circular Play/Pause & Reset */}
+        <div className="mt-4 flex items-center justify-center gap-3">
+          {/* Main Focus Action CTA Button */}
+          <button
+            type="button"
+            onClick={toggleTimer}
+            aria-label="Toggle focus session"
+            className="relative group h-13 px-6 py-3 rounded-full bg-[#1C1A18] hover:bg-[#2F2C28] dark:bg-zinc-100 dark:hover:bg-zinc-200 text-[#FBFBF9] dark:text-zinc-900 shadow-[0_20px_48px_-12px_rgba(28,25,23,0.05)] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-2 active:scale-95 shrink-0"
+            id="action-btn"
+          >
+            {isRunning ? (
+              <Pause className="w-4 h-4 fill-current transition-transform" id="icon-pause" />
+            ) : (
+              <Play className="w-4 h-4 fill-current translate-x-0.5 transition-transform" id="icon-play" />
+            )}
+            <span className="text-xs font-medium tracking-tight" id="action-label">
+              {isRunning ? 'Pause' : 'Focus'}
+            </span>
+          </button>
 
-          {/* Dedicated "Quit & Log" Button when timer is active */}
-          {(isRunning || isPaused) && (
+          {/* Reset button */}
+          <button
+            type="button"
+            onClick={() => handleReset(totalDurationSeconds, currentMode)}
+            className="p-3 rounded-full bg-[#F3F2EB] hover:bg-[#EBE9E1] dark:bg-zinc-800 dark:hover:bg-zinc-700 active:scale-95 text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-all duration-150 cursor-pointer shadow-sm"
+            id="reset-btn"
+            title="Reset Session (R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Mid-Session "Quit & Log" Button when active */}
+          {(isRunning || remainingSeconds !== totalDurationSeconds) && (
             <button
               type="button"
               onClick={handleQuitAndLog}
-              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all cursor-pointer shadow-2xs shrink-0"
-              title="Quit & Log current focus session"
+              className="px-3.5 py-2.5 rounded-full bg-[#F5F4EE] hover:bg-[#EFECE3] dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-[#E7E5DD] dark:border-zinc-700 text-stone-700 dark:text-zinc-300 text-xs font-mono font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              title="Quit & Log elapsed focus time"
               aria-label="Quit and Log"
             >
-              <Square className="w-3.5 h-3.5 fill-current" />
+              <Square className="w-3.5 h-3.5 fill-current text-stone-600 dark:text-zinc-400" />
               <span>Quit &amp; Log</span>
             </button>
           )}
-
-          {/* Main Squircle Action Button */}
-          <button
-            type="button"
-            onClick={handleTogglePlayPause}
-            className="w-14 h-14 rounded-2xl bg-black text-white hover:bg-neutral-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 shrink-0"
-            title={
-              isRunning
-                ? 'Pause Timer (Space)'
-                : isPaused
-                ? 'Resume Timer (Space)'
-                : remainingSeconds === 0
-                ? 'Reset Session'
-                : 'Start Focus Timer (Space)'
-            }
-            aria-label={
-              isRunning
-                ? 'Pause Timer'
-                : isPaused
-                ? 'Resume Timer'
-                : remainingSeconds === 0
-                ? 'Reset Session'
-                : 'Start Timer'
-            }
-          >
-            <span className="material-symbols-outlined text-[28px]">
-              {isRunning ? 'pause' : isPaused ? 'play_arrow' : remainingSeconds === 0 ? 'replay' : 'timer'}
-            </span>
-          </button>
         </div>
+
+        {/* Telemetry notification pill */}
+        {telemetryFeedback && (
+          <div className="mt-2 text-[11px] font-mono text-emerald-700 dark:text-emerald-400 animate-in fade-in">
+            {telemetryFeedback} ✓
+          </div>
+        )}
       </div>
 
       {/* 4. Bottom Row: Flat Progress Bar Bound to Exact Completion Percentage */}

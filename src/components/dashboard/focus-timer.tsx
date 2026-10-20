@@ -279,65 +279,85 @@ export function FocusTimer({
   onTaskStatusChange,
   onSessionComplete,
 }: FocusTimerProps) {
-  // Core Timer State
-  const [mode, setMode] = useState<TimerMode>('focus');
-  const [totalDuration, setTotalDuration] = useState<number>(MODE_CONFIG.focus.duration);
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(MODE_CONFIG.focus.duration);
-  const [timerState, setTimerState] = useState<'idle' | 'running' | 'paused'>('idle');
-
-  // Customization & Settings
-  const [displayStyle, setDisplayStyle] = useState<DisplayStyle>('dot-matrix');
-  const [accentTheme, setAccentTheme] = useState<AccentTheme>('sage');
-  const [chimeSound, setChimeSound] = useState<ChimeSound>('bowl');
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [isCustomInputOpen, setIsCustomInputOpen] = useState<boolean>(false);
-  const [customMinutesInput, setCustomMinutesInput] = useState<string>('25');
+  // Timer countdown engine state
+  const [totalDurationSeconds, setTotalDurationSeconds] = useState<number>(1500); // 25m default
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(1500);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [currentMode, setCurrentMode] = useState<TimerMode>('focus');
 
   // Gamification & Telemetry State
-  const [completedSprints, setCompletedSprints] = useState<number>(0);
-  const [cumulativeSecondsToday, setCumulativeSecondsToday] = useState<number>(0);
-  const [isVisualAlerting, setIsVisualAlerting] = useState<boolean>(false);
+  const [completedSprints, setCompletedSprints] = useState<number>(2); // Session 3 of 4
+  const [cumulativeSecondsToday, setCumulativeSecondsToday] = useState<number>(3.5 * 3600); // 3.5h default
   const [telemetryFeedback, setTelemetryFeedback] = useState<string | null>(null);
 
-  // Context Binding State
+  // Ambient Audio
+  const [isAmbientPlaying, setIsAmbientPlaying] = useState<boolean>(false);
+
+  // Toggle ambient audio
+  const toggleAmbient = useCallback(() => {
+    setIsAmbientPlaying((prev) => {
+      const next = !prev;
+      if (next) {
+        ambientAudioEngine.start();
+      } else {
+        ambientAudioEngine.stop();
+      }
+      return next;
+    });
+  }, []);
+
+  // Custom Time Setter & Controls
+  const [isCustomOpen, setIsCustomOpen] = useState<boolean>(false);
+  const [customMinutesInput, setCustomMinutesInput] = useState<string>('35');
+
+  // Notion-Style Task Binding
+  const [isTaskDropdownOpen, setIsTaskDropdownOpen] = useState<boolean>(false);
+  const [taskSearchQuery, setTaskSearchQuery] = useState<string>('');
+  const [availableTasks, setAvailableTasks] = useState<Array<{ id: string; title: string }>>(
+    propTasks || [
+      { id: 't-1', title: 'Q3 Product Architecture Spec & Flow Design' },
+      { id: 't-2', title: 'Deep Work: Zen Interface Polish & Design Tokens' },
+      { id: 't-3', title: 'Reading: Scandinavian Minimal Systems' },
+    ]
+  );
+
   const initialBoundTask =
     propBoundTaskId && propTasks
       ? propTasks.find((t) => t.id === propBoundTaskId) || null
-      : null;
+      : propBoundTaskId
+      ? { id: propBoundTaskId, title: 'Bound Task' }
+      : propTasks && propTasks.length > 0
+      ? propTasks[0]
+      : { id: 't-1', title: 'Q3 Product Architecture Spec & Flow Design' };
+
   const [boundTask, setBoundTask] = useState<{ id: string; title: string } | null>(initialBoundTask);
-  const [boundProject, setBoundProject] = useState<{ id: string; title: string; slug: string } | null>(null);
-  const [isContextDropdownOpen, setIsContextDropdownOpen] = useState<boolean>(false);
-  const [contextSearchQuery, setContextSearchQuery] = useState<string>('');
-  const [availableTasks, setAvailableTasks] = useState<Array<{ id: string; title: string }>>(propTasks || []);
-  const [availableProjects, setAvailableProjects] = useState<Array<{ id: string; title: string; slug: string }>>(
-    propProjects || []
-  );
 
   const [, startTransition] = useTransition();
   const endTimeRef = useRef<number | null>(null);
-  const settingsModalRef = useRef<HTMLDivElement>(null);
-  const contextDropdownRef = useRef<HTMLDivElement>(null);
-
+  const taskDropdownRef = useRef<HTMLDivElement>(null);
   const todayStr = getTodayDate();
-  const activeTheme = THEME_STYLES[accentTheme];
 
-  // Load daily cumulative focus and sprint streaks from localStorage
+  // Load saved state from localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const savedDate = localStorage.getItem('lifeos_focus_date');
       if (savedDate === todayStr) {
-        const savedSeconds = parseInt(localStorage.getItem('lifeos_focus_seconds_today') || '0', 10);
-        const savedSprints = parseInt(localStorage.getItem('lifeos_focus_sprints_today') || '0', 10);
-        setCumulativeSecondsToday(isNaN(savedSeconds) ? 0 : savedSeconds);
-        setCompletedSprints(isNaN(savedSprints) ? 0 : savedSprints);
+        const savedSeconds = parseInt(
+          localStorage.getItem('lifeos_focus_seconds_today') || '0',
+          10
+        );
+        const savedSprints = parseInt(
+          localStorage.getItem('lifeos_focus_sprints_today') || '0',
+          10
+        );
+        if (!isNaN(savedSeconds) && savedSeconds > 0) setCumulativeSecondsToday(savedSeconds);
+        if (!isNaN(savedSprints) && savedSprints > 0) setCompletedSprints(savedSprints);
       } else {
         localStorage.setItem('lifeos_focus_date', todayStr);
-        localStorage.setItem('lifeos_focus_seconds_today', '0');
-        localStorage.setItem('lifeos_focus_sprints_today', '0');
       }
-
-      const savedTheme = localStorage.getItem('lifeos_focus_theme') as AccentTheme;
+    } catch {}
+  }, [todayStr]);
       if (savedTheme && THEME_STYLES[savedTheme]) setAccentTheme(savedTheme);
 
       const savedStyle = localStorage.getItem('lifeos_focus_style') as DisplayStyle;

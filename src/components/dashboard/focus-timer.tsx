@@ -748,180 +748,43 @@ export function FocusTimer({
         </div>
       </header>
 
-        {/* Header Right: Mode Badge & Controls Icon */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Mode Pill Badge */}
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-medium transition-all select-none whitespace-nowrap ${
-              isBreakMode
-                ? 'text-[#92400E] bg-[#FEF3C7] dark:bg-amber-950/60 dark:text-amber-300 border border-[#FDE68A]/60 dark:border-amber-800/50'
-                : activeTheme.badge
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                isBreakMode ? 'bg-[#D97706] dark:bg-amber-400' : activeTheme.dot
-              } ${isRunning ? 'animate-pulse' : ''}`}
-            />
-            <span>{MODE_CONFIG[mode].badgeText}</span>
-          </span>
-
-          {/* Settings Customization Popover Button */}
-          <div className="relative" ref={settingsModalRef}>
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="p-1.5 rounded-lg text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-              title="Display & Chime Customization"
-              aria-label="Timer settings"
-            >
-              <Settings2 className="w-4 h-4" />
-            </button>
-
-            {/* Customization Settings Menu */}
-            {isSettingsOpen && (
+      {/* 2. Telemetry Metric Strip */}
+      <div
+        className="p-3 sm:p-3.5 rounded-2xl bg-[#F6F5EF] dark:bg-zinc-800/60 border border-[#E6E4DB] dark:border-zinc-700/60 text-xs font-mono select-none"
+        data-purpose="telemetry-metrics"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-center divide-y sm:divide-y-0 sm:divide-x divide-[#E7E5DC] dark:divide-zinc-700/60">
+          {/* Column 1: Daily Focus Goal */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-stone-500 dark:text-zinc-400 font-normal tracking-tight">Focus Goal</span>
+              <span className="text-stone-800 dark:text-zinc-200 font-medium tracking-tight">
+                {(cumulativeSecondsToday / 3600).toFixed(1)}h <span className="text-stone-400 dark:text-zinc-500 font-normal">/ 4h</span>
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-[#E5E3D8] dark:bg-zinc-700 overflow-hidden">
               <div
-                className="absolute right-0 mt-2 w-64 rounded-2xl bg-surface-container-lowest dark:bg-zinc-900 border border-outline-variant/40 dark:border-zinc-800 shadow-xl p-3.5 z-50 flex flex-col gap-3 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
-                role="dialog"
-                aria-label="Timer Settings"
-              >
-                <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20 dark:border-zinc-800">
-                  <span className="font-semibold text-on-surface dark:text-zinc-100">
-                    Cockpit Preferences
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsSettingsOpen(false)}
-                    className="p-1 rounded text-outline hover:text-on-surface cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, Math.round((cumulativeSecondsToday / (4 * 3600)) * 100))}%`,
+                }}
+              />
+            </div>
+          </div>
 
-                {/* Display Style Selector */}
-                <div>
-                  <span className="block text-[11px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider mb-1.5">
-                    Display Typography
-                  </span>
-                  <div className="grid grid-cols-3 gap-1 bg-surface-container-low dark:bg-zinc-800/50 p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDisplayStyle('dot-matrix');
-                        try {
-                          localStorage.setItem('lifeos_focus_style', 'dot-matrix');
-                        } catch {}
-                      }}
-                      className={`py-1 text-[11px] rounded-lg font-medium transition cursor-pointer ${
-                        displayStyle === 'dot-matrix'
-                          ? 'bg-surface-container-lowest dark:bg-zinc-700 text-on-surface dark:text-zinc-100 shadow-xs'
-                          : 'text-outline dark:text-zinc-400 hover:text-on-surface'
-                      }`}
-                    >
-                      Vapor
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDisplayStyle('monospace');
-                        try {
-                          localStorage.setItem('lifeos_focus_style', 'monospace');
-                        } catch {}
-                      }}
-                      className={`py-1 text-[11px] rounded-lg font-medium transition cursor-pointer ${
-                        displayStyle === 'monospace'
-                          ? 'bg-surface-container-lowest dark:bg-zinc-700 text-on-surface dark:text-zinc-100 shadow-xs'
-                          : 'text-outline dark:text-zinc-400 hover:text-on-surface'
-                      }`}
-                    >
-                      Mono
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDisplayStyle('flip-clock');
-                        try {
-                          localStorage.setItem('lifeos_focus_style', 'flip-clock');
-                        } catch {}
-                      }}
-                      className={`py-1 text-[11px] rounded-lg font-medium transition cursor-pointer ${
-                        displayStyle === 'flip-clock'
-                          ? 'bg-surface-container-lowest dark:bg-zinc-700 text-on-surface dark:text-zinc-100 shadow-xs'
-                          : 'text-outline dark:text-zinc-400 hover:text-on-surface'
-                      }`}
-                    >
-                      Card
-                    </button>
-                  </div>
-                </div>
-
-                {/* Aesthetic Theme Selector */}
-                <div>
-                  <span className="block text-[11px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider mb-1.5">
-                    Active Accent Tone
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {(['sage', 'amber', 'charcoal', 'crimson'] as AccentTheme[]).map((thm) => (
-                      <button
-                        key={thm}
-                        type="button"
-                        onClick={() => {
-                          setAccentTheme(thm);
-                          try {
-                            localStorage.setItem('lifeos_focus_theme', thm);
-                          } catch {}
-                        }}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-medium border flex items-center gap-1 transition cursor-pointer ${
-                          accentTheme === thm
-                            ? 'border-primary dark:border-zinc-200 bg-surface-container dark:bg-zinc-800'
-                            : 'border-outline-variant/30 text-outline hover:text-on-surface'
-                        }`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${THEME_STYLES[thm].dot}`} />
-                        <span className="capitalize">{thm}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Chime Alert Selector */}
-                <div>
-                  <span className="block text-[11px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider mb-1.5">
-                    Completion Audio Chime
-                  </span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {(
-                      [
-                        { id: 'bowl', label: 'Zen Bowl' },
-                        { id: 'bell', label: 'Soft Bell' },
-                        { id: 'digital', label: 'Digital' },
-                        { id: 'silent', label: 'Silent' },
-                      ] as const
-                    ).map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => {
-                          setChimeSound(c.id);
-                          playAudioChime(c.id);
-                          try {
-                            localStorage.setItem('lifeos_focus_chime', c.id);
-                          } catch {}
-                        }}
-                        className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium flex items-center justify-between transition cursor-pointer ${
-                          chimeSound === c.id
-                            ? 'border-primary dark:border-zinc-200 bg-surface-container dark:bg-zinc-800 text-on-surface dark:text-zinc-100'
-                            : 'border-outline-variant/30 text-outline hover:text-on-surface'
-                        }`}
-                      >
-                        <span>{c.label}</span>
-                        {chimeSound === c.id && <Check className="w-3 h-3 text-emerald-600" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Column 2: Flow Index */}
+          <div className="pt-2.5 sm:pt-0 sm:pl-4 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-stone-500 dark:text-zinc-400 font-normal tracking-tight">Flow Index</span>
+              <span className="inline-flex items-center gap-1 text-[#0284c7] font-medium tracking-tight">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#0ea5e9]" />
+                94%
+              </span>
+            </div>
+            <div className="text-[11px] text-stone-500 dark:text-zinc-400 tracking-tight font-sans">
+              <span className="text-emerald-700 dark:text-emerald-400 font-medium">Peak flow</span>{' '}
+              <span className="text-stone-400 dark:text-zinc-500">·</span> No fatigue
+            </div>
           </div>
         </div>
       </div>

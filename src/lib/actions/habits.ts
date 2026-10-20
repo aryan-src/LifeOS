@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Habit, HabitLog } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -121,13 +120,17 @@ export async function getHabits(): Promise<GetHabitsResult> {
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     // 1. Fetch habits
     const { data: habitsData, error: habitsError } = await supabase
       .from('habits')
       .select('*')
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: true });
 
     if (habitsError) {
@@ -255,7 +258,11 @@ export async function toggleHabitLog(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     // Check for existing log entry
     const { data: existingLog, error: fetchError } = await supabase
@@ -303,7 +310,7 @@ export async function toggleHabitLog(
         .from('habit_logs')
         .insert({
           habit_id: parsed.data.habitId,
-          user_id: effectiveUserId,
+          user_id: user.id,
           date: parsed.data.dateStr,
           is_completed: true,
         });
@@ -385,12 +392,16 @@ export async function createHabit(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('habits')
       .insert({
-        user_id: effectiveUserId,
+        user_id: user.id,
         title: parsed.data.title,
         description: parsed.data.description || null,
       })
@@ -423,13 +434,17 @@ export async function deleteHabit(habitId: string): Promise<ActionResponse> {
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { error } = await supabase
       .from('habits')
       .delete()
       .eq('id', parsed.data.habitId)
-      .eq('user_id', effectiveUserId);
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Error deleting habit:', error);

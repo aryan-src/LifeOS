@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import { revalidatePath } from 'next/cache';
 import type { Assignment, AssignmentStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -59,7 +58,11 @@ export interface GetAssignmentsResult {
 export async function getAssignments(): Promise<AssignmentWithProject[]> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('assignments')
@@ -67,7 +70,7 @@ export async function getAssignments(): Promise<AssignmentWithProject[]> {
         *,
         project:projects(id, title, slug)
       `)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('due_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
 
@@ -89,7 +92,11 @@ export async function getAssignments(): Promise<AssignmentWithProject[]> {
 export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> {
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('assignments')
@@ -97,7 +104,7 @@ export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> 
         *,
         project:projects(id, title, slug)
       `)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .order('due_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
 
@@ -160,12 +167,16 @@ export async function createAssignment(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data: assignment, error: insertError } = await supabase
       .from('assignments')
       .insert({
-        user_id: effectiveUserId,
+        user_id: user.id,
         subject: parsed.data.subject,
         title: parsed.data.title,
         due_date: parsed.data.due_date || null,
@@ -210,13 +221,17 @@ export async function updateAssignmentStatus(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('assignments')
       .update({ status: parsed.data.status, updated_at: new Date().toISOString() })
       .eq('id', parsed.data.id)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .select(`
         *,
         project:projects(id, title, slug)
@@ -259,7 +274,11 @@ export async function gradeAssignment(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { data, error } = await supabase
       .from('assignments')
@@ -270,7 +289,7 @@ export async function gradeAssignment(
         updated_at: new Date().toISOString(),
       })
       .eq('id', parsed.data.id)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .select(`
         *,
         project:projects(id, title, slug)
@@ -307,7 +326,11 @@ export async function updateAssignment(
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const updatePayload: import('@/types/database.types').UpdateAssignment = {
       updated_at: new Date().toISOString(),
@@ -325,7 +348,7 @@ export async function updateAssignment(
       .from('assignments')
       .update(updatePayload)
       .eq('id', idParsed.data)
-      .eq('user_id', effectiveUserId)
+      .eq('user_id', user.id)
       .select(`
         *,
         project:projects(id, title, slug)
@@ -359,13 +382,17 @@ export async function deleteAssignment(id: string): Promise<ActionResponse<void>
 
   try {
     const supabase = await createClient();
-    const effectiveUserId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
 
     const { error } = await supabase
       .from('assignments')
       .delete()
       .eq('id', idParsed.data.id)
-      .eq('user_id', effectiveUserId);
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Error deleting assignment:', error);

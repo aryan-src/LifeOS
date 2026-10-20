@@ -76,10 +76,30 @@ interface PriorityLevel {
 }
 
 const PRIORITIES: PriorityLevel[] = [
-  { value: 4, label: 'P1 Urgent', dotBg: 'bg-error', badgeClass: 'text-error' },
-  { value: 3, label: 'P2 High', dotBg: 'bg-on-tertiary-container', badgeClass: 'text-on-tertiary-container' },
-  { value: 2, label: 'P3 Medium', dotBg: 'bg-secondary', badgeClass: 'text-secondary' },
-  { value: 1, label: 'P4 Low', dotBg: 'bg-outline', badgeClass: 'text-outline' },
+  {
+    value: 4,
+    label: 'P1 Urgent',
+    dotBg: 'bg-rose-500',
+    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40',
+  },
+  {
+    value: 3,
+    label: 'P2 High',
+    dotBg: 'bg-amber-500',
+    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40',
+  },
+  {
+    value: 2,
+    label: 'P3 Medium',
+    dotBg: 'bg-emerald-500',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40',
+  },
+  {
+    value: 1,
+    label: 'P4 Low',
+    dotBg: 'bg-stone-400',
+    badgeClass: 'bg-stone-50 text-stone-600 border-stone-200/60 dark:bg-zinc-800/60 dark:text-zinc-400 dark:border-zinc-700/60',
+  },
 ];
 
 interface TaskCreateInputProps {
@@ -209,6 +229,23 @@ export function TaskCreateInput({
       return () => clearTimeout(timer);
     }
   }, [expanded]);
+
+  // Global keyboard shortcut listener (⌘N / Ctrl+N) to focus task input immediately
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        expand();
+        setTimeout(() => {
+          const input = document.getElementById('new-task-input');
+          input?.focus();
+        }, 50);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Auto-expand textarea height with content
   useEffect(() => {
@@ -370,7 +407,7 @@ export function TaskCreateInput({
           overflow: expanded ? 'visible' : 'hidden',
         }}
         className={cn(
-          'relative w-full rounded-2xl border border-outline-variant/60 dark:border-stone-800 bg-surface-container-lowest dark:bg-stone-900 shadow-sm transition-all focus-within:shadow-md focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/20 hover:border-outline-variant z-10',
+          'relative w-full rounded-2xl border border-stone-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/60 shadow-xs transition-all focus-within:shadow-sm focus-within:border-stone-300 dark:focus-within:border-zinc-700 hover:border-stone-300 dark:hover:border-zinc-700 z-10',
           expanded ? 'cursor-text' : 'cursor-default'
         )}
       >
@@ -406,6 +443,7 @@ export function TaskCreateInput({
 
         {/* Multi-line Task Title Textarea (Expanded) */}
         <textarea
+          id="new-task-input"
           ref={textareaRef}
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
@@ -706,37 +744,45 @@ export function TaskCreateInput({
           </div>
         </div>
 
-        {/* Circular Action Button at Bottom-Right */}
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onClick={handleSubmit}
-          disabled={!hasValue || isPending}
-          aria-label="Add Task"
-          style={{ borderRadius: 9999 }}
-          className={cn(
-            'absolute right-2 bottom-2 z-[10] flex size-8 items-center justify-center transition-all duration-300 outline-none cursor-pointer',
-            hasValue
-              ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm hover:opacity-90 active:scale-95'
-              : 'bg-surface-container text-outline/50 cursor-not-allowed opacity-60'
+        {/* Action Button & Shortcut Hint at Bottom-Right */}
+        <div className="absolute right-2.5 bottom-2 z-[10] flex items-center gap-1.5">
+          {expanded && (
+            <span className="hidden sm:inline font-mono text-[11px] text-stone-400 dark:text-zinc-500 mr-1 select-none">
+              Press ↵ Enter
+            </span>
           )}
-        >
-          {isPending ? (
-            <Loader2 size={15} className="animate-spin text-current" />
-          ) : (
-            <ArrowUp
-              size={15}
-              strokeWidth={2.25}
-              className={cn(
-                'transition-transform duration-200',
-                hasValue ? 'translate-y-0 scale-100' : 'translate-y-0.5 scale-90'
-              )}
-            />
-          )}
-        </button>
+          <button
+            id="add-task-btn"
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={handleSubmit}
+            disabled={!hasValue || isPending}
+            aria-label="Add Task"
+            style={{ borderRadius: 9999 }}
+            className={cn(
+              'flex size-8 items-center justify-center transition-all duration-300 outline-none cursor-pointer',
+              hasValue
+                ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm hover:opacity-90 active:scale-95'
+                : 'bg-surface-container text-outline/50 cursor-not-allowed opacity-60'
+            )}
+          >
+            {isPending ? (
+              <Loader2 size={15} className="animate-spin text-current" />
+            ) : (
+              <ArrowUp
+                size={15}
+                strokeWidth={2.25}
+                className={cn(
+                  'transition-transform duration-200',
+                  hasValue ? 'translate-y-0 scale-100' : 'translate-y-0.5 scale-90'
+                )}
+              />
+            )}
+          </button>
+        </div>
       </div>
 
       {state.error && (

@@ -215,5 +215,69 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
       // Section 2: Html (20 Pages) was completed on 2026-10-19, so it must NOT appear on 2026-10-20
       expect(html).not.toContain('Html (20 Pages)');
     });
+
+    it('renders standardized pastel priority badges and overdue badges', () => {
+      const overdueUrgentTask: TaskWithProject = {
+        ...mockTasks[1],
+        priority: 4, // P1 Urgent
+        due_date: '2026-10-15', // Overdue
+      };
+      const htmlUrgent = renderToString(
+        <TaskItem
+          task={overdueUrgentTask}
+          onToggle={vi.fn()}
+          onToggleInProgress={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      );
+      expect(htmlUrgent).toContain('P1 Urgent');
+      expect(htmlUrgent).toContain('bg-rose-50');
+      expect(htmlUrgent).toContain('text-rose-600 bg-rose-50/50'); // Overdue badge
+      expect(htmlUrgent).toContain('Overdue: 2026-10-15');
+
+      const highTask: TaskWithProject = {
+        ...mockTasks[1],
+        priority: 3, // P2 High
+      };
+      const htmlHigh = renderToString(
+        <TaskItem
+          task={highTask}
+          onToggle={vi.fn()}
+          onToggleInProgress={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      );
+      expect(htmlHigh).toContain('P2 High');
+      expect(htmlHigh).toContain('bg-amber-50');
+
+      const mediumTask: TaskWithProject = {
+        ...mockTasks[1],
+        priority: 2, // P3 Medium
+      };
+      const htmlMedium = renderToString(
+        <TaskItem
+          task={mediumTask}
+          onToggle={vi.fn()}
+          onToggleInProgress={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      );
+      expect(htmlMedium).toContain('P3 Medium');
+      expect(htmlMedium).toContain('bg-emerald-50');
+    });
+
+    it('renders restore button and completion metadata for completed tasks', () => {
+      const html = renderToString(
+        <TaskItem
+          task={mockTasks[2]} // is_completed: true
+          onToggle={vi.fn()}
+          onToggleInProgress={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      );
+
+      expect(html).toContain('Restore');
+      expect(html).toContain('Done at');
+    });
   });
 });

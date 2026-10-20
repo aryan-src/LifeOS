@@ -48,19 +48,19 @@ export default async function TasksPage(props: {
   const velocityPercent = totalCount > 0 ? Math.round((completedTodayCount / totalCount) * 100) : 0;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full min-h-screen bg-[#FBFBFB] dark:bg-[#090A0F] text-stone-900 dark:text-zinc-100 font-sans">
       {/* Minimal Ambient Header Accent */}
       <div className="w-full px-space-lg lg:px-margin pt-space-lg pb-space-md">
         {/* Top Meta Breadcrumb & Status Ribbon */}
         <div className="flex flex-wrap items-center justify-between gap-space-sm mb-space-sm">
-          <div className="flex items-center gap-space-sm text-outline dark:text-zinc-400 font-label-sm text-label-sm">
-            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-secondary dark:bg-emerald-400"></span>
+          <div className="flex items-center gap-space-sm text-stone-400 dark:text-zinc-500 font-mono text-xs">
+            <span className="inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="uppercase tracking-wider">Active Cycle</span>
             <span>•</span>
-            <span className="font-label-md text-label-md text-on-surface dark:text-zinc-100">Autumn 2026 / W41</span>
+            <span className="font-mono text-stone-700 dark:text-zinc-300 font-medium">Autumn 2026 / W41</span>
           </div>
-          <div className="flex items-center gap-space-sm text-outline dark:text-zinc-400 font-label-sm text-label-sm">
-            <span className="bg-surface-container-high dark:bg-zinc-800 px-space-sm py-0.5 rounded text-on-surface-variant dark:text-zinc-300 font-medium">
+          <div className="flex items-center gap-space-sm text-stone-500 dark:text-zinc-400 font-mono text-xs">
+            <span className="bg-stone-100 dark:bg-zinc-800/80 border border-stone-200/60 dark:border-zinc-700/60 px-2 py-0.5 rounded-md text-stone-700 dark:text-zinc-300 font-medium">
               {pendingCount} Pending
             </span>
             <span>{completedTodayCount} Completed</span>
@@ -70,17 +70,17 @@ export default async function TasksPage(props: {
         {/* Editorial Title & Quiet Subtext */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
           <div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold tracking-tight">Daily Tasks</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant dark:text-zinc-400 mt-1">Action items, priorities, and project-linked deliverables.</p>
+            <h1 className="font-serif text-3xl text-stone-900 dark:text-zinc-100 font-medium tracking-tight">Daily Tasks</h1>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1">Action items, priorities, and project-linked deliverables.</p>
           </div>
 
           {/* Quick Productivity Meter (Micro-visual inline SVG) */}
-          <div className="flex items-center gap-space-md bg-surface-container-low dark:bg-zinc-900/50 dark:border dark:border-zinc-800/60 px-space-md py-space-sm rounded-lg shadow-sm">
+          <div className="flex items-center gap-space-md bg-white dark:bg-zinc-900/60 border border-stone-200/70 dark:border-zinc-800/60 px-space-md py-space-sm rounded-xl shadow-xs">
             <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <circle className="text-surface-container-high dark:text-zinc-800" cx="18" cy="18" fill="none" r="14" stroke="currentColor" stroke-width="3"></circle>
+                <circle className="text-stone-100 dark:text-zinc-800" cx="18" cy="18" fill="none" r="14" stroke="currentColor" strokeWidth="3"></circle>
                 <circle
-                  className="text-secondary dark:text-emerald-400 transition-all duration-500"
+                  className="text-emerald-500 dark:text-emerald-400 transition-all duration-500"
                   cx="18"
                   cy="18"
                   fill="none"
@@ -92,11 +92,11 @@ export default async function TasksPage(props: {
                   strokeWidth="3"
                 ></circle>
               </svg>
-              <span className="absolute font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-100">{velocityPercent}%</span>
+              <span className="absolute font-mono text-xs font-medium text-stone-900 dark:text-zinc-100">{velocityPercent}%</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">Completion Velocity</span>
-              <span className="font-body-sm text-body-sm text-on-surface dark:text-zinc-100 font-medium truncate">
+              <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500 uppercase tracking-wider">Completion Velocity</span>
+              <span className="text-xs text-stone-800 dark:text-zinc-200 font-medium truncate">
                 {velocityPercent >= 50 ? 'Optimal pace' : 'In progress'} · {pendingCount} tasks remaining
               </span>
             </div>

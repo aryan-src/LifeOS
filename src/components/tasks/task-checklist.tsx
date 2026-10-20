@@ -7,6 +7,7 @@ import { TaskCreateInput } from './task-create-input';
 import {
   updateTaskStatus,
   deleteTask,
+  updateTaskPriority,
   type TaskWithProject,
 } from '@/lib/actions/tasks';
 import type { ProjectOption } from '@/lib/actions/projects-options';
@@ -16,7 +17,7 @@ import {
   type CalendarProjectItem,
 } from '@/components/ui/glass-calendar';
 import { FocusTimer } from './focus-timer';
-import { AlertTriangle, CheckCircle2, Target } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Target, ChevronDown } from 'lucide-react';
 
 interface TaskChecklistProps {
   initialTasks: TaskWithProject[];
@@ -30,6 +31,7 @@ type FilterTab = 'today' | 'upcoming' | 'completed' | 'all';
 type TaskOptimisticAction =
   | { type: 'toggle-complete'; taskId: string; targetState: boolean }
   | { type: 'toggle-in-progress'; taskId: string; targetState: boolean }
+  | { type: 'update-priority'; taskId: string; priority: number }
   | { type: 'delete'; taskId: string };
 
 export function TaskChecklist({
@@ -41,6 +43,7 @@ export function TaskChecklist({
   const [activeTab, setActiveTab] = useState<FilterTab>('today');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [boundTaskId, setBoundTaskId] = useState<string | null>(null);
+  const [completedExpanded, setCompletedExpanded] = useState<boolean>(true);
   const todayStr = getTodayDate();
   const [selectedDueDate, setSelectedDueDate] = useState<string>(
     initialSelectedDate || todayStr
@@ -81,6 +84,16 @@ export function TaskChecklist({
                 in_progress: update.targetState,
                 is_completed: update.targetState ? false : task.is_completed,
                 completed_at: update.targetState ? null : task.completed_at,
+              }
+            : task
+        );
+      }
+      if (update.type === 'update-priority') {
+        return state.map((task) =>
+          task.id === update.taskId
+            ? {
+                ...task,
+                priority: update.priority,
               }
             : task
         );
@@ -157,6 +170,18 @@ export function TaskChecklist({
       const response = await deleteTask(taskId);
       if (!response.success) {
         setErrorMessage(response.error || 'Failed to delete task.');
+      }
+    });
+  };
+
+  const handleUpdatePriority = (taskId: string, priority: number) => {
+    setErrorMessage(null);
+
+    startTransition(async () => {
+      setOptimisticTasks({ type: 'update-priority', taskId, priority });
+      const response = await updateTaskPriority(taskId, priority);
+      if (!response.success) {
+        setErrorMessage(response.error || 'Failed to update priority.');
       }
     });
   };
@@ -242,63 +267,81 @@ export function TaskChecklist({
         {/* 2. Filter & View Tabs with Actions */}
         <div className="flex flex-wrap items-center justify-between gap-space-sm py-space-xs">
           {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-1 p-1 bg-surface-container-low dark:bg-zinc-900/60 dark:border dark:border-zinc-800/60 rounded-lg">
+          <div className="flex items-center gap-1 p-1 bg-stone-100/80 dark:bg-zinc-900/80 border border-stone-200/60 dark:border-zinc-800/60 rounded-xl">
             <button
               type="button"
               onClick={() => handleTabChange('today')}
-              className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'today'
-                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
-                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
+                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
+                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
-              Today &amp; Overdue{' '}
-              <span className="ml-1 text-label-sm text-on-surface-variant dark:text-zinc-400 font-label-sm">
-                ({counts.today})
+              <span>Today &amp; Overdue</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
+                  activeTab === 'today'
+                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-stone-400 dark:text-zinc-500'
+                }`}
+              >
+                {counts.today}
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('upcoming')}
-              className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'upcoming'
-                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
-                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
+                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
+                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
-              Upcoming{' '}
-              <span className="ml-1 text-label-sm text-outline dark:text-zinc-500 font-label-sm">
-                ({counts.upcoming})
+              <span>Upcoming</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
+                  activeTab === 'upcoming'
+                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-stone-400 dark:text-zinc-500'
+                }`}
+              >
+                {counts.upcoming}
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('completed')}
-              className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'completed'
-                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
-                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
+                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
+                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
-              Completed{' '}
-              <span className="ml-1 text-label-sm text-outline dark:text-zinc-500 font-label-sm">
-                ({counts.completed})
+              <span>Completed</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
+                  activeTab === 'completed'
+                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-stone-400 dark:text-zinc-500'
+                }`}
+              >
+                {counts.completed}
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('all')}
-              className={`px-space-sm py-1 rounded font-body-sm text-body-sm font-medium transition-colors hidden sm:inline-flex cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all hidden sm:inline-flex cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-sm'
-                  : 'text-on-surface-variant dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800/50'
+                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
+                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
               All Tasks
             </button>
           </div>
 
-          <div className="flex items-center gap-1 text-outline dark:text-zinc-400 font-label-sm text-label-sm">
+          <div className="flex items-center gap-1 text-stone-400 dark:text-zinc-500 font-mono text-xs tabular-nums">
             <span>{totalItemsShown} items shown</span>
           </div>
         </div>
@@ -340,7 +383,7 @@ export function TaskChecklist({
                       layoutId={task.id}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
+                      exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
                       transition={{
                         type: 'spring',
                         stiffness: 450,
@@ -350,8 +393,10 @@ export function TaskChecklist({
                     >
                       <TaskItem
                         task={task}
+                        projects={projects}
                         onToggle={handleToggleComplete}
                         onToggleInProgress={handleToggleTaskInProgressWithBinding}
+                        onUpdatePriority={handleUpdatePriority}
                         onDelete={handleDelete}
                       />
                     </motion.div>
@@ -362,13 +407,16 @@ export function TaskChecklist({
           </div>
         )}
 
-        {/* 4. Distinct Bottom Section: Completed Tasks */}
+        {/* 4. Distinct Bottom Section: Collapsible Completed Tasks */}
         {(completedTasks.length > 0 || activeTab === 'completed') && (
           <div
             className="flex flex-col gap-space-sm pt-4 border-t border-stone-200/60 dark:border-zinc-800/60"
             data-purpose="completed-tasks-section"
           >
-            <div className="flex items-center justify-between px-space-xs pt-space-xs">
+            <div
+              className="flex items-center justify-between px-space-xs pt-space-xs cursor-pointer select-none group"
+              onClick={() => setCompletedExpanded(!completedExpanded)}
+            >
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-medium">
@@ -378,43 +426,69 @@ export function TaskChecklist({
                   {`${completedTasks.length} ${completedTasks.length === 1 ? 'item' : 'items'}`}
                 </span>
               </div>
+              <button
+                type="button"
+                className="p-1 rounded-md text-stone-400 group-hover:text-stone-600 dark:text-zinc-500 dark:group-hover:text-zinc-300 transition-colors cursor-pointer"
+                aria-label={completedExpanded ? 'Collapse completed tasks' : 'Expand completed tasks'}
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    completedExpanded ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
             </div>
 
-            <div className="flex flex-col gap-2">
-              {completedTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-stone-200/90 dark:border-zinc-800/80 p-8 text-center bg-white/40 dark:bg-zinc-900/30">
-                  <p className="font-body-sm text-body-sm text-stone-500 dark:text-zinc-400">
-                    No completed tasks yet. Completed items will appear here.
-                  </p>
-                </div>
-              ) : (
-                <AnimatePresence initial={false}>
-                  {completedTasks.map((task) => (
-                    <motion.div
-                      key={task.id}
-                      layout
-                      layoutId={task.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 450,
-                        damping: 32,
-                        mass: 0.8,
-                      }}
-                    >
-                      <TaskItem
-                        task={task}
-                        onToggle={handleToggleComplete}
-                        onToggleInProgress={handleToggleTaskInProgressWithBinding}
-                        onDelete={handleDelete}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+            <AnimatePresence initial={false}>
+              {completedExpanded && (
+                <motion.div
+                  key="completed-accordion-content"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-col gap-2 pt-1">
+                    {completedTasks.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-stone-200/90 dark:border-zinc-800/80 p-8 text-center bg-white/40 dark:bg-zinc-900/30">
+                        <p className="font-body-sm text-body-sm text-stone-500 dark:text-zinc-400">
+                          No completed tasks yet. Completed items will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      <AnimatePresence initial={false}>
+                        {completedTasks.map((task) => (
+                          <motion.div
+                            key={task.id}
+                            layout
+                            layoutId={task.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 450,
+                              damping: 32,
+                              mass: 0.8,
+                            }}
+                          >
+                            <TaskItem
+                              task={task}
+                              projects={projects}
+                              onToggle={handleToggleComplete}
+                              onToggleInProgress={handleToggleTaskInProgressWithBinding}
+                              onUpdatePriority={handleUpdatePriority}
+                              onDelete={handleDelete}
+                            />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    )}
+                  </div>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </div>
         )}
       </div>
@@ -461,3 +535,6 @@ export function TaskChecklist({
     </div>
   );
 }
+
+export const DailyTasks = TaskChecklist;
+export default TaskChecklist;

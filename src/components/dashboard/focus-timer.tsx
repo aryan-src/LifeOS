@@ -1,25 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useTransition } from 'react';
-import { VaporCountdownDigits } from '@/components/ui/countdown-vapor-digits';
+import React, { useState, useEffect, useCallback, useRef, useTransition } from 'react';
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  CloudRain,
+  MoreVertical,
+  ChevronDown,
+  Plus,
+  Square,
+  Search,
+} from 'lucide-react';
 import { logFocusSession, getFocusBindingContext } from '@/lib/actions/focus-session';
 import { updateTaskStatus } from '@/lib/actions/tasks';
 import { getTodayDate } from '@/lib/utils/date';
-import {
-  Volume2,
-  VolumeX,
-  Settings2,
-  Check,
-  Hash,
-  CheckSquare,
-  Sparkles,
-  ChevronDown,
-  X,
-  Play,
-  RotateCcw,
-  Sliders,
-  Square,
-} from 'lucide-react';
 
 export type TimerMode = 'focus' | 'break' | 'rest';
 
@@ -33,14 +28,14 @@ export interface FocusTimerProps {
   onSessionComplete?: (mode: string, completedSprints: number) => void;
 }
 
-export interface PresetOption {
+interface PresetOption {
   label: string;
   seconds: number;
   mode: TimerMode;
   name: string;
 }
 
-export const PRESET_OPTIONS: PresetOption[] = [
+const PRESET_OPTIONS: PresetOption[] = [
   { label: '15m', seconds: 900, mode: 'focus', name: 'Micro-Flow' },
   { label: '25m', seconds: 1500, mode: 'focus', name: 'Pomodoro' },
   { label: '50m', seconds: 3000, mode: 'focus', name: 'Deep Flow' },
@@ -49,13 +44,13 @@ export const PRESET_OPTIONS: PresetOption[] = [
 ];
 
 // Circular SVG Progress: Radius = 104 -> Circumference = 2 * PI * 104 ≈ 653.45
-export const CIRCUMFERENCE = 653.45;
+const CIRCUMFERENCE = 653.45;
 
 /**
  * 100% Offline Ambient Sound Synthesizer via Web Audio API.
- * Synthesizes tranquil forest rain noise with organic lowpass filtering.
+ * Synthesizes tranquil forest rain noise with lowpass filtering.
  */
-export class ForestRainAudioEngine {
+class ForestRainAudioEngine {
   private ctx: AudioContext | null = null;
   private noiseNode: AudioNode | null = null;
   private isPlaying = false;
@@ -120,155 +115,7 @@ export class ForestRainAudioEngine {
   }
 }
 
-export const ambientAudioEngine = new ForestRainAudioEngine();
-
-const MODE_CONFIG: Record<
-  TimerMode,
-  {
-    name: string;
-    header: string;
-    sessionLabel: string;
-    badgeText: string;
-    duration: number; // in seconds
-  }
-> = {
-  focus: {
-    name: 'Focus',
-    header: 'DEEP WORK SPRINT',
-    sessionLabel: 'Session: Pomodoro Standard',
-    badgeText: 'Focus Mode',
-    duration: 25 * 60,
-  },
-  shortBreak: {
-    name: 'Short Break',
-    header: 'SHORT BREAK',
-    sessionLabel: 'Session: 5-Minute Recharge',
-    badgeText: 'Break Mode',
-    duration: 5 * 60,
-  },
-  longBreak: {
-    name: 'Long Break',
-    header: 'LONG REST',
-    sessionLabel: 'Session: 15-Minute Extended Rest',
-    badgeText: 'Break Mode',
-    duration: 15 * 60,
-  },
-};
-
-const PROTOCOL_PRESETS = [
-  { label: '15m', title: 'Micro-Sprint', duration: 15 * 60, mode: 'focus' as TimerMode },
-  { label: '25m', title: 'Pomodoro', duration: 25 * 60, mode: 'focus' as TimerMode },
-  { label: '50m', title: 'Deep Flow', duration: 50 * 60, mode: 'focus' as TimerMode },
-];
-
-const THEME_STYLES: Record<
-  AccentTheme,
-  {
-    name: string;
-    badge: string;
-    progress: string;
-    dot: string;
-    ring: string;
-  }
-> = {
-  sage: {
-    name: 'Muted Sage',
-    badge:
-      'text-[#2A6041] bg-[#CBEBD6] dark:bg-emerald-950/60 dark:text-emerald-300 border-[#A7D9B7]/60 dark:border-emerald-800/50',
-    progress: 'bg-[#2D6A4F] dark:bg-emerald-500',
-    dot: 'bg-[#2A6041] dark:bg-emerald-400',
-    ring: 'ring-emerald-500/40 border-emerald-400/60',
-  },
-  amber: {
-    name: 'Soft Amber',
-    badge:
-      'text-[#92400E] bg-[#FEF3C7] dark:bg-amber-950/60 dark:text-amber-300 border-[#FDE68A]/60 dark:border-amber-800/50',
-    progress: 'bg-amber-600 dark:bg-amber-400',
-    dot: 'bg-[#D97706] dark:bg-amber-400',
-    ring: 'ring-amber-500/40 border-amber-400/60',
-  },
-  charcoal: {
-    name: 'Charcoal',
-    badge:
-      'text-stone-800 bg-stone-200 dark:bg-zinc-800 dark:text-zinc-200 border-stone-300 dark:border-zinc-700',
-    progress: 'bg-stone-800 dark:bg-zinc-300',
-    dot: 'bg-stone-800 dark:bg-zinc-300',
-    ring: 'ring-stone-500/40 border-stone-400/60',
-  },
-  crimson: {
-    name: 'Crimson',
-    badge:
-      'text-rose-800 bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-900',
-    progress: 'bg-rose-600 dark:bg-rose-500',
-    dot: 'bg-rose-600 dark:bg-rose-400',
-    ring: 'ring-rose-500/40 border-rose-400/60',
-  },
-};
-
-/**
- * Audio Synthesis Engine using Web Audio API for 100% offline harmonic chimes
- */
-function playAudioChime(sound: ChimeSound) {
-  if (sound === 'silent' || typeof window === 'undefined') return;
-  try {
-    const AudioContextClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    const now = ctx.currentTime;
-
-    if (sound === 'bowl') {
-      // Zen Bowl: 432Hz fundamental with rich resonant harmonic overtone decay
-      [432, 864, 1296].forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.12 / (idx + 1), now + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 2.25);
-      });
-    } else if (sound === 'digital') {
-      // Minimal Digital Chime: clean double ascending blip
-      [880, 1318.51].forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
-        gain.gain.setValueAtTime(0, now + idx * 0.09);
-        gain.gain.linearRampToValueAtTime(0.09, now + idx * 0.09 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.22);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.09);
-        osc.stop(now + idx * 0.09 + 0.25);
-      });
-    } else {
-      // Soft Bell: gentle 3-note ascending chord D5 -> F#5 -> A5
-      const notes = [587.33, 739.99, 880];
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-        gain.gain.setValueAtTime(0, now + idx * 0.12);
-        gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.12 + 0.03);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.8);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + 0.85);
-      });
-    }
-  } catch (err) {
-    console.debug('Chime audio playback suppressed:', err);
-  }
-}
+const ambientAudioEngine = new ForestRainAudioEngine();
 
 export function FocusTimer({
   className = '',
@@ -292,19 +139,6 @@ export function FocusTimer({
 
   // Ambient Audio
   const [isAmbientPlaying, setIsAmbientPlaying] = useState<boolean>(false);
-
-  // Toggle ambient audio
-  const toggleAmbient = useCallback(() => {
-    setIsAmbientPlaying((prev) => {
-      const next = !prev;
-      if (next) {
-        ambientAudioEngine.start();
-      } else {
-        ambientAudioEngine.stop();
-      }
-      return next;
-    });
-  }, []);
 
   // Custom Time Setter & Controls
   const [isCustomOpen, setIsCustomOpen] = useState<boolean>(false);
@@ -358,6 +192,49 @@ export function FocusTimer({
       }
     } catch {}
   }, [todayStr]);
+
+  // Sync available tasks when propTasks changes
+  useEffect(() => {
+    if (propTasks && propTasks.length > 0) {
+      setAvailableTasks(propTasks);
+    }
+  }, [propTasks]);
+
+  // Sync boundTaskId from parent prop
+  useEffect(() => {
+    if (propBoundTaskId) {
+      const found = availableTasks.find((t) => t.id === propBoundTaskId);
+      if (found) {
+        setBoundTask(found);
+      }
+    } else if (propBoundTaskId === null && boundTask && availableTasks.some((t) => t.id === boundTask.id)) {
+      setBoundTask(null);
+    }
+  }, [propBoundTaskId, availableTasks]);
+
+  // Fetch binding context from server if not provided
+  useEffect(() => {
+    if (!propTasks || propTasks.length === 0) {
+      startTransition(async () => {
+        const res = await getFocusBindingContext();
+        if (res.tasks.length > 0) {
+          setAvailableTasks(res.tasks);
+        }
+      });
+    }
+  }, [propTasks]);
+
+  // Outside click listener to dismiss task dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (taskDropdownRef.current && !taskDropdownRef.current.contains(event.target as Node)) {
+        setIsTaskDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Format MM:SS helper
   const formatTime = (sec: number) => {
     const mins = Math.floor(sec / 60);
@@ -378,190 +255,42 @@ export function FocusTimer({
     setFinishTimeText(`${formattedHours}:${formattedMins} ${ampm}`);
   }, [remainingSeconds, isRunning]);
 
-  // Fetch binding candidates if not passed as props
-  useEffect(() => {
-    if ((!propTasks || propTasks.length === 0) && (!propProjects || propProjects.length === 0)) {
-      startTransition(async () => {
-        const res = await getFocusBindingContext();
-        if (res.tasks.length > 0) setAvailableTasks(res.tasks);
-        if (res.projects.length > 0) setAvailableProjects(res.projects);
-      });
-    }
-  }, [propTasks, propProjects]);
+  // Circular progress metrics
+  const elapsedSeconds = Math.max(0, totalDurationSeconds - remainingSeconds);
+  const progressFraction = totalDurationSeconds > 0 ? elapsedSeconds / totalDurationSeconds : 0;
+  const strokeDashoffset = CIRCUMFERENCE - progressFraction * CIRCUMFERENCE;
+  const percentCompleted = Math.round(progressFraction * 100);
 
-  // Sync available tasks when propTasks changes
-  useEffect(() => {
-    if (propTasks && propTasks.length > 0) {
-      setAvailableTasks(propTasks);
-    }
-  }, [propTasks]);
-
-  // Sync available projects when propProjects changes
-  useEffect(() => {
-    if (propProjects && propProjects.length > 0) {
-      setAvailableProjects(propProjects);
-    }
-  }, [propProjects]);
-
-  // Sync boundTaskId from parent prop
-  useEffect(() => {
-    if (propBoundTaskId) {
-      const found = availableTasks.find((t) => t.id === propBoundTaskId);
-      if (found) {
-        setBoundTask(found);
-        setBoundProject(null);
+  // Auto-sync task status to in_progress
+  const handleTaskStart = useCallback(
+    (taskId: string) => {
+      if (onTaskStatusChange) {
+        onTaskStatusChange(taskId, true);
+      } else {
+        startTransition(async () => {
+          await updateTaskStatus(taskId, { in_progress: true });
+        });
       }
-    } else if (propBoundTaskId === null && boundTask && availableTasks.some((t) => t.id === boundTask.id)) {
-      setBoundTask(null);
-    }
-  }, [propBoundTaskId, availableTasks]);
-
-  // Outside click listener for menus
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (settingsModalRef.current && !settingsModalRef.current.contains(event.target as Node)) {
-        setIsSettingsOpen(false);
-      }
-      if (contextDropdownRef.current && !contextDropdownRef.current.contains(event.target as Node)) {
-        setIsContextDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Format time display as MM:SS
-  const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds % 60;
-  const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-  // Progress percentage
-  const progressPercentage = Math.min(
-    100,
-    Math.max(0, ((totalDuration - remainingSeconds) / totalDuration) * 100)
+    },
+    [onTaskStatusChange]
   );
 
-  // Automatically trigger task in_progress status update
-  const handleTaskStart = (taskId: string) => {
-    if (onTaskStatusChange) {
-      onTaskStatusChange(taskId, true);
-    } else {
-      startTransition(async () => {
-        await updateTaskStatus(taskId, { in_progress: true });
-      });
-    }
-  };
-
-  // Switch to Preset Interval
-  const handleSelectPreset = (durationSec: number, presetTitle?: string) => {
-    setTimerState('idle');
-    setMode('focus');
-    setTotalDuration(durationSec);
-    setRemainingSeconds(durationSec);
-    endTimeRef.current = null;
-    setIsCustomInputOpen(false);
-  };
-
-  // Submit custom minutes (1 - 120 mins)
-  const handleApplyCustomMinutes = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const val = parseInt(customMinutesInput, 10);
-    if (!isNaN(val) && val >= 1 && val <= 120) {
-      handleSelectPreset(val * 60, `${val}m Custom`);
-      setIsCustomInputOpen(false);
-    }
-  };
-
-  // Toggle Timer Play / Pause
-  const handleTogglePlayPause = () => {
-    if (timerState === 'running') {
-      setTimerState('paused');
-      endTimeRef.current = null;
-    } else if (timerState === 'paused') {
-      endTimeRef.current = Date.now() + remainingSeconds * 1000;
-      setTimerState('running');
-      if (boundTask) {
-        handleTaskStart(boundTask.id);
+  // Toggle ambient audio
+  const toggleAmbient = useCallback(() => {
+    setIsAmbientPlaying((prev) => {
+      const next = !prev;
+      if (next) {
+        ambientAudioEngine.start();
+      } else {
+        ambientAudioEngine.stop();
       }
-    } else {
-      const targetSeconds = remainingSeconds === 0 ? totalDuration : remainingSeconds;
-      setRemainingSeconds(targetSeconds);
-      endTimeRef.current = Date.now() + targetSeconds * 1000;
-      setTimerState('running');
-      if (boundTask) {
-        handleTaskStart(boundTask.id);
-      }
-    }
-  };
+      return next;
+    });
+  }, []);
 
-  // Mid-Session "Quit & Log" Action:
-  // Immediately stops the countdown, calculates exact elapsed focus time, logs telemetry,
-  // updates daily accumulation, and returns timer to idle state.
-  const handleQuitAndLog = () => {
-    // 1. Calculate exact elapsed focus time:
-    // elapsedSeconds = totalDurationSeconds - remainingSeconds
-    // elapsedMinutes = floor(elapsedSeconds / 60)
-    const elapsedSeconds = Math.max(0, totalDuration - remainingSeconds);
-    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-
-    // Stop countdown and return timer to idle state
-    setTimerState('idle');
-    endTimeRef.current = null;
-    setRemainingSeconds(totalDuration);
-
-    if (elapsedMinutes >= 1) {
-      // 2. Optimistically add elapsedMinutes to today's cumulative focus total
-      const addedSeconds = elapsedMinutes * 60;
-      const nextTotalSeconds = cumulativeSecondsToday + addedSeconds;
-      setCumulativeSecondsToday(nextTotalSeconds);
-
-      try {
-        localStorage.setItem(
-          'lifeos_focus_seconds_today',
-          nextTotalSeconds.toString()
-        );
-      } catch {}
-
-      // 3. Telemetry Server Action
-      startTransition(async () => {
-        const res = await logFocusSession({
-          durationMinutes: elapsedMinutes,
-          taskId: boundTask?.id || null,
-          projectId: boundProject?.id || null,
-          mode: mode,
-        });
-
-        const contextLabel = boundTask
-          ? boundTask.title
-          : boundProject
-          ? `#${boundProject.slug}`
-          : 'general';
-
-        if (res.success) {
-          setTelemetryFeedback(`Logged ${elapsedMinutes}m to ${contextLabel}`);
-        } else {
-          setTelemetryFeedback(res.error || 'Failed to log focus session');
-        }
-        setTimeout(() => setTelemetryFeedback(null), 3500);
-      });
-    } else {
-      // Graceful notice for partial session under 1 minute
-      setTelemetryFeedback('Session under 1m not logged');
-      setTimeout(() => setTelemetryFeedback(null), 3500);
-    }
-  };
-
-  // Reset Timer (separate action to abandon session without recording elapsed minutes)
-  const handleReset = () => {
-    setTimerState('idle');
-    setRemainingSeconds(totalDuration);
-    endTimeRef.current = null;
-    setIsVisualAlerting(false);
-  };
-
-  // Timer countdown engine with background tab drift protection
+  // Timer countdown engine with background drift protection
   useEffect(() => {
-    if (timerState !== 'running') return;
+    if (!isRunning) return;
 
     if (!endTimeRef.current) {
       endTimeRef.current = Date.now() + remainingSeconds * 1000;
@@ -574,106 +303,186 @@ export function FocusTimer({
 
       if (secondsLeft === 0) {
         clearInterval(interval);
-        setTimerState('idle');
+        setIsRunning(false);
         endTimeRef.current = null;
 
-        // Play chime alert
-        playAudioChime(chimeSound);
+        // Vibrate if supported
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([80, 40, 80]);
+        }
 
-        // Visual alert card border pulse
-        setIsVisualAlerting(true);
-        setTimeout(() => setIsVisualAlerting(false), 3800);
+        const completedMinutes = Math.max(1, Math.round(totalDurationSeconds / 60));
 
-        // Calculate minutes logged
-        const completedMinutes = Math.max(1, Math.round(totalDuration / 60));
-
-        // Update gamification telemetry
-        if (mode === 'focus') {
+        if (currentMode === 'focus') {
           const nextSprintCount = completedSprints + 1;
-          const nextTotalSeconds = cumulativeSecondsToday + totalDuration;
+          const nextCumulativeSeconds = cumulativeSecondsToday + totalDurationSeconds;
           setCompletedSprints(nextSprintCount);
-          setCumulativeSecondsToday(nextTotalSeconds);
+          setCumulativeSecondsToday(nextCumulativeSeconds);
 
           try {
             localStorage.setItem('lifeos_focus_sprints_today', nextSprintCount.toString());
-            localStorage.setItem('lifeos_focus_seconds_today', nextTotalSeconds.toString());
+            localStorage.setItem(
+              'lifeos_focus_seconds_today',
+              nextCumulativeSeconds.toString()
+            );
           } catch {}
 
-          // Invoke Server Action to record focus session telemetry in Supabase
           startTransition(async () => {
             const res = await logFocusSession({
               durationMinutes: completedMinutes,
               taskId: boundTask?.id || null,
-              projectId: boundProject?.id || null,
               mode: 'focus',
             });
             if (res.success) {
-              const contextLabel = boundTask ? boundTask.title : boundProject ? `#${boundProject.slug}` : 'general';
-              setTelemetryFeedback(`Logged ${completedMinutes}m to ${contextLabel}`);
+              setTelemetryFeedback(`Logged ${completedMinutes}m to ${boundTask?.title || 'general'}`);
               setTimeout(() => setTelemetryFeedback(null), 3500);
             }
           });
 
           onSessionComplete?.('focus', nextSprintCount);
 
-          // Auto-advance mode: 4th sprint triggers long break; otherwise short break
-          const nextMode: TimerMode = nextSprintCount % 4 === 0 ? 'longBreak' : 'shortBreak';
-          setMode(nextMode);
-          setTotalDuration(MODE_CONFIG[nextMode].duration);
-          setRemainingSeconds(MODE_CONFIG[nextMode].duration);
+          // Auto-advance: Every 4th sprint triggers long break
+          const nextMode: TimerMode = nextSprintCount % 4 === 0 ? 'rest' : 'break';
+          const nextDuration = nextMode === 'rest' ? 900 : 300;
+          setCurrentMode(nextMode);
+          setTotalDurationSeconds(nextDuration);
+          setRemainingSeconds(nextDuration);
         } else {
-          onSessionComplete?.(mode, completedSprints);
-          setMode('focus');
-          setTotalDuration(MODE_CONFIG.focus.duration);
-          setRemainingSeconds(MODE_CONFIG.focus.duration);
+          onSessionComplete?.(currentMode, completedSprints);
+          setCurrentMode('focus');
+          setTotalDurationSeconds(1500);
+          setRemainingSeconds(1500);
         }
       }
     }, 250);
 
     return () => clearInterval(interval);
   }, [
-    timerState,
-    mode,
-    completedSprints,
+    isRunning,
     remainingSeconds,
-    totalDuration,
-    chimeSound,
-    boundTask,
-    boundProject,
+    totalDurationSeconds,
+    currentMode,
+    completedSprints,
     cumulativeSecondsToday,
+    boundTask,
     onSessionComplete,
   ]);
 
-  // Spacebar hotkey
+  // Start / Pause timer toggle
+  const toggleTimer = useCallback(() => {
+    if (isRunning) {
+      setIsRunning(false);
+      endTimeRef.current = null;
+    } else {
+      const targetSec = remainingSeconds === 0 ? totalDurationSeconds : remainingSeconds;
+      setRemainingSeconds(targetSec);
+      endTimeRef.current = Date.now() + targetSec * 1000;
+      setIsRunning(true);
+
+      if (boundTask) {
+        handleTaskStart(boundTask.id);
+      }
+    }
+  }, [isRunning, remainingSeconds, totalDurationSeconds, boundTask, handleTaskStart]);
+
+  // Reset timer session
+  const handleReset = useCallback(
+    (seconds = totalDurationSeconds, mode: TimerMode = currentMode) => {
+      setIsRunning(false);
+      endTimeRef.current = null;
+      setTotalDurationSeconds(seconds);
+      setRemainingSeconds(seconds);
+      setCurrentMode(mode);
+    },
+    [totalDurationSeconds, currentMode]
+  );
+
+  // Mid-session "Quit & Log" action
+  const handleQuitAndLog = useCallback(() => {
+    const elapsed = Math.max(0, totalDurationSeconds - remainingSeconds);
+    const elapsedMins = Math.floor(elapsed / 60);
+
+    setIsRunning(false);
+    endTimeRef.current = null;
+    setRemainingSeconds(totalDurationSeconds);
+
+    if (elapsedMins >= 1) {
+      const addedSeconds = elapsedMins * 60;
+      const nextTotalSeconds = cumulativeSecondsToday + addedSeconds;
+      setCumulativeSecondsToday(nextTotalSeconds);
+
+      try {
+        localStorage.setItem('lifeos_focus_seconds_today', nextTotalSeconds.toString());
+      } catch {}
+
+      startTransition(async () => {
+        const res = await logFocusSession({
+          durationMinutes: elapsedMins,
+          taskId: boundTask?.id || null,
+          mode: currentMode,
+        });
+
+        const contextLabel = boundTask ? boundTask.title : 'general';
+        if (res.success) {
+          setTelemetryFeedback(`Logged ${elapsedMins}m to ${contextLabel}`);
+        } else {
+          setTelemetryFeedback(res.error || 'Failed to log focus session');
+        }
+        setTimeout(() => setTelemetryFeedback(null), 3500);
+      });
+    } else {
+      setTelemetryFeedback('Session under 1m not logged');
+      setTimeout(() => setTelemetryFeedback(null), 3500);
+    }
+  }, [totalDurationSeconds, remainingSeconds, cumulativeSecondsToday, boundTask, currentMode]);
+
+  // Apply custom duration (1 - 180 min)
+  const handleApplyCustom = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const mins = Math.max(1, parseInt(customMinutesInput, 10) || 25);
+    handleReset(mins * 60, 'focus');
+    setIsCustomOpen(false);
+  };
+
+  // Keyboard shortcut listeners: Space (Play/Pause), M (Mute/Unmute Ambient), R (Reset), Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.code === 'Space') {
         e.preventDefault();
-        handleTogglePlayPause();
+        toggleTimer();
+      } else if (e.code === 'KeyR') {
+        e.preventDefault();
+        handleReset();
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        toggleAmbient();
+      } else if (e.code === 'Escape') {
+        setIsTaskDropdownOpen(false);
+        setIsCustomOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [timerState, remainingSeconds, totalDuration]);
+  }, [toggleTimer, handleReset, toggleAmbient]);
 
-  // Filtered tasks and projects for context binding
+  // Filtered task options for dropdown
   const filteredTasks = availableTasks.filter((t) =>
-    t.title.toLowerCase().includes(contextSearchQuery.toLowerCase())
-  );
-  const filteredProjects = availableProjects.filter(
-    (p) =>
-      p.title.toLowerCase().includes(contextSearchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(contextSearchQuery.toLowerCase())
+    t.title.toLowerCase().includes(taskSearchQuery.toLowerCase())
   );
 
   const isBreakMode = currentMode !== 'focus';
+  const todayFocusHours = (cumulativeSecondsToday / 3600).toFixed(1);
   const sessionOrdinal = (completedSprints % 4) + 1;
+
   const sessionStatusTitle =
     currentMode === 'focus'
       ? 'Deep Flow'
       : currentMode === 'break'
       ? 'Short Pause'
       : 'Resting Flow';
+
+  const modeSubtitle = currentMode === 'focus' ? 'Stay Present' : 'Breathe & Unwind';
 
   return (
     <section
@@ -759,7 +568,7 @@ export function FocusTimer({
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-stone-500 dark:text-zinc-400 font-normal tracking-tight">Focus Goal</span>
               <span className="text-stone-800 dark:text-zinc-200 font-medium tracking-tight">
-                {(cumulativeSecondsToday / 3600).toFixed(1)}h <span className="text-stone-400 dark:text-zinc-500 font-normal">/ 4h</span>
+                {todayFocusHours}h <span className="text-stone-400 dark:text-zinc-500 font-normal">/ 4h</span>
               </span>
             </div>
             <div className="w-full h-1.5 rounded-full bg-[#E5E3D8] dark:bg-zinc-700 overflow-hidden">
@@ -787,88 +596,6 @@ export function FocusTimer({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 4. Subdued Presets & Dynamic Completion Readout */}
-      <div className="space-y-2">
-        {/* Dynamic Completion Estimate Badge */}
-        <div className="flex items-center justify-center -mt-1 mb-2" id="session-finish-readout">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EE] dark:bg-zinc-800/80 border border-[#E7E5DD] dark:border-zinc-700/60 text-[11px] font-mono text-stone-500 dark:text-zinc-400 shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] select-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
-            <span>Finishes at {finishTimeText}</span>
-            <span className="text-stone-300 dark:text-zinc-600">·</span>
-            <span className="text-stone-400 dark:text-zinc-500">
-              {`${Math.floor(elapsedSeconds / 60)}m elapsed`}
-            </span>
-          </div>
-        </div>
-
-        {/* Segmented Preset Duration Track */}
-        <nav
-          aria-label="Preset timer durations"
-          className="flex items-center justify-between p-1 rounded-2xl bg-[#F2F1EA]/80 dark:bg-zinc-800/80 border border-[#E6E4DC] dark:border-zinc-700/60 text-xs font-mono select-none"
-          id="presets-container"
-        >
-          {PRESET_OPTIONS.map((preset) => {
-            const isActive =
-              currentMode === preset.mode && totalDurationSeconds === preset.seconds;
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => handleReset(preset.seconds, preset.mode)}
-                className={`preset-btn px-3 py-1.5 rounded-xl transition-all duration-150 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#FBFBF9] dark:bg-zinc-900 text-stone-900 dark:text-zinc-100 font-medium shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] border border-[#E3E1D7] dark:border-zinc-700'
-                    : 'text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                }`}
-              >
-                {preset.label}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Custom duration drawer toggle & cycle progress */}
-        <div className="flex items-center justify-between px-1 text-[11px] font-mono text-stone-400 dark:text-zinc-500">
-          <button
-            type="button"
-            onClick={() => setIsCustomOpen(!isCustomOpen)}
-            className="inline-flex items-center gap-1.5 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
-            id="custom-toggle"
-          >
-            <Plus className="w-3 h-3" />
-            <span>Custom flow duration</span>
-          </button>
-          <span className="tracking-tight">Cycle {sessionOrdinal} / 4 completed</span>
-        </div>
-
-        {/* Custom Input Drawer Panel */}
-        {isCustomOpen && (
-          <form
-            onSubmit={handleApplyCustom}
-            className="pt-1 flex items-center gap-2 p-2 rounded-xl bg-[#F4F3ED] dark:bg-zinc-800 border border-[#E6E4DC] dark:border-zinc-700 text-xs font-mono animate-in fade-in"
-            id="custom-panel"
-          >
-            <span className="text-stone-500 dark:text-zinc-400 pl-1">Minutes:</span>
-            <input
-              type="number"
-              min="1"
-              max="180"
-              value={customMinutesInput}
-              onChange={(e) => setCustomMinutesInput(e.target.value)}
-              className="w-16 px-2 py-1 bg-[#FBFBF9] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg text-center text-xs text-stone-900 dark:text-zinc-100 focus:ring-1 focus:ring-stone-400 focus:outline-none"
-              id="custom-minutes"
-            />
-            <button
-              type="submit"
-              className="px-3 py-1 bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:text-zinc-900 text-white rounded-lg text-xs font-medium transition cursor-pointer"
-              id="apply-custom"
-            >
-              Set
-            </button>
-          </form>
-        )}
       </div>
 
       {/* 3. Centerpiece: Circular Minimal Flow Ring & High-Contrast Serene Typography */}
@@ -983,6 +710,88 @@ export function FocusTimer({
           <div className="mt-2 text-[11px] font-mono text-emerald-700 dark:text-emerald-400 animate-in fade-in">
             {telemetryFeedback} ✓
           </div>
+        )}
+      </div>
+
+      {/* 4. Subdued Presets & Dynamic Completion Readout */}
+      <div className="space-y-2">
+        {/* Dynamic Completion Estimate Badge */}
+        <div className="flex items-center justify-center -mt-1 mb-2" id="session-finish-readout">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EE] dark:bg-zinc-800/80 border border-[#E7E5DD] dark:border-zinc-700/60 text-[11px] font-mono text-stone-500 dark:text-zinc-400 shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+            <span>Finishes at {finishTimeText}</span>
+            <span className="text-stone-300 dark:text-zinc-600">·</span>
+            <span className="text-stone-400 dark:text-zinc-500">
+              {`${Math.floor(elapsedSeconds / 60)}m elapsed`}
+            </span>
+          </div>
+        </div>
+
+        {/* Segmented Preset Duration Track */}
+        <nav
+          aria-label="Preset timer durations"
+          className="flex items-center justify-between p-1 rounded-2xl bg-[#F2F1EA]/80 dark:bg-zinc-800/80 border border-[#E6E4DC] dark:border-zinc-700/60 text-xs font-mono select-none"
+          id="presets-container"
+        >
+          {PRESET_OPTIONS.map((preset) => {
+            const isActive =
+              currentMode === preset.mode && totalDurationSeconds === preset.seconds;
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => handleReset(preset.seconds, preset.mode)}
+                className={`preset-btn px-3 py-1.5 rounded-xl transition-all duration-150 cursor-pointer ${
+                  isActive
+                    ? 'bg-[#FBFBF9] dark:bg-zinc-900 text-stone-900 dark:text-zinc-100 font-medium shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] border border-[#E3E1D7] dark:border-zinc-700'
+                    : 'text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Custom duration drawer toggle & cycle progress */}
+        <div className="flex items-center justify-between px-1 text-[11px] font-mono text-stone-400 dark:text-zinc-500">
+          <button
+            type="button"
+            onClick={() => setIsCustomOpen(!isCustomOpen)}
+            className="inline-flex items-center gap-1.5 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+            id="custom-toggle"
+          >
+            <Plus className="w-3 h-3" />
+            <span>Custom flow duration</span>
+          </button>
+          <span className="tracking-tight">Cycle {sessionOrdinal} / 4 completed</span>
+        </div>
+
+        {/* Custom Input Drawer Panel */}
+        {isCustomOpen && (
+          <form
+            onSubmit={handleApplyCustom}
+            className="pt-1 flex items-center gap-2 p-2 rounded-xl bg-[#F4F3ED] dark:bg-zinc-800 border border-[#E6E4DC] dark:border-zinc-700 text-xs font-mono animate-in fade-in"
+            id="custom-panel"
+          >
+            <span className="text-stone-500 dark:text-zinc-400 pl-1">Minutes:</span>
+            <input
+              type="number"
+              min="1"
+              max="180"
+              value={customMinutesInput}
+              onChange={(e) => setCustomMinutesInput(e.target.value)}
+              className="w-16 px-2 py-1 bg-[#FBFBF9] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 rounded-lg text-center text-xs text-stone-900 dark:text-zinc-100 focus:ring-1 focus:ring-stone-400 focus:outline-none"
+              id="custom-minutes"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1 bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:text-zinc-900 text-white rounded-lg text-xs font-medium transition cursor-pointer"
+              id="apply-custom"
+            >
+              Set
+            </button>
+          </form>
         )}
       </div>
 

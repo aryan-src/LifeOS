@@ -46,15 +46,20 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const isProtectedPath =
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/tasks') ||
-    pathname.startsWith('/projects') ||
-    pathname.startsWith('/finances') ||
-    pathname.startsWith('/notes') ||
-    pathname.startsWith('/assignments') ||
-    pathname.startsWith('/habits') ||
-    pathname.startsWith('/settings');
+  const protectedRoutes = [
+    '/tasks',
+    '/projects',
+    '/finances',
+    '/notes',
+    '/settings',
+    '/assignments',
+    '/habits',
+    '/dashboard',
+  ];
+
+  const isProtectedPath = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
 
   // Unauthenticated user requesting a protected route
   if (!user && isProtectedPath) {
@@ -64,10 +69,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Authenticated user accessing login page or landing page root
-  if (user && (pathname.startsWith('/login') || pathname === '/')) {
+  // Authenticated users attempting to visit /login should be automatically redirected to /
+  if (user && (pathname === '/login' || pathname.startsWith('/login/'))) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/';
     url.search = '';
     return NextResponse.redirect(url);
   }

@@ -87,7 +87,12 @@ export interface FinancialAnalytics {
 }
 
 const STUDENT_CATEGORIES: { name: string; type: 'income' | 'expense'; color: string }[] = [
+  { name: 'Pocket Money', type: 'income', color: '#10b981' },
   { name: 'Allowance', type: 'income', color: '#10b981' },
+  { name: 'Food & Canteen', type: 'expense', color: '#f97316' },
+  { name: 'Transport', type: 'expense', color: '#3b82f6' },
+  { name: 'Subscriptions', type: 'expense', color: '#ec4899' },
+  { name: 'Books & Supplies', type: 'expense', color: '#8b5cf6' },
   { name: 'Grocery', type: 'expense', color: '#16a34a' },
   { name: 'Stationary', type: 'expense', color: '#8b5cf6' },
   { name: 'Junk Food', type: 'expense', color: '#f97316' },
@@ -100,12 +105,9 @@ const STUDENT_CATEGORIES: { name: string; type: 'income' | 'expense'; color: str
 ];
 
 const OBSOLETE_CATEGORIES = [
-  'Books & Study Supplies',
   'Entertainment & Hanging Out',
-  'Food & Canteen',
   'Gifts & Side Hustles',
   'Pocket Money / Allowance',
-  'Subscriptions',
   'Transport & Commute',
 ];
 

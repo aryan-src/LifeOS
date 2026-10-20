@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { requireUserId } from '@/lib/auth/user';
 import type { ActionResponse } from '@/types/action.types';
 import type { NoteExportItem, TransactionExportItem, AssignmentExportItem, TaskExportItem, HabitExportItem } from '@/lib/export/formatters';
 
@@ -42,7 +41,12 @@ export interface FullAccountExportData {
 export async function getFullAccountExport(): Promise<ActionResponse<FullAccountExportData>> {
   try {
     const supabase = await createClient();
-    const userId = await requireUserId(supabase);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
+    const userId = user.id;
 
     const [
       notesRes,

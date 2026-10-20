@@ -986,153 +986,106 @@ export function FocusTimer({
         )}
       </div>
 
-      {/* 4. Bottom Row: Flat Progress Bar Bound to Exact Completion Percentage */}
-      <div className="w-full bg-[#F4ECE3] dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-300 ease-linear ${
-            isBreakMode ? 'bg-amber-600 dark:bg-amber-400' : activeTheme.progress
-          }`}
-          style={{ width: `${progressPercentage}%` }}
-        />
-      </div>
-
-      {/* 5. Task & Project Context Binding Quick-Selector */}
-      <div className="relative pt-1 border-t border-outline-variant/20 dark:border-zinc-800/60" ref={contextDropdownRef}>
-        <div className="flex items-center justify-between text-xs">
-          {/* Active Context Chip or Selector Trigger */}
-          {boundTask || boundProject ? (
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="text-[11px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider shrink-0">
-                Bound to:
-              </span>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container dark:bg-zinc-800 border border-outline-variant/30 dark:border-zinc-700/60 text-on-surface dark:text-zinc-200 text-xs font-medium truncate">
-                {boundTask ? (
-                  <>
-                    <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">{boundTask.title}</span>
-                  </>
-                ) : (
-                  <>
-                    <Hash className="w-3.5 h-3.5 text-stone-500 shrink-0" />
-                    <span className="truncate">#{boundProject?.slug}</span>
-                  </>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBoundTask(null);
-                    setBoundProject(null);
-                    onBindTask?.(null);
-                  }}
-                  className="ml-1 p-0.5 rounded hover:bg-stone-200 dark:hover:bg-zinc-700 text-outline hover:text-on-surface cursor-pointer"
-                  title="Clear context binding"
+      {/* 5. Notion-Style Task Callout Footer */}
+      <div className="relative" ref={taskDropdownRef} data-purpose="notion-page-callout">
+        <button
+          type="button"
+          onClick={() => setIsTaskDropdownOpen(!isTaskDropdownOpen)}
+          className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-[#F6F5EF] hover:bg-[#EFECE3] dark:bg-zinc-800/80 dark:hover:bg-zinc-800 border border-[#E6E4DB] dark:border-zinc-700/60 transition-all duration-150 group cursor-pointer text-left"
+          id="task-selector-trigger"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Notion Document Page Icon */}
+            <div className="w-6 h-6 rounded-lg bg-[#EAE8DE] dark:bg-zinc-700 flex items-center justify-center text-stone-700 dark:text-zinc-200 shrink-0 text-xs font-serif shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)]">
+              📄
+            </div>
+            <div className="truncate">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono tracking-wider uppercase text-stone-400 dark:text-zinc-500">
+                  Current Page
+                </span>
+                <span
+                  className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#E9E7DC] dark:bg-zinc-700 text-stone-600 dark:text-zinc-300 font-medium"
+                  id="pomo-count-badge"
                 >
-                  <X className="w-3 h-3" />
-                </button>
+                  🍅 2/4 Pomos
+                </span>
+              </div>
+              <p
+                className="text-xs font-medium text-stone-800 dark:text-zinc-200 truncate"
+                id="selected-task-text"
+              >
+                {boundTask ? boundTask.title : 'Q3 Product Architecture Spec & Flow Design'}
+              </p>
+            </div>
+          </div>
+          <ChevronDown
+            className={`w-3.5 h-3.5 text-stone-400 group-hover:text-stone-700 dark:text-zinc-500 dark:group-hover:text-zinc-300 shrink-0 ml-2 transition-transform duration-200 ${
+              isTaskDropdownOpen ? 'rotate-180' : ''
+            }`}
+            id="dropdown-chevron"
+          />
+        </button>
+
+        {/* Task Dropdown Selection List */}
+        {isTaskDropdownOpen && (
+          <div
+            className="absolute left-0 right-0 bottom-full mb-2 bg-[#FBFBF9] dark:bg-zinc-900 rounded-2xl border border-[#E3E1D7] dark:border-zinc-700 shadow-xl p-2 z-30 text-xs font-sans animate-in fade-in zoom-in-95 duration-150"
+            id="task-dropdown"
+          >
+            <div className="px-2 py-1.5 text-[10px] font-mono text-stone-400 dark:text-zinc-500 uppercase tracking-wider border-b border-[#EFECE4] dark:border-zinc-800 mb-1 flex items-center justify-between">
+              <span>Linked Notion Pages &amp; Tasks</span>
+            </div>
+
+            {/* Quick search input */}
+            <div className="px-1 mb-1.5">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-[#F4F3ED] dark:bg-zinc-800 rounded-lg text-xs">
+                <Search className="w-3 h-3 text-stone-400" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={taskSearchQuery}
+                  onChange={(e) => setTaskSearchQuery(e.target.value)}
+                  placeholder="Search pages..."
+                  className="w-full bg-transparent border-none text-xs text-stone-800 dark:text-zinc-200 outline-none placeholder:text-stone-400"
+                />
               </div>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsContextDropdownOpen(!isContextDropdownOpen)}
-              className="inline-flex items-center gap-1.5 text-xs text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-200 transition-colors cursor-pointer py-0.5"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-stone-400" />
-              <span>Binding to: Select Task or #Project...</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </button>
-          )}
 
-          {/* Telemetry save notification pill */}
-          {telemetryFeedback && (
-            <span
-              className={`text-[11px] font-mono animate-in fade-in ${
-                telemetryFeedback.includes('under 1m')
-                  ? 'text-amber-700 dark:text-amber-400 font-medium'
-                  : 'text-emerald-600 dark:text-emerald-400'
-              }`}
-            >
-              {telemetryFeedback} {telemetryFeedback.includes('under 1m') ? '•' : '✓'}
-            </span>
-          )}
-        </div>
-
-        {/* Dropdown Menu for Task & Project Binding */}
-        {isContextDropdownOpen && (
-          <div
-            className="absolute left-0 bottom-full mb-2 w-full max-w-sm rounded-2xl bg-surface-container-lowest dark:bg-zinc-900 border border-outline-variant/40 dark:border-zinc-800 shadow-xl p-2.5 z-50 flex flex-col gap-2 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
-            role="menu"
-          >
-            <div className="relative">
-              <input
-                type="text"
-                autoFocus
-                value={contextSearchQuery}
-                onChange={(e) => setContextSearchQuery(e.target.value)}
-                placeholder="Search tasks or #projects..."
-                className="w-full px-3 py-1.5 rounded-lg bg-surface-container dark:bg-zinc-800 border border-outline-variant/30 dark:border-zinc-700 text-on-surface dark:text-zinc-100 placeholder:text-outline text-xs outline-none"
-              />
-            </div>
-
-            <div className="max-h-48 overflow-y-auto flex flex-col gap-1 pr-1">
-              {/* Tasks Section */}
-              {filteredTasks.length > 0 && (
-                <div>
-                  <span className="block px-2 py-1 text-[10px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider">
-                    Tasks
-                  </span>
-                  {filteredTasks.slice(0, 5).map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        setBoundTask(t);
-                        setBoundProject(null);
-                        setIsContextDropdownOpen(false);
-                        onBindTask?.(t);
-                        if (timerState === 'running') {
-                          handleTaskStart(t.id);
-                        }
-                      }}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-800 text-left transition cursor-pointer"
-                    >
-                      <CheckSquare className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                      <span className="truncate text-on-surface dark:text-zinc-200">{t.title}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Projects Section */}
-              {filteredProjects.length > 0 && (
-                <div>
-                  <span className="block px-2 py-1 text-[10px] font-mono text-outline dark:text-zinc-500 uppercase tracking-wider mt-1">
-                    Projects
-                  </span>
-                  {filteredProjects.slice(0, 5).map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setBoundProject(p);
-                        setBoundTask(null);
-                        setIsContextDropdownOpen(false);
-                        onBindTask?.(null);
-                      }}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-800 text-left transition cursor-pointer"
-                    >
-                      <Hash className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                      <span className="truncate text-on-surface dark:text-zinc-200">
-                        #{p.slug} <span className="opacity-60 font-normal">({p.title})</span>
+            <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+              {filteredTasks.length > 0 ? (
+                filteredTasks.map((t, idx) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      setBoundTask(t);
+                      onBindTask?.(t);
+                      setIsTaskDropdownOpen(false);
+                      if (isRunning) {
+                        handleTaskStart(t.id);
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition cursor-pointer ${
+                      boundTask?.id === t.id
+                        ? 'bg-[#EFECE3] dark:bg-zinc-800 text-stone-900 dark:text-zinc-100 font-medium'
+                        : 'hover:bg-[#F3F2EC] dark:hover:bg-zinc-800/60 text-stone-700 dark:text-zinc-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-xs">
+                        {idx % 3 === 0 ? '📄' : idx % 3 === 1 ? '✨' : '📖'}
                       </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {filteredTasks.length === 0 && filteredProjects.length === 0 && (
-                <div className="py-4 text-center text-outline dark:text-zinc-500 text-xs">
-                  No matching tasks or projects.
+                      <span className="font-medium truncate">{t.title}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-stone-400 dark:text-zinc-500 ml-2 shrink-0">
+                      {(idx % 4) + 1}/4
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="py-3 text-center text-xs text-stone-400 dark:text-zinc-500">
+                  No matching tasks found
                 </div>
               )}
             </div>

@@ -1,12 +1,28 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import * as React from 'react';
+import {
+  Bar,
+  BarChart,
+  Rectangle,
+  ReferenceLine,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type BarShapeProps,
+  type CartesianViewBox,
+} from 'recharts';
+import {
+  type ChartConfig,
+  ChartContainer,
+} from '@/components/ui/hover-trace-bar-chart-utils/recharts-chart';
+import { useMotionValueEvent, useSpring } from 'motion/react';
+import NumberFlow from '@number-flow/react';
 import { getTodayDate, formatDateIST, getTrailingDays } from '@/lib/utils/date';
 
 export interface HoverTraceBarItem {
   day: string; // "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"
-  date: string; // "YYYY-MM-DD"
+  date?: string; // "YYYY-MM-DD"
   amount: number;
   isToday?: boolean;
 }
@@ -23,7 +39,7 @@ export interface HoverTraceBarChartProps {
   currencySymbol?: string;
   safeDailyBudget?: number;
   className?: string;
-  barColor?: string; // Default terracotta: "#C2634C"
+  barColor?: string; // Default terracotta: "#C86D51"
   headerTitle?: string;
   headerSubtitle?: string;
   legendLabel?: string;
@@ -31,6 +47,8 @@ export interface HoverTraceBarChartProps {
   benchmarkText?: string;
   dateRangeText?: string;
 }
+
+const CHART_MARGIN = 38;
 
 const DEFAULT_DAYS: HoverTraceBarItem[] = [
   { day: 'Thu', date: '2026-10-15', amount: 327, isToday: false },
@@ -42,13 +60,23 @@ const DEFAULT_DAYS: HoverTraceBarItem[] = [
   { day: 'Wed', date: '2026-10-21', amount: 0, isToday: false },
 ];
 
+const chartConfig = {
+  spend: {
+    label: 'Disbursement',
+    colors: {
+      light: ['#C86D51'],
+      dark: ['#d97757'],
+    },
+  },
+} satisfies ChartConfig;
+
 export function HoverTraceBarChart({
   data,
   transactions,
   currencySymbol = '₹',
   safeDailyBudget,
   className = '',
-  barColor = '#c25e43',
+  barColor = '#C86D51',
   headerTitle = '7-Day Spending Pattern',
   headerSubtitle = 'Daily disbursements vs safe ceiling',
   legendLabel = 'Recorded Expense',
@@ -56,13 +84,13 @@ export function HoverTraceBarChart({
   benchmarkText = 'Staying strictly within daily pace',
   dateRangeText,
 }: HoverTraceBarChartProps) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
-  const todayStr = useMemo(() => getTodayDate(), []);
+  const todayStr = React.useMemo(() => getTodayDate(), []);
 
-  // 1. Dynamic 7-Day Calculation from transactions ledger or provided data
-  const displayData: HoverTraceBarItem[] = useMemo(() => {
-    // If raw transactions are provided, aggregate expenses by date over the trailing 7 days
+  // 1. 7-Day Dataset Mapping: past 7 days of disbursements
+  const displayData: HoverTraceBarItem[] = React.useMemo(() => {
+    // If raw transactions are provided, calculate trailing 7 days dynamically
     if (transactions && transactions.length > 0) {
       const trailing = getTrailingDays(7);
       const daySpendMap = new Map<string, number>();
@@ -88,7 +116,6 @@ export function HoverTraceBarChart({
         isToday: d.isToday,
       }));
 
-      // If any transaction was mapped, return calculated series
       if (calculated.some((d) => d.amount > 0)) {
         return calculated;
       }
@@ -104,12 +131,11 @@ export function HoverTraceBarChart({
       return data;
     }
 
-    // Default Stitch fallback series
     return DEFAULT_DAYS;
   }, [transactions, data]);
 
   // 2. Date Range Telemetry Calculation
-  const computedDateRange = useMemo(() => {
+  const computedDateRange = React.useMemo(() => {
     if (dateRangeText) return dateRangeText;
     if (displayData && displayData.length > 0) {
       const firstDate = displayData[0]?.date;
@@ -120,7 +146,7 @@ export function HoverTraceBarChart({
           const endStr = formatDateIST(lastDate, { month: 'short', day: 'numeric' });
           return `${startStr} – ${endStr}`;
         } catch {
-          // Fallback if date strings are not ISO formats
+          // Fallback if not standard dates
         }
       }
     }
@@ -132,27 +158,110 @@ export function HoverTraceBarChart({
       ? safeDailyBudget
       : 110.18;
 
-  // 3. Proportional Scaling Logic with safe ceiling headroom
-  const maxSpend = useMemo(() => {
-    const rawMax = Math.max(...displayData.map((d) => d.amount), 50);
-    return rawMax;
+  // Max data identification for default active focal point
+  const maxData: {
+    index: number;
+    day: string;
+    date?: string;
+    amount: number;
+  } = React.useMemo(() => {
+    return displayData.reduce<{
+      index: number;
+      day: string;
+      date?: string;
+      amount: number;
+    }>(
+      (max, item, index) =>
+        item.amount > max.amount
+          ? { index, day: item.day, date: item.date, amount: item.amount }
+          : max,
+      {
+        index: 0,
+        day: displayData[0]?.day || 'Thu',
+        date: displayData[0]?.date,
+        amount: displayData[0]?.amount || 0,
+      }
+    );
   }, [displayData]);
+
+  const selectedData = React.useMemo(() => {
+    if (activeIndex != null && displayData[activeIndex]) {
+      const item = displayData[activeIndex];
+      return {
+        index: activeIndex,
+        day: item.day,
+        date: item.date,
+        amount: item.amount,
+      };
+    }
+    return maxData;
+  }, [activeIndex, displayData, maxData]);
+
+  // Spring physics for dynamic reference line trace
+  const valueSpring = useSpring(selectedData.amount, {
+    stiffness: 110,
+    damping: 20,
+  });
+  const [springValue, setSpringValue] = React.useState(selectedData.amount);
+
+  React.useEffect(() => {
+    valueSpring.set(selectedData.amount);
+  }, [selectedData.amount, valueSpring]);
+
+  useMotionValueEvent(valueSpring, 'change', (latest) => {
+    setSpringValue(Math.round(latest));
+  });
+
+  const handleBarHover = React.useCallback(
+    (index: number) => {
+      setActiveIndex(index);
+      valueSpring.set(displayData[index]?.amount ?? maxData.amount);
+    },
+    [displayData, maxData.amount, valueSpring]
+  );
+
+  const maxSpend = React.useMemo(() => {
+    return Math.max(...displayData.map((d) => d.amount), 50);
+  }, [displayData]);
+
+  const yDomainMax = React.useMemo(() => {
+    return Math.ceil(Math.max(maxSpend, effectiveSafeBudget, 50) * 1.35);
+  }, [maxSpend, effectiveSafeBudget]);
 
   return (
     <article
       data-purpose="spending-pattern-card"
       className={`h-full flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xs dark:bg-zinc-900/60 dark:border-zinc-800/80 transition-all duration-200 overflow-visible ${className}`}
     >
-      {/* Inner Main Content Area: flex-1 flex flex-col justify-between */}
       <div className="flex-1 flex flex-col justify-between overflow-visible">
-        {/* Top Header Area */}
-        <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
+        {/* Card Title & Subtitle */}
+        <div className="flex items-start justify-between pb-3 border-b border-stone-200/60 dark:border-zinc-800/60 mb-3">
           <div>
-            <div className="flex items-center gap-2.5 mb-1 flex-wrap">
-              <h2 className="text-lg font-bold tracking-tight text-stone-900 dark:text-zinc-100 font-sans">
-                {headerTitle}
-              </h2>
-              {/* Active Sliding Date Range Pill */}
+            <h2 className="text-lg font-bold tracking-tight text-stone-900 dark:text-zinc-100 font-sans">
+              {headerTitle}
+            </h2>
+            <p className="text-xs font-mono text-stone-400 dark:text-stone-400">
+              {headerSubtitle}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 font-mono select-none pt-0.5">
+            <span
+              aria-hidden="true"
+              className="inline-block w-2.5 h-2.5 rounded-[2px]"
+              style={{ backgroundColor: barColor }}
+            />
+            <span>{legendLabel}</span>
+          </div>
+        </div>
+
+        {/* Header Telemetry with NumberFlow Currency Readout */}
+        <div className="mb-2 flex items-end justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-stone-400 dark:text-zinc-500 font-mono text-xs">
+                [expense] Recorded
+              </span>
+              {/* Date Range Telemetry Pill */}
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-[#f5ebe6] text-[#c25e43] border border-[#eddcd4] dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50">
                 <svg
                   className="w-3 h-3"
@@ -169,32 +278,36 @@ export function HoverTraceBarChart({
                 {computedDateRange}
               </span>
             </div>
-            <p className="text-xs font-mono text-stone-400 dark:text-stone-400">
-              {headerSubtitle}
+            {/* NumberFlow INR Formatted Amount */}
+            <p className="text-stone-900 dark:text-zinc-100 font-mono text-2xl sm:text-3xl font-bold tracking-tight">
+              <NumberFlow
+                value={selectedData.amount}
+                format={{
+                  style: 'currency',
+                  currency: 'INR',
+                  currencyDisplay: 'narrowSymbol',
+                }}
+              />
             </p>
           </div>
 
-          {/* Top-Right Legend */}
-          <div className="flex items-center space-x-1.5 text-xs text-stone-500 dark:text-stone-400 font-mono select-none self-start sm:self-auto pt-1 sm:pt-0">
-            <span
-              aria-hidden="true"
-              className="inline-block w-2.5 h-2.5 rounded-[2px]"
-              style={{ backgroundColor: barColor }}
-            />
-            <span>{legendLabel}</span>
+          <div className="space-y-1 text-right">
+            <p className="text-stone-400 dark:text-zinc-500 font-mono text-[10px] uppercase tracking-wider">
+              [day]
+            </p>
+            <p className="text-stone-900 dark:text-zinc-100 font-mono text-xs font-semibold">
+              {selectedData.day}
+              {selectedData.date
+                ? ` (${formatDateIST(selectedData.date, { month: 'short', day: 'numeric' })})`
+                : ''}
+            </p>
           </div>
-        </header>
+        </div>
 
-        {/* Visual Chart Area */}
-        <div
-          className="relative w-full pt-8 pb-2 flex-1 flex flex-col justify-end overflow-visible min-h-[190px]"
-          data-purpose="bar-chart-container"
-        >
-          {/* Safe Ceiling Dotted Benchmark Line (Behind labels, animated entrance) */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
+        {/* Recharts Chart Container with Fixed Height (h-56) to eliminate SSR Hydration Layout Shifts */}
+        <div className="relative w-full h-56 my-2">
+          {/* Safe Ceiling Dotted Benchmark Line (Behind price labels, with proper z-indexing) */}
+          <div
             className="absolute left-0 right-0 flex items-center z-0 pointer-events-none origin-left"
             style={{ top: '38%' }}
           >
@@ -209,96 +322,109 @@ export function HoverTraceBarChart({
                 title="Safe ceiling threshold"
               />
             </div>
-          </motion.div>
+          </div>
 
-          {/* Bar Chart Columns (7 Days Grid - z-10 sitting cleanly above the threshold line) */}
-          <div className="grid grid-cols-7 gap-2 sm:gap-4 items-end relative z-10 w-full h-44 overflow-visible px-1 sm:px-2">
+          {/* Static Clean Amount Indicators above each bar (Single clean indicator, no overlapping duplicates) */}
+          <div className="w-full grid grid-cols-7 absolute top-0 left-0 right-0 pointer-events-none z-10 pl-9 pr-2">
             {displayData.map((item, idx) => {
-              const isZero = item.amount <= 0;
-              const isToday = Boolean(
-                item.isToday ||
-                (item.date && item.date === todayStr) ||
-                item.day === 'Tue'
-              );
-              const isHovered = hoveredIdx === idx;
-
-              // Proportional height scaling capped at 82% to give headroom for price labels
-              const barHeightPercentage = isZero
-                ? 0
-                : Math.min(Math.max(Math.round((item.amount / maxSpend) * 82), 12), 82);
-
-              // Tooltip context calculation
-              let tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Zero debits logged`;
-              if (item.amount > effectiveSafeBudget) {
-                const diff = (item.amount - effectiveSafeBudget).toFixed(2);
-                tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Over daily budget (+${currencySymbol}${diff})`;
-              } else if (item.amount > 0) {
-                const diff = (effectiveSafeBudget - item.amount).toFixed(2);
-                tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Within daily pace (-${currencySymbol}${diff})`;
-              }
-
+              const isSelected = selectedData.index === idx;
               return (
-                <div
-                  key={`day-col-${idx}-${item.day}`}
-                  className="group relative cursor-pointer flex flex-col items-center justify-end h-full"
-                  data-day={item.day}
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                >
-                  {/* Floating Tooltip Reveal */}
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      opacity: isHovered ? 1 : 0,
-                      y: isHovered ? -4 : 0,
-                      scale: isHovered ? 1 : 0.95,
-                    }}
-                    transition={{ duration: 0.15 }}
-                    className="pointer-events-none absolute -top-12 z-30 bg-stone-900/95 dark:bg-zinc-800/95 backdrop-blur text-white text-xs py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap font-sans flex flex-col items-center border border-stone-700/50"
-                  >
-                    <span>{tooltipText}</span>
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-stone-900 dark:border-t-zinc-800" />
-                  </motion.div>
-
-                  {/* Clean Single Amount Badge (No overlapping duplicates) */}
+                <div key={`val-${idx}`} className="flex justify-center text-center">
                   <span
                     className={`text-xs font-mono font-medium mb-1.5 transition-transform duration-200 tabular-nums z-10 ${
-                      isZero
+                      item.amount <= 0
                         ? 'text-stone-400 dark:text-zinc-500'
+                        : isSelected
+                        ? 'text-amber-800 dark:text-amber-300 font-bold scale-105'
                         : 'text-amber-800 dark:text-amber-300'
-                    } ${isHovered ? '-translate-y-0.5' : ''}`}
+                    }`}
                   >
                     {currencySymbol}
                     {Math.round(item.amount)}
                   </span>
+                </div>
+              );
+            })}
+          </div>
 
-                  {/* Vertical Bar Container */}
-                  <div className="relative w-full max-w-[44px] h-32 flex flex-col justify-end items-center">
-                    {isZero ? (
-                      <div className="w-8 h-1.5 bg-stone-200 dark:bg-zinc-700 rounded-full mb-0.5 transition-all duration-200 group-hover:bg-stone-300 dark:group-hover:bg-zinc-600 group-hover:scale-110" />
-                    ) : (
-                      <motion.div
-                        className="w-full rounded-t-lg origin-bottom cursor-pointer transition-colors group-hover:brightness-105"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: `${barHeightPercentage}%`, opacity: 1 }}
-                        whileHover={{ scaleY: 1.04, transition: { duration: 0.15 } }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 120,
-                          damping: 14,
-                          delay: idx * 0.05,
-                        }}
-                        style={{
-                          backgroundColor: barColor,
-                        }}
-                      />
-                    )}
-                  </div>
+          {/* ChartContainer wrapping BarChart */}
+          <ChartContainer config={chartConfig} className="w-full h-44">
+            <BarChart
+              accessibilityLayer
+              data={displayData}
+              margin={{ left: CHART_MARGIN, right: 12, top: 22, bottom: 0 }}
+              onMouseMove={(state) => {
+                const chartEvent = state as { activeTooltipIndex?: number | string | null } | null;
+                if (chartEvent?.activeTooltipIndex != null) {
+                  handleBarHover(Number(chartEvent.activeTooltipIndex));
+                }
+              }}
+              onMouseLeave={() => {
+                setActiveIndex(null);
+                valueSpring.set(maxData.amount);
+              }}
+            >
+              <YAxis hide domain={[0, yDomainMax]} />
 
-                  {/* X-axis Day Label: Current Day Highlighted */}
+              <Tooltip cursor={false} content={() => null} />
+
+              {/* Bar Component with Notion Warm Hue (#C86D51) & Focal Contrast (100% active, 25% non-hovered) */}
+              <Bar
+                dataKey="amount"
+                fill="var(--color-spend-0)"
+                radius={4}
+                shape={(props: BarShapeProps) => (
+                  <HoverTraceBarShape
+                    {...props}
+                    highlightedIndex={selectedData.index}
+                    barColor={barColor}
+                  />
+                )}
+                activeBar={(props: BarShapeProps) => (
+                  <HoverTraceBarShape
+                    {...props}
+                    highlightedIndex={selectedData.index}
+                    barColor={barColor}
+                  />
+                )}
+              />
+
+              {/* Spring Animated Horizontal Reference Line Tracking Active Bar */}
+              {selectedData.amount > 0 && (
+                <ReferenceLine
+                  y={springValue}
+                  stroke="var(--foreground)"
+                  strokeDasharray="3 3"
+                  strokeWidth={1.5}
+                  label={
+                    <HoverTraceLabel
+                      value={springValue}
+                      currencySymbol={currencySymbol}
+                    />
+                  }
+                />
+              )}
+            </BarChart>
+          </ChartContainer>
+
+          {/* X-axis Day Labels below chart */}
+          <div className="w-full grid grid-cols-7 mt-1 pl-9 pr-2">
+            {displayData.map((item, idx) => {
+              const isToday = Boolean(
+                item.isToday ||
+                (item.date && item.date === todayStr) ||
+                item.day === 'Tue' ||
+                item.day === 'Thu'
+              );
+              const isSelected = selectedData.index === idx;
+
+              return (
+                <div key={`day-label-${idx}`} className="flex justify-center text-center">
                   <span
-                    className={`text-xs font-mono mt-3 transition-colors ${
-                      isToday
+                    className={`text-xs font-mono select-none transition-colors duration-200 ${
+                      isSelected
+                        ? 'font-bold text-[#C86D51]'
+                        : isToday
                         ? 'text-amber-700 font-bold dark:text-amber-400 tracking-wide'
                         : 'font-medium text-stone-500 dark:text-stone-400'
                     }`}
@@ -311,7 +437,7 @@ export function HoverTraceBarChart({
           </div>
         </div>
 
-        {/* Anchored Bottom Banner */}
+        {/* Anchored Bottom Status Banner */}
         {showBenchmarkBanner && (
           <footer
             data-purpose="left-card-footer"
@@ -346,5 +472,120 @@ export function HoverTraceBarChart({
     </article>
   );
 }
+
+interface HoverTraceLabelProps {
+  viewBox?: CartesianViewBox;
+  value: number;
+  currencySymbol?: string;
+}
+
+const HoverTraceLabel = ({
+  viewBox,
+  value,
+  currencySymbol = '₹',
+}: HoverTraceLabelProps) => {
+  const x = viewBox?.x ?? 0;
+  const y = viewBox?.y ?? 0;
+  const formattedValue = `${currencySymbol}${Math.round(value)}`;
+  const width = formattedValue.length * 8 + 14;
+
+  return (
+    <g className="pointer-events-none select-none">
+      <rect
+        x={x - CHART_MARGIN}
+        y={y - 9}
+        width={width}
+        height={18}
+        fill="var(--foreground)"
+        className="fill-stone-900 dark:fill-zinc-100"
+        rx={4}
+      />
+      <text
+        className="font-mono text-[11px] font-semibold fill-white dark:fill-zinc-900"
+        x={x - CHART_MARGIN + width / 2}
+        y={y + 4}
+        textAnchor="middle"
+      >
+        {formattedValue}
+      </text>
+      <ellipse
+        cx={'99.5%'}
+        cy={y}
+        rx={3}
+        ry={3}
+        fill="var(--foreground)"
+        className="fill-stone-900 dark:fill-zinc-100"
+      />
+    </g>
+  );
+};
+
+type HoverTraceBarShapeProps = BarShapeProps & {
+  highlightedIndex: number;
+  barColor?: string;
+};
+
+const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
+  const {
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+    fill,
+    index = 0,
+    isActive,
+    highlightedIndex,
+    payload,
+    barColor = '#C86D51',
+  } = props;
+
+  const isInactive = !payload || (payload as { amount?: number }).amount === 0;
+  const isSelected = isActive || index === highlightedIndex;
+  // Active hovered bar with 100% opacity, non-hovered bars at opacity 0.25 for smooth focal contrast
+  const fillOpacity = isSelected ? 1 : 0.25;
+
+  const actualWidth = Math.min(Math.max(width * 0.52, 22), 42);
+  const offsetX = x + (width - actualWidth) / 2;
+
+  if (isInactive) {
+    return (
+      <g className="cursor-pointer transition-opacity duration-200">
+        <Rectangle {...props} fill="transparent" pointerEvents="all" />
+        <rect
+          x={offsetX}
+          y={y - 6}
+          width={actualWidth}
+          height={6}
+          rx={3}
+          ry={3}
+          className="fill-stone-200 dark:fill-zinc-700 transition-opacity duration-200"
+          fillOpacity={isSelected ? 1 : 0.4}
+        />
+      </g>
+    );
+  }
+
+  return (
+    <g className="cursor-pointer transition-all duration-200">
+      <Rectangle {...props} fill="transparent" pointerEvents="all" />
+      <Rectangle
+        x={offsetX}
+        y={y}
+        width={actualWidth}
+        height={Math.max(height, 8)}
+        radius={4}
+        fill={fill || barColor}
+        fillOpacity={fillOpacity}
+        stroke={isSelected ? 'var(--foreground)' : undefined}
+        strokeOpacity={isSelected ? 0.35 : undefined}
+        strokeWidth={isSelected ? 1 : undefined}
+        className="transition-opacity duration-200"
+      />
+    </g>
+  );
+};
+
+// Aliases for EvilHoverTraceBarChart compatibility
+export const EvilHoverTraceBarChart = HoverTraceBarChart;
 
 export default HoverTraceBarChart;

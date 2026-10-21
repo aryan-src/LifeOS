@@ -90,7 +90,6 @@ export function HoverTraceBarChart({
 
   // 1. 7-Day Dataset Mapping: past 7 days of disbursements
   const displayData: HoverTraceBarItem[] = React.useMemo(() => {
-    // If raw transactions are provided, calculate trailing 7 days dynamically
     if (transactions && transactions.length > 0) {
       const trailing = getTrailingDays(7);
       const daySpendMap = new Map<string, number>();
@@ -121,12 +120,10 @@ export function HoverTraceBarChart({
       }
     }
 
-    // If explicit pre-calculated data was provided with non-zero amounts
     if (data && data.length > 0 && data.some((d) => d.amount > 0)) {
       return data;
     }
 
-    // If callers passed explicit data array (e.g. in test suites)
     if (data && data.length > 0 && !transactions) {
       return data;
     }
@@ -158,66 +155,49 @@ export function HoverTraceBarChart({
       ? safeDailyBudget
       : 110.18;
 
-  // Max data identification for default active focal point
-  const maxData: {
-    index: number;
-    day: string;
-    date?: string;
-    amount: number;
-  } = React.useMemo(() => {
-    return displayData.reduce<{
-      index: number;
-      day: string;
-      date?: string;
-      amount: number;
-    }>(
-      (max, item, index) =>
-        item.amount > max.amount
-          ? { index, day: item.day, date: item.date, amount: item.amount }
-          : max,
-      {
-        index: 0,
-        day: displayData[0]?.day || 'Thu',
-        date: displayData[0]?.date,
-        amount: displayData[0]?.amount || 0,
-      }
+  // Identify current day and maximum day indices
+  const currentDayIndex = React.useMemo(() => {
+    const idx = displayData.findIndex(
+      (d) => d.isToday || (d.date && d.date === todayStr) || d.day === 'Tue'
     );
+    return idx >= 0 ? idx : 0;
+  }, [displayData, todayStr]);
+
+  const currentDayAmount = displayData[currentDayIndex]?.amount ?? 0;
+
+  const maxIndex = React.useMemo(() => {
+    let bestIdx = 0;
+    let maxVal = -1;
+    displayData.forEach((d, i) => {
+      if (d.amount > maxVal) {
+        maxVal = d.amount;
+        bestIdx = i;
+      }
+    });
+    return bestIdx;
   }, [displayData]);
 
-  const selectedData = React.useMemo(() => {
-    if (activeIndex != null && displayData[activeIndex]) {
-      const item = displayData[activeIndex];
-      return {
-        index: activeIndex,
-        day: item.day,
-        date: item.date,
-        amount: item.amount,
-      };
-    }
-    return maxData;
-  }, [activeIndex, displayData, maxData]);
+  // Target value: active hovered day's amount or fallback to maximum/current day
+  const targetIndex = activeIndex !== null ? activeIndex : maxIndex;
+  const targetValue = displayData[targetIndex]?.amount ?? currentDayAmount;
 
-  // Spring physics for dynamic reference line trace
-  const valueSpring = useSpring(selectedData.amount, {
-    stiffness: 110,
-    damping: 20,
-  });
-  const [springValue, setSpringValue] = React.useState(selectedData.amount);
+  // Dynamic Hover Tracking & Spring Physics (stiffness: 120, damping: 18)
+  const valueSpring = useSpring(targetValue, { stiffness: 120, damping: 18 });
+  const [springYValue, setSpringYValue] = React.useState(targetValue);
 
   React.useEffect(() => {
-    valueSpring.set(selectedData.amount);
-  }, [selectedData.amount, valueSpring]);
+    valueSpring.set(targetValue);
+  }, [targetValue, valueSpring]);
 
   useMotionValueEvent(valueSpring, 'change', (latest) => {
-    setSpringValue(Math.round(latest));
+    setSpringYValue(latest);
   });
 
   const handleBarHover = React.useCallback(
     (index: number) => {
       setActiveIndex(index);
-      valueSpring.set(displayData[index]?.amount ?? maxData.amount);
     },
-    [displayData, maxData.amount, valueSpring]
+    []
   );
 
   const maxSpend = React.useMemo(() => {
@@ -225,8 +205,10 @@ export function HoverTraceBarChart({
   }, [displayData]);
 
   const yDomainMax = React.useMemo(() => {
-    return Math.ceil(Math.max(maxSpend, effectiveSafeBudget, 50) * 1.35);
-  }, [maxSpend, effectiveSafeBudget]);
+    return Math.ceil(Math.max(maxSpend, 50) * 1.35);
+  }, [maxSpend]);
+
+  const activeDayItem = displayData[targetIndex] || displayData[0];
 
   return (
     <article
@@ -281,7 +263,7 @@ export function HoverTraceBarChart({
             {/* NumberFlow INR Formatted Amount */}
             <p className="text-stone-900 dark:text-zinc-100 font-mono text-2xl sm:text-3xl font-bold tracking-tight">
               <NumberFlow
-                value={selectedData.amount}
+                value={targetValue}
                 format={{
                   style: 'currency',
                   currency: 'INR',
@@ -296,9 +278,9 @@ export function HoverTraceBarChart({
               [day]
             </p>
             <p className="text-stone-900 dark:text-zinc-100 font-mono text-xs font-semibold">
-              {selectedData.day}
-              {selectedData.date
-                ? ` (${formatDateIST(selectedData.date, { month: 'short', day: 'numeric' })})`
+              {activeDayItem?.day}
+              {activeDayItem?.date
+                ? ` (${formatDateIST(activeDayItem.date, { month: 'short', day: 'numeric' })})`
                 : ''}
             </p>
           </div>
@@ -306,28 +288,10 @@ export function HoverTraceBarChart({
 
         {/* Recharts Chart Container with Fixed Height (h-56) to eliminate SSR Hydration Layout Shifts */}
         <div className="relative w-full h-56 my-2">
-          {/* Safe Ceiling Dotted Benchmark Line (Behind price labels, with proper z-indexing) */}
-          <div
-            className="absolute left-0 right-0 flex items-center z-0 pointer-events-none origin-left"
-            style={{ top: '38%' }}
-          >
-            <div className="w-full border-b border-dashed border-[#c25e43]/40 dark:border-amber-600/40" />
-            <div className="flex items-center shrink-0 -mr-1.5 gap-1.5 bg-white/95 dark:bg-zinc-900/95 pl-1.5">
-              <span className="text-[10px] font-mono font-medium text-stone-400 dark:text-zinc-500 uppercase tracking-wider hidden sm:inline">
-                Safe Ceiling
-              </span>
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: barColor }}
-                title="Safe ceiling threshold"
-              />
-            </div>
-          </div>
-
-          {/* Static Clean Amount Indicators above each bar (Single clean indicator, no overlapping duplicates) */}
+          {/* Static Clean Amount Indicators above each bar */}
           <div className="w-full grid grid-cols-7 absolute top-0 left-0 right-0 pointer-events-none z-10 pl-9 pr-2">
             {displayData.map((item, idx) => {
-              const isSelected = selectedData.index === idx;
+              const isSelected = targetIndex === idx;
               return (
                 <div key={`val-${idx}`} className="flex justify-center text-center">
                   <span
@@ -361,7 +325,6 @@ export function HoverTraceBarChart({
               }}
               onMouseLeave={() => {
                 setActiveIndex(null);
-                valueSpring.set(maxData.amount);
               }}
             >
               <YAxis hide domain={[0, yDomainMax]} />
@@ -376,34 +339,33 @@ export function HoverTraceBarChart({
                 shape={(props: BarShapeProps) => (
                   <HoverTraceBarShape
                     {...props}
-                    highlightedIndex={selectedData.index}
+                    highlightedIndex={targetIndex}
                     barColor={barColor}
                   />
                 )}
                 activeBar={(props: BarShapeProps) => (
                   <HoverTraceBarShape
                     {...props}
-                    highlightedIndex={selectedData.index}
+                    highlightedIndex={targetIndex}
                     barColor={barColor}
                   />
                 )}
               />
 
-              {/* Spring Animated Horizontal Reference Line Tracking Active Bar */}
-              {selectedData.amount > 0 && (
-                <ReferenceLine
-                  y={springValue}
-                  stroke="var(--foreground)"
-                  strokeDasharray="3 3"
-                  strokeWidth={1.5}
-                  label={
-                    <HoverTraceLabel
-                      value={springValue}
-                      currencySymbol={currencySymbol}
-                    />
-                  }
-                />
-              )}
+              {/* Spring Animated Horizontal Reference Line Tracking Active Bar Height */}
+              <ReferenceLine
+                y={springYValue}
+                stroke="var(--foreground)"
+                strokeDasharray="3 3"
+                strokeOpacity={0.6}
+                strokeWidth={1.5}
+                label={
+                  <HoverTraceLabel
+                    value={targetValue}
+                    currencySymbol={currencySymbol}
+                  />
+                }
+              />
             </BarChart>
           </ChartContainer>
 
@@ -416,7 +378,7 @@ export function HoverTraceBarChart({
                 item.day === 'Tue' ||
                 item.day === 'Thu'
               );
-              const isSelected = selectedData.index === idx;
+              const isSelected = targetIndex === idx;
 
               return (
                 <div key={`day-label-${idx}`} className="flex justify-center text-center">
@@ -541,7 +503,7 @@ const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
 
   const isInactive = !payload || (payload as { amount?: number }).amount === 0;
   const isSelected = isActive || index === highlightedIndex;
-  // Active hovered bar with 100% opacity, non-hovered bars at opacity 0.25 for smooth focal contrast
+  // Active bar with 100% opacity, non-hovered bars at opacity 0.25 for smooth focal contrast
   const fillOpacity = isSelected ? 1 : 0.25;
 
   const actualWidth = Math.min(Math.max(width * 0.52, 22), 42);
@@ -549,7 +511,7 @@ const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
 
   if (isInactive) {
     return (
-      <g className="cursor-pointer transition-opacity duration-200">
+      <g className="cursor-pointer transition-all duration-200">
         <Rectangle {...props} fill="transparent" pointerEvents="all" />
         <rect
           x={offsetX}
@@ -558,7 +520,7 @@ const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
           height={6}
           rx={3}
           ry={3}
-          className="fill-stone-200 dark:fill-zinc-700 transition-opacity duration-200"
+          className="fill-stone-200 dark:fill-zinc-700 transition-all duration-200"
           fillOpacity={isSelected ? 1 : 0.4}
         />
       </g>
@@ -568,7 +530,7 @@ const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
   return (
     <g className="cursor-pointer transition-all duration-200">
       <Rectangle {...props} fill="transparent" pointerEvents="all" />
-      <Rectangle
+      <rect
         x={offsetX}
         y={y}
         width={actualWidth}
@@ -579,7 +541,7 @@ const HoverTraceBarShape = (props: HoverTraceBarShapeProps) => {
         stroke={isSelected ? 'var(--foreground)' : undefined}
         strokeOpacity={isSelected ? 0.35 : undefined}
         strokeWidth={isSelected ? 1 : undefined}
-        className="transition-opacity duration-200"
+        className="transition-all duration-200"
       />
     </g>
   );

@@ -79,16 +79,16 @@ describe('HoverTraceBarChart Component', () => {
     expect(cleanHtml).not.toContain('shadow-xs whitespace-nowrap group-hover:brightness-105');
   });
 
-  it('renders safe ceiling line with proper z-indexing behind price labels', () => {
+  it('renders dynamic reference line tracking active bar height with floating value label', () => {
     const rawHtml = renderToString(
       <HoverTraceBarChart
+        data={mockWeeklyData}
         currencySymbol="₹"
       />
     );
 
     const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
-    expect(cleanHtml).toContain('Safe Ceiling');
-    expect(cleanHtml).toContain('z-0 pointer-events-none origin-left');
+    expect(cleanHtml).toContain('recharts-reference-line');
   });
 
   it('calculates dynamic date range telemetry from date context', () => {

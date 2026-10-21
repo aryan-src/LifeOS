@@ -63,4 +63,74 @@ describe('HoverTraceBarChart Component', () => {
     expect(cleanHtml).toContain('₹601');
     expect(cleanHtml).toContain('rounded-2xl');
   });
+
+  it('renders single cleanly styled price indicator without duplicate overlay badges', () => {
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    // Check for single clean amber amount badge styling
+    expect(cleanHtml).toContain('text-xs font-mono font-medium mb-1.5 transition-transform duration-200 tabular-nums z-10 text-amber-800 dark:text-amber-300');
+    expect(cleanHtml).toContain('₹327');
+    // Ensure no secondary peak overlay duplicate badges exist in markup
+    expect(cleanHtml).not.toContain('shadow-xs whitespace-nowrap group-hover:brightness-105');
+  });
+
+  it('renders safe ceiling line with proper z-indexing behind price labels', () => {
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    expect(cleanHtml).toContain('Safe Ceiling');
+    expect(cleanHtml).toContain('z-0 pointer-events-none origin-left');
+  });
+
+  it('calculates dynamic date range telemetry from date context', () => {
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        data={mockWeeklyData}
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    expect(cleanHtml).toContain('Oct 2 – Oct 8');
+  });
+
+  it('dynamically highlights the active day label', () => {
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        data={mockWeeklyData}
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    expect(cleanHtml).toContain('text-amber-700 font-bold dark:text-amber-400 tracking-wide');
+    expect(cleanHtml).toContain('Thu');
+  });
+
+  it('dynamically aggregates expenses when transactions are provided', () => {
+    const mockTx = [
+      { date: '2026-10-21', amount: 250, type: 'expense' },
+      { date: '2026-10-20', amount: 80, type: 'expense' },
+    ];
+
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        transactions={mockTx}
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    expect(cleanHtml).toContain('₹250');
+    expect(cleanHtml).toContain('₹80');
+  });
 });

@@ -24,6 +24,7 @@ interface AllowanceHeroCardProps {
   }>;
   filteredTransactionsCount?: number;
   recordedCyclesCount?: number;
+  transactions?: Array<{ date: string; amount: number | string; type?: string }>;
 }
 
 const MONTH_NAMES = [
@@ -51,6 +52,7 @@ export function AllowanceHeroCard({
   filteredCategoryBreakdown,
   filteredTransactionsCount,
   recordedCyclesCount,
+  transactions,
 }: AllowanceHeroCardProps) {
   const {
     monthlyAllowance,
@@ -492,6 +494,7 @@ export function AllowanceHeroCard({
             amount: d.spent,
             isToday: d.isToday,
           }))}
+          transactions={transactions}
           currencySymbol={currencySymbol}
           safeDailyBudget={safeDailyBudget > 0 ? safeDailyBudget : 110.18}
           headerTitle="7-Day Spending Pattern"

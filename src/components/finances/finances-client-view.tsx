@@ -328,6 +328,7 @@ export function FinancesClientView({
               filteredCategoryBreakdown={filteredCategoryBreakdown}
               filteredTransactionsCount={filteredTransactions.length}
               recordedCyclesCount={recordedCyclesCount}
+              transactions={filteredTransactions}
             />
           </motion.div>
         )}

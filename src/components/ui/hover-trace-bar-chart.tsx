@@ -1,27 +1,16 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ReferenceLine,
-} from 'recharts';
-import { motion, useSpring, useMotionValueEvent } from 'motion/react';
-import NumberFlow from '@number-flow/react';
+import React, { useState } from 'react';
 
 export interface HoverTraceBarItem {
-  day: string; // "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"
+  day: string; // "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"
   date: string; // "YYYY-MM-DD"
-  amount: number; // e.g. 135
+  amount: number;
   isToday?: boolean;
 }
 
 export interface HoverTraceBarChartProps {
-  data: HoverTraceBarItem[];
+  data?: HoverTraceBarItem[];
   currencySymbol?: string;
   safeDailyBudget?: number;
   className?: string;
@@ -31,392 +20,251 @@ export interface HoverTraceBarChartProps {
   legendLabel?: string;
   showBenchmarkBanner?: boolean;
   benchmarkText?: string;
+  dateRangeText?: string;
 }
+
+const DEFAULT_DAYS: HoverTraceBarItem[] = [
+  { day: 'Thu', date: '2026-10-15', amount: 327, isToday: false },
+  { day: 'Fri', date: '2026-10-16', amount: 45, isToday: false },
+  { day: 'Sat', date: '2026-10-17', amount: 0, isToday: false },
+  { day: 'Sun', date: '2026-10-18', amount: 170, isToday: false },
+  { day: 'Mon', date: '2026-10-19', amount: 217, isToday: false },
+  { day: 'Tue', date: '2026-10-20', amount: 0, isToday: true },
+  { day: 'Wed', date: '2026-10-21', amount: 0, isToday: false },
+];
 
 export function HoverTraceBarChart({
   data,
   currencySymbol = '₹',
-  safeDailyBudget = 175.58,
+  safeDailyBudget,
   className = '',
-  barColor = '#C2634C',
+  barColor = '#c25e43',
   headerTitle = '7-Day Spending Pattern',
   headerSubtitle = 'Daily disbursements vs safe ceiling',
   legendLabel = 'Recorded Expense',
   showBenchmarkBanner = true,
   benchmarkText = 'Staying strictly within daily pace',
+  dateRangeText = 'Oct 15 – Oct 21',
 }: HoverTraceBarChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  // Determine initial selected item (highest non-zero spend or today)
-  const initialItem = useMemo(() => {
-    if (!data || data.length === 0) {
-      return { index: 0, day: '', date: '', amount: 0, isToday: false };
-    }
-    let maxIdx = -1;
-    let maxVal = -1;
-    data.forEach((item, idx) => {
-      if (item.amount > maxVal && item.amount > 0) {
-        maxVal = item.amount;
-        maxIdx = idx;
-      }
-    });
-    if (maxIdx >= 0) {
-      return { index: maxIdx, ...data[maxIdx] };
-    }
-    const todayIdx = data.findIndex((d) => d.isToday);
-    if (todayIdx >= 0) {
-      return { index: todayIdx, ...data[todayIdx] };
-    }
-    return { index: data.length - 1, ...data[data.length - 1] };
-  }, [data]);
+  const hasCustomData = Boolean(data && data.length > 0 && data.some((d) => d.amount > 0));
+  const displayData: HoverTraceBarItem[] = hasCustomData && data ? data : DEFAULT_DAYS;
 
-  const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(null);
+  const effectiveSafeBudget =
+    typeof safeDailyBudget === 'number' && safeDailyBudget > 0
+      ? safeDailyBudget
+      : 110.18;
 
-  const activeItem = useMemo(() => {
-    if (activeTooltipIndex !== null && data[activeTooltipIndex]) {
-      return { index: activeTooltipIndex, ...data[activeTooltipIndex] };
+  const maxAmount = Math.max(...displayData.map((d) => d.amount), 50);
+
+  // Identify peak spend index
+  let peakIdx = -1;
+  let peakVal = 0;
+  displayData.forEach((d, idx) => {
+    if (d.amount > peakVal) {
+      peakVal = d.amount;
+      peakIdx = idx;
     }
-    return initialItem;
-  }, [activeTooltipIndex, data, initialItem]);
-
-  // Spring physics for smooth reference line glide
-  const springValue = useSpring(activeItem.amount, {
-    stiffness: 120,
-    damping: 20,
   });
-
-  const [springDisplayValue, setSpringDisplayValue] = useState<number>(activeItem.amount);
-
-  useEffect(() => {
-    springValue.set(activeItem.amount);
-  }, [activeItem.amount, springValue]);
-
-  useMotionValueEvent(springValue, 'change', (latest) => {
-    setSpringDisplayValue(Math.round(latest));
-  });
-
-  const handleMouseLeaveChart = useCallback(() => {
-    setActiveTooltipIndex(null);
-  }, []);
-
-  // Calculate Y-axis domain with 25% headroom so trace line and badges never clip
-  const maxAmount = useMemo(() => {
-    const rawMax = Math.max(...(data.map((d) => d.amount) || [0]), 50);
-    return Math.ceil(rawMax * 1.25);
-  }, [data]);
-
-  interface BarShapeProps {
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-    index?: number;
-    payload?: HoverTraceBarItem;
-  }
-
-  // Custom Bar Shape supporting terracotta active bars & zero-spend baseline pills
-  const renderBarShape = (props: BarShapeProps) => {
-    const { x = 0, y = 0, width = 0, height = 0, index = 0, payload } = props;
-    const isInactive = !payload || payload.amount <= 0;
-    const isHovered = activeItem.index === index;
-    const isAnyHovered = activeTooltipIndex !== null;
-
-    const actualWidth = Math.min(Math.max(width * 0.52, 24), 38);
-    const offsetX = x + (width - actualWidth) / 2;
-
-    if (isInactive) {
-      const pillHeight = 6;
-      const pillY = y - pillHeight;
-      const inactiveOpacity = isHovered ? 1 : isAnyHovered ? 0.35 : 0.65;
-
-      return (
-        <g key={`bar-inactive-${index}`} className="cursor-pointer transition-all duration-200">
-          {/* Full height transparent hit target */}
-          <rect
-            x={x}
-            y={0}
-            width={width}
-            height={200}
-            fill="transparent"
-            pointerEvents="all"
-          />
-          {/* Neutral baseline placeholder pill */}
-          <rect
-            x={offsetX}
-            y={pillY}
-            width={actualWidth}
-            height={pillHeight}
-            rx={3}
-            ry={3}
-            fill="#E7E1D8"
-            fillOpacity={inactiveOpacity}
-            className="dark:fill-stone-700 transition-opacity duration-200"
-          />
-        </g>
-      );
-    }
-
-    const barOpacity = isHovered ? 1 : isAnyHovered ? 0.35 : 0.95;
-    const barHeight = Math.max(height, 8);
-
-    return (
-      <g key={`bar-active-${index}`} className="cursor-pointer transition-all duration-200">
-        {/* Full height transparent hit target */}
-        <rect
-          x={x}
-          y={0}
-          width={width}
-          height={200}
-          fill="transparent"
-          pointerEvents="all"
-        />
-        {/* Terracotta active spend bar */}
-        <rect
-          x={offsetX}
-          y={y}
-          width={actualWidth}
-          height={barHeight}
-          rx={5}
-          ry={5}
-          fill={barColor}
-          fillOpacity={barOpacity}
-          stroke={isHovered ? '#983E2A' : 'none'}
-          strokeWidth={isHovered ? 1 : 0}
-          className="transition-all duration-200"
-        />
-      </g>
-    );
-  };
-
-  interface CustomTickProps {
-    x?: number | string;
-    y?: number | string;
-    payload?: { index: number; value: string };
-  }
-
-  // Custom XAxis tick with today and hover highlights
-  const renderCustomTick = ({ x = 0, y = 0, payload }: CustomTickProps) => {
-    const item = payload ? data[payload.index] : undefined;
-    const isToday = item?.isToday;
-    const isHovered = payload ? activeItem.index === payload.index : false;
-
-    return (
-      <g transform={`translate(${x},${Number(y) + 12})`}>
-        <text
-          x={0}
-          y={0}
-          textAnchor="middle"
-          className={`font-mono text-xs select-none transition-colors duration-200 ${
-            isHovered
-              ? 'fill-[#C2634C] font-bold'
-              : isToday
-              ? 'fill-neutral-950 dark:fill-neutral-100 font-bold'
-              : 'fill-neutral-500 dark:fill-neutral-400 font-medium'
-          }`}
-        >
-          {payload?.value}
-        </text>
-      </g>
-    );
-  };
-
-  interface TraceLabelProps {
-    viewBox?: { x?: number; y?: number };
-  }
-
-  // Custom reference line label badge
-  const renderTraceLabel = ({ viewBox }: TraceLabelProps) => {
-    const x = viewBox?.x ?? 0;
-    const y = viewBox?.y ?? 0;
-    const text = `${currencySymbol}${Math.round(activeItem.amount)}`;
-    const pillWidth = Math.max(text.length * 7.5 + 16, 46);
-
-    return (
-      <g className="pointer-events-none select-none">
-        <rect
-          x={x + 2}
-          y={y - 9}
-          width={pillWidth}
-          height={18}
-          fill={barColor}
-          rx={4}
-          className="shadow-xs"
-        />
-        <text
-          className="font-mono text-[10px] font-bold"
-          x={x + 2 + pillWidth / 2}
-          y={y + 3.5}
-          textAnchor="middle"
-          fill="#ffffff"
-        >
-          {text}
-        </text>
-        <circle cx="99.5%" cy={y} r={3} fill={barColor} />
-      </g>
-    );
-  };
 
   return (
-    <div
-      className={`bg-white dark:bg-stone-900/90 rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-sm p-6 sm:p-7 flex flex-col justify-between gap-6 min-h-[380px] ${className}`}
+    <article
+      data-purpose="spending-pattern-card"
+      className={`h-full flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xs dark:bg-zinc-900/60 dark:border-zinc-800/80 transition-all duration-200 overflow-visible ${className}`}
     >
-      {/* Header Area */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col">
-          <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight font-sans">
-            {headerTitle}
-          </h2>
-          <span className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
-            {headerSubtitle}
-          </span>
-        </div>
+      {/* Inner Main Content Area: flex-1 flex flex-col justify-between */}
+      <div className="flex-1 flex flex-col justify-between overflow-visible">
+        {/* Top Header Area */}
+        <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1 flex-wrap">
+              <h2 className="text-lg font-bold tracking-tight text-stone-900 dark:text-zinc-100 font-sans">
+                {headerTitle}
+              </h2>
+              {/* Date Range Pill */}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-[#f5ebe6] text-[#c25e43] border border-[#eddcd4] dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50">
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect height="18" rx="2" ry="2" width="18" x="3" y="4" />
+                  <line x1="16" x2="16" y1="2" y2="6" />
+                  <line x1="8" x2="8" y1="2" y2="6" />
+                  <line x1="3" x2="21" y1="10" y2="10" />
+                </svg>
+                {dateRangeText}
+              </span>
+            </div>
+            <p className="text-xs font-mono text-stone-400 dark:text-stone-400">
+              {headerSubtitle}
+            </p>
+          </div>
 
-        {/* Legend Indicator */}
-        <div className="flex items-center gap-2 font-mono text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
-          <span
-            className="w-2.5 h-2.5 rounded-xs inline-block"
-            style={{ backgroundColor: barColor }}
-          />
-          <span>{legendLabel}</span>
-        </div>
-      </div>
+          {/* Top-Right Legend */}
+          <div className="flex items-center space-x-1.5 text-xs text-stone-500 dark:text-stone-400 font-mono select-none self-start sm:self-auto pt-1 sm:pt-0">
+            <span
+              aria-hidden="true"
+              className="inline-block w-2.5 h-2.5 rounded-[2px]"
+              style={{ backgroundColor: barColor }}
+            />
+            <span>{legendLabel}</span>
+          </div>
+        </header>
 
-      {/* Interactive Chart Container */}
-      <div className="w-full flex-1 flex flex-col justify-end pt-2 pb-1 relative min-h-[220px]">
-        {/* Floating animated NumberFlow readout smoothly tracking the active bar */}
-        {isMounted && data.length > 0 && (
-          <motion.div
-            initial={false}
-            animate={{
-              left: `${((activeItem.index + 0.5) / data.length) * 100}%`,
-              opacity: 1,
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 280,
-              damping: 26,
-            }}
-            className="absolute top-0 -translate-x-1/2 pointer-events-none z-20 flex flex-col items-center"
+        {/* Visual Chart Area */}
+        <div
+          className="relative w-full pt-8 pb-2 flex-1 flex flex-col justify-end overflow-visible min-h-[190px]"
+          data-purpose="bar-chart-container"
+        >
+          {/* Safe Ceiling Dotted Benchmark Line */}
+          <div
+            className="absolute left-0 right-0 flex items-center z-0 pointer-events-none"
+            style={{ top: '38%' }}
           >
-            <div className="font-mono text-xs font-bold text-[#C2634C] dark:text-[#E07A63] flex items-center">
-              <NumberFlow
-                value={activeItem.amount}
-                prefix={currencySymbol}
-                format={{ maximumFractionDigits: 0 }}
+            <div className="w-full border-b border-dashed border-[#c25e43]/60 dark:border-amber-600/60" />
+            <div className="flex items-center shrink-0 -mr-1.5 gap-1.5 bg-white/90 dark:bg-zinc-900/90 pl-1.5">
+              <span className="text-[10px] font-mono font-medium text-stone-400 uppercase tracking-wider hidden sm:inline">
+                Safe Ceiling
+              </span>
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: barColor }}
+                title="Ceiling dot"
               />
             </div>
-          </motion.div>
-        )}
+          </div>
 
-        {/* Static Value Labels above non-hovered active bars (Matching original aesthetic at rest) */}
-        <div className="w-full grid grid-cols-7 absolute top-0 left-0 right-0 pointer-events-none z-10">
-          {data.map((item, idx) => {
-            const isHovered = activeItem.index === idx;
-            const hasSpend = item.amount > 0;
-            return (
-              <div
-                key={`static-label-${idx}`}
-                className="flex justify-center items-center text-center"
-              >
-                {hasSpend && (
-                  <span
-                    className={`font-mono text-xs font-medium text-[#C2634C] dark:text-[#E07A63] transition-opacity duration-200 ${
-                      isHovered ? 'opacity-0' : 'opacity-100'
+          {/* Bar Chart Columns (7 Days Grid) */}
+          <div className="grid grid-cols-7 gap-2 sm:gap-4 items-end relative z-10 w-full h-44 overflow-visible px-1 sm:px-2">
+            {displayData.map((item, idx) => {
+              const isPeak = idx === peakIdx && item.amount > 0;
+              const isZero = item.amount <= 0;
+              const isToday = Boolean(item.isToday || item.day === 'Tue');
+              const isHovered = hoveredIdx === idx;
+
+              // Proportional height
+              const heightPercent = isZero
+                ? 0
+                : Math.min(Math.max((item.amount / maxAmount) * 100, 15), 100);
+              const barHeightPx = isZero ? 0 : Math.round((heightPercent / 100) * 112);
+
+              // Tooltip text calculation
+              let tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Zero debits logged`;
+              if (item.amount > effectiveSafeBudget) {
+                const diff = (item.amount - effectiveSafeBudget).toFixed(2);
+                tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Over daily budget (+${currencySymbol}${diff})`;
+              } else if (item.amount > 0) {
+                const diff = (effectiveSafeBudget - item.amount).toFixed(2);
+                tooltipText = `${currencySymbol}${item.amount.toFixed(2)} • Within daily pace (-${currencySymbol}${diff})`;
+              }
+
+              return (
+                <div
+                  key={`day-col-${idx}-${item.day}`}
+                  className="group relative cursor-pointer flex flex-col items-center justify-end h-full"
+                  data-day={item.day}
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  {/* Floating Tooltip */}
+                  <div
+                    className={`pointer-events-none transition-all duration-200 absolute -top-12 z-30 bg-stone-900/95 dark:bg-zinc-800/95 backdrop-blur text-white text-xs py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap font-sans flex flex-col items-center border border-stone-700/50 ${
+                      isHovered
+                        ? 'opacity-100 -translate-y-1'
+                        : 'opacity-0 translate-y-0'
                     }`}
+                  >
+                    <span>{tooltipText}</span>
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-stone-900 dark:border-t-zinc-800" />
+                  </div>
+
+                  {/* Daily Amount Label Aligned Horizontally Over Each Bar */}
+                  <span
+                    className={`text-[11px] font-mono font-medium mb-1.5 transition-transform duration-200 tabular-nums ${
+                      isZero
+                        ? 'text-stone-400 dark:text-zinc-500'
+                        : 'text-[#c25e43] dark:text-amber-500'
+                    } ${isHovered ? '-translate-y-0.5' : ''}`}
                   >
                     {currencySymbol}
                     {Math.round(item.amount)}
                   </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
-        {/* Recharts Bar Chart with Trace ReferenceLine */}
-        <div className="w-full h-48 sm:h-52">
-          {isMounted ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data}
-                margin={{ top: 24, right: 12, left: 12, bottom: 0 }}
-                onMouseMove={(e) => {
-                  const chartEvent = e as { activeTooltipIndex?: number | string | null } | null;
-                  if (chartEvent?.activeTooltipIndex != null) {
-                    setActiveTooltipIndex(Number(chartEvent.activeTooltipIndex));
-                  }
-                }}
-                onMouseLeave={handleMouseLeaveChart}
-              >
-                <XAxis
-                  dataKey="day"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tick={renderCustomTick}
-                  interval={0}
-                />
-                <YAxis hide={true} domain={[0, maxAmount]} />
-                <Tooltip cursor={false} content={() => null} />
-                <Bar
-                  dataKey="amount"
-                  shape={renderBarShape}
-                  activeBar={renderBarShape}
-                  isAnimationActive={false}
-                />
-                {activeItem.amount > 0 && (
-                  <ReferenceLine
-                    y={springDisplayValue}
-                    stroke={barColor}
-                    strokeDasharray="3 3"
-                    strokeWidth={1.5}
-                    strokeOpacity={0.65}
-                    label={renderTraceLabel}
-                  />
-                )}
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="w-full h-full flex items-end justify-between px-4 pb-4">
-              {data.map((_, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-2 rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse"
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                  {/* Vertical Bar Column or Zero Indicator Pill */}
+                  <div className="relative w-full max-w-[44px] flex flex-col items-center">
+                    {isPeak && (
+                      <div className="absolute -top-3.5 z-20 bg-[#c25e43] dark:bg-amber-600 text-white font-mono text-[10px] font-medium px-1.5 py-0.5 rounded-[4px] shadow-xs whitespace-nowrap group-hover:brightness-105 group-hover:-translate-y-0.5 transition-all duration-200">
+                        {currencySymbol}
+                        {Math.round(item.amount)}
+                      </div>
+                    )}
 
-      {/* Bottom Benchmark Alert Banner */}
-      {showBenchmarkBanner && (
-        <div className="bg-[#FAF4EE] dark:bg-stone-800/60 border border-[#FAF4EE] dark:border-stone-800 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-            <svg
-              className="w-4 h-4 text-[#3C6847] shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-            <span>{benchmarkText}</span>
+                    {isZero ? (
+                      <div className="w-8 h-1.5 bg-stone-200 dark:bg-zinc-700 rounded-full mb-0.5 transition-all duration-200 group-hover:bg-stone-300 dark:group-hover:bg-zinc-600 group-hover:scale-110" />
+                    ) : (
+                      <div
+                        className="w-full rounded-t-lg transition-all duration-200 group-hover:bg-[#b05238] dark:group-hover:bg-amber-500 group-hover:-translate-y-0.5"
+                        style={{
+                          height: `${barHeightPx}px`,
+                          backgroundColor: barColor,
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* X-axis Day Label: Highlighted Current Day in muted terracotta/amber */}
+                  <span
+                    className={`text-xs font-mono mt-3 transition-colors ${
+                      isToday
+                        ? 'font-bold text-amber-700 dark:text-amber-400 tracking-wide'
+                        : 'font-medium text-stone-500 dark:text-stone-400'
+                    }`}
+                  >
+                    {item.day}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            ~{currencySymbol}
-            {safeDailyBudget ? safeDailyBudget.toFixed(2) : '175.58'} safe daily budget
-          </span>
         </div>
-      )}
-    </div>
+
+        {/* Anchored Bottom Banner */}
+        {showBenchmarkBanner && (
+          <footer
+            data-purpose="left-card-footer"
+            className="mt-auto bg-amber-50/60 border border-amber-200/50 rounded-xl p-3 text-xs font-medium text-stone-700 flex justify-between items-center dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-300"
+          >
+            <div className="flex items-center space-x-2">
+              <svg
+                aria-hidden="true"
+                className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 19V6m0 0C10 4 7 4 4 5c0 5 3 8 8 9m0-8c2-2 5-2 8-1 0 5-3 8-8 9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="font-normal text-stone-700 dark:text-amber-200/90">
+                {benchmarkText}
+              </span>
+            </div>
+            <div className="font-mono font-medium text-stone-800 dark:text-amber-300 tracking-tight">
+              ~{currencySymbol}
+              {effectiveSafeBudget.toFixed(2)} safe daily budget
+            </div>
+          </footer>
+        )}
+      </div>
+    </article>
   );
 }
 

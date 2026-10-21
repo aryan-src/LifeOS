@@ -49,7 +49,7 @@ describe('HoverTraceBarChart Component', () => {
     expect(cleanHtml).toContain('~₹175.58 safe daily budget');
   });
 
-  it('maps 7-day data with active amounts and container rounded-3xl styling', () => {
+  it('maps 7-day data with active amounts and container rounded-2xl styling', () => {
     const rawHtml = renderToString(
       <HoverTraceBarChart
         data={mockWeeklyData}
@@ -61,6 +61,6 @@ describe('HoverTraceBarChart Component', () => {
     expect(cleanHtml).toContain('₹135');
     expect(cleanHtml).toContain('₹50');
     expect(cleanHtml).toContain('₹601');
-    expect(cleanHtml).toContain('rounded-3xl');
+    expect(cleanHtml).toContain('rounded-2xl');
   });
 });

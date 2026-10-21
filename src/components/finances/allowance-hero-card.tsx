@@ -4,6 +4,7 @@ import React from 'react';
 import type { FinancialAnalytics } from '@/lib/actions/finances';
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
 import { HoverTraceBarChart } from '@/components/ui/hover-trace-bar-chart';
+import { WhereDidMoneyGoCard } from './where-did-money-go-card';
 
 export type TimeFilterTab = 'today' | 'this_week' | 'monthly' | 'all';
 
@@ -482,120 +483,32 @@ export function AllowanceHeroCard({
       {/* =========================================================================
           SECTION 2: Two-Column Analytical Insights (7-Day Pattern & Outflow)
          ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
-        {/* Left Column: 7-Day Spending Pattern Interactive Bar Chart (7 Cols) */}
-        <div className="lg:col-span-7">
-          <HoverTraceBarChart
-            data={weeklyDays.map((d) => ({
-              day: d.dayLabel,
-              date: d.date,
-              amount: d.spent,
-              isToday: d.isToday,
-            }))}
-            currencySymbol={currencySymbol}
-            safeDailyBudget={safeDailyBudget > 0 ? safeDailyBudget : 175.58}
-            headerTitle="7-Day Spending Pattern"
-            headerSubtitle="Daily disbursements vs safe ceiling"
-            legendLabel="Recorded Expense"
-            barColor="#C2634C"
-            showBenchmarkBanner={true}
-            benchmarkText="Staying strictly within daily pace"
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        {/* Left Column: 7-Day Spending Pattern Interactive Bar Chart */}
+        <HoverTraceBarChart
+          data={weeklyDays.map((d) => ({
+            day: d.dayLabel,
+            date: d.date,
+            amount: d.spent,
+            isToday: d.isToday,
+          }))}
+          currencySymbol={currencySymbol}
+          safeDailyBudget={safeDailyBudget > 0 ? safeDailyBudget : 110.18}
+          headerTitle="7-Day Spending Pattern"
+          headerSubtitle="Daily disbursements vs safe ceiling"
+          legendLabel="Recorded Expense"
+          barColor="#c25e43"
+          showBenchmarkBanner={true}
+          benchmarkText="Staying strictly within daily pace"
+        />
 
-        {/* Right Column: Where Did Pocket Money Go? (5 Cols) */}
-        <div className="lg:col-span-5 bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-lg min-h-[360px] border border-outline-variant/30 dark:border-zinc-800/60">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
-                Where Did Money Go?
-              </h2>
-              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 font-mono">
-                100% Accounted
-              </span>
-            </div>
-            <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
-              {outflowSubtitle}
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-space-md">
-            {/* Horizontal Breakdown Bar */}
-            <div className="flex flex-col gap-space-xs">
-              <div className="w-full h-3 bg-surface-container-high dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                {activeCategories.length > 0 ? (
-                  activeCategories.map((cat, idx) => (
-                    <div
-                      key={idx}
-                      className="h-full transition-all"
-                      style={{
-                        width: `${cat.percentage}%`,
-                        backgroundColor: cat.color || defaultColors[idx % defaultColors.length],
-                      }}
-                      title={`${cat.name}: ${cat.percentage}%`}
-                    />
-                  ))
-                ) : (
-                  <div
-                    className="h-full bg-surface-container-high dark:bg-zinc-800 transition-all"
-                    style={{ width: '100%' }}
-                  />
-                )}
-              </div>
-              <div className="flex items-center justify-between font-label-sm text-label-sm text-outline dark:text-zinc-400">
-                <span>
-                  Total spent: {currencySymbol}
-                  {formatCurrency(displaySpent)}
-                </span>
-                <span>
-                  {activeCategories.length} {activeCategories.length === 1 ? 'Category' : 'Categories'} active
-                </span>
-              </div>
-            </div>
-
-            {/* Breakdown List */}
-            <div className="flex flex-col gap-space-sm">
-              {activeCategories.length > 0 ? (
-                activeCategories.slice(0, 4).map((cat, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low dark:bg-zinc-800/40 hover:bg-surface-container dark:hover:bg-zinc-800/70 transition-colors"
-                  >
-                    <div className="flex items-center gap-space-sm">
-                      <span
-                        className="w-3 h-3 rounded-sm"
-                        style={{ backgroundColor: cat.color || defaultColors[idx % defaultColors.length] }}
-                      />
-                      <span className="font-body-sm text-body-sm text-on-surface dark:text-zinc-200 font-medium">
-                        {cat.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-space-md">
-                      <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
-                        {Math.round(cat.percentage)}%
-                      </span>
-                      <span className="font-label-md text-label-md text-on-surface dark:text-zinc-100 font-semibold">
-                        {currencySymbol}
-                        {formatCurrency(cat.value)}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 px-4 rounded-lg bg-surface-container-low dark:bg-zinc-800/40 text-center text-outline dark:text-zinc-500 text-label-sm border border-outline-variant/20 dark:border-zinc-800/60">
-                  No expenses recorded for this period
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm pt-space-xs border-t border-surface-container-high/60 dark:border-zinc-800/60">
-            <span>Zero emergency debits logged</span>
-            <span className="text-secondary dark:text-emerald-400 font-medium">
-              Discipline Index: 98/100
-            </span>
-          </div>
-        </div>
+        {/* Right Column: Where Did Money Go? */}
+        <WhereDidMoneyGoCard
+          currencySymbol={currencySymbol}
+          totalSpent={displaySpent}
+          categoryBreakdown={activeCategories}
+          subtitle={outflowSubtitle}
+        />
       </div>
     </div>
   );

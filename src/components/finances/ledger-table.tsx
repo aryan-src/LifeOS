@@ -558,11 +558,12 @@ export function LedgerTable({
       {/* END: Search & Filter Inline Toolbar */}
 
       {/* BEGIN: LedgerDataTableCard */}
-      <div
-        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-subtle overflow-hidden"
+      <motion.div
+        layout
+        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-subtle overflow-hidden transition-all duration-300 ease-out"
         data-purpose="ledger-table-wrapper"
       >
-        <div className="overflow-x-auto min-h-[580px]">
+        <div className="overflow-x-auto">
           <table
             className="w-full text-left border-collapse"
             id="spending-ledger-table"
@@ -826,7 +827,7 @@ export function LedgerTable({
           </GlassPagination>
         </div>
         {/* END: TableFooterPagination */}
-      </div>
+      </motion.div>
       {/* END: LedgerDataTableCard */}
 
       {/* Micro-hint banner */}

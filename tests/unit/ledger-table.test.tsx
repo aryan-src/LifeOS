@@ -223,6 +223,19 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
       expect(html).toContain('table-search-input');
       expect(html).toContain('Noodles');
     });
+
+    it('renders dynamic content-fit height for table card without fixed min-h-580px', () => {
+      const html = renderToString(
+        <LedgerTable
+          transactions={mockTransactions}
+          onDelete={vi.fn().mockResolvedValue({ success: true })}
+          onRecordExpense={vi.fn()}
+        />
+      );
+
+      expect(html).toContain('data-purpose="ledger-table-wrapper"');
+      expect(html).not.toContain('min-h-[580px]');
+    });
   });
 });
 

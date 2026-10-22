@@ -31,7 +31,7 @@ export async function SubmissionsAndFocusCard() {
   const remainingCount = Math.max(0, pendingAssignments.length - displayList.length);
 
   return (
-    <section className="min-w-0 bg-white dark:bg-zinc-900/70 text-[#07343C] dark:text-zinc-100 rounded-2xl p-4 xl:p-5 flex flex-col justify-between h-full border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
+    <section className="w-full h-full min-w-0 bg-white dark:bg-zinc-900/70 text-[#07343C] dark:text-zinc-100 rounded-2xl p-5 flex flex-col justify-between border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
       {/* Upcoming Submissions Section */}
       <div>
         <div className="flex items-baseline justify-between mb-1 pb-1 border-b border-[#07343C]/10 dark:border-zinc-800/60">

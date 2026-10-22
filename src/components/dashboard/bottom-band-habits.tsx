@@ -67,7 +67,7 @@ export function BottomBandHabits({
   const displayHabits = habits.slice(0, 3);
 
   return (
-    <div className="min-w-0 flex flex-col justify-between">
+    <div className="w-full h-full min-w-0 flex flex-col justify-between gap-3">
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-[17px] xl:text-[18px] font-bold text-[#07343C] dark:text-zinc-100">
           Habits ({habits.length} active)

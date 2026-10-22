@@ -67,7 +67,7 @@ export async function FinancesQuadrant() {
     : 'M 0 18 L 260 18';
 
   return (
-    <div className="flex-1 min-h-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-4 xl:p-5 flex flex-col justify-between border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs text-[#07343C] dark:text-zinc-100 transition-colors">
+    <div className="w-full h-full flex-1 min-h-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-5 flex flex-col justify-between border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs text-[#07343C] dark:text-zinc-100 transition-colors">
       {/* Card Header */}
       <div className="flex items-center justify-between text-[12px]">
         <span className="font-semibold text-[#07343C] dark:text-zinc-100">Pocket money</span>

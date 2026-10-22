@@ -29,7 +29,7 @@ export function BottomBandProjects({ projects }: BottomBandProjectsProps) {
   };
 
   return (
-    <div className="min-w-0 flex flex-col justify-between border-t md:border-t-0 md:border-l lg:border-r border-[#07343C]/10 dark:border-zinc-800/60 pt-3 md:pt-0 md:px-4">
+    <div className="w-full h-full min-w-0 flex flex-col justify-between gap-3">
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-[17px] xl:text-[18px] font-bold text-[#07343C] dark:text-zinc-100">
           Active Projects

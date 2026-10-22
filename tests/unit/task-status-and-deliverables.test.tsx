@@ -6,6 +6,8 @@ import { TaskChecklist } from '@/components/tasks/task-checklist';
 import { updateTaskStatusSchema } from '@/lib/validations';
 import type { TaskWithProject } from '@/lib/actions/tasks';
 
+import { getTodayDate } from '@/lib/utils/date';
+
 describe('Interactive Task Status & Deliverables Segregation', () => {
   const mockTasks: TaskWithProject[] = [
     {
@@ -157,7 +159,7 @@ describe('Interactive Task Status & Deliverables Segregation', () => {
     it('renders "Due Today" badge with organic sage green styling', () => {
       const dueTodayTask: TaskWithProject = {
         ...mockTasks[1],
-        due_date: '2026-10-20',
+        due_date: getTodayDate(),
       };
       const html = renderToString(
         <TaskItem

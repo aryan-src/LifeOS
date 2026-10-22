@@ -1,141 +1,83 @@
 import React, { Suspense } from 'react';
-import {
-  ProjectsQuadrant,
-  ProjectsSkeleton,
-} from '@/components/dashboard/projects-quadrant';
-import {
-  TasksQuadrant,
-  TasksSkeleton,
-} from '@/components/dashboard/tasks-quadrant';
-import {
-  FinancesQuadrant,
-  FinancesSkeleton,
-} from '@/components/dashboard/finances-quadrant';
-import {
-  NotesQuadrant,
-  NotesSkeleton,
-} from '@/components/dashboard/notes-quadrant';
-import {
-  DashboardMetrics,
-  DashboardMetricsSkeleton,
-} from '@/components/dashboard/dashboard-metrics';
-import {
-  UpcomingSubmissionsWidget,
-  UpcomingSubmissionsSkeleton,
-} from '@/components/dashboard/upcoming-submissions-widget';
 import { getUserProfile } from '@/lib/actions/profile';
-import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
-import { GlowCard } from '@/components/ui/spotlight-card';
-import Link from 'next/link';
-import { SlidersHorizontal, Plus } from 'lucide-react';
+import { getHabits } from '@/lib/actions/habits';
+import { getProjectsWithMetrics } from '@/lib/actions/projects';
+import { getNotes } from '@/lib/actions/notes';
+import { getTodayDate } from '@/lib/utils/date';
+
+import { DashboardHeader } from './dashboard-header';
+import { DashboardGreeting } from './dashboard-greeting';
+import { FinancesQuadrant, FinancesSkeleton } from './finances-quadrant';
+import { TasksQuadrant, TasksSkeleton } from './tasks-quadrant';
+import { SubmissionsAndFocusCard, SubmissionsAndFocusSkeleton } from './submissions-and-focus-card';
+import { BottomBandHabits } from './bottom-band-habits';
+import { BottomBandProjects } from './bottom-band-projects';
+import { BottomBandIdeas } from './bottom-band-ideas';
+import { DashboardDock } from './dashboard-dock';
 
 export async function DashboardCommandCenter() {
-  const profile = await getUserProfile();
+  const todayStr = getTodayDate();
+
+  // Fetch initial data in parallel for instant SSR
+  const [profile, habitsRes, projects, notes] = await Promise.all([
+    getUserProfile().catch(() => null),
+    getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
+    getProjectsWithMetrics().catch(() => []),
+    getNotes().catch(() => []),
+  ]);
+
+  const displayName = profile?.display_name || 'Aryan';
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="px-4 sm:px-6 md:px-10 py-8 flex flex-col gap-8 max-w-[1360px] mx-auto w-full">
-        {/* Header Section: Calm Editorial Header */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-stone-200/80 dark:border-stone-800/80">
-          <div className="flex flex-col min-w-0">
-            <span
-              suppressHydrationWarning
-              className="text-xs font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1.5"
-            >
-              {formatCalendarDate(getTodayDate(), 'header')}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
-              Welcome, {profile?.display_name || 'Student'}
-            </h1>
-            <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
-              Academics, tasks, finances, and notes—in one calm workspace.
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
-            <Link
-              href="/projects"
-              prefetch={true}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl text-sm font-medium bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 border border-stone-200/90 dark:border-stone-800 shadow-2xs hover:bg-stone-50 dark:hover:bg-stone-800/70 hover:border-stone-300 transition-all duration-150 font-sans tracking-tight"
-            >
-              <SlidersHorizontal className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-              <span>Workspaces</span>
-            </Link>
-            <Link
-              href="/tasks"
-              prefetch={true}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl text-sm font-medium bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 shadow-xs hover:bg-stone-800 dark:hover:bg-white active:scale-[0.99] transition-all duration-150 font-sans tracking-tight"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Quick Add</span>
-            </Link>
-          </div>
-        </header>
+    <div className="w-full min-h-screen lg:h-screen lg:max-h-screen overflow-y-auto lg:overflow-hidden flex flex-col justify-between bg-[#FBF9F5] dark:bg-[#090A0F] text-[#07343C] dark:text-zinc-100 font-sans relative selection:bg-[#10B981]/20">
+      {/* 1. TOP BAR */}
+      <DashboardHeader displayName={displayName} />
 
-        {/* Top Overview Metric Row (4 Notion-style breathing stat cards streamed) */}
-        <Suspense fallback={<DashboardMetricsSkeleton />}>
-          <DashboardMetrics />
-        </Suspense>
+      {/* 2. MAIN CANVAS */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-3 pb-2 flex flex-col justify-between gap-3 overflow-y-auto lg:overflow-hidden min-h-0">
+        {/* ROW 1: Asymmetric 3 Columns with strict items-stretch alignment */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)_minmax(0,1fr)] gap-4 xl:gap-5 items-stretch min-h-0">
+          {/* LEFT COLUMN: Greeting & Financial Telemetry (Pocket Money) */}
+          <section className="min-w-0 flex flex-col justify-between h-full gap-3">
+            <DashboardGreeting displayName={displayName} />
+            <Suspense fallback={<FinancesSkeleton />}>
+              <FinancesQuadrant />
+            </Suspense>
+          </section>
 
-        {/* Upcoming Submissions & Action Alerts */}
-        <Suspense fallback={<UpcomingSubmissionsSkeleton />}>
-          <UpcomingSubmissionsWidget />
-        </Suspense>
+          {/* MIDDLE COLUMN: Today's Focus Card */}
+          <Suspense fallback={<TasksSkeleton />}>
+            <TasksQuadrant />
+          </Suspense>
 
-        {/* Main Workspace Bento: The 4 Minimalist Breathing Cards with Interactive Spotlight Glow */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-          {/* Card 1: Active Projects (Blue Spotlight) */}
-          <div className="w-full min-w-0 h-full">
-            <GlowCard
-              customSize
-              glowColor="blue"
-              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 dark:!border-zinc-800/60 !bg-surface-container-lowest/90 dark:!bg-zinc-900/50 transition-all"
-            >
-              <Suspense fallback={<ProjectsSkeleton />}>
-                <ProjectsQuadrant />
-              </Suspense>
-            </GlowCard>
-          </div>
+          {/* RIGHT COLUMN: Upcoming Submissions & Focus Cockpit */}
+          <Suspense fallback={<SubmissionsAndFocusSkeleton />}>
+            <SubmissionsAndFocusCard />
+          </Suspense>
+        </div>
 
-          {/* Card 2: Today's Focus (Orange Spotlight) */}
-          <div className="w-full min-w-0 h-full">
-            <GlowCard
-              customSize
-              glowColor="orange"
-              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 dark:!border-zinc-800/60 !bg-surface-container-lowest/90 dark:!bg-zinc-900/50 transition-all"
-            >
-              <Suspense fallback={<TasksSkeleton />}>
-                <TasksQuadrant />
-              </Suspense>
-            </GlowCard>
-          </div>
+        {/* ROW 2: BOTTOM BAND (195px desktop) */}
+        <div className="h-auto lg:h-[195px] shrink-0 bg-white dark:bg-zinc-900/70 rounded-2xl px-4 sm:px-6 py-3 mb-6 lg:mb-[76px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.1fr)] gap-4 xl:gap-5 items-stretch border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
+          {/* GROUP 1: Habits */}
+          <BottomBandHabits
+            initialHabits={habitsRes?.habits || []}
+            todayStr={todayStr}
+          />
 
-          {/* Card 3: Pocket Money Tracker (Green Spotlight) */}
-          <div className="w-full min-w-0 h-full">
-            <GlowCard
-              customSize
-              glowColor="green"
-              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 dark:!border-zinc-800/60 !bg-surface-container-lowest/90 dark:!bg-zinc-900/50 transition-all"
-            >
-              <Suspense fallback={<FinancesSkeleton />}>
-                <FinancesQuadrant />
-              </Suspense>
-            </GlowCard>
-          </div>
+          {/* GROUP 2: Active Projects */}
+          <BottomBandProjects
+            projects={projects || []}
+          />
 
-          {/* Card 4: Recent Ideas & Scratchpad (Purple Spotlight) */}
-          <div className="w-full min-w-0 h-full">
-            <GlowCard
-              customSize
-              glowColor="purple"
-              className="w-full h-full !p-0 !gap-0 !grid-rows-none !shadow-xs rounded-2xl border border-outline-variant/30 dark:!border-zinc-800/60 !bg-surface-container-lowest/90 dark:!bg-zinc-900/50 transition-all"
-            >
-              <Suspense fallback={<NotesSkeleton />}>
-                <NotesQuadrant />
-              </Suspense>
-            </GlowCard>
-          </div>
-        </section>
-      </div>
+          {/* GROUP 3: Recent Ideas Scratchpad */}
+          <BottomBandIdeas
+            initialNotes={notes || []}
+          />
+        </div>
+      </main>
+
+      {/* 3. FLOATING NAVIGATION DOCK */}
+      <DashboardDock />
     </div>
   );
 }

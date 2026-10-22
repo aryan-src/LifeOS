@@ -95,7 +95,8 @@ export default {
         'space-sm': '0.5rem',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        serif: ['Newsreader', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'Hanken Grotesk', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
         mono: ['var(--font-mono)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
         'headline-lg-mobile': ['Inter', '-apple-system', 'sans-serif'],
         'display': ['Inter', '-apple-system', 'sans-serif'],

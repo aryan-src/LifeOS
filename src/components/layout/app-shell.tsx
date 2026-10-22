@@ -9,9 +9,10 @@ import { FloatingDock } from '@/components/ui/floating-dock';
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Standalone public pages (landing, auth, legal/static pages)
+  // Standalone full-viewport and public pages (dashboard, landing, auth, legal/static pages)
   const isStandalonePage =
     pathname === '/' ||
+    pathname === '/dashboard' ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/auth') ||
     pathname === '/privacy' ||
@@ -21,9 +22,12 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
 
   if (isStandalonePage) {
     return (
-      <main className="min-h-screen w-full bg-surface dark:bg-zinc-950 text-on-surface dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
-        {children}
-      </main>
+      <>
+        <QuickCaptureOmnibar />
+        <main className="min-h-screen w-full bg-surface dark:bg-zinc-950 text-on-surface dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
+          {children}
+        </main>
+      </>
     );
   }
 

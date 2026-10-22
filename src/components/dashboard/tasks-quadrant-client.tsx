@@ -68,7 +68,7 @@ export function TasksQuadrantClient({
   };
 
   return (
-    <section className="min-w-0 bg-white dark:bg-zinc-900/70 text-[#07343C] dark:text-zinc-100 rounded-2xl p-5 xl:p-6 flex flex-col justify-between h-full border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
+    <section className="w-full h-full min-w-0 bg-white dark:bg-zinc-900/70 text-[#07343C] dark:text-zinc-100 rounded-2xl p-5 xl:p-6 flex flex-col justify-between border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
       {/* Header row */}
       <div className="flex items-center justify-between pb-2 border-b border-[#07343C]/10 dark:border-zinc-800/60">
         <h2 className="font-serif text-[24px] xl:text-[26px] font-semibold text-[#07343C] dark:text-zinc-100 tracking-tight">
@@ -80,9 +80,9 @@ export function TasksQuadrantClient({
       </div>
 
       {/* Center area: Emerald progress dial + Tasks list */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 xl:gap-6 my-auto py-2">
+      <div className="flex flex-col sm:flex-row items-center gap-4 xl:gap-6 my-auto py-3 w-full min-w-0">
         {/* Arc Dial with Organic Emerald Stroke */}
-        <div className="relative w-[160px] h-[160px] xl:w-[185px] xl:h-[185px] shrink-0 flex items-center justify-center">
+        <div className="relative w-[140px] h-[140px] xl:w-[165px] xl:h-[165px] shrink-0 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
             <circle
               cx="50"

@@ -1,6 +1,6 @@
 import React from 'react';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { DashboardCommandCenter } from '@/components/dashboard/dashboard-command-center';
 import { HeroLandingPage } from '@/components/landing/hero-landing-page';
 
 export const dynamic = 'force-dynamic';
@@ -21,12 +21,22 @@ export default async function RootPage({
       return <HeroLandingPage />;
     }
 
+    // Logged-in users navigating to / automatically redirect to /dashboard
     if (user || params?.view === 'dashboard') {
-      return <DashboardCommandCenter />;
+      redirect('/dashboard');
     }
 
     return <HeroLandingPage />;
   } catch (err: unknown) {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'digest' in err &&
+      typeof (err as { digest?: string }).digest === 'string' &&
+      (err as { digest: string }).digest.startsWith('NEXT_REDIRECT')
+    ) {
+      throw err;
+    }
     if (
       typeof err === 'object' &&
       err !== null &&

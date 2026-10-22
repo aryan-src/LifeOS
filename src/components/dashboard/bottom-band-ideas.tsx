@@ -65,7 +65,7 @@ export function BottomBandIdeas({ initialNotes }: BottomBandIdeasProps) {
   };
 
   return (
-    <div className="min-w-0 flex flex-col justify-between overflow-hidden border-t md:border-t-0 pt-3 md:pt-0">
+    <div className="w-full h-full min-w-0 flex flex-col justify-between gap-3">
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-[17px] xl:text-[18px] font-bold text-[#07343C] dark:text-zinc-100">
           Recent Ideas
@@ -97,10 +97,10 @@ export function BottomBandIdeas({ initialNotes }: BottomBandIdeasProps) {
             return (
               <div
                 key={note.id}
-                className="p-2.5 xl:p-3 bg-[#FAF9F5] dark:bg-zinc-950/60 text-[#07343C] dark:text-zinc-100 rounded-xl border border-[#07343C]/10 dark:border-zinc-800 flex flex-col justify-between h-[96px] min-w-0 hover:border-[#10B981]/50 dark:hover:border-emerald-500/50 transition-colors shadow-2xs group relative"
+                className="p-2.5 xl:p-3 bg-[#FAF9F5] dark:bg-zinc-950/60 text-[#07343C] dark:text-zinc-100 rounded-xl border border-[#07343C]/10 dark:border-zinc-800 flex flex-col justify-between min-h-[96px] min-w-0 hover:border-[#10B981]/50 dark:hover:border-emerald-500/50 transition-colors shadow-2xs group relative"
               >
                 <Link href="/notes" className="min-w-0">
-                  <p className="text-[11px] font-medium leading-snug line-clamp-3 text-[#07343C]/90 dark:text-zinc-200">
+                  <p className="text-[11px] font-medium leading-snug line-clamp-3 break-words text-[#07343C]/90 dark:text-zinc-200">
                     <strong className="font-semibold">{note.title}</strong>
                     {note.content ? ` — ${note.content}` : ''}
                   </p>

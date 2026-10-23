@@ -133,4 +133,26 @@ describe('HoverTraceBarChart Component', () => {
     expect(cleanHtml).toContain('₹250');
     expect(cleanHtml).toContain('₹80');
   });
+
+  it('supports raw BarData array format and standalone mode without header', () => {
+    const rawData = [
+      { label: 'Mon', value: 120 },
+      { label: 'Tue', value: 340 },
+      { label: 'Wed', value: 200 },
+    ];
+
+    const rawHtml = renderToString(
+      <HoverTraceBarChart
+        data={rawData}
+        showHeader={false}
+        currencySymbol="₹"
+      />
+    );
+
+    const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
+    expect(cleanHtml).toContain('Mon');
+    expect(cleanHtml).toContain('Tue');
+    expect(cleanHtml).toContain('Wed');
+    expect(cleanHtml).not.toContain('7-Day Spending Pattern');
+  });
 });

@@ -34,24 +34,27 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     );
 
     // Header & balance metrics
-    expect(html).toContain('FINANCIAL TELEMETRY');
     expect(html).toContain('Pocket Money');
+    expect(html).toContain('Oct 2026');
     expect(html).toContain('987');
     expect(html).toContain('left');
 
-    // Spent Today & Safe Daily Limit tiles
+    // Spent Today & Remaining Balance metrics
     expect(html).toContain('Spent Today');
-    expect(html).toContain('Safe Daily Limit');
-    expect(html).toContain('98.70');
+    expect(html).toContain('No outflows today');
+    expect(html).toContain('Remaining Balance');
+    expect(html).toContain('10d left');
+    expect(html).toContain('/5000');
 
     // 7-day outflow activity section and day labels
     expect(html).toContain('7-Day Outflow Activity');
     expect(html).toContain('avg');
-    expect(html).toContain('>M</span>');
-    expect(html).toContain('>T</span>');
-    expect(html).toContain('>W</span>');
-    expect(html).toContain('>F</span>');
-    expect(html).toContain('>S</span>');
+    expect(html).toContain('h-28');
+    expect(html).toContain('Mon');
+    expect(html).toContain('Tue');
+    expect(html).toContain('Wed');
+    expect(html).toContain('Fri');
+    expect(html).toContain('Sat');
 
     // Card footer action buttons
     expect(html).toContain('Ledger →');

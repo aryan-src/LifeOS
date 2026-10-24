@@ -13,6 +13,21 @@ interface PocketMoneyWidgetProps {
   className?: string;
 }
 
+function formatDayLabel(label: string): string {
+  if (!label) return '';
+  if (label.length >= 3) return label.slice(0, 3);
+  const map: Record<string, string> = {
+    M: 'Mon',
+    T: 'Tue',
+    W: 'Wed',
+    R: 'Thu',
+    F: 'Fri',
+    S: 'Sat',
+    U: 'Sun',
+  };
+  return map[label.toUpperCase()] || label;
+}
+
 export function PocketMoneyWidget({
   telemetry,
   latestExpense,
@@ -21,12 +36,10 @@ export function PocketMoneyWidget({
 }: PocketMoneyWidgetProps) {
   const {
     monthlyAllowance = 5000,
-    remainingAllowance = 987,
-    allowanceUsagePercent = 80,
-    monthlySpent = 4013,
+    remainingAllowance = 823.5,
+    allowanceUsagePercent = 84,
     todaySpent = 0,
-    safeDailyBudget = 98.7,
-    daysLeftInMonth = 10,
+    daysLeftInMonth = 8,
     currencySymbol = '₹',
     weeklyDays = [],
   } = telemetry;
@@ -34,185 +47,182 @@ export function PocketMoneyWidget({
   const remainingPercent = Math.max(0, Math.min(100, Math.round(100 - allowanceUsagePercent)));
 
   const defaultWeeklyDays = [
-    { dayLabel: 'M', spent: 60, isToday: false },
-    { dayLabel: 'T', spent: 120, isToday: false },
-    { dayLabel: 'W', spent: 80, isToday: false },
-    { dayLabel: 'T', spent: 210, isToday: true },
-    { dayLabel: 'F', spent: 40, isToday: false },
-    { dayLabel: 'S', spent: 70, isToday: false },
-    { dayLabel: 'S', spent: 30, isToday: false },
+    { dayLabel: 'Sun', spent: 60, isToday: false },
+    { dayLabel: 'Mon', spent: 120, isToday: false },
+    { dayLabel: 'Tue', spent: 80, isToday: false },
+    { dayLabel: 'Wed', spent: 210, isToday: false },
+    { dayLabel: 'Thu', spent: 40, isToday: false },
+    { dayLabel: 'Fri', spent: 70, isToday: false },
+    { dayLabel: 'Sat', spent: 30, isToday: true },
   ];
 
   const days = weeklyDays.length >= 7 ? weeklyDays.slice(-7) : defaultWeeklyDays;
   const maxSpent = Math.max(...days.map((d) => d.spent || 0), 100);
   const avgSpent = Math.round(days.reduce((acc, d) => acc + (d.spent || 0), 0) / (days.length || 1));
 
+  const allowanceLimitFormatted = Number.isInteger(monthlyAllowance)
+    ? monthlyAllowance
+    : formatCurrency(monthlyAllowance);
+
   return (
     <article
-      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors ${className}`}
-      data-purpose="card-pocket-money"
+      className={`h-full flex flex-col justify-between rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 p-6 sm:p-7 shadow-sm transition-colors ${className}`}
+      data-purpose="widget-container"
     >
-      {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
-        <div>
-          <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
-            FINANCIAL TELEMETRY
-          </span>
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
+      {/* BEGIN: HeaderSection */}
+      <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-zinc-800/80 pb-5">
+        {/* Section: Left 2/3 */}
+        <div className="space-y-1.5 w-2/3">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
             Pocket Money
-          </h2>
+          </h1>
         </div>
-        <span className="text-[10px] font-mono bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-700/60 px-2.5 py-0.5 rounded-full font-medium">
-          {monthLabel}
-        </span>
+
+        {/* Section: Right 1/3 */}
+        <div className="w-1/3 flex flex-col items-end justify-start space-y-1">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-mono tracking-tight shadow-sm hover:bg-slate-800 dark:hover:bg-zinc-200 transition-colors active:scale-95 duration-200"
+          >
+            <span>{monthLabel}</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight pt-0.5">
+            {remainingPercent}% left
+          </span>
+        </div>
       </div>
+      {/* END: HeaderSection */}
 
-      {/* Card Content */}
-      <div className="py-3.5 flex flex-col gap-3.5 flex-1 justify-between">
-        {/* Balance & Progress Bar */}
-        <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono tracking-tight text-stone-950 dark:text-zinc-50 leading-none">
-                {currencySymbol}
-                {formatCurrency(remainingAllowance)}
-              </span>
-              <span className="text-[11px] text-stone-400 dark:text-zinc-500 font-sans">
-                remaining of {currencySymbol}
-                {formatCurrency(monthlyAllowance)}
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60 px-2 py-0.5 rounded-full font-semibold">
-              {remainingPercent}% left
-            </span>
-          </div>
-
-          <div className="w-full bg-stone-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.max(4, Math.min(100, allowanceUsagePercent))}%` }}
-            />
-          </div>
-
-          <div className="flex justify-between items-center text-[10px] font-mono text-stone-400 dark:text-zinc-500">
-            <span>
-              {currencySymbol}
-              {formatCurrency(monthlySpent)} spent
-            </span>
-            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
-              {remainingPercent}% remaining
-            </span>
-          </div>
-        </div>
-
-        {/* Metric Tiles */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-stone-50/80 dark:bg-zinc-950/60 rounded-xl p-2.5 border border-stone-200/60 dark:border-zinc-800/60 flex flex-col justify-between">
-            <span className="text-[10px] text-stone-400 dark:text-zinc-500 font-sans leading-none block">
+      {/* BEGIN: ActivityChartSection */}
+      <section
+        className="space-y-5 rounded-2xl bg-slate-50/70 dark:bg-zinc-950/60 border border-slate-100 dark:border-zinc-800/80 p-5 my-2"
+        data-purpose="7-day-chart"
+      >
+        {/* Embedded Metrics 1 & 2 */}
+        <div
+          className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-200/60 dark:border-zinc-800/60"
+          data-purpose="inline-metrics"
+        >
+          <div className="space-y-1">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 block tracking-wider uppercase">
               Spent Today
             </span>
-            <span className="text-sm font-mono font-bold text-stone-800 dark:text-zinc-200 leading-normal block pt-1">
-              {currencySymbol}
-              {formatCurrency(todaySpent)}
-            </span>
-            <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium block leading-none pt-0.5">
-              ● {todaySpent === 0 ? 'No outflows' : 'Recorded'}
-            </span>
+            <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 tabular-nums leading-tight">
+              {`${currencySymbol}${formatCurrency(todaySpent)}`}
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 font-medium pt-0.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" />
+              <span>{todaySpent === 0 ? 'No outflows today' : 'Recorded today'}</span>
+            </div>
           </div>
 
-          <div className="bg-stone-50/80 dark:bg-zinc-950/60 rounded-xl p-2.5 border border-stone-200/60 dark:border-zinc-800/60 flex flex-col justify-between">
-            <span className="text-[10px] text-stone-400 dark:text-zinc-500 font-sans leading-none block">
-              Safe Daily Limit
+          <div className="space-y-1 pl-4 border-l border-slate-200/60 dark:border-zinc-800/60">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 block tracking-wider uppercase">
+              Remaining Balance
             </span>
-            <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400 leading-normal block pt-1">
-              {currencySymbol}
-              {formatCurrency(safeDailyBudget)}
-              <span className="text-[9px] text-stone-400 dark:text-zinc-500 font-normal">/d</span>
-            </span>
-            <span className="text-[9px] text-stone-500 dark:text-zinc-400 block leading-none pt-0.5">
-              On pace ({daysLeftInMonth}d left)
-            </span>
+            <div className="flex items-baseline gap-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums leading-tight">
+              {`${currencySymbol}${formatCurrency(remainingAllowance)}`}
+              <span className="text-xs font-normal text-slate-400 dark:text-zinc-500 font-sans">
+                {`/${allowanceLimitFormatted}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 font-medium pt-0.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600" />
+              <span>{`${daysLeftInMonth}d left`}</span>
+            </div>
           </div>
         </div>
 
-        {/* 7-Day Outflow Activity Bar Chart */}
-        <div className="space-y-1.5 pt-0.5 shrink-0">
-          <div className="flex justify-between items-center text-[10px] font-mono">
-            <span className="text-stone-400 dark:text-zinc-500 uppercase tracking-wider text-[9px] font-semibold">
-              7-Day Outflow Activity
-            </span>
-            <span className="text-stone-500 dark:text-zinc-400 text-[10px]">
-              avg {currencySymbol}
-              {avgSpent}
+        {/* 7-Day Outflow Activity Chart Header & Bars */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+            <span>7-Day Outflow Activity</span>
+            <span className="font-normal normal-case text-slate-500 dark:text-zinc-400">
+              {`avg ${currencySymbol}${avgSpent}`}
             </span>
           </div>
-
           <div className="pt-1">
-            <div className="grid grid-cols-7 gap-1.5 h-12 items-end px-1">
+            <div className="grid grid-cols-7 gap-2.5 items-end h-28" data-purpose="bars-container">
               {days.map((d, idx) => {
-                const heightPercent = Math.max(15, Math.min(100, Math.round((d.spent / maxSpent) * 100)));
+                const heightPercent =
+                  maxSpent > 0 ? Math.max(10, Math.min(100, Math.round((d.spent / maxSpent) * 100))) : 10;
                 return (
-                  <div key={idx} className="flex flex-col items-center justify-end h-full group relative">
+                  <div key={idx} className="flex flex-col items-center h-full justify-end group">
                     <div
-                      className={`w-full rounded-xs transition-all ${
+                      className={`w-full rounded-t transition-colors duration-200 ${
                         d.isToday
-                          ? 'bg-emerald-500 dark:bg-emerald-400'
-                          : d.spent > 0
-                          ? 'bg-stone-200 dark:bg-zinc-700 group-hover:bg-stone-300'
-                          : 'bg-stone-100 dark:bg-zinc-800'
+                          ? 'bg-emerald-500'
+                          : 'bg-slate-200 dark:bg-zinc-700 group-hover:bg-slate-300 dark:group-hover:bg-zinc-600'
                       }`}
                       style={{ height: `${heightPercent}%` }}
+                      title={`${formatDayLabel(d.dayLabel)}: ${currencySymbol}${d.spent}`}
                     />
                   </div>
                 );
               })}
             </div>
-            <div className="grid grid-cols-7 gap-1.5 text-[9px] font-mono text-stone-400 dark:text-zinc-500 px-1 pt-1.5 border-t border-stone-100 dark:border-zinc-800/60 text-center">
+            <div className="grid grid-cols-7 gap-2.5 mt-2.5 text-center text-xs text-slate-400 dark:text-zinc-500 font-medium">
               {days.map((d, idx) => (
                 <span
                   key={idx}
-                  className={`w-full ${
+                  className={
                     d.isToday
-                      ? 'font-bold text-stone-900 dark:text-zinc-100 bg-stone-100 dark:bg-zinc-800 rounded'
+                      ? 'font-semibold text-slate-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 shadow-sm rounded py-0.5'
                       : ''
-                  }`}
+                  }
                 >
-                  {d.dayLabel}
+                  {formatDayLabel(d.dayLabel)}
                 </span>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </section>
+      {/* END: ActivityChartSection */}
 
-      {/* Card Footer */}
-      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      {/* BEGIN: FooterActionSection */}
+      <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 dark:border-zinc-800/80" data-purpose="footer-action">
         <div className="flex items-center space-x-1.5 truncate">
-          <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600 shrink-0" />
-          <span className="text-stone-700 dark:text-zinc-300 truncate text-[11px]">
-            {latestExpense ? latestExpense.description : 'Chocolate · Food'}
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-600 shrink-0" />
+          <span className="text-slate-600 dark:text-zinc-400 truncate text-[11px]">
+            {latestExpense ? latestExpense.description : 'No recent expenses'}
           </span>
-          <span className="font-mono text-stone-500 dark:text-zinc-400 font-medium text-[11px]">
-            {latestExpense
-              ? `-${currencySymbol}${formatCurrency(Math.abs(latestExpense.amount))}`
-              : '-₹40'}
-          </span>
+          {latestExpense && (
+            <span className="font-mono text-slate-500 dark:text-zinc-400 font-medium text-[11px]">
+              -{currencySymbol}
+              {formatCurrency(Math.abs(latestExpense.amount))}
+            </span>
+          )}
         </div>
         <div className="flex items-center space-x-2 pl-2 shrink-0">
           <Link
             href="/finances"
-            className="text-stone-400 hover:text-stone-800 dark:hover:text-zinc-200 transition-colors font-medium text-[11px]"
+            className="text-slate-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors font-medium text-[11px]"
           >
             Ledger →
           </Link>
           <Link
             href="/finances"
-            className="bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 font-medium px-2 py-0.5 rounded text-[10px] transition-colors border border-stone-200/60 dark:border-zinc-700/60"
+            className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-medium px-2 py-0.5 rounded text-[10px] transition-colors border border-slate-200/60 dark:border-zinc-700/60"
           >
             + Log expense
           </Link>
         </div>
       </div>
+      {/* END: FooterActionSection */}
     </article>
   );
 }

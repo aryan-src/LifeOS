@@ -66,11 +66,11 @@ export function HabitsSummaryTable({
 
   return (
     <section
-      className={`flex flex-col h-full overflow-hidden justify-between ${className}`}
+      className={`flex flex-col h-full justify-between gap-3 ${className}`}
       data-purpose="section-habits"
     >
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between pb-1.5 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
         <h2 className="text-base font-bold font-serif text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
           Habits{' '}
           <span className="text-stone-400 dark:text-zinc-500 font-sans font-normal text-[11px]">
@@ -83,7 +83,7 @@ export function HabitsSummaryTable({
       </div>
 
       {/* Content Table */}
-      <div className="flex-1 min-h-0 py-1 flex flex-col justify-center overflow-y-auto no-scrollbar gap-1">
+      <div className="py-1 flex flex-col justify-center gap-1.5">
         <div className="flex items-center justify-between text-[10px] font-mono text-stone-400 dark:text-zinc-500 pb-1 border-b border-stone-100/80 dark:border-zinc-800/60">
           <span className="w-24 text-[8.5px] uppercase tracking-wider">Habit</span>
           <div className="flex space-x-1.5 text-center">

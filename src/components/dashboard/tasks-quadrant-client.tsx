@@ -17,7 +17,7 @@ export function TasksQuadrantClient({
     <TodayFocusCard
       initialTasks={initialTasks}
       todayStr={todayStr}
-      className="w-full h-full min-h-[380px]"
+      className="w-full h-full"
     />
   );
 }

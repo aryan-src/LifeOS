@@ -65,11 +65,11 @@ export function TodayFocusCard({
 
   return (
     <article
-      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col h-full overflow-hidden shadow-sm transition-colors ${className}`}
+      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors ${className}`}
       data-purpose="card-todays-focus"
     >
       {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
         <div>
           <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
             DEEP WORK &amp; TASKS
@@ -81,7 +81,7 @@ export function TodayFocusCard({
       </div>
 
       {/* Card Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar py-2.5 flex flex-col justify-between gap-3">
+      <div className="py-3.5 flex flex-col gap-3.5 flex-1 justify-between">
         {/* Progress Summary */}
         <div className="flex items-center gap-4 p-3 rounded-xl bg-stone-50/70 dark:bg-zinc-950/60 border border-stone-100 dark:border-zinc-800/60">
           <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
@@ -185,7 +185,7 @@ export function TodayFocusCard({
         </div>
 
         {/* Next Up Prompt */}
-        <div className="bg-stone-50/60 dark:bg-zinc-950/60 border border-stone-200/60 dark:border-zinc-800/60 rounded-xl px-3 py-2 flex items-center justify-between">
+        <div className="bg-stone-50/60 dark:bg-zinc-950/60 border border-stone-200/60 dark:border-zinc-800/60 rounded-xl px-3 py-2 flex items-center justify-between shrink-0">
           <span className="text-[10px] text-stone-500 dark:text-zinc-400 truncate">
             Next up:{' '}
             <span className="font-medium text-stone-800 dark:text-zinc-200">
@@ -199,7 +199,7 @@ export function TodayFocusCard({
       </div>
 
       {/* Card Footer */}
-      <div className="mt-auto shrink-0 pt-2 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
         <button
           type="button"
           onClick={handleOpenQuickTask}

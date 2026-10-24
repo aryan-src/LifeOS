@@ -49,11 +49,11 @@ export function PocketMoneyWidget({
 
   return (
     <article
-      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col h-full overflow-hidden shadow-sm transition-colors ${className}`}
+      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors ${className}`}
       data-purpose="card-pocket-money"
     >
       {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
         <div>
           <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
             FINANCIAL TELEMETRY
@@ -62,13 +62,13 @@ export function PocketMoneyWidget({
             Pocket Money
           </h2>
         </div>
-        <span className="text-[10px] font-mono bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-700/60 px-2 py-0.5 rounded-full font-medium">
+        <span className="text-[10px] font-mono bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-700/60 px-2.5 py-0.5 rounded-full font-medium">
           {monthLabel}
         </span>
       </div>
 
       {/* Card Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar py-2.5 flex flex-col justify-between gap-3">
+      <div className="py-3.5 flex flex-col gap-3.5 flex-1 justify-between">
         {/* Balance & Progress Bar */}
         <div className="space-y-1.5">
           <div className="flex items-baseline justify-between">
@@ -136,7 +136,7 @@ export function PocketMoneyWidget({
         </div>
 
         {/* 7-Day Outflow Activity Bar Chart */}
-        <div className="space-y-1.5 pt-0.5">
+        <div className="space-y-1.5 pt-0.5 shrink-0">
           <div className="flex justify-between items-center text-[10px] font-mono">
             <span className="text-stone-400 dark:text-zinc-500 uppercase tracking-wider text-[9px] font-semibold">
               7-Day Outflow Activity
@@ -148,7 +148,7 @@ export function PocketMoneyWidget({
           </div>
 
           <div className="pt-1">
-            <div className="grid grid-cols-7 gap-1.5 h-11 items-end px-1">
+            <div className="grid grid-cols-7 gap-1.5 h-12 items-end px-1">
               {days.map((d, idx) => {
                 const heightPercent = Math.max(15, Math.min(100, Math.round((d.spent / maxSpent) * 100)));
                 return (
@@ -186,7 +186,7 @@ export function PocketMoneyWidget({
       </div>
 
       {/* Card Footer */}
-      <div className="mt-auto shrink-0 pt-2 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-1.5 truncate">
           <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600 shrink-0" />
           <span className="text-stone-700 dark:text-zinc-300 truncate text-[11px]">

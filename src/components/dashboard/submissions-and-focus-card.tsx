@@ -32,11 +32,11 @@ export async function SubmissionsAndFocusCard() {
 
   return (
     <article
-      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col justify-between h-full min-h-[380px] overflow-hidden shadow-sm transition-colors"
+      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors"
       data-purpose="card-upcoming-submissions"
     >
       {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
         <div>
           <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
             DEADLINES &amp; TIMERS
@@ -55,9 +55,9 @@ export async function SubmissionsAndFocusCard() {
       </div>
 
       {/* Card Content: Submissions at top, Focus Timer anchored at bottom */}
-      <div className="flex-1 min-h-0 py-2.5 flex flex-col justify-between gap-3 overflow-hidden">
+      <div className="py-3.5 flex flex-col gap-3.5 flex-1 justify-between">
         {/* Deadlines List */}
-        <div className="space-y-2 min-w-0 flex-1 overflow-y-auto no-scrollbar">
+        <div className="space-y-2 min-w-0">
           {displayList.length === 0 ? (
             <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-xl bg-stone-50/50 dark:bg-zinc-950/40">
               No pending assignment deadlines!
@@ -114,7 +114,7 @@ export async function SubmissionsAndFocusCard() {
       </div>
 
       {/* Card Footer */}
-      <div className="mt-auto shrink-0 pt-2 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
         <Link
           className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
           href="/assignments"
@@ -131,7 +131,7 @@ export async function SubmissionsAndFocusCard() {
 
 export function SubmissionsAndFocusSkeleton() {
   return (
-    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-4 flex flex-col justify-between h-full min-h-[380px] border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
+    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-5 flex flex-col justify-between border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
       <div className="h-5 w-44 bg-stone-200 dark:bg-zinc-800 rounded mb-3" />
       <div className="space-y-3">
         <div className="h-10 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />

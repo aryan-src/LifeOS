@@ -34,11 +34,11 @@ export function RecentIdeasShelf({
 
   return (
     <section
-      className={`flex flex-col h-full overflow-hidden justify-between ${className}`}
+      className={`flex flex-col h-full justify-between gap-3 ${className}`}
       data-purpose="section-recent-ideas"
     >
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between pb-1.5 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
         <h2 className="text-base font-bold font-serif text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
           Recent Ideas
         </h2>
@@ -55,7 +55,7 @@ export function RecentIdeasShelf({
       </div>
 
       {/* Note cards */}
-      <div className="flex-1 min-h-0 py-1 grid grid-cols-2 gap-2 overflow-y-auto no-scrollbar items-stretch">
+      <div className="py-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-stretch">
         {displayNotes.length === 0 ? (
           <div className="col-span-2 text-center text-[11px] text-stone-400 dark:text-zinc-500 py-3">
             No notes recorded.{' '}

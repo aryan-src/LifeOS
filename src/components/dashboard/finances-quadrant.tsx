@@ -31,14 +31,14 @@ export async function FinancesQuadrant() {
       telemetry={analytics}
       latestExpense={latestExpense}
       monthLabel={monthLabel}
-      className="w-full h-full min-h-[380px]"
+      className="w-full h-full"
     />
   );
 }
 
 export function FinancesSkeleton() {
   return (
-    <div className="flex-1 min-h-[380px] bg-white dark:bg-zinc-900/70 rounded-2xl p-4 xl:p-5 flex flex-col justify-between border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
+    <div className="w-full h-full bg-white dark:bg-zinc-900/70 rounded-2xl p-4 xl:p-5 flex flex-col justify-between border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
       <div className="flex justify-between items-center pb-2 border-b border-stone-100 dark:border-zinc-800/60">
         <div className="h-4 w-28 bg-stone-200 dark:bg-zinc-800 rounded" />
         <div className="h-4 w-16 bg-stone-200 dark:bg-zinc-800 rounded-full" />

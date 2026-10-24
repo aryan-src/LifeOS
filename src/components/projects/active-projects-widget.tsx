@@ -58,11 +58,11 @@ export function ActiveProjectsWidget({
 
   return (
     <section
-      className={`flex flex-col h-full overflow-hidden justify-between ${className}`}
+      className={`flex flex-col h-full justify-between gap-3 ${className}`}
       data-purpose="section-active-projects"
     >
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between pb-1.5 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
         <h2 className="text-base font-bold font-serif text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
           Active Projects
         </h2>
@@ -75,7 +75,7 @@ export function ActiveProjectsWidget({
       </div>
 
       {/* Projects List */}
-      <div className="flex-1 min-h-0 py-1 flex flex-col justify-center overflow-y-auto no-scrollbar gap-1.5">
+      <div className="py-1 flex flex-col justify-center gap-2">
         {displayProjects.length === 0 ? (
           <div className="text-[12px] text-stone-400 dark:text-zinc-500 py-3 text-center">
             No projects yet.{' '}

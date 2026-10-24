@@ -9,9 +9,10 @@ import { FloatingDock } from '@/components/ui/floating-dock';
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Standalone public pages (landing, auth, legal/static pages)
+  // Standalone public pages (landing, auth, legal/static pages) and full-bleed workspace dashboard
   const isStandalonePage =
     pathname === '/' ||
+    pathname === '/dashboard' ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/auth') ||
     pathname === '/privacy' ||

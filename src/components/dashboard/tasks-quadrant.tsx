@@ -23,7 +23,7 @@ export async function TasksQuadrant() {
 
 export function TasksSkeleton() {
   return (
-    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-6 flex flex-col justify-between h-full border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs animate-pulse">
+    <div className="w-full h-full min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-6 flex flex-col justify-between border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
       <div className="flex items-center justify-between pb-2 border-b border-[#07343C]/10 dark:border-zinc-800/60">
         <div className="h-6 w-36 bg-stone-200 dark:bg-zinc-800 rounded" />
         <div className="h-5 w-24 bg-stone-200 dark:bg-zinc-800 rounded-full" />

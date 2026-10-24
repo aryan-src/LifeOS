@@ -117,101 +117,82 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
   const secs = remainingSeconds % 60;
   const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-  // SVG Progress Ring (Radius = 41 -> Circumference ≈ 257.6)
-  const circumference = 257.6;
-  const progressRatio = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
-  const dashOffset = circumference * (1 - progressRatio);
-
   return (
-    <div className={`pt-2 border-t border-[#07343C]/10 dark:border-zinc-800/60 ${className}`}>
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-serif text-[15px] xl:text-[16px] font-bold text-[#07343C] dark:text-zinc-100">
-          Focus Timer
-        </h3>
-        <span className="text-[10px] text-[#07343C]/70 dark:text-zinc-400 font-medium font-mono">
+    <div
+      className={`flex flex-col gap-3 p-3 rounded-xl bg-stone-50/80 dark:bg-zinc-950/60 border border-stone-200/60 dark:border-zinc-800/60 shrink-0 ${className}`}
+      data-purpose="focus-timer-card"
+    >
+      {/* Header Row */}
+      <div className="flex items-center justify-between text-xs font-mono text-stone-500 dark:text-zinc-400 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className={`w-2 h-2 rounded-full shrink-0 ${
+              isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-stone-400 dark:bg-zinc-600'
+            }`}
+          />
+          <span className="font-semibold uppercase tracking-wider text-[10px] text-stone-700 dark:text-zinc-300 truncate">
+            Focus Timer
+          </span>
+        </div>
+        <span className="text-[10px] shrink-0 font-mono">
           Focused today: {focusedMinutesToday} min
         </span>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        {/* Timer ring with digits */}
-        <div className="relative w-[100px] h-[100px] xl:w-[108px] xl:h-[108px] shrink-0 flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full -rotate-90 p-0.5" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              fill="none"
-              r="41"
-              stroke="currentColor"
-              className="text-[#F3F0EA] dark:text-zinc-800"
-              strokeWidth="7"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              fill="none"
-              r="41"
-              stroke="#10B981"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              strokeLinecap="round"
-              strokeWidth="7"
-              className="transition-[stroke-dashoffset] duration-300"
-            />
-          </svg>
-          <span className="font-serif text-[22px] xl:text-[24px] font-bold text-[#07343C] dark:text-zinc-100 tracking-tight select-none font-mono tabular-nums">
+      {/* Clock, Play Button, and Preset Controls Row */}
+      <div className="flex items-center justify-between gap-3 shrink-0 min-w-0">
+        {/* Clock & Play Button Row */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="font-mono text-2xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums leading-none">
             {timeFormatted}
           </span>
-        </div>
-
-        {/* Controls & duration chips */}
-        <div className="flex-1 min-w-0 flex flex-col items-center justify-center gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={toggleRunning}
-              className="w-[38px] h-[38px] xl:w-[40px] xl:h-[40px] rounded-full bg-[#10B981] hover:bg-emerald-600 text-white flex items-center justify-center shadow-2xs hover:opacity-95 transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-stone-50 dark:text-zinc-900 flex items-center justify-center transition-colors shadow-2xs cursor-pointer shrink-0"
               title={isRunning ? 'Pause Session' : 'Start Session'}
               aria-label={isRunning ? 'Pause Pomodoro' : 'Start Pomodoro'}
             >
               {isRunning ? (
-                <Pause className="w-5 h-5 fill-current" />
+                <Pause className="w-3.5 h-3.5 fill-current" />
               ) : (
-                <Play className="w-5 h-5 fill-current ml-0.5" />
+                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
               )}
             </button>
             {remainingSeconds !== totalSeconds && (
               <button
                 type="button"
                 onClick={resetTimer}
-                className="w-7 h-7 rounded-full bg-[#F3F0EA] dark:bg-zinc-800 text-[#07343C] dark:text-zinc-300 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-full bg-white dark:bg-zinc-900 text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-200 border border-stone-200/80 dark:border-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Reset Timer"
                 aria-label="Reset Timer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3 h-3" />
               </button>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-1 w-full justify-center">
-            {[15, 25, 50].map((minsOption) => {
-              const isSelected = durationMinutes === minsOption;
-              return (
-                <button
-                  key={minsOption}
-                  type="button"
-                  onClick={() => handlePresetSelect(minsOption)}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer font-mono ${
-                    isSelected
-                      ? 'bg-[#0B5563] text-white shadow-2xs'
-                      : 'bg-[#F3F0EA] dark:bg-zinc-800 hover:bg-white dark:hover:bg-zinc-700 text-[#07343C] dark:text-zinc-300 border border-[#07343C]/5 dark:border-zinc-700'
-                  }`}
-                >
-                  {minsOption}m
-                </button>
-              );
-            })}
-          </div>
+        {/* Preset Selector Row */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {[15, 25, 50].map((minsOption) => {
+            const isSelected = durationMinutes === minsOption;
+            return (
+              <button
+                key={minsOption}
+                type="button"
+                onClick={() => handlePresetSelect(minsOption)}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors cursor-pointer shrink-0 ${
+                  isSelected
+                    ? 'bg-stone-900 text-stone-50 dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'bg-white dark:bg-zinc-900 hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-800'
+                }`}
+              >
+                {minsOption}m
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

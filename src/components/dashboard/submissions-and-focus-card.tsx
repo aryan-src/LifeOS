@@ -32,7 +32,7 @@ export async function SubmissionsAndFocusCard() {
 
   return (
     <article
-      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col h-full min-h-[380px] overflow-hidden shadow-sm transition-colors"
+      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col justify-between h-full min-h-[380px] overflow-hidden shadow-sm transition-colors"
       data-purpose="card-upcoming-submissions"
     >
       {/* Card Header */}
@@ -54,64 +54,63 @@ export async function SubmissionsAndFocusCard() {
         </Link>
       </div>
 
-      {/* Card Content evenly distributing items */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar py-2.5 flex flex-col justify-between">
-        <div className="flex flex-col justify-between h-full gap-2">
-          <div className="space-y-2">
-            {displayList.length === 0 ? (
-              <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-xl bg-stone-50/50 dark:bg-zinc-950/40">
-                No pending assignment deadlines!
-              </div>
-            ) : (
-              displayList.map((assignment) => {
-                const isToday = assignment.due_date === todayStr || assignment.status === 'submission_pending';
-                let daysDiffLabel = '';
-                let daysDiff = 0;
-                if (!isToday && assignment.due_date) {
-                  const diffTime = new Date(assignment.due_date).getTime() - new Date(todayStr).getTime();
-                  daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  daysDiffLabel = daysDiff > 0 ? `${daysDiff}d` : 'Overdue';
-                }
+      {/* Card Content: Submissions at top, Focus Timer anchored at bottom */}
+      <div className="flex-1 min-h-0 py-2.5 flex flex-col justify-between gap-3 overflow-hidden">
+        {/* Deadlines List */}
+        <div className="space-y-2 min-w-0 flex-1 overflow-y-auto no-scrollbar">
+          {displayList.length === 0 ? (
+            <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-xl bg-stone-50/50 dark:bg-zinc-950/40">
+              No pending assignment deadlines!
+            </div>
+          ) : (
+            displayList.map((assignment) => {
+              const isToday = assignment.due_date === todayStr || assignment.status === 'submission_pending';
+              let daysDiffLabel = '';
+              let daysDiff = 0;
+              if (!isToday && assignment.due_date) {
+                const diffTime = new Date(assignment.due_date).getTime() - new Date(todayStr).getTime();
+                daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                daysDiffLabel = daysDiff > 0 ? `${daysDiff}d` : 'Overdue';
+              }
 
-                const dotColor = isToday
-                  ? 'bg-rose-500'
-                  : daysDiff <= 2
-                  ? 'bg-amber-500'
-                  : 'bg-stone-400 dark:bg-zinc-500';
+              const dotColor = isToday
+                ? 'bg-rose-500'
+                : daysDiff <= 2
+                ? 'bg-amber-500'
+                : 'bg-stone-400 dark:bg-zinc-500';
 
-                return (
-                  <div
-                    key={assignment.id}
-                    className="group flex items-center justify-between p-2.5 rounded-xl bg-stone-50/60 dark:bg-zinc-950/40 hover:bg-stone-100 dark:hover:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-800/60 transition-colors"
-                  >
-                    <div className="flex items-center space-x-2 truncate pr-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
-                      <span className="text-xs font-medium text-stone-800 dark:text-zinc-200 group-hover:text-stone-950 dark:group-hover:text-zinc-50 truncate">
-                        {assignment.title}
-                      </span>
-                    </div>
-                    {isToday ? (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60 shrink-0">
-                        Today
-                      </span>
-                    ) : daysDiff <= 2 ? (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 shrink-0">
-                        {daysDiffLabel}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60 shrink-0">
-                        {daysDiffLabel || '—'}
-                      </span>
-                    )}
+              return (
+                <div
+                  key={assignment.id}
+                  className="group flex items-center justify-between p-2.5 rounded-xl bg-stone-50/60 dark:bg-zinc-950/40 hover:bg-stone-100 dark:hover:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-800/60 transition-colors min-w-0"
+                >
+                  <div className="flex items-center space-x-2 truncate pr-2 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
+                    <span className="text-xs font-medium text-stone-800 dark:text-zinc-200 group-hover:text-stone-950 dark:group-hover:text-zinc-50 truncate">
+                      {assignment.title}
+                    </span>
                   </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Focus Timer */}
-          <FocusCockpitWidget />
+                  {isToday ? (
+                    <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60 shrink-0">
+                      Today
+                    </span>
+                  ) : daysDiff <= 2 ? (
+                    <span className="px-2 py-0.5 rounded text-[9px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 shrink-0">
+                      {daysDiffLabel}
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60 shrink-0">
+                      {daysDiffLabel || '—'}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
+
+        {/* Anchored Focus Timer Component */}
+        <FocusCockpitWidget className="shrink-0" />
       </div>
 
       {/* Card Footer */}

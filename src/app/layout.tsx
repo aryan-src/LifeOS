@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/app-shell';
 import { Analytics } from '@vercel/analytics/react';
+import { getValidSiteUrl } from '@/lib/utils/url';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -16,10 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://life-os-ghost-a56a.vercel.app';
+const siteUrlObject = getValidSiteUrl();
+const siteUrl = siteUrlObject.toString();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: siteUrlObject,
   title: {
     default: 'LifeOS — A Quiet Personal Dashboard for Students and Builders',
     template: '%s | LifeOS',

@@ -4,6 +4,7 @@ import { renderToString } from 'react-dom/server';
 import NotFound from '@/app/not-found';
 import { computeFinancialAnalytics } from '@/lib/finances/compute';
 import { computeProjectsMetrics, RawProjectTask, RawProjectTransaction } from '@/lib/projects/compute';
+import { getValidSiteUrl, safeUrl, DEFAULT_SITE_URL } from '@/lib/utils/url';
 import type { Project } from '@/types/database.types';
 
 describe('Production SEO, Analytics & Edge Caching', () => {
@@ -99,6 +100,29 @@ describe('Production SEO, Analytics & Edge Caching', () => {
       expect(metrics[0].completed_tasks).toBe(2);
       expect(metrics[0].completion_percentage).toBe(50);
       expect(metrics[0].total_spend).toBe(200);
+    });
+  });
+
+  describe('URL Resilience & Fallbacks (Build-Time /_not-found safety)', () => {
+    it('getValidSiteUrl returns guaranteed valid URL when input is missing or malformed', () => {
+      expect(getValidSiteUrl(null).toString()).toContain('http');
+      expect(getValidSiteUrl('').toString()).toContain('http');
+      expect(getValidSiteUrl('   ').toString()).toContain('http');
+      expect(getValidSiteUrl('lifeosstudents.vercel.app').origin).toBe('https://lifeosstudents.vercel.app');
+      expect(getValidSiteUrl('http://localhost:3000').origin).toBe('http://localhost:3000');
+      // Completely invalid URL should fallback without throwing ERR_INVALID_URL
+      expect(getValidSiteUrl('://invalid').toString()).toBe(new URL(DEFAULT_SITE_URL).toString());
+    });
+
+    it('safeUrl gracefully resolves relative and absolute paths without throwing', () => {
+      const parsed1 = safeUrl('/login', 'https://lifeosstudents.vercel.app');
+      expect(parsed1.pathname).toBe('/login');
+
+      const parsed2 = safeUrl(null, 'https://lifeosstudents.vercel.app');
+      expect(parsed2.pathname).toBe('/');
+
+      const parsed3 = safeUrl('https://example.com/callback');
+      expect(parsed3.origin).toBe('https://example.com');
     });
   });
 });

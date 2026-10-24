@@ -1,8 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getValidSiteUrl, safeUrl } from '@/lib/utils/url';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const fallbackSiteUrl = getValidSiteUrl().toString();
+  const urlObj = safeUrl(request.url, fallbackSiteUrl);
+  const searchParams = urlObj.searchParams;
+  const origin = urlObj.origin || fallbackSiteUrl;
+
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? searchParams.get('redirectTo') ?? '/';
 

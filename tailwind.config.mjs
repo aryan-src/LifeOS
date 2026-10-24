@@ -76,6 +76,10 @@ export default {
         'ruri': 'var(--ruri)',
         'ruri-soft': 'var(--ruri-soft)',
         'deep': 'var(--deep)',
+
+        // Unified Canvas Edition color tokens
+        'canvas': '#FAF9F5',
+        'paper': '#FFFFFF',
       },
       borderRadius: {
         DEFAULT: '0.125rem',
@@ -98,6 +102,7 @@ export default {
         serif: ['Newsreader', 'Georgia', 'serif'],
         sans: ['var(--font-sans)', 'Hanken Grotesk', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
         mono: ['var(--font-mono)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        display: ['Newsreader', 'Georgia', 'serif'],
         'headline-lg-mobile': ['Inter', '-apple-system', 'sans-serif'],
         'display': ['Inter', '-apple-system', 'sans-serif'],
         'label-md': ['JetBrains Mono', 'monospace'],

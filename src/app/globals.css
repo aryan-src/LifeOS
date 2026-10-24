@@ -73,6 +73,15 @@
 ::-webkit-scrollbar { display: none; }
 * { scrollbar-width: none; }
 
+/* Unified Canvas Edition — scroll utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ==========================================================================
    Theme A: "Crimson Dark" (Black Background Variant)
    Primary Page: #0B0B0C

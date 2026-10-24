@@ -107,7 +107,7 @@ export async function getDashboardWorkspaceData(): Promise<DashboardWorkspaceTel
     }),
     habits: (habitsRes?.habits || []).slice(0, 3).map((h) => ({
       id: h.id,
-      name: h.name,
+      name: h.title,
       streak: h.streak,
       history: [true, true, true, h.is_completed_today, false, false, false],
       isCompletedToday: h.is_completed_today,
@@ -119,14 +119,18 @@ export async function getDashboardWorkspaceData(): Promise<DashboardWorkspaceTel
       completionPercentage: Math.max(0, Math.min(100, p.completion_percentage || 0)),
       nextMilestone: 'Core canvas tokens',
     })),
-    ideas: (notes || []).slice(0, 2).map((n) => ({
-      id: n.id,
-      title: n.title,
-      content: n.content || '',
-      tag: (n.tags?.[0] as 'note' | 'draft' | 'idea' | 'research') || 'note',
-      dateLabel: 'RECENT',
-      isPinned: !!n.is_pinned,
-      projectId: n.project_id,
-    })),
+    ideas: (notes || []).slice(0, 2).map((n) => {
+      const tags = Array.isArray(n.tags) ? n.tags : [];
+      const firstTag = typeof tags[0] === 'string' ? tags[0] : 'note';
+      return {
+        id: n.id,
+        title: n.title,
+        content: n.content || '',
+        tag: (firstTag as 'note' | 'draft' | 'idea' | 'research') || 'note',
+        dateLabel: 'RECENT',
+        isPinned: !!n.is_pinned,
+        projectId: n.project_id,
+      };
+    }),
   };
 }

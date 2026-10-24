@@ -115,7 +115,7 @@ export function HabitsSummaryTable({
             displayHabits.map((habit) => (
               <div key={habit.id} className="flex items-center justify-between text-xs group">
                 <span className="w-24 font-medium text-stone-700 dark:text-zinc-300 truncate text-[11px]">
-                  {habit.name}
+                  {habit.title}
                 </span>
                 <div className="flex space-x-1.5">
                   {dayLabels.map((_, idx) => {

@@ -7,12 +7,23 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const rawSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!rawSupabaseUrl || !supabaseKey) {
+    return supabaseResponse;
+  }
+
+  let supabaseUrl: string;
+  try {
+    const withProto =
+      rawSupabaseUrl.startsWith('http://') || rawSupabaseUrl.startsWith('https://')
+        ? rawSupabaseUrl
+        : `https://${rawSupabaseUrl}`;
+    supabaseUrl = new URL(withProto).toString();
+  } catch {
     return supabaseResponse;
   }
 

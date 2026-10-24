@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { getValidSiteUrl } from '@/lib/utils/url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://life-os-ghost-a56a.vercel.app';
+  const siteUrl = getValidSiteUrl().toString().replace(/\/+$/, '');
   const now = new Date();
 
   return [

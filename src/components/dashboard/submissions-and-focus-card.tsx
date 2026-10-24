@@ -31,93 +31,115 @@ export async function SubmissionsAndFocusCard() {
   const remainingCount = Math.max(0, pendingAssignments.length - displayList.length);
 
   return (
-    <section className="w-full h-full min-w-0 bg-white dark:bg-zinc-900/70 text-[#07343C] dark:text-zinc-100 rounded-2xl p-5 flex flex-col justify-between border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs transition-colors">
-      {/* Upcoming Submissions Section */}
-      <div>
-        <div className="flex items-baseline justify-between mb-1 pb-1 border-b border-[#07343C]/10 dark:border-zinc-800/60">
-          <h2 className="font-serif text-[16px] xl:text-[17px] font-bold text-[#07343C] dark:text-zinc-100">
+    <article
+      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-4 flex flex-col h-full min-h-[380px] overflow-hidden shadow-sm transition-colors"
+      data-purpose="card-upcoming-submissions"
+    >
+      {/* Card Header */}
+      <div className="shrink-0 flex items-center justify-between pb-2 border-b border-stone-100 dark:border-zinc-800/60">
+        <div>
+          <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
+            DEADLINES &amp; TIMERS
+          </span>
+          <h2 className="text-sm font-semibold text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
             Upcoming Submissions
           </h2>
-          <Link
-            href="/assignments"
-            className="text-[11px] font-medium text-[#07343C]/70 dark:text-zinc-400 hover:text-[#07343C] dark:hover:text-zinc-100 underline decoration-[#07343C]/30 dark:decoration-zinc-700"
-          >
-            View all →
-          </Link>
         </div>
-
-        <div className="divide-y divide-[#07343C]/10 dark:divide-zinc-800/60">
-          {displayList.length === 0 ? (
-            <div className="py-4 text-center text-[12px] text-[#07343C]/60 dark:text-zinc-400">
-              No pending assignment deadlines!
-            </div>
-          ) : (
-            displayList.map((assignment) => {
-              const isToday = assignment.due_date === todayStr || assignment.status === 'submission_pending';
-              let daysDiffLabel = '';
-              if (!isToday && assignment.due_date) {
-                const diffTime = new Date(assignment.due_date).getTime() - new Date(todayStr).getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                daysDiffLabel = diffDays > 0 ? `${diffDays}d` : 'Overdue';
-              }
-
-              const courseLabel = assignment.project
-                ? `${assignment.project.slug.toUpperCase()} · ${assignment.status.replace('_', ' ')}`
-                : 'COURSE · Assignment';
-
-              return (
-                <div key={assignment.id} className="py-1.5 flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-[#07343C]/70 dark:text-zinc-400 uppercase tracking-wider font-semibold truncate font-mono">
-                      {courseLabel}
-                    </p>
-                    <p className="text-[12px] font-semibold text-[#07343C] dark:text-zinc-100 leading-tight truncate">
-                      {assignment.title}
-                    </p>
-                  </div>
-                  {isToday ? (
-                    <span className="font-serif text-[14px] xl:text-[15px] font-bold text-[#BE123C] dark:text-rose-400 shrink-0 px-2 py-0.5 rounded bg-[#FFF1F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-900/60 font-mono">
-                      Today
-                    </span>
-                  ) : (
-                    <span className="font-serif text-[15px] xl:text-[16px] font-bold text-[#07343C] dark:text-zinc-200 shrink-0 font-mono">
-                      {daysDiffLabel || '—'}
-                    </span>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {remainingCount > 0 && (
-          <div className="pt-1.5">
-            <Link
-              href="/assignments"
-              className="text-[11px] xl:text-[12px] font-medium text-[#07343C]/80 dark:text-zinc-400 hover:text-[#07343C] dark:hover:text-zinc-100 hover:underline"
-            >
-              + {remainingCount} more due this week →
-            </Link>
-          </div>
-        )}
+        <Link
+          href="/assignments"
+          className="text-xs font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-200 transition-colors flex items-center gap-1 shrink-0"
+        >
+          <span>View all</span>
+          <span>→</span>
+        </Link>
       </div>
 
-      {/* Focus Timer Cockpit */}
-      <FocusCockpitWidget />
-    </section>
+      {/* Card Content evenly distributing items */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar py-2.5 flex flex-col justify-between">
+        <div className="flex flex-col justify-between h-full gap-2">
+          <div className="space-y-2">
+            {displayList.length === 0 ? (
+              <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-xl bg-stone-50/50 dark:bg-zinc-950/40">
+                No pending assignment deadlines!
+              </div>
+            ) : (
+              displayList.map((assignment) => {
+                const isToday = assignment.due_date === todayStr || assignment.status === 'submission_pending';
+                let daysDiffLabel = '';
+                let daysDiff = 0;
+                if (!isToday && assignment.due_date) {
+                  const diffTime = new Date(assignment.due_date).getTime() - new Date(todayStr).getTime();
+                  daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  daysDiffLabel = daysDiff > 0 ? `${daysDiff}d` : 'Overdue';
+                }
+
+                const dotColor = isToday
+                  ? 'bg-rose-500'
+                  : daysDiff <= 2
+                  ? 'bg-amber-500'
+                  : 'bg-stone-400 dark:bg-zinc-500';
+
+                return (
+                  <div
+                    key={assignment.id}
+                    className="group flex items-center justify-between p-2.5 rounded-xl bg-stone-50/60 dark:bg-zinc-950/40 hover:bg-stone-100 dark:hover:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-800/60 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2 truncate pr-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0`} />
+                      <span className="text-xs font-medium text-stone-800 dark:text-zinc-200 group-hover:text-stone-950 dark:group-hover:text-zinc-50 truncate">
+                        {assignment.title}
+                      </span>
+                    </div>
+                    {isToday ? (
+                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60 shrink-0">
+                        Today
+                      </span>
+                    ) : daysDiff <= 2 ? (
+                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 shrink-0">
+                        {daysDiffLabel}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60 shrink-0">
+                        {daysDiffLabel || '—'}
+                      </span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Focus Timer */}
+          <FocusCockpitWidget />
+        </div>
+      </div>
+
+      {/* Card Footer */}
+      <div className="mt-auto shrink-0 pt-2 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+        <Link
+          className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
+          href="/assignments"
+        >
+          <span>+ {remainingCount} more due this week →</span>
+        </Link>
+        <span className="text-[9px] font-mono text-stone-400 dark:text-zinc-500">
+          Sync: LMS Active
+        </span>
+      </div>
+    </article>
   );
 }
 
 export function SubmissionsAndFocusSkeleton() {
   return (
-    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-4 flex flex-col justify-between h-full border border-[#07343C]/10 dark:border-zinc-800/60 shadow-xs animate-pulse">
+    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-4 flex flex-col justify-between h-full min-h-[380px] border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
       <div className="h-5 w-44 bg-stone-200 dark:bg-zinc-800 rounded mb-3" />
       <div className="space-y-3">
-        <div className="h-9 bg-stone-100 dark:bg-zinc-800/50 rounded" />
-        <div className="h-9 bg-stone-100 dark:bg-zinc-800/50 rounded" />
+        <div className="h-10 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
+        <div className="h-10 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
       </div>
-      <div className="pt-4 border-t border-[#07343C]/10 dark:border-zinc-800/60 mt-4">
-        <div className="h-24 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
+      <div className="pt-4 border-t border-stone-100 dark:border-zinc-800/60 mt-4">
+        <div className="h-20 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
       </div>
     </div>
   );

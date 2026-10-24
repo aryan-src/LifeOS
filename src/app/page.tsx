@@ -5,6 +5,11 @@ import { DashboardCommandCenter } from '@/components/dashboard/dashboard-command
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * RootPage — LifeOS Workspace & Command Center
+ * Routes authenticated users to the unified single-screen workspace canvas,
+ * or serves the high-performance editorial landing hero page.
+ */
 export default async function RootPage({
   searchParams,
 }: {
@@ -21,7 +26,7 @@ export default async function RootPage({
       return <HeroLandingPage />;
     }
 
-    // Authenticated users navigating to / immediately render the workspace dashboard
+    // Authenticated users navigating to / immediately render the workspace command center
     if (user || params?.view === 'dashboard') {
       return <DashboardCommandCenter />;
     }

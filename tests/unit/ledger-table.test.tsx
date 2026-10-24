@@ -236,6 +236,22 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
       expect(html).toContain('data-purpose="ledger-table-wrapper"');
       expect(html).not.toContain('min-h-[580px]');
     });
+
+    it('stabilizes table container with min-h-420px height bounding and overflow protection', () => {
+      const html = renderToString(
+        <LedgerTable
+          transactions={mockTransactions}
+          onDelete={vi.fn().mockResolvedValue({ success: true })}
+          onRecordExpense={vi.fn()}
+        />
+      );
+
+      // Verify height reservation and overflow protection to prevent layout jitter on pagination
+      expect(html).toContain('min-h-[420px]');
+      expect(html).toContain('overflow-hidden');
+      expect(html).toContain('overflow-y-hidden');
+      expect(html).toContain('id="ledger-table-body"');
+    });
   });
 });
 

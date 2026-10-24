@@ -558,12 +558,11 @@ export function LedgerTable({
       {/* END: Search & Filter Inline Toolbar */}
 
       {/* BEGIN: LedgerDataTableCard */}
-      <motion.div
-        layout
+      <div
         className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-subtle overflow-hidden transition-all duration-300 ease-out"
         data-purpose="ledger-table-wrapper"
       >
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden min-h-[420px]">
           <table
             className="w-full text-left border-collapse"
             id="spending-ledger-table"
@@ -608,16 +607,15 @@ export function LedgerTable({
                 animate={{ opacity: 1 }}
                 exit={{
                   opacity: 0,
-                  scale: 0.98,
                   transition: { duration: 0.15 },
                 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.18 }}
               >
                 {paginatedTransactions.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="py-16 text-center text-stone-400 dark:text-zinc-500"
+                      className="py-24 text-center text-stone-400 dark:text-zinc-500"
                     >
                       <p className="font-medium text-sm text-stone-600 dark:text-zinc-300">
                         No transactions found
@@ -630,7 +628,7 @@ export function LedgerTable({
                     </td>
                   </tr>
                 ) : (
-                  <AnimatePresence initial={false}>
+                  <AnimatePresence mode="popLayout" initial={false}>
                     {paginatedTransactions.map((row, index) => {
                       const isIncome = row.type === 'income' || row.amount > 0;
                       const parsedAmount = Math.abs(
@@ -641,22 +639,18 @@ export function LedgerTable({
                       return (
                         <motion.tr
                           key={row.id}
-                          custom={currentPage}
-                          layout
-                          initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
                           exit={{
                             opacity: 0,
-                            scale: 0.96,
-                            height: 0,
-                            filter: 'blur(4px)',
-                            transition: { duration: 0.2 },
+                            y: -4,
+                            transition: { duration: 0.15 },
                           }}
                           transition={{
                             type: 'spring',
-                            bounce: 0,
-                            duration: 0.4,
-                            delay: index * 0.03,
+                            stiffness: 260,
+                            damping: 25,
+                            delay: Math.min(index * 0.02, 0.2),
                           }}
                           className="group transition-colors duration-150 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40"
                         >
@@ -827,7 +821,7 @@ export function LedgerTable({
           </GlassPagination>
         </div>
         {/* END: TableFooterPagination */}
-      </motion.div>
+      </div>
       {/* END: LedgerDataTableCard */}
 
       {/* Micro-hint banner */}

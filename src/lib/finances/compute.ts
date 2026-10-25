@@ -1,4 +1,4 @@
-import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import { getTodayDate, getTrailingDays, getLocalDateString } from '@/lib/utils/date';
 import type {
   FinancialAnalytics,
   CategoryBreakdownItem,
@@ -48,7 +48,7 @@ export function computeFinancialAnalytics(
     const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount));
     const amt = Math.abs(isNaN(rawAmt) ? 0 : rawAmt);
     const isIncome = t.type === 'income' || (typeof t.amount === 'number' && t.amount > 0);
-    const txDate = typeof t.date === 'string' ? t.date : todayStr;
+    const txDate = getLocalDateString(t.date) || (typeof t.date === 'string' ? t.date.split('T')[0] : todayStr);
     const isCurrentMonth = txDate.startsWith(currentYearMonth);
 
     if (isIncome) {

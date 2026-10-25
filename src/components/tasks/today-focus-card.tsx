@@ -4,6 +4,7 @@ import React, { useOptimistic, useTransition } from 'react';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { updateTaskStatus, type TaskWithProject } from '@/lib/actions/tasks';
+import { getLocalDateString } from '@/lib/utils/date';
 
 interface TodayFocusCardProps {
   initialTasks: TaskWithProject[];
@@ -32,9 +33,17 @@ export function TodayFocusCard({
       )
   );
 
-  const totalCount = optimisticTasks.length;
-  const completedCount = optimisticTasks.filter((t) => t.is_completed).length;
-  const pendingCount = Math.max(0, totalCount - completedCount);
+  // Daily task metrics: strictly track today's progress and reset at midnight
+  const completedToday = optimisticTasks.filter(
+    (t) => t.is_completed && getLocalDateString(t.completed_at || t.created_at) === todayStr
+  );
+  const pendingForToday = optimisticTasks.filter(
+    (t) => !t.is_completed && (!t.due_date || t.due_date <= todayStr)
+  );
+
+  const totalCount = completedToday.length + pendingForToday.length;
+  const completedCount = completedToday.length;
+  const pendingCount = pendingForToday.length;
   const percentDone = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 100;
 
   const pendingTasks = optimisticTasks
@@ -65,19 +74,19 @@ export function TodayFocusCard({
 
   return (
     <article
-      className={`bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors ${className}`}
+      className={`rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 p-6 sm:p-7 flex flex-col justify-between shadow-sm transition-colors ${className}`}
       data-purpose="card-todays-focus"
     >
       {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800/80">
         <div>
-          <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
-            DEEP WORK &amp; TASKS
-          </span>
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
             Today&apos;s Focus
           </h2>
         </div>
+        <span className="text-[10px] font-mono bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-700/60 px-2.5 py-0.5 rounded-full font-medium">
+          {percentDone}% done
+        </span>
       </div>
 
       {/* Card Content */}
@@ -104,7 +113,7 @@ export function TodayFocusCard({
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-[11px] font-mono font-bold text-stone-900 dark:text-zinc-100 leading-none">
-                {completedCount}/{totalCount || 0}
+                {`${completedCount}/${totalCount || 0}`}
               </span>
             </div>
           </div>
@@ -114,7 +123,7 @@ export function TodayFocusCard({
                 <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
               </svg>
               <span className="truncate text-[11px]">
-                {percentDone}% completed ({completedCount} of {totalCount})
+                {`${percentDone}% completed (${completedCount} of ${totalCount})`}
               </span>
             </div>
             <div className="text-[11px] text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1.5">

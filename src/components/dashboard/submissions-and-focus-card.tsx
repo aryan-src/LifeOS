@@ -2,14 +2,21 @@ import React from 'react';
 import Link from 'next/link';
 import { getAssignments, type AssignmentWithProject } from '@/lib/actions/assignments';
 import { getTodayDate } from '@/lib/utils/date';
-import { FocusCockpitWidget } from './focus-cockpit-widget';
 
-export async function SubmissionsAndFocusCard() {
-  let assignments: AssignmentWithProject[] = [];
-  try {
-    assignments = await getAssignments();
-  } catch (err) {
-    console.error('Error fetching assignments for dashboard widget:', err);
+interface SubmissionsAndFocusCardProps {
+  initialAssignments?: AssignmentWithProject[];
+}
+
+export async function SubmissionsAndFocusCard({
+  initialAssignments,
+}: SubmissionsAndFocusCardProps = {}) {
+  let assignments: AssignmentWithProject[] = initialAssignments || [];
+  if (!initialAssignments) {
+    try {
+      assignments = await getAssignments();
+    } catch (err) {
+      console.error('Error fetching assignments for dashboard widget:', err);
+    }
   }
 
   const todayStr = getTodayDate();
@@ -27,39 +34,35 @@ export async function SubmissionsAndFocusCard() {
     return dateA.localeCompare(dateB);
   });
 
-  const displayList = pendingAssignments.slice(0, 3);
+  const displayList = pendingAssignments.slice(0, 4);
   const remainingCount = Math.max(0, pendingAssignments.length - displayList.length);
 
   return (
     <article
-      className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 p-5 flex flex-col justify-between shadow-sm transition-colors"
+      className="h-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 p-6 sm:p-7 flex flex-col justify-between shadow-sm transition-colors"
       data-purpose="card-upcoming-submissions"
     >
       {/* Card Header */}
-      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="shrink-0 flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800/80">
         <div>
-          <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 dark:text-zinc-500 font-semibold block leading-none mb-1">
-            DEADLINES &amp; TIMERS
-          </span>
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-zinc-100 tracking-tight leading-none">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
             Upcoming Submissions
           </h2>
         </div>
         <Link
           href="/assignments"
-          className="text-xs font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-200 transition-colors flex items-center gap-1 shrink-0"
+          className="text-xs font-semibold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1 shrink-0"
         >
           <span>View all</span>
           <span>→</span>
         </Link>
       </div>
 
-      {/* Card Content: Submissions at top, Focus Timer anchored at bottom */}
-      <div className="py-3.5 flex flex-col gap-3.5 flex-1 justify-between">
-        {/* Deadlines List */}
-        <div className="space-y-2 min-w-0">
+      {/* Card Content: Deadlines List */}
+      <div className="py-3.5 flex flex-col gap-3 flex-1 justify-between">
+        <div className="space-y-2.5 min-w-0">
           {displayList.length === 0 ? (
-            <div className="p-3 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-xl bg-stone-50/50 dark:bg-zinc-950/40">
+            <div className="p-4 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-2xl bg-stone-50/50 dark:bg-zinc-950/40 border border-dashed border-stone-200/80 dark:border-zinc-800">
               No pending assignment deadlines!
             </div>
           ) : (
@@ -108,13 +111,10 @@ export async function SubmissionsAndFocusCard() {
             })
           )}
         </div>
-
-        {/* Anchored Focus Timer Component */}
-        <FocusCockpitWidget className="shrink-0" />
       </div>
 
       {/* Card Footer */}
-      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-3 shrink-0 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs">
         <Link
           className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
           href="/assignments"
@@ -131,15 +131,17 @@ export async function SubmissionsAndFocusCard() {
 
 export function SubmissionsAndFocusSkeleton() {
   return (
-    <div className="min-w-0 bg-white dark:bg-zinc-900/70 rounded-2xl p-5 flex flex-col justify-between border border-stone-200/70 dark:border-zinc-800/60 shadow-sm animate-pulse">
-      <div className="h-5 w-44 bg-stone-200 dark:bg-zinc-800 rounded mb-3" />
-      <div className="space-y-3">
-        <div className="h-10 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
-        <div className="h-10 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
+    <div className="h-full rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 p-6 sm:p-7 flex flex-col justify-between shadow-sm animate-pulse">
+      <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-zinc-800">
+        <div className="h-7 w-52 bg-slate-200 dark:bg-zinc-800 rounded-lg" />
+        <div className="h-4 w-16 bg-slate-200 dark:bg-zinc-800 rounded" />
       </div>
-      <div className="pt-4 border-t border-stone-100 dark:border-zinc-800/60 mt-4">
-        <div className="h-20 bg-stone-100 dark:bg-zinc-800/50 rounded-xl" />
+      <div className="space-y-3 my-4">
+        <div className="h-10 bg-slate-100 dark:bg-zinc-800/50 rounded-xl" />
+        <div className="h-10 bg-slate-100 dark:bg-zinc-800/50 rounded-xl" />
+        <div className="h-10 bg-slate-100 dark:bg-zinc-800/50 rounded-xl" />
       </div>
+      <div className="h-4 w-44 bg-slate-200 dark:bg-zinc-800 rounded mt-2" />
     </div>
   );
 }

@@ -1,60 +1,75 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
+import React, { useState, useEffect } from 'react';
+
+function getLocalGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getLocalDateFormatted(): { dayName: string; dateFormatted: string } {
+  const now = new Date();
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return {
+    dayName: dayNames[now.getDay()],
+    dateFormatted: `${now.getDate()} ${months[now.getMonth()]}`,
+  };
+}
 
 interface DashboardGreetingProps {
   displayName?: string;
+  initialGreeting?: string;
+  initialDayName?: string;
+  initialDateFormatted?: string;
 }
 
-export function DashboardGreeting({ displayName = 'Aryan' }: DashboardGreetingProps) {
-  const [greeting, setGreeting] = useState('Good day');
-  const [dateLabel, setDateLabel] = useState('');
+export function DashboardGreeting({
+  displayName = 'Aryan',
+  initialGreeting = 'Good morning',
+  initialDayName = 'Sunday',
+  initialDateFormatted = '25 Oct',
+}: DashboardGreetingProps) {
+  const [greeting, setGreeting] = useState(initialGreeting);
+  const [{ dayName, dateFormatted }, setDateInfo] = useState({
+    dayName: initialDayName,
+    dateFormatted: initialDateFormatted,
+  });
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good morning');
-    else if (hour < 17) setGreeting('Good afternoon');
-    else if (hour < 21) setGreeting('Good evening');
-    else setGreeting('Good night');
+    // Immediately synchronize with the user's local system clock
+    setGreeting(getLocalGreeting());
+    setDateInfo(getLocalDateFormatted());
 
-    const now = new Date();
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    setDateLabel(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`);
+    // Periodically re-check every minute so greetings naturally progress
+    const interval = setInterval(() => {
+      setGreeting(getLocalGreeting());
+      setDateInfo(getLocalDateFormatted());
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const handleQuickAdd = () => {
-    window.dispatchEvent(new CustomEvent('open-quick-capture'));
-  };
-
   return (
-    <div>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-[#07343C]/60 dark:text-zinc-400 font-mono">
-        {dateLabel || formatCalendarDate(getTodayDate(), 'short')}
-      </div>
-      <h1 className="font-serif text-[28px] xl:text-[32px] leading-tight text-[#07343C] dark:text-zinc-100 font-medium mt-0.5">
-        {greeting}, {displayName}.
+    <div className="bg-white dark:bg-zinc-900/70 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl px-6 py-3.5 shadow-sm flex items-center justify-between transition-colors">
+      <h1 className="text-xl sm:text-2xl font-serif font-medium text-stone-950 dark:text-zinc-50 tracking-tight leading-none">
+        {`${greeting}, ${displayName}.`}
       </h1>
-      <p className="text-[12px] text-[#07343C]/70 dark:text-zinc-400 mt-1 leading-snug">
-        Academics, tasks, finances, and notes —<br className="hidden sm:inline" /> in one calm workspace.
-      </p>
-      <div className="flex items-center gap-2 mt-2">
-        <Link
-          href="/projects"
-          className="border border-[#07343C]/20 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs text-[#07343C] dark:text-zinc-200 rounded-full px-3 py-1 text-[11px] font-medium hover:bg-[#F3F0EA] dark:hover:bg-zinc-700 transition-colors"
-        >
-          Workspaces
-        </Link>
-        <button
-          type="button"
-          onClick={handleQuickAdd}
-          className="bg-[#0B5563] dark:bg-emerald-600 text-white rounded-full px-3 py-1 text-[11px] font-medium flex items-center gap-1.5 hover:bg-[#07343C] dark:hover:bg-emerald-700 shadow-2xs transition-colors cursor-pointer"
-        >
-          <span>+ Quick Add</span>
-          <kbd className="px-1 py-0.2 bg-white/20 text-[9px] rounded font-mono">⌘N</kbd>
-        </button>
+      <div className="flex items-center gap-2.5 bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/80 dark:border-zinc-700/60 rounded-xl px-3.5 py-1.5 shrink-0 shadow-2xs">
+        <svg className="w-4 h-4 text-stone-500 dark:text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect height="18" rx="2" strokeWidth="1.8" width="18" x="3" y="4" />
+          <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeWidth="1.8" />
+        </svg>
+        <div className="flex items-center gap-1.5 leading-none">
+          <span className="text-xs font-mono text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
+            {`${dayName},`}
+          </span>
+          <span className="text-xs font-bold font-mono text-stone-900 dark:text-zinc-100 tracking-tight">
+            {dateFormatted}
+          </span>
+        </div>
       </div>
     </div>
   );

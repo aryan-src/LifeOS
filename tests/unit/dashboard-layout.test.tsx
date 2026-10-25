@@ -5,6 +5,9 @@ import { PocketMoneyWidget } from '@/components/finances/pocket-money-widget';
 import { TodayFocusCard } from '@/components/tasks/today-focus-card';
 import { FocusCockpitWidget } from '@/components/dashboard/focus-cockpit-widget';
 import { WorkspaceDock } from '@/components/navigation/workspace-dock';
+import { WorkspaceHeader } from '@/components/navigation/workspace-header';
+import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
+import { SubmissionsAndFocusCard } from '@/components/dashboard/submissions-and-focus-card';
 
 describe('Dashboard Layout & Element Visibility Verification', () => {
   it('renders PocketMoneyWidget with fully visible 7-day outflow chart and day labels', () => {
@@ -85,12 +88,100 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
       />
     );
 
+    // Primary section heading without eyebrow text
     expect(html).toContain("Today&#x27;s Focus");
+    expect(html).toContain('text-2xl font-bold tracking-tight');
+    expect(html).not.toContain('DEEP WORK &amp; TASKS');
+    expect(html).not.toContain('DEEP WORK & TASKS');
+
+    // Daily task completion tracking
     expect(html).toContain('completed');
+    expect(html).toContain('0/1');
     expect(html).toContain('Complete Math Problem Set');
     expect(html).toContain('Next up:');
     expect(html).toContain('Add a task');
     expect(html).toContain('Priority Matrix');
+  });
+
+  it('strictly resets daily task completion tracker at midnight', () => {
+    // Tasks completed on a previous date (e.g. 2026-10-23) should NOT count towards today (2026-10-24)
+    const html = renderToString(
+      <TodayFocusCard
+        initialTasks={[
+          {
+            id: 't-yesterday',
+            user_id: 'user-1',
+            title: 'Old completed task',
+            description: null,
+            priority: 2,
+            due_date: '2026-10-23',
+            sort_order: 1,
+            is_completed: true,
+            completed_at: '2026-10-23T15:00:00.000Z',
+            project_id: null,
+            created_at: '2026-10-23T10:00:00.000Z',
+            updated_at: '2026-10-23T15:00:00.000Z',
+            project: null,
+          },
+          {
+            id: 't-today',
+            user_id: 'user-1',
+            title: 'Active task for today',
+            description: null,
+            priority: 3,
+            due_date: '2026-10-24',
+            sort_order: 2,
+            is_completed: false,
+            completed_at: null,
+            project_id: null,
+            created_at: '2026-10-24T08:00:00.000Z',
+            updated_at: '2026-10-24T08:00:00.000Z',
+            project: null,
+          },
+        ]}
+        todayStr="2026-10-24"
+      />
+    );
+
+    // Only today's active task is tracked: 0 of 1 completed
+    expect(html).toContain('0/1');
+    expect(html).toContain('0% completed (0 of 1)');
+  });
+
+  it('renders WorkspaceHeader without the WORKSPACE badge in the brand area', () => {
+    const html = renderToString(<WorkspaceHeader displayName="Aryan" />);
+
+    expect(html).toContain('Life');
+    expect(html).toContain('OS');
+    expect(html).not.toContain('>Workspace</span>');
+    expect(html).not.toContain('>WORKSPACE</span>');
+  });
+
+  it('renders SubmissionsAndFocusCard without DEADLINES & TIMERS eyebrow and without Focus Timer', async () => {
+    const card = await SubmissionsAndFocusCard({ initialAssignments: [] });
+    const html = renderToString(card);
+
+    expect(html).toContain('Upcoming Submissions');
+    expect(html).toContain('text-2xl font-bold tracking-tight');
+    expect(html).not.toContain('DEADLINES &amp; TIMERS');
+    expect(html).not.toContain('DEADLINES & TIMERS');
+    expect(html).not.toContain('data-purpose="focus-timer-card"');
+    expect(html).not.toContain('Focus Timer');
+  });
+
+  it('renders DashboardGreeting with dynamic localized greeting', () => {
+    const html = renderToString(
+      <DashboardGreeting
+        displayName="Aryan"
+        initialGreeting="Good morning"
+        initialDayName="Sunday"
+        initialDateFormatted="25 Oct"
+      />
+    );
+
+    expect(html).toContain('Good morning, Aryan.');
+    expect(html).toContain('Sunday,');
+    expect(html).toContain('25 Oct');
   });
 
   it('renders FocusCockpitWidget with 25:00 digits, controls, and 15m/25m/50m buttons', () => {

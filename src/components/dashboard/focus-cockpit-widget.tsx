@@ -119,7 +119,7 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
 
   return (
     <div
-      className={`flex flex-col gap-3 p-3 rounded-xl bg-stone-50/80 dark:bg-zinc-950/60 border border-stone-200/60 dark:border-zinc-800/60 shrink-0 ${className}`}
+      className={`flex flex-col gap-3.5 p-5 sm:p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 shadow-sm shrink-0 transition-colors ${className}`}
       data-purpose="focus-timer-card"
     >
       {/* Header Row */}

@@ -57,8 +57,8 @@ export function PocketMoneyWidget({
   ];
 
   const days = weeklyDays.length >= 7 ? weeklyDays.slice(-7) : defaultWeeklyDays;
-  const maxSpent = Math.max(...days.map((d) => d.spent || 0), 100);
-  const avgSpent = Math.round(days.reduce((acc, d) => acc + (d.spent || 0), 0) / (days.length || 1));
+  const maxDaySpent = Math.max(...days.map((d) => d.spent || 0));
+  const avgSpent = Math.round(days.reduce((acc, d) => acc + (d.spent || 0), 0) / (days.length || 7));
 
   const allowanceLimitFormatted = Number.isInteger(monthlyAllowance)
     ? monthlyAllowance
@@ -155,20 +155,26 @@ export function PocketMoneyWidget({
             </span>
           </div>
           <div className="pt-1">
-            <div className="grid grid-cols-7 gap-2.5 items-end h-28" data-purpose="bars-container">
+            <div className="grid grid-cols-7 gap-2 sm:gap-2.5 items-end h-28 w-full" data-purpose="bars-container">
               {days.map((d, idx) => {
                 const heightPercent =
-                  maxSpent > 0 ? Math.max(10, Math.min(100, Math.round((d.spent / maxSpent) * 100))) : 10;
+                  maxDaySpent > 0 && d.spent > 0
+                    ? Math.max(12, Math.min(100, Math.round((d.spent / maxDaySpent) * 100)))
+                    : d.spent > 0
+                    ? 12
+                    : 4;
                 return (
-                  <div key={idx} className="flex flex-col items-center h-full justify-end group">
+                  <div key={idx} className="flex flex-col items-center h-full justify-end group w-full">
                     <div
-                      className={`w-full rounded-t transition-colors duration-200 ${
+                      className={`w-full rounded-t transition-all duration-300 ${
                         d.isToday
                           ? 'bg-emerald-500'
-                          : 'bg-slate-200 dark:bg-zinc-700 group-hover:bg-slate-300 dark:group-hover:bg-zinc-600'
+                          : d.spent > 0
+                          ? 'bg-slate-200 dark:bg-zinc-700 group-hover:bg-slate-300 dark:group-hover:bg-zinc-600'
+                          : 'bg-slate-100 dark:bg-zinc-800/80 group-hover:bg-slate-200 dark:group-hover:bg-zinc-700/60'
                       }`}
                       style={{ height: `${heightPercent}%` }}
-                      title={`${formatDayLabel(d.dayLabel)}: ${currencySymbol}${d.spent}`}
+                      title={`${formatDayLabel(d.dayLabel)}: ${currencySymbol}${formatCurrency(d.spent)}`}
                     />
                   </div>
                 );

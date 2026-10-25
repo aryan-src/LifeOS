@@ -7,6 +7,7 @@ import { getTodayDate } from '@/lib/utils/date';
 
 import { WorkspaceHeader } from '@/components/navigation/workspace-header';
 import { WorkspaceDock } from '@/components/navigation/workspace-dock';
+import { DashboardGreeting } from './dashboard-greeting';
 import { FinancesQuadrant, FinancesSkeleton } from './finances-quadrant';
 import { TasksQuadrant, TasksSkeleton } from './tasks-quadrant';
 import { SubmissionsAndFocusCard, SubmissionsAndFocusSkeleton } from './submissions-and-focus-card';
@@ -36,8 +37,7 @@ export async function DashboardCommandCenter() {
   const hour = now.getHours();
   let greetingTime = 'Good morning';
   if (hour >= 12 && hour < 17) greetingTime = 'Good afternoon';
-  else if (hour >= 17 && hour < 21) greetingTime = 'Good evening';
-  else if (hour >= 21 || hour < 5) greetingTime = 'Good night';
+  else if (hour >= 17) greetingTime = 'Good evening';
 
   return (
     <div className="w-full min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-stone-800 dark:text-zinc-200 font-sans transition-colors relative flex flex-col">
@@ -46,27 +46,14 @@ export async function DashboardCommandCenter() {
 
       {/* 2. Main In-Flow Content Container with normal vertical flow */}
       <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 pt-4 pb-32 sm:pb-36 flex flex-col gap-6">
-        {/* Greeting Hero Banner (~56px) */}
+        {/* Dynamic Local Greeting Hero Banner */}
         <section data-purpose="hero-overview-banner">
-          <div className="bg-white dark:bg-zinc-900/70 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl px-6 py-3.5 shadow-sm flex items-center justify-between transition-colors">
-            <h1 className="text-xl sm:text-2xl font-serif font-medium text-stone-950 dark:text-zinc-50 tracking-tight leading-none">
-              {greetingTime}, {displayName}.
-            </h1>
-            <div className="flex items-center gap-2.5 bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/80 dark:border-zinc-700/60 rounded-xl px-3.5 py-1.5 shrink-0 shadow-2xs">
-              <svg className="w-4 h-4 text-stone-500 dark:text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect height="18" rx="2" strokeWidth="1.8" width="18" x="3" y="4" />
-                <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeWidth="1.8" />
-              </svg>
-              <div className="flex items-center gap-1.5 leading-none">
-                <span className="text-xs font-mono text-stone-500 dark:text-zinc-400 uppercase tracking-wider">
-                  {dayName},
-                </span>
-                <span className="text-xs font-bold font-mono text-stone-900 dark:text-zinc-100 tracking-tight">
-                  {dateFormatted}
-                </span>
-              </div>
-            </div>
-          </div>
+          <DashboardGreeting
+            displayName={displayName}
+            initialGreeting={greetingTime}
+            initialDayName={dayName}
+            initialDateFormatted={dateFormatted}
+          />
         </section>
 
         {/* TOP ROW: 3-Card Grid (Pocket Money, Today's Focus, Upcoming Submissions) */}

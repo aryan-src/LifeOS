@@ -23,18 +23,14 @@ export function WorkspaceHeader({
       className={`w-full bg-[#FAF9F5] dark:bg-zinc-950 border-b border-stone-200/70 dark:border-zinc-800/80 shrink-0 h-[48px] z-20 transition-colors ${className}`}
     >
       <div className="max-w-[1400px] h-full mx-auto px-6 flex items-center justify-between">
-        {/* Left: Logo & Workspace selector */}
+        {/* Left: Brand Logo */}
         <div className="flex items-center space-x-3">
           <Link
             href="/"
-            className="flex items-center space-x-2 text-stone-900 dark:text-zinc-100 font-medium tracking-tight whitespace-nowrap"
+            className="flex items-center text-stone-900 dark:text-zinc-100 font-medium tracking-tight whitespace-nowrap"
           >
             <span className="text-xl font-bold font-serif tracking-tight text-stone-950 dark:text-zinc-50 whitespace-nowrap inline-flex items-center">
               Life<span className="text-stone-400 dark:text-zinc-500 font-light italic">OS</span>
-            </span>
-            <span className="text-stone-300 dark:text-zinc-700">/</span>
-            <span className="text-[11px] tracking-wider uppercase font-mono text-stone-500 dark:text-zinc-400 font-semibold bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-stone-200/60 dark:border-zinc-700/60">
-              Workspace
             </span>
           </Link>
         </div>

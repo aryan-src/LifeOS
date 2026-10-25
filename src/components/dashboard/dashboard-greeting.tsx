@@ -53,11 +53,11 @@ export function DashboardGreeting({
   }, []);
 
   return (
-    <div className="bg-white dark:bg-zinc-900/70 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl px-6 py-3.5 shadow-sm flex items-center justify-between transition-colors">
+    <div className="bg-stone-50/80 dark:bg-zinc-900/60 border border-stone-200/60 dark:border-zinc-800/60 rounded-3xl px-6 py-3.5 flex items-center justify-between transition-colors">
       <h1 className="text-xl sm:text-2xl font-serif font-medium text-stone-950 dark:text-zinc-50 tracking-tight leading-none">
         {`${greeting}, ${displayName}.`}
       </h1>
-      <div className="flex items-center gap-2.5 bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/80 dark:border-zinc-700/60 rounded-xl px-3.5 py-1.5 shrink-0 shadow-2xs">
+      <div className="flex items-center gap-2.5 bg-stone-100 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60 rounded-xl px-3.5 py-1.5 shrink-0">
         <svg className="w-4 h-4 text-stone-500 dark:text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <rect height="18" rx="2" strokeWidth="1.8" width="18" x="3" y="4" />
           <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeWidth="1.8" />

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/app-shell';
+import { WorkspaceHeader } from '@/components/navigation/workspace-header';
 import { Analytics } from '@vercel/analytics/react';
 import { getValidSiteUrl } from '@/lib/utils/url';
 
@@ -62,9 +63,12 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="bg-surface dark:bg-zinc-950 font-sans text-on-surface dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
+        className="bg-[#FAF9F5] dark:bg-zinc-950 font-sans text-stone-900 dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
-        <AppShell>{children}</AppShell>
+        <AppShell>
+          <WorkspaceHeader />
+          {children}
+        </AppShell>
         <Analytics />
       </body>
     </html>

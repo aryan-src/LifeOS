@@ -5,7 +5,6 @@ import { getProjectsWithMetrics } from '@/lib/actions/projects';
 import { getNotes } from '@/lib/actions/notes';
 import { getTodayDate } from '@/lib/utils/date';
 
-import { WorkspaceHeader } from '@/components/navigation/workspace-header';
 import { WorkspaceDock } from '@/components/navigation/workspace-dock';
 import { DashboardGreeting } from './dashboard-greeting';
 import { FinancesQuadrant, FinancesSkeleton } from './finances-quadrant';
@@ -41,10 +40,7 @@ export async function DashboardCommandCenter() {
 
   return (
     <div className="w-full min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-stone-800 dark:text-zinc-200 font-sans transition-colors relative flex flex-col">
-      {/* 1. Top Global Navigation (~48px) */}
-      <WorkspaceHeader displayName={displayName} />
-
-      {/* 2. Main In-Flow Content Container with normal vertical flow */}
+      {/* Main In-Flow Content Container with normal vertical flow */}
       <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 pt-4 pb-32 sm:pb-36 flex flex-col gap-6">
         {/* Dynamic Local Greeting Hero Banner */}
         <section data-purpose="hero-overview-banner">
@@ -75,7 +71,7 @@ export async function DashboardCommandCenter() {
         {/* BOTTOM ROW: Unified 3-Column Paper Shelf */}
         {/* In-flow element with consistent 24px gap (gap-6) from top grid */}
         <div
-          className="bg-white dark:bg-zinc-900/70 rounded-2xl border border-stone-200/80 dark:border-zinc-800/80 p-5 sm:p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 items-stretch transition-colors"
+          className="bg-stone-50/80 dark:bg-zinc-900/60 rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 items-stretch transition-colors"
           data-purpose="unified-bottom-row"
         >
           {/* Section 1: Habits */}

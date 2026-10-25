@@ -3,43 +3,32 @@
 import React, { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
-import { TopHeader } from '@/components/navigation/top-header';
 import { FloatingDock } from '@/components/ui/floating-dock';
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Standalone public pages (landing, auth, legal/static pages) and full-bleed workspace dashboard
-  const isStandalonePage =
-    pathname === '/' ||
-    pathname === '/dashboard' ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/auth') ||
-    pathname === '/privacy' ||
-    pathname === '/terms' ||
-    pathname === '/changelog' ||
-    pathname === '/license';
+  const isAuthPage =
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/auth');
 
-  if (isStandalonePage) {
+  if (isAuthPage) {
     return (
       <>
         <QuickCaptureOmnibar />
-        <main className="min-h-screen w-full bg-[#FBF9F5] dark:bg-[#090A0F] text-[#07343C] dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
+        <main className="min-h-screen w-full bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
           {children}
         </main>
       </>
     );
   }
 
-  // Authenticated workspace shell
+  // Unified global workspace shell with warm paper canvas
   return (
     <>
       <QuickCaptureOmnibar />
-      <div className="min-h-screen flex flex-col bg-[#FBF9F5] dark:bg-[#090A0F]">
-        <TopHeader />
-        <main className="w-full pt-14 pb-28 sm:pb-32 bg-[#FBF9F5] dark:bg-[#090A0F] min-h-screen flex-1 text-[#07343C] dark:text-zinc-100 transition-colors duration-200">
-          {children}
-        </main>
+      <div className="min-h-screen flex flex-col bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
+        {children}
       </div>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <FloatingDock />
@@ -52,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen w-full bg-surface dark:bg-zinc-950 text-on-surface dark:text-zinc-100">
+        <main className="min-h-screen w-full bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100">
           {children}
         </main>
       }

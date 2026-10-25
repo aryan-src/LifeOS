@@ -119,7 +119,7 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
 
   return (
     <div
-      className={`flex flex-col gap-3.5 p-5 sm:p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 shadow-sm shrink-0 transition-colors ${className}`}
+      className={`flex flex-col gap-3.5 p-5 sm:p-6 rounded-3xl bg-stone-50/80 dark:bg-zinc-900/60 border border-stone-200/60 dark:border-zinc-800/60 shrink-0 transition-colors ${className}`}
       data-purpose="focus-timer-card"
     >
       {/* Header Row */}
@@ -150,7 +150,7 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
             <button
               type="button"
               onClick={toggleRunning}
-              className="w-8 h-8 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-stone-50 dark:text-zinc-900 flex items-center justify-center transition-colors shadow-2xs cursor-pointer shrink-0"
+              className="w-8 h-8 rounded-full bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-stone-50 dark:text-zinc-900 flex items-center justify-center transition-colors cursor-pointer shrink-0"
               title={isRunning ? 'Pause Session' : 'Start Session'}
               aria-label={isRunning ? 'Pause Pomodoro' : 'Start Pomodoro'}
             >
@@ -164,7 +164,7 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
               <button
                 type="button"
                 onClick={resetTimer}
-                className="w-7 h-7 rounded-full bg-white dark:bg-zinc-900 text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-zinc-200 border border-stone-200/80 dark:border-zinc-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-500 dark:text-zinc-400 border border-stone-200/60 dark:border-zinc-700/60 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Reset Timer"
                 aria-label="Reset Timer"
               >
@@ -186,7 +186,7 @@ export function FocusCockpitWidget({ className = '' }: FocusCockpitWidgetProps) 
                 className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors cursor-pointer shrink-0 ${
                   isSelected
                     ? 'bg-stone-900 text-stone-50 dark:bg-zinc-100 dark:text-zinc-900'
-                    : 'bg-white dark:bg-zinc-900 hover:bg-stone-100 dark:hover:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-200/70 dark:border-zinc-800'
+                    : 'bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200 dark:hover:bg-zinc-700 text-stone-600 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60'
                 }`}
               >
                 {minsOption}m

@@ -163,31 +163,31 @@ const FloatingDockDesktop = ({
   items: DockItem[];
   className?: string;
 }) => {
-  const mouseX = useMotionValue(Infinity);
+  const mouseY = useMotionValue(Infinity);
 
   return (
     <motion.div
-      onMouseMove={(e) => mouseX.set(e.pageX)}
-      onMouseLeave={() => mouseX.set(Infinity)}
+      onMouseMove={(e) => mouseY.set(e.pageY)}
+      onMouseLeave={() => mouseY.set(Infinity)}
       className={cn(
-        "mx-auto hidden h-16 items-end gap-3 rounded-2xl backdrop-blur-md bg-white/60 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-lg shadow-stone-900/5 dark:shadow-black/30 px-3 pb-3 md:flex",
+        "w-16 flex-col items-center py-4 px-3 gap-3 rounded-2xl backdrop-blur-md bg-white/60 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-lg shadow-stone-900/5 dark:shadow-black/30 hidden md:flex",
         className
       )}
     >
       {items.map((item) => (
-        <IconContainer key={item.title} mouseX={mouseX} {...item} />
+        <IconContainer key={item.title} mouseY={mouseY} {...item} />
       ))}
     </motion.div>
   );
 };
 
 function IconContainer({
-  mouseX,
+  mouseY,
   title,
   icon,
   href,
 }: {
-  mouseX: MotionValue;
+  mouseY: MotionValue;
   title: string;
   icon: React.ReactNode;
   href: string;
@@ -195,9 +195,9 @@ function IconContainer({
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  const distance = useTransform(mouseX, (val) => {
-    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - bounds.x - bounds.width / 2;
+  const distance = useTransform(mouseY, (val) => {
+    const bounds = ref.current?.getBoundingClientRect() ?? { y: 0, height: 0 };
+    return val - bounds.y - bounds.height / 2;
   });
 
   const widthTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
@@ -260,10 +260,10 @@ function IconContainer({
         <AnimatePresence>
           {hovered && (
             <motion.div
-              initial={{ opacity: 0, y: 10, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 2, x: "-50%" }}
-              className="absolute -top-8 left-1/2 w-fit rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-medium whitespace-pre text-stone-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-100 pointer-events-none z-50"
+              initial={{ opacity: 0, x: -6, y: "-50%" }}
+              animate={{ opacity: 1, x: 0, y: "-50%" }}
+              exit={{ opacity: 0, x: -6, y: "-50%" }}
+              className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-fit rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-medium whitespace-pre text-stone-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-100 pointer-events-none z-50"
             >
               {title}
             </motion.div>

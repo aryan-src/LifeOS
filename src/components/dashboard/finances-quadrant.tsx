@@ -46,16 +46,16 @@ export function FinancesSkeleton() {
           <div className="h-4 w-14 bg-stone-200 dark:bg-zinc-800 rounded" />
         </div>
       </div>
-      <div className="rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-5 my-2 space-y-4">
-        <div className="grid grid-cols-2 gap-4 pb-4 border-b border-stone-200/60 dark:border-zinc-800/60">
-          <div className="space-y-2">
+      <div className="rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-2 space-y-4">
+        <div className="grid grid-cols-[1fr_1.15fr] sm:grid-cols-[1fr_1.2fr] gap-3 sm:gap-4 pb-4 border-b border-stone-200/60 dark:border-zinc-800/60">
+          <div className="space-y-2 min-w-0">
             <div className="h-3 w-16 bg-stone-200 dark:bg-zinc-800 rounded" />
-            <div className="h-7 w-24 bg-stone-200 dark:bg-zinc-800 rounded" />
-            <div className="h-3 w-28 bg-stone-200 dark:bg-zinc-800 rounded" />
-          </div>
-          <div className="space-y-2 pl-4 border-l border-stone-200/60 dark:border-zinc-800/60">
+            <div className="h-7 w-20 bg-stone-200 dark:bg-zinc-800 rounded" />
             <div className="h-3 w-24 bg-stone-200 dark:bg-zinc-800 rounded" />
-            <div className="h-7 w-28 bg-stone-200 dark:bg-zinc-800 rounded" />
+          </div>
+          <div className="space-y-2 pl-3 sm:pl-4 border-l border-stone-200/60 dark:border-zinc-800/60 min-w-0">
+            <div className="h-3 w-24 bg-stone-200 dark:bg-zinc-800 rounded" />
+            <div className="h-7 w-24 bg-stone-200 dark:bg-zinc-800 rounded" />
             <div className="h-3 w-16 bg-stone-200 dark:bg-zinc-800 rounded" />
           </div>
         </div>

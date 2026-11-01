@@ -108,40 +108,42 @@ export function PocketMoneyWidget({
 
       {/* BEGIN: ActivityChartSection */}
       <section
-        className="space-y-5 rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-5 my-2"
+        className="space-y-5 rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-2"
         data-purpose="7-day-chart"
       >
         {/* Embedded Metrics 1 & 2 */}
         <div
-          className="grid grid-cols-2 gap-4 pb-4 border-b border-stone-200/60 dark:border-zinc-800/60"
+          className="grid grid-cols-[1fr_1.15fr] sm:grid-cols-[1fr_1.2fr] gap-3 sm:gap-4 pb-4 border-b border-stone-200/60 dark:border-zinc-800/60"
           data-purpose="inline-metrics"
         >
-          <div className="space-y-1">
-            <span className="text-[11px] font-semibold text-stone-400 dark:text-zinc-500 block tracking-wider uppercase">
+          <div className="space-y-1 min-w-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-stone-400 dark:text-zinc-500 block tracking-wide uppercase truncate">
               Spent Today
             </span>
-            <div className="text-2xl font-bold text-stone-900 dark:text-zinc-100 tabular-nums leading-tight">
+            <div className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-zinc-100 tabular-nums leading-tight truncate">
               {`${currencySymbol}${formatCurrency(todaySpent)}`}
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400 font-medium pt-0.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600" />
-              <span>{todaySpent === 0 ? 'No outflows today' : 'Recorded today'}</span>
+            <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400 font-medium pt-0.5 truncate">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600 shrink-0" />
+              <span className="truncate">{todaySpent === 0 ? 'No outflows today' : 'Recorded today'}</span>
             </div>
           </div>
 
-          <div className="space-y-1 pl-4 border-l border-stone-200/60 dark:border-zinc-800/60">
-            <span className="text-[11px] font-semibold text-stone-400 dark:text-zinc-500 block tracking-wider uppercase">
+          <div className="space-y-1 pl-3 sm:pl-4 border-l border-stone-200/60 dark:border-zinc-800/60 min-w-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-stone-400 dark:text-zinc-500 block tracking-wide uppercase truncate">
               Remaining Balance
             </span>
-            <div className="flex items-baseline gap-1 text-2xl font-bold text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight">
-              {`${currencySymbol}${formatCurrency(remainingAllowance)}`}
-              <span className="text-xs font-normal text-stone-400 dark:text-zinc-500 font-sans">
+            <div className="flex flex-wrap items-baseline gap-x-1 min-w-0 leading-tight">
+              <span className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-400 tabular-nums truncate">
+                {`${currencySymbol}${formatCurrency(remainingAllowance)}`}
+              </span>
+              <span className="text-xs font-normal text-stone-400 dark:text-zinc-500 font-sans shrink-0">
                 {`/${allowanceLimitFormatted}`}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400 font-medium pt-0.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600" />
-              <span>{`${daysLeftInMonth}d left`}</span>
+            <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400 font-medium pt-0.5 truncate">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600 shrink-0" />
+              <span className="truncate">{`${daysLeftInMonth}d left`}</span>
             </div>
           </div>
         </div>

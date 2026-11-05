@@ -60,27 +60,29 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('Settings');
   });
 
-  it('applies horizontal orientation and scale clearance height', () => {
+  it('applies compact horizontal orientation with overflow-visible', () => {
     const html = renderToString(<FloatingDock />);
-    // Horizontal container styling with scale clearance
-    expect(html).toContain('h-20');
+    // Compact horizontal container styling
+    expect(html).toContain('h-12');
     expect(html).toContain('flex-row');
     expect(html).toContain('items-center');
     expect(html).toContain('justify-center');
-    expect(html).toContain('gap-4');
-    expect(html).toContain('px-4');
+    expect(html).toContain('gap-3');
+    expect(html).toContain('px-3');
+    expect(html).toContain('py-1');
+    expect(html).toContain('overflow-visible');
   });
 
-  it('renders AppShell with full-width fixed footer bar and zero left sidebar gutter', () => {
+  it('renders AppShell with compact full-width fixed footer bar and zero left sidebar gutter', () => {
     const html = renderToString(
       <AppShell>
         <div>Content</div>
       </AppShell>
     );
 
-    // Full-width fixed edge-to-edge footer bar container
+    // Full-width fixed edge-to-edge compact footer bar container with overflow-visible
     expect(html).toContain(
-      'fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-3 px-6 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs'
+      'fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-1 px-4 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs overflow-visible'
     );
 
     // Canvas expands to full width without any reserved sidebar layout gutter

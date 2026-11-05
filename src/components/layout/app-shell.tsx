@@ -46,7 +46,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Full-width fixed edge-to-edge footer bar spanning the entire screen */}
-      <footer className="fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-3 px-6 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs">
+      <footer className="fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-1 px-4 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs overflow-visible">
         <FloatingDock />
       </footer>
     </>

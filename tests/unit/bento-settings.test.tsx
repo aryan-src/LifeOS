@@ -50,13 +50,14 @@ describe('BentoSettings Component Tests', () => {
     expect(html).toContain('Calculated Safe Pace');
     expect(html).toContain('166.67'); // 5000 / 30
 
-    // Section 3: Workspace Atmosphere (col-span-7)
+    // Section 3: Workspace Atmosphere (5 Presets)
     expect(html).toContain('id="sectionAtmosphere"');
     expect(html).toContain('Workspace Atmosphere');
-    expect(html).toContain('Default');
-    expect(html).toContain('Crimson Dark');
-    expect(html).toContain('Crimson Light');
-    expect(html).toContain('System Native');
+    expect(html).toContain('Spatial Glassmorphism');
+    expect(html).toContain('Risograph Editorial');
+    expect(html).toContain('Nordic Ceramic &amp; Linen');
+    expect(html).toContain('TUI / Terminal');
+    expect(html).toContain('Tactile Functionalism');
 
     // Section 4: Data Ownership & Vault (col-span-5)
     expect(html).toContain('id="sectionVault"');

@@ -13,6 +13,10 @@ import {
   formatHabitsCsv,
   createZipArchive,
 } from '@/lib/export/formatters';
+import {
+  WorkspaceAtmosphereSelector,
+  WORKSPACE_THEMES,
+} from './workspace-atmosphere-selector';
 
 interface BentoSettingsProps {
   initialProfile: Profile;
@@ -59,68 +63,21 @@ interface ThemeCardData {
   activeDescColor: string;
 }
 
-const THEMES: ThemeCardData[] = [
-  {
-    id: 'default',
-    title: 'Default',
-    desc: 'Warm paper aesthetic inspired by editorial journals & Notion simplicity.',
-    dots: ['#FAF9F6', '#FFFFFF', '#1C1917'],
-    mockupBg: '#F4F1EA',
-    mockupBorder: 'border-stone-200/80',
-    mockupDot: '#1C1917',
-    mockupBars: 'bg-stone-300',
-    activeBorder: '#1C1917',
-    activeBg: '#FAF8F5',
-    activeDot: '#1C1917',
-    activeTitleColor: '#191919',
-    activeDescColor: '#78716C',
-  },
-  {
-    id: 'crimson-dark',
-    title: 'Crimson Dark',
-    desc: 'Deep obsidian canvas accented by crimson red and high-contrast cream.',
-    dots: ['#09090B', '#131217', '#DC2626'],
-    mockupBg: '#131217',
-    mockupBorder: 'border-zinc-800',
-    mockupDot: '#DC2626',
-    mockupBars: 'bg-zinc-700',
-    activeBorder: '#DC2626',
-    activeBg: '#1D1822',
-    activeDot: '#DC2626',
-    activeTitleColor: '#FAF7F2',
-    activeDescColor: '#A1A1AA',
-  },
-  {
-    id: 'crimson-light',
-    title: 'Crimson Light',
-    desc: 'Crisp ivory foundation enriched with vivid crimson strokes & dark ink.',
-    dots: ['#FAF8F5', '#FFF5F5', '#DC2626'],
-    mockupBg: '#FFF5F5',
-    mockupBorder: 'border-rose-100',
-    mockupDot: '#DC2626',
-    mockupBars: 'bg-rose-200',
-    activeBorder: '#DC2626',
-    activeBg: '#FFF5F5',
-    activeDot: '#DC2626',
-    activeTitleColor: '#18181B',
-    activeDescColor: '#71717A',
-  },
-  {
-    id: 'system',
-    title: 'System Native',
-    desc: 'Clean monochrome OS sync with modern cobalt blue highlights.',
-    dots: ['#F4F4F5', '#FFFFFF', '#2563EB'],
-    mockupBg: '#F4F4F5',
-    mockupBorder: 'border-gray-200',
-    mockupDot: '#2563EB',
-    mockupBars: 'bg-gray-300',
-    activeBorder: '#2563EB',
-    activeBg: '#EFF6FF',
-    activeDot: '#2563EB',
-    activeTitleColor: '#111827',
-    activeDescColor: '#4B5563',
-  },
-];
+const THEMES: ThemeCardData[] = WORKSPACE_THEMES.map((t) => ({
+  id: t.id,
+  title: t.title,
+  desc: t.description,
+  dots: t.swatches,
+  mockupBg: t.previewBgClass,
+  mockupBorder: t.previewBorderClass,
+  mockupDot: t.accentColor,
+  mockupBars: 'bg-stone-300 dark:bg-zinc-700',
+  activeBorder: t.activeRingColor,
+  activeBg: 'var(--color-bg-card)',
+  activeDot: t.accentColor,
+  activeTitleColor: 'var(--color-text-primary)',
+  activeDescColor: 'var(--color-text-secondary)',
+}));
 
 function getInitials(name: string): string {
   const clean = name.trim();
@@ -146,9 +103,10 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     resolveCurrencySymbol(initialProfile.currency_symbol || '₹')
   );
   const [themePreference, setThemePreference] = useState<string>(() => {
-    const raw = initialProfile.theme_preference || 'default';
-    if (raw === 'crimson-cream') return 'crimson-dark';
-    if (raw === 'stone') return 'default';
+    const raw = initialProfile.theme_preference || 'nordic';
+    if (raw === 'crimson-cream' || raw === 'crimson-dark' || raw === 'crimson-light') return 'risograph';
+    if (raw === 'stone' || raw === 'default' || raw === 'system') return 'nordic';
+    if (raw === 'dark') return 'tui';
     return raw;
   });
 
@@ -178,7 +136,16 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     if (typeof window === 'undefined') return;
     const savedTheme = localStorage.getItem('lifeos_theme');
     if (savedTheme) {
-      const normalized = savedTheme === 'crimson-cream' ? 'crimson-dark' : savedTheme;
+      let normalized = savedTheme;
+      if (savedTheme === 'crimson-cream' || savedTheme === 'crimson-dark' || savedTheme === 'crimson-light') {
+        normalized = 'risograph';
+      }
+      if (savedTheme === 'stone' || savedTheme === 'default' || savedTheme === 'system') {
+        normalized = 'nordic';
+      }
+      if (savedTheme === 'dark') {
+        normalized = 'tui';
+      }
       setThemePreference(normalized);
       applyThemeToDOM(normalized);
     }
@@ -1010,11 +977,11 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
         </section>
 
         {/* ============================================== */}
-        {/* ROW 2 - COL 1: Workspace Atmosphere (Col-span-7) */}
+        {/* ROW 2: Workspace Atmosphere (5 Presets, Framer Motion, 5-Card Responsive Grid) */}
         {/* ============================================== */}
         <section
           id="sectionAtmosphere"
-          className="lg:col-span-7 rounded-2xl p-6 sm:p-7 shadow-card border theme-transition flex flex-col justify-between"
+          className="lg:col-span-12 rounded-2xl p-6 sm:p-7 shadow-card border theme-transition flex flex-col justify-between"
           style={{
             backgroundColor: 'var(--color-bg-card)',
             borderColor: 'var(--color-border-card)',
@@ -1057,133 +1024,30 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
                 </div>
               </div>
               <span
-                className="text-xs font-mono font-medium"
+                className="text-xs font-mono font-medium px-2 py-0.5 rounded-full border border-stone-200 dark:border-zinc-800"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                4 Presets
+                5 Presets
               </span>
             </div>
 
-            {/* 4-Theme Interactive Showcase Grid */}
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3.5"
-              role="radiogroup"
-              aria-label="Visual Theme Options"
-            >
-              {THEMES.map((theme) => {
-                const isSelected =
-                  themePreference === theme.id ||
-                  (theme.id === 'default' &&
-                    (themePreference === 'stone' || !themePreference || themePreference === 'default'));
-
-                return (
-                  <div
-                    key={theme.id}
-                    role="radio"
-                    tabIndex={0}
-                    aria-checked={isSelected ? 'true' : 'false'}
-                    onClick={() => handleSelectTheme(theme.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleSelectTheme(theme.id);
-                      }
-                    }}
-                    className={`rounded-xl p-4 cursor-pointer relative theme-transition flex flex-col justify-between transition-all select-none ${
-                      isSelected
-                        ? 'border-2 shadow-sm ring-1'
-                        : 'border hover:border-stone-400/50'
-                    }`}
-                    style={{
-                      borderColor: isSelected ? theme.activeBorder : 'var(--color-border)',
-                      backgroundColor: isSelected ? theme.activeBg : 'var(--color-bg-card)',
-                    }}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex -space-x-1">
-                            {theme.dots.map((dotColor, idx) => (
-                              <span
-                                key={idx}
-                                className="w-3.5 h-3.5 rounded-full border border-stone-300/40"
-                                style={{ backgroundColor: dotColor }}
-                              />
-                            ))}
-                          </div>
-                          <span
-                            className="font-semibold text-xs sm:text-sm"
-                            style={{
-                              color: isSelected
-                                ? theme.activeTitleColor
-                                : 'var(--color-text-primary)',
-                            }}
-                          >
-                            {theme.title}
-                          </span>
-                        </div>
-                        <div
-                          className="w-4 h-4 rounded-full border flex items-center justify-center transition-all"
-                          style={{
-                            borderColor: isSelected ? theme.activeBorder : 'var(--color-border)',
-                          }}
-                        >
-                          {isSelected && (
-                            <span
-                              className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: theme.activeDot }}
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <p
-                        className="text-xs leading-relaxed font-normal mb-3"
-                        style={{
-                          color: isSelected
-                            ? theme.activeDescColor
-                            : 'var(--color-text-secondary)',
-                        }}
-                      >
-                        {theme.desc}
-                      </p>
-                    </div>
-
-                    {/* Mini mockup strip */}
-                    <div
-                      className={`h-6 rounded-md p-1 flex items-center gap-1.5 pointer-events-none border ${theme.mockupBorder}`}
-                      style={{ backgroundColor: theme.mockupBg }}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: theme.mockupDot }}
-                      />
-                      <span className={`h-1.5 w-12 rounded ${theme.mockupBars}`} />
-                      <span className={`h-1.5 w-6 rounded ml-auto ${theme.mockupBars}`} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div
-            className="mt-5 pt-3 border-t flex items-center justify-between text-xs theme-transition"
-            style={{
-              borderColor: 'var(--color-border)',
-              color: 'var(--color-text-muted)',
-            }}
-          >
-            <span>Auto-saves instantly to client storage</span>
-            <span className="font-mono text-[11px]">Hardware Accelerated</span>
+            {/* 5-Theme Interactive Showcase Grid */}
+            <WorkspaceAtmosphereSelector
+              initialTheme={themePreference}
+              profile={initialProfile}
+              onThemeChanged={(newTheme) => {
+                setThemePreference(newTheme);
+              }}
+            />
           </div>
         </section>
 
         {/* ============================================== */}
-        {/* ROW 2 - COL 2: Data Ownership & Vault (Col-span-5) */}
+        {/* ROW 3: Data Ownership & Vault (Col-span-12) */}
         {/* ============================================== */}
         <section
           id="sectionVault"
-          className="lg:col-span-5 rounded-2xl p-6 sm:p-7 shadow-card border theme-transition flex flex-col justify-between"
+          className="lg:col-span-12 rounded-2xl p-6 sm:p-7 shadow-card border theme-transition flex flex-col justify-between"
           style={{
             backgroundColor: 'var(--color-bg-card)',
             borderColor: 'var(--color-border-card)',

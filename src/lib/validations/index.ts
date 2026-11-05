@@ -308,6 +308,11 @@ export const quickCaptureSchema = z.object({
 // Profile Schemas
 // -------------------------------------------------------------
 export const themePreferenceEnum = z.enum([
+  'spatial-glass',
+  'risograph',
+  'nordic',
+  'tui',
+  'tactile',
   'stone',
   'light',
   'dark',

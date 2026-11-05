@@ -116,17 +116,22 @@ export function TaskChecklist({
       // 1. Instantly apply optimistic visual update
       setOptimisticTasks({ type: 'toggle-complete', taskId, targetState });
 
-      // 2. Execute Server Action silently in the background
-      const response = await updateTaskStatus(taskId, {
-        is_completed: targetState,
-        in_progress: targetState ? false : undefined,
-      });
+      try {
+        // 2. Execute Server Action silently in the background
+        const response = await updateTaskStatus(taskId, {
+          is_completed: targetState,
+          in_progress: targetState ? false : undefined,
+        });
 
-      // 3. Catch failure and notify via Toast/Banner if rollback happens
-      if (!response.success) {
-        setErrorMessage(
-          response.error || 'Failed to update task. Changes were rolled back.'
-        );
+        // 3. Catch failure and notify via Toast/Banner if rollback happens
+        if (!response.success) {
+          setErrorMessage(
+            response.error || 'Failed to update task. Changes were rolled back.'
+          );
+        }
+      } catch (err) {
+        console.error('[TaskChecklist] Unhandled error updating task status:', err);
+        setErrorMessage('Failed to update task due to a connection or server error.');
       }
     });
   };
@@ -139,18 +144,23 @@ export function TaskChecklist({
       // 1. Instantly apply optimistic visual update
       setOptimisticTasks({ type: 'toggle-in-progress', taskId, targetState });
 
-      // 2. Execute Server Action silently in the background
-      const response = await updateTaskStatus(taskId, {
-        in_progress: targetState,
-        is_completed: targetState ? false : undefined,
-      });
+      try {
+        // 2. Execute Server Action silently in the background
+        const response = await updateTaskStatus(taskId, {
+          in_progress: targetState,
+          is_completed: targetState ? false : undefined,
+        });
 
-      // 3. Catch failure and notify via Toast/Banner if rollback happens
-      if (!response.success) {
-        setErrorMessage(
-          response.error ||
-            'Failed to update in-progress status. Changes were rolled back.'
-        );
+        // 3. Catch failure and notify via Toast/Banner if rollback happens
+        if (!response.success) {
+          setErrorMessage(
+            response.error ||
+              'Failed to update in-progress status. Changes were rolled back.'
+          );
+        }
+      } catch (err) {
+        console.error('[TaskChecklist] Unhandled error updating in-progress status:', err);
+        setErrorMessage('Failed to update in-progress status due to a connection or server error.');
       }
     });
   };
@@ -170,9 +180,14 @@ export function TaskChecklist({
 
     startTransition(async () => {
       setOptimisticTasks({ type: 'delete', taskId });
-      const response = await deleteTask(taskId);
-      if (!response.success) {
-        setErrorMessage(response.error || 'Failed to delete task.');
+      try {
+        const response = await deleteTask(taskId);
+        if (!response.success) {
+          setErrorMessage(response.error || 'Failed to delete task.');
+        }
+      } catch (err) {
+        console.error('[TaskChecklist] Unhandled error deleting task:', err);
+        setErrorMessage('Failed to delete task due to a connection or server error.');
       }
     });
   };
@@ -182,9 +197,14 @@ export function TaskChecklist({
 
     startTransition(async () => {
       setOptimisticTasks({ type: 'update-priority', taskId, priority });
-      const response = await updateTaskPriority(taskId, priority);
-      if (!response.success) {
-        setErrorMessage(response.error || 'Failed to update priority.');
+      try {
+        const response = await updateTaskPriority(taskId, priority);
+        if (!response.success) {
+          setErrorMessage(response.error || 'Failed to update priority.');
+        }
+      } catch (err) {
+        console.error('[TaskChecklist] Unhandled error updating priority:', err);
+        setErrorMessage('Failed to update priority due to a connection or server error.');
       }
     });
   };

@@ -62,9 +62,16 @@ export function TodayFocusCard({
     const nextCompleted = !task.is_completed;
     startTransition(async () => {
       setOptimisticTask({ taskId: task.id, is_completed: nextCompleted });
-      await updateTaskStatus(task.id, {
-        is_completed: nextCompleted,
-      });
+      try {
+        const response = await updateTaskStatus(task.id, {
+          is_completed: nextCompleted,
+        });
+        if (!response?.success) {
+          console.error('[TodayFocusCard] Failed to update task status:', response?.error);
+        }
+      } catch (err) {
+        console.error('[TodayFocusCard] Unhandled error updating task status:', err);
+      }
     });
   };
 

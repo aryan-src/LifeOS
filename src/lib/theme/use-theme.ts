@@ -2,7 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type LifeOSTheme = 'light' | 'dark' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
+export type LifeOSTheme =
+  | 'spatial-glass'
+  | 'risograph'
+  | 'nordic'
+  | 'tui'
+  | 'tactile'
+  | 'light'
+  | 'dark'
+  | 'crimson-dark'
+  | 'crimson-light'
+  | 'default'
+  | 'system';
 
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
@@ -11,14 +22,27 @@ export function applyThemeToDOM(theme: string) {
 
   const root = document.documentElement;
 
-  if (theme === 'crimson-dark' || theme === 'crimson-cream') {
-    root.setAttribute('data-theme', 'crimson-dark');
+  if (theme === 'spatial-glass') {
+    root.setAttribute('data-theme', 'spatial-glass');
+  } else if (theme === 'risograph') {
+    root.setAttribute('data-theme', 'risograph');
+  } else if (theme === 'nordic' || theme === 'default' || theme === 'stone') {
+    root.setAttribute('data-theme', 'nordic');
+    root.classList.remove('dark');
+  } else if (theme === 'tui') {
+    root.setAttribute('data-theme', 'tui');
+    root.classList.add('dark');
+  } else if (theme === 'tactile') {
+    root.setAttribute('data-theme', 'tactile');
+    root.classList.remove('dark');
+  } else if (theme === 'crimson-dark' || theme === 'crimson-cream') {
+    root.setAttribute('data-theme', 'risograph');
     root.classList.add('dark');
   } else if (theme === 'crimson-light') {
-    root.setAttribute('data-theme', 'crimson-light');
+    root.setAttribute('data-theme', 'risograph');
     root.classList.remove('dark');
   } else if (theme === 'system') {
-    root.setAttribute('data-theme', 'system');
+    root.setAttribute('data-theme', 'nordic');
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (isDark) {
       root.classList.add('dark');
@@ -26,15 +50,13 @@ export function applyThemeToDOM(theme: string) {
       root.classList.remove('dark');
     }
   } else if (theme === 'dark') {
-    root.removeAttribute('data-theme');
+    root.setAttribute('data-theme', 'tui');
     root.classList.add('dark');
   } else if (theme === 'light') {
-    root.removeAttribute('data-theme');
+    root.setAttribute('data-theme', 'nordic');
     root.classList.remove('dark');
   } else {
-    // Default / Notion warm paper
-    root.setAttribute('data-theme', 'default');
-    root.classList.remove('dark');
+    root.setAttribute('data-theme', theme);
   }
 }
 

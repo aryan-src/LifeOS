@@ -117,7 +117,12 @@ export async function updateProfile(
 
   if (
     error &&
-    (themePreference === 'crimson-dark' ||
+    (themePreference === 'spatial-glass' ||
+      themePreference === 'risograph' ||
+      themePreference === 'nordic' ||
+      themePreference === 'tui' ||
+      themePreference === 'tactile' ||
+      themePreference === 'crimson-dark' ||
       themePreference === 'crimson-light' ||
       themePreference === 'crimson-cream' ||
       themePreference === 'default' ||
@@ -125,7 +130,7 @@ export async function updateProfile(
   ) {
     // If the remote check constraint has not been updated yet, store standard DB fallback
     const fallbackTheme =
-      themePreference === 'crimson-dark' || themePreference === 'crimson-cream'
+      themePreference === 'tui' || themePreference === 'crimson-dark' || themePreference === 'crimson-cream'
         ? 'dark'
         : 'stone';
     const fallbackRes = await supabase

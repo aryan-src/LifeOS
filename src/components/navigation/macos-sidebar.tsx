@@ -23,7 +23,6 @@ import {
   calculateDockScale,
   DockNavLane,
 } from './sidebar-nav-item';
-import { SidebarThemeToggle } from './sidebar-theme-toggle';
 import { SidebarUserFooter } from './sidebar-user-footer';
 
 export { calculateDockScale };
@@ -222,9 +221,8 @@ export function MacOSSidebar({
           </AnimatePresence>
         </div>
 
-        {/* Bottom User Profile & Theme Quick-Toggles */}
+        {/* Bottom User Profile */}
         <div className={`mt-auto pt-3 border-t border-amber-900/5 dark:border-white/5 w-full flex flex-col gap-2 box-border ${effectivelyOpen ? '' : 'items-center'}`}>
-          <SidebarThemeToggle isCollapsed={!effectivelyOpen} />
           <SidebarUserFooter
             isCollapsed={!effectivelyOpen}
             onItemClick={() => {

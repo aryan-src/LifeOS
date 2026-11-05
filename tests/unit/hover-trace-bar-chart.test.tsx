@@ -117,9 +117,14 @@ describe('HoverTraceBarChart Component', () => {
   });
 
   it('dynamically aggregates expenses when transactions are provided', () => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
     const mockTx = [
-      { date: '2026-10-21', amount: 250, type: 'expense' },
-      { date: '2026-10-20', amount: 80, type: 'expense' },
+      { date: todayStr, amount: 250, type: 'expense' },
+      { date: yesterdayStr, amount: 80, type: 'expense' },
     ];
 
     const rawHtml = renderToString(

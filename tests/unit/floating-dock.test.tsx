@@ -60,14 +60,15 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('Settings');
   });
 
-  it('applies vertical orientation and preserves Notion-style frosted glass aesthetic', () => {
+  it('applies horizontal orientation and preserves Notion-style frosted glass aesthetic', () => {
     const html = renderToString(<FloatingDock />);
-    // Vertical container styling
-    expect(html).toContain('w-16');
-    expect(html).toContain('flex-col');
-    expect(html).toContain('items-center');
-    expect(html).toContain('py-4');
-    expect(html).toContain('px-3');
+    // Horizontal container styling
+    expect(html).toContain('h-16');
+    expect(html).toContain('flex-row');
+    expect(html).toContain('items-end');
+    expect(html).toContain('gap-4');
+    expect(html).toContain('px-4');
+    expect(html).toContain('pb-3');
 
     // Notion frosted glass aesthetic
     expect(html).toContain('backdrop-blur-md');
@@ -75,34 +76,31 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('border-stone-200/50');
   });
 
-  it('renders AppShell with pure floating dock overlay and zero left sidebar gutter', () => {
+  it('renders AppShell with bottom-center permanent floating dock and zero left sidebar gutter', () => {
     const html = renderToString(
       <AppShell>
         <div>Content</div>
       </AppShell>
     );
 
-    // Left-anchored pure floating dock overlay wrapper
-    expect(html).toContain('fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center');
+    // Bottom-center permanent floating dock overlay wrapper
+    expect(html).toContain('fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center');
 
     // Canvas expands to full width without any reserved sidebar layout gutter
     expect(html).toContain('w-full');
     expect(html).not.toMatch(/pl-(24|28|56|64)/);
   });
 
-  it('renders edge detection zone along the left edge of the screen', () => {
+  it('does not render an edge detection zone or auto-hide triggers', () => {
     const html = renderToString(<FloatingDock />);
-    expect(html).toContain('data-purpose="edge-detection-zone"');
-    expect(html).toContain('fixed left-0 top-0 h-screen w-4 z-50 pointer-events-auto');
+    expect(html).not.toContain('data-purpose="edge-detection-zone"');
+    expect(html).not.toContain('h-screen w-4');
   });
 
-  it('renders desktop dock with auto-hiding off-screen translation by default and reveals when requested', () => {
-    const htmlDefault = renderToString(<FloatingDock />);
-    expect(htmlDefault).toContain('data-purpose="floating-dock-desktop"');
-    expect(htmlDefault).toContain('-130%');
-
-    const htmlRevealed = renderToString(<FloatingDock defaultRevealed={true} />);
-    expect(htmlRevealed).toContain('data-purpose="floating-dock-desktop"');
-    expect(htmlRevealed).not.toContain('-130%');
+  it('renders desktop dock permanently visible without off-screen translation', () => {
+    const html = renderToString(<FloatingDock />);
+    expect(html).toContain('data-purpose="floating-dock-desktop"');
+    expect(html).not.toContain('-130%');
+    expect(html).not.toContain('-140%');
   });
 });

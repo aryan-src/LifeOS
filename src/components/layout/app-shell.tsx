@@ -37,26 +37,18 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Full-width workspace shell with pure floating dock overlay (zero left sidebar gutter)
+  // Full-width workspace shell with bottom-center permanent floating dock
   return (
     <>
       <QuickCaptureOmnibar />
       <div className="min-h-screen w-full flex flex-col bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
         {children}
       </div>
-      <AnimatePresence>
-        {isDockVisible && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center"
-          >
-            <FloatingDock defaultRevealed={true} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+      {/* Permanently visible bottom-center floating footer dock */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center">
+        <FloatingDock />
+      </div>
     </>
   );
 }

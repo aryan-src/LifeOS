@@ -7,7 +7,7 @@ describe('OriginUI Calendar Component', () => {
   it('renders successfully without crashing', () => {
     const testDate = new Date(2026, 9, 7); // Oct 7, 2026
     const html = renderToString(
-      <Calendar mode="single" selected={testDate} />
+      <Calendar mode="single" selected={testDate} defaultMonth={testDate} />
     );
     expect(html).toContain('rdp');
     expect(html).toContain('October');

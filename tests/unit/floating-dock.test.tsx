@@ -60,31 +60,28 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('Settings');
   });
 
-  it('applies horizontal orientation and preserves Notion-style frosted glass aesthetic', () => {
+  it('applies horizontal orientation and scale clearance height', () => {
     const html = renderToString(<FloatingDock />);
-    // Horizontal container styling
-    expect(html).toContain('h-16');
+    // Horizontal container styling with scale clearance
+    expect(html).toContain('h-20');
     expect(html).toContain('flex-row');
-    expect(html).toContain('items-end');
+    expect(html).toContain('items-center');
+    expect(html).toContain('justify-center');
     expect(html).toContain('gap-4');
     expect(html).toContain('px-4');
-    expect(html).toContain('pb-3');
-
-    // Notion frosted glass aesthetic
-    expect(html).toContain('backdrop-blur-md');
-    expect(html).toContain('bg-white/60');
-    expect(html).toContain('border-stone-200/50');
   });
 
-  it('renders AppShell with bottom-center permanent floating dock and zero left sidebar gutter', () => {
+  it('renders AppShell with full-width fixed footer bar and zero left sidebar gutter', () => {
     const html = renderToString(
       <AppShell>
         <div>Content</div>
       </AppShell>
     );
 
-    // Bottom-center permanent floating dock overlay wrapper
-    expect(html).toContain('fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center');
+    // Full-width fixed edge-to-edge footer bar container
+    expect(html).toContain(
+      'fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-3 px-6 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs'
+    );
 
     // Canvas expands to full width without any reserved sidebar layout gutter
     expect(html).toContain('w-full');

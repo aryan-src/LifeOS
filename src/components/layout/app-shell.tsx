@@ -37,7 +37,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Full-width workspace shell with bottom-center permanent floating dock
+  // Full-width workspace shell with full-width fixed footer dock
   return (
     <>
       <QuickCaptureOmnibar />
@@ -45,10 +45,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         {children}
       </div>
 
-      {/* Permanently visible bottom-center floating footer dock */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center">
+      {/* Full-width fixed edge-to-edge footer bar spanning the entire screen */}
+      <footer className="fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-3 px-6 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs">
         <FloatingDock />
-      </div>
+      </footer>
     </>
   );
 }

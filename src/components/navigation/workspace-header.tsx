@@ -3,18 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useUIStore } from '@/lib/store/use-ui-store';
 
 interface WorkspaceHeaderProps {
   displayName?: string;
   className?: string;
+  isDockVisible?: boolean;
+  onToggleDock?: () => void;
 }
 
 export function WorkspaceHeader({
   displayName = 'Aryan',
   className = '',
+  isDockVisible: isDockVisibleProp,
+  onToggleDock: onToggleDockProp,
 }: WorkspaceHeaderProps) {
   const pathname = usePathname();
   const [userName, setUserName] = useState(displayName);
+  const storeIsDockVisible = useUIStore((state) => state.isDockVisible);
+  const storeToggleDock = useUIStore((state) => state.toggleDock);
+
+  const isDockVisible = isDockVisibleProp !== undefined ? isDockVisibleProp : storeIsDockVisible;
+  const toggleDock = onToggleDockProp || storeToggleDock;
 
   useEffect(() => {
     try {
@@ -22,6 +32,27 @@ export function WorkspaceHeader({
       if (stored) setUserName(stored);
     } catch {}
   }, []);
+
+  // Keyboard shortcut: Cmd/Ctrl + B to toggle dock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        const target = e.target as HTMLElement | null;
+        if (
+          target &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        toggleDock();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleDock]);
 
   // Suppress on standalone auth/login routes
   if (pathname?.startsWith('/login') || pathname?.startsWith('/auth')) {
@@ -55,8 +86,32 @@ export function WorkspaceHeader({
       data-purpose="global-workspace-header"
     >
       <div className="max-w-[1400px] h-full mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Left: Brand Logo & Dynamic Route Breadcrumb */}
+        {/* Left: Burger Button, Brand Logo & Dynamic Route Breadcrumb */}
         <div className="flex items-center space-x-2.5">
+          {/* Burger Button to Toggle Dock Visibility */}
+          <button
+            type="button"
+            onClick={toggleDock}
+            className="flex items-center justify-center p-1.5 -ml-1 rounded-lg text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 hover:bg-stone-200/60 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+            aria-label={isDockVisible ? 'Hide dock navigation' : 'Show dock navigation'}
+            title={isDockVisible ? 'Hide Dock (⌘B)' : 'Show Dock (⌘B)'}
+          >
+            {/* 3-line animated hamburger / burger icon */}
+            <div className="w-4 h-3.5 flex flex-col justify-between items-center py-0.5" aria-hidden="true">
+              <span
+                className={`h-0.5 w-4 rounded-full bg-current transition-all duration-200 ${
+                  !isDockVisible ? 'w-2.5 -translate-x-0.5 opacity-60' : ''
+                }`}
+              />
+              <span className="h-0.5 w-4 rounded-full bg-current transition-all duration-200" />
+              <span
+                className={`h-0.5 w-4 rounded-full bg-current transition-all duration-200 ${
+                  !isDockVisible ? 'w-3 -translate-x-0.5 opacity-80' : ''
+                }`}
+              />
+            </div>
+          </button>
+
           <Link
             href="/"
             className="flex items-center text-stone-900 dark:text-zinc-100 font-medium tracking-tight whitespace-nowrap hover:opacity-85 transition-opacity"

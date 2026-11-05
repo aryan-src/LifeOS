@@ -215,7 +215,7 @@ export function TodayFocusCard({
       </div>
 
       {/* Card Footer */}
-      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-1.5 shrink-0 pt-2.5 border-t border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-between text-xs">
         <button
           type="button"
           onClick={handleOpenQuickTask}

@@ -73,7 +73,7 @@ export async function ProjectsQuadrant() {
       </div>
 
       {/* Micro summary footer */}
-      <div className="pt-3 flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm border-t border-outline-variant/20 dark:border-zinc-800/60 mt-2">
+      <div className="pt-3 flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm border-t border-outline-variant/20 dark:border-zinc-800/60 mt-1">
         <span>{allProjects.length} total projects</span>
         <span className="text-on-surface-variant dark:text-zinc-300 font-medium">Active initiatives</span>
       </div>

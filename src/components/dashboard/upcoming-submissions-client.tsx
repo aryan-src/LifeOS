@@ -49,7 +49,7 @@ export function UpcomingSubmissionsClient({
   return (
     <section className="w-full rounded-2xl border border-stone-200/70 dark:border-zinc-800/60 bg-white dark:bg-zinc-900/50 p-4 sm:p-5 shadow-xs transition-all">
       {/* Widget Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 mb-3 border-b border-stone-100 dark:border-zinc-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 mb-1.5 border-b border-stone-100 dark:border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <span className="p-1.5 rounded-lg bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300">
             <GraduationCap size={16} />
@@ -115,7 +115,7 @@ export function UpcomingSubmissionsClient({
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
                     <span className="font-mono text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-stone-200/70 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300 truncate">
                       {assignment.subject}
                     </span>

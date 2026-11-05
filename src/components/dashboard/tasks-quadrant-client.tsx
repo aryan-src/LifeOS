@@ -15,7 +15,7 @@ export function TasksQuadrantClient({
   todayStr,
 }: TasksQuadrantClientProps) {
   return (
-    <div className="flex flex-col gap-4 h-full w-full">
+    <div className="flex flex-col gap-2 h-full w-full">
       <TodayFocusCard
         initialTasks={initialTasks}
         todayStr={todayStr}

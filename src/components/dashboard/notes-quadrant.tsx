@@ -72,7 +72,7 @@ export async function NotesQuadrant() {
         </div>
       </div>
 
-      <div className="pt-3 flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm border-t border-outline-variant/20 dark:border-zinc-800/60 mt-2">
+      <div className="pt-3 flex items-center justify-between text-outline dark:text-zinc-400 font-label-sm text-label-sm border-t border-outline-variant/20 dark:border-zinc-800/60 mt-1">
         <span>{notes.length} total sparks</span>
         <Link
           href="/notes"

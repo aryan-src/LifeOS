@@ -6,7 +6,7 @@ import { UpcomingSubmissionsClient } from './upcoming-submissions-client';
 export function UpcomingSubmissionsSkeleton() {
   return (
     <div className="w-full rounded-2xl border border-stone-200/70 dark:border-stone-800 bg-white dark:bg-stone-900/60 p-4 sm:p-5 shadow-xs animate-pulse">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 bg-stone-200 dark:bg-stone-800 rounded" />
           <div className="h-4 w-44 bg-stone-200 dark:bg-stone-800 rounded" />

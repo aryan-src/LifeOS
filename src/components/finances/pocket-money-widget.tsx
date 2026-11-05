@@ -108,7 +108,7 @@ export function PocketMoneyWidget({
 
       {/* BEGIN: ActivityChartSection */}
       <section
-        className="space-y-5 rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-2"
+        className="space-y-5 rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-1"
         data-purpose="7-day-chart"
       >
         {/* Embedded Metrics 1 & 2 */}
@@ -182,7 +182,7 @@ export function PocketMoneyWidget({
                 );
               })}
             </div>
-            <div className="grid grid-cols-7 gap-2.5 mt-2.5 text-center text-xs text-stone-400 dark:text-zinc-500 font-medium">
+            <div className="grid grid-cols-7 gap-2.5 mt-1 text-center text-xs text-stone-400 dark:text-zinc-500 font-medium">
               {days.map((d, idx) => (
                 <span
                   key={idx}

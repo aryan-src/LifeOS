@@ -660,7 +660,7 @@ export function FocusTimer({
         </div>
 
         {/* Tactile Quiet Interaction CTA: Minimal Smooth Circular Play/Pause & Reset */}
-        <div className="mt-4 flex items-center justify-center gap-3">
+        <div className="mt-2 flex items-center justify-center gap-3">
           {/* Main Focus Action CTA Button */}
           <button
             type="button"
@@ -707,7 +707,7 @@ export function FocusTimer({
 
         {/* Telemetry notification pill */}
         {telemetryFeedback && (
-          <div className="mt-2 text-[11px] font-mono text-emerald-700 dark:text-emerald-400 animate-in fade-in">
+          <div className="mt-1 text-[11px] font-mono text-emerald-700 dark:text-emerald-400 animate-in fade-in">
             {telemetryFeedback} ✓
           </div>
         )}
@@ -716,7 +716,7 @@ export function FocusTimer({
       {/* 4. Subdued Presets & Dynamic Completion Readout */}
       <div className="space-y-2">
         {/* Dynamic Completion Estimate Badge */}
-        <div className="flex items-center justify-center -mt-1 mb-2" id="session-finish-readout">
+        <div className="flex items-center justify-center -mt-0.5 mb-1" id="session-finish-readout">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EE] dark:bg-zinc-800/80 border border-[#E7E5DD] dark:border-zinc-700/60 text-[11px] font-mono text-stone-500 dark:text-zinc-400 shadow-[0_2px_8px_-2px_rgba(28,25,23,0.04)] select-none">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
             <span>Finishes at {finishTimeText}</span>
@@ -839,15 +839,15 @@ export function FocusTimer({
         {/* Task Dropdown Selection List */}
         {isTaskDropdownOpen && (
           <div
-            className="absolute left-0 right-0 bottom-full mb-2 bg-[#FBFBF9] dark:bg-zinc-900 rounded-2xl border border-[#E3E1D7] dark:border-zinc-700 shadow-xl p-2 z-30 text-xs font-sans animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 right-0 bottom-full mb-1 bg-[#FBFBF9] dark:bg-zinc-900 rounded-2xl border border-[#E3E1D7] dark:border-zinc-700 shadow-xl p-2 z-30 text-xs font-sans animate-in fade-in zoom-in-95 duration-150"
             id="task-dropdown"
           >
-            <div className="px-2 py-1.5 text-[10px] font-mono text-stone-400 dark:text-zinc-500 uppercase tracking-wider border-b border-[#EFECE4] dark:border-zinc-800 mb-1 flex items-center justify-between">
+            <div className="px-2 py-1.5 text-[10px] font-mono text-stone-400 dark:text-zinc-500 uppercase tracking-wider border-b border-[#EFECE4] dark:border-zinc-800 mb-0.5 flex items-center justify-between">
               <span>Linked Notion Pages &amp; Tasks</span>
             </div>
 
             {/* Quick search input */}
-            <div className="px-1 mb-1.5">
+            <div className="px-1 mb-1">
               <div className="flex items-center gap-1.5 px-2 py-1 bg-[#F4F3ED] dark:bg-zinc-800 rounded-lg text-xs">
                 <Search className="w-3 h-3 text-stone-400" />
                 <input

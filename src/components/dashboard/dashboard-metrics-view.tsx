@@ -64,7 +64,7 @@ export function DashboardMetricsView({
             </span>
           </div>
         </div>
-        <div suppressHydrationWarning className="w-full bg-stone-100 dark:bg-stone-800/80 h-1.5 rounded-full overflow-hidden mt-1">
+        <div suppressHydrationWarning className="w-full bg-stone-100 dark:bg-stone-800/80 h-1.5 rounded-full overflow-hidden mt-0.5">
           <div
             suppressHydrationWarning
             className="bg-emerald-600 dark:bg-emerald-500 h-full rounded-full transition-all duration-500"
@@ -97,7 +97,7 @@ export function DashboardMetricsView({
             </span>
           </div>
         </div>
-        <div suppressHydrationWarning className="w-full bg-stone-100 dark:bg-stone-800/80 h-1.5 rounded-full overflow-hidden mt-1">
+        <div suppressHydrationWarning className="w-full bg-stone-100 dark:bg-stone-800/80 h-1.5 rounded-full overflow-hidden mt-0.5">
           <div
             suppressHydrationWarning
             className="bg-emerald-600 dark:bg-emerald-500 h-full rounded-full transition-all duration-500"
@@ -126,7 +126,7 @@ export function DashboardMetricsView({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800/70 text-stone-600 dark:text-stone-300 font-medium">
             {completedProjectsCount} completed
           </span>
@@ -157,7 +157,7 @@ export function DashboardMetricsView({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 mt-1 text-xs text-stone-500 dark:text-stone-400">
+        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-stone-500 dark:text-stone-400">
           <span className="text-stone-700 dark:text-stone-300 font-medium shrink-0">
             {promotedToProjectsCount} promoted
           </span>

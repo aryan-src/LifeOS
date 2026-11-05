@@ -46,7 +46,7 @@ export function FinancesSkeleton() {
           <div className="h-4 w-14 bg-stone-200 dark:bg-zinc-800 rounded" />
         </div>
       </div>
-      <div className="rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-2 space-y-4">
+      <div className="rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-stone-200/60 dark:border-zinc-800/60 p-4 sm:p-5 my-1 space-y-4">
         <div className="grid grid-cols-[1fr_1.15fr] sm:grid-cols-[1fr_1.2fr] gap-3 sm:gap-4 pb-4 border-b border-stone-200/60 dark:border-zinc-800/60">
           <div className="space-y-2 min-w-0">
             <div className="h-3 w-16 bg-stone-200 dark:bg-zinc-800 rounded" />
@@ -71,7 +71,7 @@ export function FinancesSkeleton() {
           </div>
         </div>
       </div>
-      <div className="h-5 w-full bg-stone-200/50 dark:bg-zinc-800/60 rounded mt-1" />
+      <div className="h-5 w-full bg-stone-200/50 dark:bg-zinc-800/60 rounded mt-0.5" />
     </div>
   );
 }

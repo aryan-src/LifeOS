@@ -114,7 +114,7 @@ export async function SubmissionsAndFocusCard({
       </div>
 
       {/* Card Footer */}
-      <div className="mt-3 shrink-0 pt-2.5 border-t border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+      <div className="mt-1.5 shrink-0 pt-2.5 border-t border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-between text-xs">
         <Link
           className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
           href="/assignments"
@@ -136,12 +136,12 @@ export function SubmissionsAndFocusSkeleton() {
         <div className="h-7 w-52 bg-stone-200 dark:bg-zinc-800 rounded-lg" />
         <div className="h-4 w-16 bg-stone-200 dark:bg-zinc-800 rounded" />
       </div>
-      <div className="space-y-3 my-4">
+      <div className="space-y-3 my-2">
         <div className="h-10 bg-stone-200/60 dark:bg-zinc-800/50 rounded-xl" />
         <div className="h-10 bg-stone-200/60 dark:bg-zinc-800/50 rounded-xl" />
         <div className="h-10 bg-stone-200/60 dark:bg-zinc-800/50 rounded-xl" />
       </div>
-      <div className="h-4 w-44 bg-stone-200 dark:bg-zinc-800 rounded mt-2" />
+      <div className="h-4 w-44 bg-stone-200 dark:bg-zinc-800 rounded mt-1" />
     </div>
   );
 }

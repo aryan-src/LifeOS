@@ -41,7 +41,7 @@ export async function DashboardCommandCenter() {
   return (
     <div className="w-full min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-stone-800 dark:text-zinc-200 font-sans transition-colors relative flex flex-col">
       {/* Main In-Flow Content Container with normal vertical flow */}
-      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 pt-4 pb-32 sm:pb-36 flex flex-col gap-6">
+      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 pt-4 pb-32 sm:pb-36 flex flex-col gap-3">
         {/* Dynamic Local Greeting Hero Banner */}
         <section data-purpose="hero-overview-banner">
           <DashboardGreeting
@@ -54,7 +54,7 @@ export async function DashboardCommandCenter() {
 
         {/* TOP ROW: 3-Card Grid (Pocket Money, Today's Focus, Upcoming Submissions) */}
         {/* Equal height across cards using grid with items-stretch */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
           <Suspense fallback={<FinancesSkeleton />}>
             <FinancesQuadrant />
           </Suspense>
@@ -69,9 +69,9 @@ export async function DashboardCommandCenter() {
         </div>
 
         {/* BOTTOM ROW: Unified 3-Column Paper Shelf */}
-        {/* In-flow element with consistent 24px gap (gap-6) from top grid */}
+        {/* In-flow element with consistent gap from top grid */}
         <div
-          className="bg-stone-50/80 dark:bg-zinc-900/60 rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 items-stretch transition-colors"
+          className="bg-stone-50/80 dark:bg-zinc-900/60 rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-stretch transition-colors"
           data-purpose="unified-bottom-row"
         >
           {/* Section 1: Habits */}

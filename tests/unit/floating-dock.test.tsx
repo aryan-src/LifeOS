@@ -75,18 +75,19 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('border-stone-200/50');
   });
 
-  it('renders AppShell with left-anchored vertical dock wrapper and content padding', () => {
+  it('renders AppShell with pure floating dock overlay and zero left sidebar gutter', () => {
     const html = renderToString(
       <AppShell>
         <div>Content</div>
       </AppShell>
     );
 
-    // Left-anchored vertical dock wrapper
+    // Left-anchored pure floating dock overlay wrapper
     expect(html).toContain('fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col h-fit');
 
-    // Content left-padding to prevent underlap
-    expect(html).toMatch(/pl-(24|28)/);
+    // Canvas expands to full width without any reserved sidebar layout gutter
+    expect(html).toContain('w-full');
+    expect(html).not.toMatch(/pl-(24|28|56|64)/);
   });
 
   it('renders edge detection zone along the left edge of the screen', () => {

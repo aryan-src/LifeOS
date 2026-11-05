@@ -37,27 +37,23 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Unified global workspace shell with responsive animated dock visibility
+  // Full-width workspace shell with pure floating dock overlay (zero left sidebar gutter)
   return (
     <>
       <QuickCaptureOmnibar />
-      <div
-        className={`min-h-screen flex flex-col transition-[padding] duration-300 ease-in-out ${
-          isDockVisible ? 'pl-24 md:pl-28' : 'pl-0'
-        } bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container`}
-      >
+      <div className="min-h-screen w-full flex flex-col bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
         {children}
       </div>
       <AnimatePresence>
         {isDockVisible && (
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col h-fit"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col h-fit pointer-events-auto"
           >
-            <FloatingDock />
+            <FloatingDock defaultRevealed={true} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -69,9 +65,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen w-full pl-24 md:pl-28 bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100">
+        <div className="min-h-screen w-full flex flex-col bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100">
           {children}
-        </main>
+        </div>
       }
     >
       <AppShellContent>{children}</AppShellContent>

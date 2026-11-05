@@ -267,21 +267,6 @@ export function MacOSSidebar({
       >
         {renderSidebarContent(false)}
       </motion.aside>
-
-      {/* Mobile Drawer (Activated via header hamburger) */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity"
-            onClick={closeMobileMenu}
-          />
-          {/* Drawer content */}
-          <div className="relative h-full w-[260px] max-w-[85vw] box-border border-r border-amber-900/5 dark:border-white/5 bg-[#FDFCF9] dark:bg-[#121110] overflow-x-hidden p-3.5 z-10 animate-in slide-in-from-left duration-200 flex flex-col justify-between">
-            {renderSidebarContent(true)}
-          </div>
-        </div>
-      )}
     </>
   );
 }

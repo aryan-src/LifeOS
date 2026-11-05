@@ -85,7 +85,7 @@ export function WorkspaceHeader({
       className={`sticky top-0 z-30 w-full bg-[#FAF9F5]/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-stone-200/60 dark:border-zinc-800/60 shrink-0 h-[48px] transition-colors ${className}`}
       data-purpose="global-workspace-header"
     >
-      <div className="max-w-[1400px] h-full mx-auto px-4 sm:px-6 flex items-center justify-between">
+      <div className="w-full max-w-7xl h-full mx-auto px-6 flex items-center justify-between">
         {/* Left: Burger Button, Brand Logo & Dynamic Route Breadcrumb */}
         <div className="flex items-center space-x-2.5">
           {/* Burger Button to Toggle Dock Visibility */}

@@ -17,7 +17,7 @@ import { signOutAction } from '@/lib/actions/profile';
 import { useTheme } from '@/lib/theme/use-theme';
 
 export function TopHeader() {
-  const { toggleMobileMenu, isSidebarCollapsed } = useUIStore();
+  const { toggleDock, isDockVisible } = useUIStore();
   const { theme, isDark, setTheme, toggleLightDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,10 +59,11 @@ export function TopHeader() {
         {/* Left side: Breadcrumb */}
         <div className="flex items-center gap-2.5 min-w-0">
           <button
-            onClick={toggleMobileMenu}
-            className="hidden p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+            onClick={toggleDock}
+            className="p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 rounded-lg hover:bg-surface-container dark:hover:bg-zinc-900 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
             type="button"
-            aria-label="Toggle navigation drawer"
+            aria-label={isDockVisible ? 'Hide dock navigation' : 'Show dock navigation'}
+            title={isDockVisible ? 'Hide Dock (⌘B)' : 'Show Dock (⌘B)'}
           >
             <Menu className="size-5" />
           </button>

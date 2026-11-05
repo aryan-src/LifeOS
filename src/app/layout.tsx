@@ -67,7 +67,9 @@ export default function RootLayout({
       >
         <AppShell>
           <WorkspaceHeader />
-          {children}
+          <main className="w-full max-w-7xl mx-auto px-6 flex-1 flex flex-col">
+            {children}
+          </main>
         </AppShell>
         <Analytics />
       </body>

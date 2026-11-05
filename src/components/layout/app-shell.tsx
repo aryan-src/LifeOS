@@ -51,7 +51,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col h-fit pointer-events-auto"
+            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center"
           >
             <FloatingDock defaultRevealed={true} />
           </motion.div>

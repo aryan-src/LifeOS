@@ -83,7 +83,7 @@ describe('FloatingDock Navigation System', () => {
     );
 
     // Left-anchored pure floating dock overlay wrapper
-    expect(html).toContain('fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col h-fit');
+    expect(html).toContain('fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center');
 
     // Canvas expands to full width without any reserved sidebar layout gutter
     expect(html).toContain('w-full');

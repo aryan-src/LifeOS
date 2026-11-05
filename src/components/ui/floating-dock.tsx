@@ -72,6 +72,7 @@ export interface FloatingDockProps {
   desktopClassName?: string;
   mobileClassName?: string;
   defaultRevealed?: boolean;
+  className?: string;
 }
 
 export const FloatingDock = ({
@@ -79,11 +80,12 @@ export const FloatingDock = ({
   desktopClassName,
   mobileClassName,
   defaultRevealed = false,
+  className,
 }: FloatingDockProps) => {
   return (
     <>
       <FloatingDockDesktop
-        className={desktopClassName}
+        className={desktopClassName || className}
         items={items}
         defaultRevealed={defaultRevealed}
       />

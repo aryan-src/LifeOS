@@ -178,7 +178,7 @@ const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        "mx-auto flex flex-row items-center justify-center h-12 gap-3 px-3 py-1 overflow-visible hidden md:flex",
+        "mx-auto flex flex-row items-end justify-center h-12 gap-3 px-3 pb-1 overflow-visible hidden md:flex",
         className
       )}
     >
@@ -255,11 +255,11 @@ function IconContainer({
     >
       <motion.div
         ref={ref}
-        style={{ width, height }}
+        style={{ width, height, transformOrigin: "bottom center" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          "relative flex aspect-square items-center justify-center rounded-full transition-colors cursor-pointer select-none",
+          "relative flex aspect-square items-center justify-center rounded-full origin-bottom transition-colors cursor-pointer select-none",
           isActive
             ? "bg-white text-stone-900 shadow-sm dark:bg-zinc-800 dark:text-stone-100 ring-1 ring-stone-900/5 dark:ring-white/10"
             : "bg-stone-100/70 hover:bg-stone-200/60 dark:bg-zinc-900/60 dark:hover:bg-zinc-800/60 text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 border border-stone-200/30 dark:border-zinc-800/40"
@@ -271,7 +271,7 @@ function IconContainer({
               initial={{ opacity: 0, y: 10, x: "-50%" }}
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 2, x: "-50%" }}
-              className="absolute -top-8 left-1/2 -translate-x-1/2 w-fit rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-medium whitespace-pre text-stone-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-100 pointer-events-none z-50"
+              className="absolute -top-10 left-1/2 -translate-x-1/2 w-fit rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-medium whitespace-pre text-stone-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-100 pointer-events-none z-50"
             >
               {title}
             </motion.div>

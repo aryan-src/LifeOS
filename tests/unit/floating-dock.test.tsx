@@ -60,17 +60,19 @@ describe('FloatingDock Navigation System', () => {
     expect(html).toContain('Settings');
   });
 
-  it('applies compact horizontal orientation with overflow-visible', () => {
+  it('applies compact horizontal orientation with items-end and bottom-anchored origin', () => {
     const html = renderToString(<FloatingDock />);
-    // Compact horizontal container styling
+    // Compact horizontal container styling aligned to bottom baseline
     expect(html).toContain('h-12');
     expect(html).toContain('flex-row');
-    expect(html).toContain('items-center');
+    expect(html).toContain('items-end');
     expect(html).toContain('justify-center');
     expect(html).toContain('gap-3');
     expect(html).toContain('px-3');
-    expect(html).toContain('py-1');
     expect(html).toContain('overflow-visible');
+
+    // Bottom-anchored transform origin for native macOS dock upward scaling physics
+    expect(html).toContain('origin-bottom');
   });
 
   it('renders AppShell with compact full-width fixed footer bar and zero left sidebar gutter', () => {

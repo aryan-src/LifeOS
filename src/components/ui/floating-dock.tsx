@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -67,18 +67,26 @@ export const DEFAULT_DOCK_ITEMS: DockItem[] = [
   },
 ];
 
+export interface FloatingDockProps {
+  items?: DockItem[];
+  desktopClassName?: string;
+  mobileClassName?: string;
+  defaultRevealed?: boolean;
+}
+
 export const FloatingDock = ({
   items = DEFAULT_DOCK_ITEMS,
   desktopClassName,
   mobileClassName,
-}: {
-  items?: DockItem[];
-  desktopClassName?: string;
-  mobileClassName?: string;
-}) => {
+  defaultRevealed = false,
+}: FloatingDockProps) => {
   return (
     <>
-      <FloatingDockDesktop className={desktopClassName} items={items} />
+      <FloatingDockDesktop
+        className={desktopClassName}
+        items={items}
+        defaultRevealed={defaultRevealed}
+      />
       <FloatingDockMobile className={mobileClassName} items={items} />
     </>
   );
@@ -159,25 +167,99 @@ const FloatingDockMobile = ({
 const FloatingDockDesktop = ({
   items,
   className,
+  defaultRevealed = false,
 }: {
   items: DockItem[];
   className?: string;
+  defaultRevealed?: boolean;
 }) => {
   const mouseY = useMotionValue(Infinity);
+  const [isRevealed, setIsRevealed] = useState(defaultRevealed);
+  const retractTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleReveal = useCallback(() => {
+    if (retractTimeoutRef.current) {
+      clearTimeout(retractTimeoutRef.current);
+      retractTimeoutRef.current = null;
+    }
+    setIsRevealed(true);
+  }, []);
+
+  const handleRetract = useCallback(() => {
+    if (retractTimeoutRef.current) {
+      clearTimeout(retractTimeoutRef.current);
+    }
+    retractTimeoutRef.current = setTimeout(() => {
+      setIsRevealed(false);
+      retractTimeoutRef.current = null;
+    }, 350);
+  }, []);
+
+  // Global window pointer / mousemove listener for left edge proximity (clientX <= 16px)
+  useEffect(() => {
+    const handlePointerMove = (e: MouseEvent | PointerEvent) => {
+      if (e.clientX <= 16) {
+        handleReveal();
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("mousemove", handlePointerMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("mousemove", handlePointerMove);
+      if (retractTimeoutRef.current) {
+        clearTimeout(retractTimeoutRef.current);
+      }
+    };
+  }, [handleReveal]);
 
   return (
-    <motion.div
-      onMouseMove={(e) => mouseY.set(e.pageY)}
-      onMouseLeave={() => mouseY.set(Infinity)}
-      className={cn(
-        "w-16 flex-col items-center py-4 px-3 gap-3 rounded-2xl backdrop-blur-md bg-white/60 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-lg shadow-stone-900/5 dark:shadow-black/30 hidden md:flex",
-        className
-      )}
-    >
-      {items.map((item) => (
-        <IconContainer key={item.title} mouseY={mouseY} {...item} />
-      ))}
-    </motion.div>
+    <>
+      {/* Invisible Edge Detection Zone along the left edge of the viewport */}
+      <div
+        data-purpose="edge-detection-zone"
+        onMouseEnter={handleReveal}
+        onMouseLeave={handleRetract}
+        className="fixed left-0 top-0 h-screen w-4 z-50 pointer-events-auto"
+        aria-hidden="true"
+      />
+
+      {/* Main animated vertical dock container */}
+      <motion.div
+        data-purpose="floating-dock-desktop"
+        onMouseEnter={handleReveal}
+        onMouseLeave={() => {
+          mouseY.set(Infinity);
+          handleRetract();
+        }}
+        onFocusCapture={handleReveal}
+        onBlurCapture={handleRetract}
+        onMouseMove={(e) => mouseY.set(e.pageY)}
+        initial={false}
+        animate={{
+          x: isRevealed ? "0%" : "-130%",
+          opacity: isRevealed ? 1 : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 280,
+          damping: 24,
+        }}
+        style={{
+          pointerEvents: isRevealed ? "auto" : "none",
+        }}
+        className={cn(
+          "w-16 flex-col items-center py-4 px-3 gap-3 rounded-2xl backdrop-blur-md bg-white/60 dark:bg-zinc-950/70 border border-stone-200/50 dark:border-zinc-800/50 shadow-lg shadow-stone-900/5 dark:shadow-black/30 hidden md:flex",
+          className
+        )}
+      >
+        {items.map((item) => (
+          <IconContainer key={item.title} mouseY={mouseY} {...item} />
+        ))}
+      </motion.div>
+    </>
   );
 };
 

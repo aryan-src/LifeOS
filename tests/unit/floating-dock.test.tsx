@@ -88,4 +88,20 @@ describe('FloatingDock Navigation System', () => {
     // Content left-padding to prevent underlap
     expect(html).toMatch(/pl-(24|28)/);
   });
+
+  it('renders edge detection zone along the left edge of the screen', () => {
+    const html = renderToString(<FloatingDock />);
+    expect(html).toContain('data-purpose="edge-detection-zone"');
+    expect(html).toContain('fixed left-0 top-0 h-screen w-4 z-50 pointer-events-auto');
+  });
+
+  it('renders desktop dock with auto-hiding off-screen translation by default and reveals when requested', () => {
+    const htmlDefault = renderToString(<FloatingDock />);
+    expect(htmlDefault).toContain('data-purpose="floating-dock-desktop"');
+    expect(htmlDefault).toContain('-130%');
+
+    const htmlRevealed = renderToString(<FloatingDock defaultRevealed={true} />);
+    expect(htmlRevealed).toContain('data-purpose="floating-dock-desktop"');
+    expect(htmlRevealed).not.toContain('-130%');
+  });
 });

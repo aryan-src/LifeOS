@@ -330,3 +330,64 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
   }
   return { success: true };
 }
+
+/**
+ * Update an existing project's fields.
+ */
+export async function updateProject(
+  projectId: string,
+  updates: {
+    title?: string;
+    description?: string | null;
+    status?: ProjectStatus;
+    priority?: number;
+    budget?: number;
+    targetDate?: string | null;
+  }
+): Promise<ActionResponse<Project>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error('Unauthorized');
+
+    const updatePayload: Partial<InsertProject> = {};
+    if (updates.title !== undefined) updatePayload.title = updates.title.trim();
+    if (updates.description !== undefined) updatePayload.description = updates.description;
+    if (updates.status !== undefined) updatePayload.status = updates.status;
+    if (updates.priority !== undefined) updatePayload.priority = updates.priority;
+    if (updates.budget !== undefined) updatePayload.budget = updates.budget;
+    if (updates.targetDate !== undefined) updatePayload.target_date = updates.targetDate;
+
+    const { data, error } = await supabase
+      .from('projects')
+      .update(updatePayload)
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error updating project:', error);
+      return { success: false, error: formatErrorMessage(error) };
+    }
+
+    revalidatePath('/projects');
+    revalidatePath('/tasks');
+    revalidatePath('/finances');
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+    try {
+      revalidateTag('projects-metrics', 'max');
+    } catch {
+      // Invariant: outside Next.js request context (e.g. tests)
+    }
+
+    return { success: true, data: data as Project };
+  } catch (err) {
+    console.error('Unhandled error in updateProject:', err);
+    return { success: false, error: formatErrorMessage(err) };
+  }
+}

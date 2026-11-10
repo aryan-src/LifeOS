@@ -25,7 +25,17 @@ vi.mock('@/lib/actions/projects', () => ({
   }),
 }));
 
-describe('Initiate New Project Modal (Redesigned Notion/Linear Aesthetic)', () => {
+vi.mock('@/lib/actions/tasks', () => ({
+  createTask: vi.fn().mockResolvedValue({
+    success: true,
+    data: {
+      id: 'task-123',
+      title: 'Discovery & Wireframes',
+    },
+  }),
+}));
+
+describe('Initiate New Project Modal (Split 2-Column Sidebar Layout)', () => {
   it('returns null when isOpen is false', () => {
     const html = renderToString(
       <CreateProjectModal isOpen={false} onClose={vi.fn()} />
@@ -33,7 +43,7 @@ describe('Initiate New Project Modal (Redesigned Notion/Linear Aesthetic)', () =
     expect(html).toBe('');
   });
 
-  it('renders modal container, backdrop scrim, and ambient highlight when isOpen is true', () => {
+  it('renders modal container with 2-column sidebar layout, backdrop scrim, and ambient highlight', () => {
     const html = renderToString(
       <CreateProjectModal isOpen={true} onClose={vi.fn()} />
     );
@@ -43,20 +53,52 @@ describe('Initiate New Project Modal (Redesigned Notion/Linear Aesthetic)', () =
     expect(html).toContain('bg-stone-950/30');
     expect(html).toContain('backdrop-blur-[6px]');
 
-    // 2. Modal Canvas Card
+    // 2. Modal Canvas Card (Variant 1: Split 2-Column Sidebar Layout)
     expect(html).toContain('data-purpose="initiate-project-modal"');
+    expect(html).toContain('max-w-4xl');
     expect(html).toContain('bg-[#FAF9F5]');
     expect(html).toContain('shadow-2xl');
     expect(html).toContain('rounded-2xl');
+    expect(html).toContain('flex-col md:flex-row');
 
     // 3. Ambient 1px Highlight Accent Bar
     expect(html).toContain('from-emerald-500/0 via-emerald-600/40 to-teal-500/0');
+  });
 
-    // 4. Header & Icon Tile
+  it('renders Left Column with Hero Header, Project Breakdown Milestones, and AI Smart Assist', () => {
+    const html = renderToString(
+      <CreateProjectModal isOpen={true} onClose={vi.fn()} />
+    );
+
+    // Hero Header in Left Sidebar
     expect(html).toContain('Initiate New Project');
+    expect(html).toContain('LifeOS Workstream');
     expect(html).toContain('bg-emerald-50');
     expect(html).toContain('text-emerald-700');
+
+    // Project Breakdown
+    expect(html).toContain('Project Breakdown');
+    expect(html).toContain('Discovery &amp; Wireframes');
+    expect(html).toContain('Audits, user journeys &amp; component specs');
+    expect(html).toContain('Add Custom Milestone');
+
+    // AI Smart Assist (BETA)
+    expect(html).toContain('AI Smart Assist');
+    expect(html).toContain('BETA');
+    expect(html).toContain('Generate structured milestones from title &amp; scope in one click.');
+    expect(html).toContain('3-Sprint Agile sequence');
+    expect(html).toContain('Discovery → MVP → Launch');
+    expect(html).toContain('Auto-generate Phases');
+  });
+
+  it('renders Right Column Header with Project Specifications and accessible close button', () => {
+    const html = renderToString(
+      <CreateProjectModal isOpen={true} onClose={vi.fn()} />
+    );
+
+    expect(html).toContain('Project Specifications');
     expect(html).toContain('id="close-modal-btn"');
+    expect(html).toContain('aria-label="Close dialog"');
   });
 
   it('renders high-priority project title input with autoFocus and required attributes', () => {
@@ -66,7 +108,7 @@ describe('Initiate New Project Modal (Redesigned Notion/Linear Aesthetic)', () =
 
     expect(html).toContain('id="project-title"');
     expect(html).toContain('name="title"');
-    expect(html).toContain('placeholder="Enter project title..."');
+    expect(html).toContain('placeholder="e.g. Operating System Revision"');
     expect(html).toContain('font-semibold');
     expect(html).toContain('text-base');
   });
@@ -119,6 +161,7 @@ describe('Initiate New Project Modal (Redesigned Notion/Linear Aesthetic)', () =
     expect(html).toContain('name="budget"');
     expect(html).toContain('font-mono');
     expect(html).toContain('tabular-nums');
+    expect(html).toContain('placeholder="0.00"');
     expect(html).toContain('₹');
   });
 

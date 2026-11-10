@@ -48,10 +48,13 @@ describe('Initiate New Project Modal (Split 2-Column Sidebar Layout)', () => {
       <CreateProjectModal isOpen={true} onClose={vi.fn()} />
     );
 
-    // 1. Backdrop Scrim Overlay
+    // 1. Backdrop Scrim Overlay (Full-Viewport Root Layering)
     expect(html).toContain('data-purpose="modal-overlay"');
-    expect(html).toContain('bg-stone-950/30');
-    expect(html).toContain('backdrop-blur-[6px]');
+    expect(html).toContain('fixed inset-0');
+    expect(html).toContain('z-[100]');
+    expect(html).toContain('w-screen h-screen');
+    expect(html).toContain('bg-stone-950/40');
+    expect(html).toContain('backdrop-blur-md');
 
     // 2. Modal Canvas Card (Variant 1: Split 2-Column Sidebar Layout)
     expect(html).toContain('data-purpose="initiate-project-modal"');

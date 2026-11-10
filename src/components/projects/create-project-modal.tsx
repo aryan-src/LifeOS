@@ -206,6 +206,16 @@ export function CreateProjectModal({
     }
   }, [isOpen]);
 
+  // Lock body scroll when modal is open to prevent background bleed/scroll
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   // Global Keyboard shortcuts: ⌘+Enter / Ctrl+Enter to submit, Escape to close
   useEffect(() => {
     if (!isOpen) return;
@@ -475,7 +485,7 @@ export function CreateProjectModal({
 
   // If modal closed but toast notification is active, render only the floating toast portal
   if (!isOpen) {
-    if (toastMessage && typeof document !== 'undefined') {
+    if (toastMessage && typeof document !== 'undefined' && document.body) {
       return createPortal(
         <div
           role="status"
@@ -491,22 +501,22 @@ export function CreateProjectModal({
     return null;
   }
 
-  return (
+  const modalContent = (
     <>
-      {/* 1. Modal Container & Backdrop Scrim */}
+      {/* 1. Modal Container & Backdrop Scrim (Root Layering: fixed inset-0 z-[100] w-screen h-screen) */}
       <div
         data-purpose="modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-labelledby="initiate-project-title"
         onClick={handleCancel}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-950/30 backdrop-blur-[6px] transition-all animate-in fade-in duration-200"
+        className="fixed inset-0 z-[100] w-screen h-screen flex items-center justify-center p-4 sm:p-6 bg-stone-950/40 dark:bg-black/60 backdrop-blur-md transition-all animate-in fade-in duration-200"
       >
         {/* Modal Canvas: Split 2-Column Sidebar Layout */}
         <section
           data-purpose="initiate-project-modal"
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-4xl max-h-[92vh] bg-[#FAF9F5] dark:bg-[#090A0F] border border-stone-200/90 dark:border-zinc-800/90 rounded-2xl shadow-modal shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col md:flex-row"
+          className="relative w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] bg-[#FAF9F5] dark:bg-[#090A0F] border border-stone-200/90 dark:border-zinc-800/90 rounded-2xl shadow-modal shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col md:flex-row"
         >
           {/* Top Subtle Ambient Highlight */}
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-600/40 to-teal-500/0 pointer-events-none z-10" />
@@ -938,6 +948,7 @@ export function CreateProjectModal({
       {/* Subtle Toast Notification */}
       {toastMessage &&
         typeof document !== 'undefined' &&
+        document.body &&
         createPortal(
           <div
             role="status"
@@ -951,6 +962,13 @@ export function CreateProjectModal({
         )}
     </>
   );
+
+  // In the browser, portal directly into document.body to prevent parent container clipping and z-index overlap.
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 }
 
 export const ProjectCreateModal = CreateProjectModal;

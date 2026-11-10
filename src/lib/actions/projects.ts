@@ -209,13 +209,28 @@ export async function createProject(
   formData: FormData
 ): Promise<ActionResponse<Project>> {
   try {
+    const rawStatus = (formData.get('status') as string) || 'active';
+    const status = rawStatus === 'planning' ? 'backlog' : rawStatus;
+
+    let targetDateRaw = formData.get('targetDate');
+    let targetDate: string | null = null;
+    if (typeof targetDateRaw === 'string' && targetDateRaw.trim()) {
+      const trimmed = targetDateRaw.trim();
+      const dmyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+      if (dmyMatch) {
+        targetDate = `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+      } else {
+        targetDate = trimmed;
+      }
+    }
+
     const parsed = createProjectSchema.safeParse({
       title: formData.get('title'),
       description: formData.get('description'),
-      status: formData.get('status') || 'active',
+      status,
       priority: formData.get('priority') || '2',
       budget: formData.get('budget') || '0',
-      targetDate: formData.get('targetDate') || null,
+      targetDate,
     });
 
     if (!parsed.success) {

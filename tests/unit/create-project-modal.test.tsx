@@ -168,6 +168,21 @@ describe('Initiate New Project Modal (Split 2-Column Sidebar Layout)', () => {
     expect(html).toContain('₹');
   });
 
+  it('renders integrated calendar popover in target deadline section when calendar is active', () => {
+    const html = renderToString(
+      <CreateProjectModal
+        isOpen={true}
+        onClose={vi.fn()}
+        defaultCalendarOpen={true}
+      />
+    );
+
+    expect(html).toContain('data-purpose="calendar-popover"');
+    expect(html).toContain('id="calendar-grid"');
+    expect(html).toContain('Clear');
+    expect(html).toContain('Today');
+  });
+
   it('renders description & scope textarea with hairline styling', () => {
     const html = renderToString(
       <CreateProjectModal isOpen={true} onClose={vi.fn()} />

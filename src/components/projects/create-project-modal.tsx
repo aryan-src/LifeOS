@@ -6,6 +6,7 @@ import { createProject, type ProjectWithMetrics } from '@/lib/actions/projects';
 import { createTask } from '@/lib/actions/tasks';
 import type { ProjectStatus } from '@/types/database.types';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { CalendarPopover } from './calendar-popover';
 import { X, CheckCircle2, AlertTriangle, Calendar, Plus, Sparkles, Zap } from 'lucide-react';
 
 export type ExtendedProjectStatus = ProjectStatus | 'planning';
@@ -16,6 +17,7 @@ export interface CreateProjectModalProps {
   defaultStatus?: ExtendedProjectStatus;
   onSuccess?: (project: ProjectWithMetrics) => void;
   currencySymbol?: string;
+  defaultCalendarOpen?: boolean;
 }
 
 interface Milestone {
@@ -168,6 +170,7 @@ export function CreateProjectModal({
   defaultStatus = 'active',
   onSuccess,
   currencySymbol = '₹',
+  defaultCalendarOpen = false,
 }: CreateProjectModalProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -181,6 +184,7 @@ export function CreateProjectModal({
   const [isoDate, setIsoDate] = useState('');
   const [budget, setBudget] = useState('');
   const [description, setDescription] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(defaultCalendarOpen);
 
   // Milestone breakdown state
   const [milestones, setMilestones] = useState<Milestone[]>(DEFAULT_MILESTONES);
@@ -188,6 +192,7 @@ export function CreateProjectModal({
   const formRef = useRef<HTMLFormElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const datePickerRef = useRef<HTMLInputElement>(null);
+  const datePickerContainerRef = useRef<HTMLDivElement>(null);
 
   // Sync modal open state to global UI store (for auto-hiding dock, etc.)
   const setModalOpen = useUIStore((state) => state.setModalOpen);
@@ -242,6 +247,10 @@ export function CreateProjectModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
+        if (isCalendarOpen) {
+          setIsCalendarOpen(false);
+          return;
+        }
         handleCancel();
       } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
@@ -257,7 +266,24 @@ export function CreateProjectModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, isCalendarOpen]);
+
+  // Click outside date picker container to dismiss calendar popover
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        datePickerContainerRef.current &&
+        !datePickerContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCalendarOpen]);
 
   const resetForm = () => {
     setTitle('');
@@ -267,6 +293,7 @@ export function CreateProjectModal({
     setIsoDate('');
     setBudget('');
     setDescription('');
+    setIsCalendarOpen(false);
     setMilestones(DEFAULT_MILESTONES);
     setErrorMessage(null);
   };
@@ -291,17 +318,7 @@ export function CreateProjectModal({
   };
 
   const handleOpenPicker = () => {
-    if (datePickerRef.current) {
-      if (typeof datePickerRef.current.showPicker === 'function') {
-        try {
-          datePickerRef.current.showPicker();
-          return;
-        } catch {
-          // fallback
-        }
-      }
-      datePickerRef.current.focus();
-    }
+    setIsCalendarOpen(true);
   };
 
   // Milestone management
@@ -826,15 +843,20 @@ export function CreateProjectModal({
               {/* Field 4: Target Deadline & Budget Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 {/* Deadline Input */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative" ref={datePickerContainerRef}>
                   <label
                     htmlFor="target-deadline"
                     className="text-[11px] font-semibold tracking-wider text-stone-500 dark:text-zinc-400 uppercase flex items-center justify-between"
                   >
                     <span>Target Deadline</span>
+                    {isoDate && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono lowercase">
+                        {displayDate}
+                      </span>
+                    )}
                   </label>
                   <div
-                    onClick={handleOpenPicker}
+                    onClick={() => setIsCalendarOpen(true)}
                     className="relative flex items-center h-10 w-full bg-white dark:bg-zinc-900 border border-stone-200/90 dark:border-zinc-800 rounded-xl shadow-tactile focus-within:ring-2 focus-within:ring-stone-900/10 dark:focus-within:ring-zinc-700/50 focus-within:border-stone-800 dark:focus-within:border-zinc-600 transition-all overflow-hidden cursor-pointer"
                   >
                     <input
@@ -842,6 +864,7 @@ export function CreateProjectModal({
                       type="text"
                       value={displayDate}
                       onChange={(e) => handleDateChange(e.target.value)}
+                      onFocus={() => setIsCalendarOpen(true)}
                       placeholder="dd/mm/yyyy"
                       className="w-full h-full bg-transparent border-none pl-3.5 pr-10 py-0 text-xs font-medium text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-0 cursor-pointer"
                     />
@@ -857,13 +880,36 @@ export function CreateProjectModal({
                     />
                     <button
                       type="button"
-                      tabIndex={-1}
                       aria-label="Pick date"
-                      className="absolute right-3.5 text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors pointer-events-none"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCalendarOpen((prev) => !prev);
+                      }}
+                      className="absolute right-3 text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 cursor-pointer"
                     >
                       <Calendar className="w-4 h-4" />
                     </button>
                   </div>
+
+                  {/* Isolated Calendar Component Card */}
+                  {isCalendarOpen && (
+                    <div className="absolute top-full left-0 mt-2 z-50">
+                      <CalendarPopover
+                        selectedIsoDate={isoDate}
+                        onSelectDate={(iso, display) => {
+                          setIsoDate(iso);
+                          setDisplayDate(display);
+                          setIsCalendarOpen(false);
+                        }}
+                        onClear={() => {
+                          setIsoDate('');
+                          setDisplayDate('');
+                          setIsCalendarOpen(false);
+                        }}
+                        onClose={() => setIsCalendarOpen(false)}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Allocated Budget Input */}

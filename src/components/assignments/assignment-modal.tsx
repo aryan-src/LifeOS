@@ -96,7 +96,7 @@ export function AssignmentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/25 dark:bg-black/40 backdrop-blur-md transition-all duration-300 animate-in fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/25 dark:bg-black/40 backdrop-blur-md transition-all duration-300 animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

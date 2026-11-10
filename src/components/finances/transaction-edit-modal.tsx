@@ -169,7 +169,7 @@ export function TransactionEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-900/40 dark:bg-black/60 backdrop-blur-md transition-opacity animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-stone-900/40 dark:bg-black/60 backdrop-blur-md transition-opacity animate-in fade-in duration-150">
       <div
         ref={modalRef}
         className="relative w-full max-w-lg rounded-3xl border border-stone-200/80 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 p-7 shadow-2xl backdrop-blur-xl text-stone-900 dark:text-zinc-100 space-y-6"

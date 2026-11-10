@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { updateProject, deleteProject, type ProjectWithMetrics } from '@/lib/actions/projects';
 import type { ProjectStatus } from '@/types/database.types';
+import { useUIStore } from '@/lib/store/use-ui-store';
 import { X, Edit3, Trash2 } from 'lucide-react';
 
 interface ProjectEditModalProps {
@@ -20,6 +21,19 @@ export function ProjectEditModal({
 }: ProjectEditModalProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const setModalOpen = useUIStore((state) => state.setModalOpen);
+
+  useEffect(() => {
+    if (project) {
+      setModalOpen(true);
+      return () => {
+        setModalOpen(false);
+      };
+    } else {
+      setModalOpen(false);
+    }
+  }, [project, setModalOpen]);
 
   if (!project) return null;
 
@@ -81,7 +95,7 @@ export function ProjectEditModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-project-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 dark:bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/40 dark:bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
     >
       <div
         className="w-full max-w-xl bg-white dark:bg-zinc-900 rounded-2xl border border-stone-200/80 dark:border-zinc-800 shadow-xl overflow-hidden animate-in zoom-in-95 duration-150"

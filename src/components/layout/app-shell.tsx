@@ -11,6 +11,11 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDockVisible = useUIStore((state) => state.isDockVisible);
   const setDockVisible = useUIStore((state) => state.setDockVisible);
+  const isModalOpen = useUIStore((state) => state.isModalOpen);
+  const isCreateProjectOpen = useUIStore((state) => state.isCreateProjectOpen);
+
+  const isModalActive = isModalOpen || isCreateProjectOpen;
+  const isDockHidden = isModalActive || !isDockVisible;
 
   // Synchronize persisted dock visibility from localStorage
   useEffect(() => {
@@ -46,9 +51,19 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Full-width fixed edge-to-edge footer bar spanning the entire screen */}
-      <footer className="fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-1 px-4 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs overflow-visible">
+      <motion.footer
+        initial={false}
+        animate={{
+          y: isDockHidden ? 100 : 0,
+          opacity: isDockHidden ? 0 : 1,
+          pointerEvents: isDockHidden ? 'none' : 'auto',
+        }}
+        transition={{ duration: 0.25, ease: 'easeInOut' }}
+        className="fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-1 px-4 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs overflow-visible"
+        aria-hidden={isDockHidden}
+      >
         <FloatingDock />
-      </footer>
+      </motion.footer>
     </>
   );
 }

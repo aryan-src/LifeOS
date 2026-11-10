@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { createProject, type ProjectWithMetrics } from '@/lib/actions/projects';
 import { createTask } from '@/lib/actions/tasks';
 import type { ProjectStatus } from '@/types/database.types';
+import { useUIStore } from '@/lib/store/use-ui-store';
 import { X, CheckCircle2, AlertTriangle, Calendar, Plus, Sparkles, Zap } from 'lucide-react';
 
 export type ExtendedProjectStatus = ProjectStatus | 'planning';
@@ -188,6 +189,24 @@ export function CreateProjectModal({
   const titleInputRef = useRef<HTMLInputElement>(null);
   const datePickerRef = useRef<HTMLInputElement>(null);
 
+  // Sync modal open state to global UI store (for auto-hiding dock, etc.)
+  const setModalOpen = useUIStore((state) => state.setModalOpen);
+  const setCreateProjectOpen = useUIStore((state) => state.setCreateProjectOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      setModalOpen(true);
+      setCreateProjectOpen(true);
+      return () => {
+        setModalOpen(false);
+        setCreateProjectOpen(false);
+      };
+    } else {
+      setModalOpen(false);
+      setCreateProjectOpen(false);
+    }
+  }, [isOpen, setModalOpen, setCreateProjectOpen]);
+
   // Sync default status when opened
   useEffect(() => {
     if (isOpen) {
@@ -253,6 +272,8 @@ export function CreateProjectModal({
   };
 
   const handleCancel = () => {
+    setModalOpen(false);
+    setCreateProjectOpen(false);
     resetForm();
     onClose();
   };
@@ -475,6 +496,8 @@ export function CreateProjectModal({
         setTimeout(() => setToastMessage(null), 3500);
 
         onSuccess?.(projectWithMetrics);
+        setModalOpen(false);
+        setCreateProjectOpen(false);
         resetForm();
         onClose();
       } else {

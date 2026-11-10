@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useUIStore } from '@/lib/store/use-ui-store';
 
 /**
  * Custom hook to ensure WCAG 2.1 compliant modal dialog accessibility:
  * 1. Closes modal on Escape key press.
  * 2. Traps focus within modal container on Tab / Shift+Tab.
  * 3. Restores focus to the triggering element upon close.
+ * 4. Synchronizes modal visibility with the global layout shell to auto-hide docks.
  */
 export function useModalA11y(
   isOpen: boolean,
@@ -14,6 +16,15 @@ export function useModalA11y(
   modalRef: React.RefObject<HTMLElement | null>
 ) {
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  // Sync modal state with global UI store
+  useEffect(() => {
+    if (!isOpen) return;
+    useUIStore.getState().setModalOpen(true);
+    return () => {
+      useUIStore.getState().setModalOpen(false);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;

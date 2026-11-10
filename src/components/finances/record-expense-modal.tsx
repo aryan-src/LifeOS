@@ -129,7 +129,7 @@ export function RecordExpenseModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-headline"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/20 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-950/20 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div
         ref={modalRef}

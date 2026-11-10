@@ -15,6 +15,13 @@ interface UIState {
   isDockVisible: boolean;
   toggleDock: () => void;
   setDockVisible: (visible: boolean) => void;
+  // Modal visibility states for layout shell synchronization
+  isModalOpen: boolean;
+  setModalOpen: (open: boolean) => void;
+  isCreateProjectOpen: boolean;
+  setCreateProjectOpen: (open: boolean) => void;
+  openCreateProject: () => void;
+  closeCreateProject: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -50,4 +57,10 @@ export const useUIStore = create<UIState>((set) => ({
     }
     set({ isDockVisible: visible });
   },
+  isModalOpen: false,
+  setModalOpen: (open: boolean) => set({ isModalOpen: open }),
+  isCreateProjectOpen: false,
+  setCreateProjectOpen: (open: boolean) => set({ isCreateProjectOpen: open }),
+  openCreateProject: () => set({ isCreateProjectOpen: true, isModalOpen: true }),
+  closeCreateProject: () => set({ isCreateProjectOpen: false, isModalOpen: false }),
 }));

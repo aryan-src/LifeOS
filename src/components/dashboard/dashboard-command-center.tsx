@@ -1,30 +1,17 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { getUserProfile } from '@/lib/actions/profile';
-import { getHabits } from '@/lib/actions/habits';
-import { getProjectsWithMetrics } from '@/lib/actions/projects';
-import { getNotes } from '@/lib/actions/notes';
-import { getTodayDate } from '@/lib/utils/date';
+import { Variant3DashboardView } from './variant3-dashboard-view';
 
-import { WorkspaceDock } from '@/components/navigation/workspace-dock';
-import { DashboardGreeting } from './dashboard-greeting';
-import { FinancesQuadrant, FinancesSkeleton } from './finances-quadrant';
-import { TasksQuadrant, TasksSkeleton } from './tasks-quadrant';
-import { SubmissionsAndFocusCard, SubmissionsAndFocusSkeleton } from './submissions-and-focus-card';
-import { BottomBandHabits } from './bottom-band-habits';
-import { BottomBandProjects } from './bottom-band-projects';
-import { BottomBandIdeas } from './bottom-band-ideas';
+function getWeekNumber(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
 
 export async function DashboardCommandCenter() {
-  const todayStr = getTodayDate();
-
-  // Parallel server-side data fetching
-  const [profile, habitsRes, projects, notes] = await Promise.all([
-    getUserProfile().catch(() => null),
-    getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
-    getProjectsWithMetrics().catch(() => []),
-    getNotes().catch(() => []),
-  ]);
-
+  const profile = await getUserProfile().catch(() => null);
   const displayName = profile?.display_name || 'Aryan';
 
   const now = new Date();
@@ -32,6 +19,7 @@ export async function DashboardCommandCenter() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const dayName = dayNames[now.getDay()];
   const dateFormatted = `${now.getDate()} ${months[now.getMonth()]}`;
+  const weekNumber = getWeekNumber(now);
 
   const hour = now.getHours();
   let greetingTime = 'Good morning';
@@ -39,67 +27,12 @@ export async function DashboardCommandCenter() {
   else if (hour >= 17) greetingTime = 'Good evening';
 
   return (
-    <div className="w-full min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-stone-800 dark:text-zinc-200 font-sans transition-colors relative flex flex-col">
-      {/* Main In-Flow Content Container with normal vertical flow */}
-      <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 pt-4 pb-16 sm:pb-20 flex flex-col gap-3">
-        {/* Dynamic Local Greeting Hero Banner */}
-        <section data-purpose="hero-overview-banner">
-          <DashboardGreeting
-            displayName={displayName}
-            initialGreeting={greetingTime}
-            initialDayName={dayName}
-            initialDateFormatted={dateFormatted}
-          />
-        </section>
-
-        {/* TOP ROW: 3-Card Grid (Pocket Money, Today's Focus, Upcoming Submissions) */}
-        {/* Equal height across cards using grid with items-stretch */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
-          <Suspense fallback={<FinancesSkeleton />}>
-            <FinancesQuadrant />
-          </Suspense>
-
-          <Suspense fallback={<TasksSkeleton />}>
-            <TasksQuadrant />
-          </Suspense>
-
-          <Suspense fallback={<SubmissionsAndFocusSkeleton />}>
-            <SubmissionsAndFocusCard />
-          </Suspense>
-        </div>
-
-        {/* BOTTOM ROW: Unified 3-Column Paper Shelf */}
-        {/* In-flow element with consistent gap from top grid */}
-        <div
-          className="bg-stone-50/80 dark:bg-zinc-900/60 rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-stretch transition-colors"
-          data-purpose="unified-bottom-row"
-        >
-          {/* Section 1: Habits */}
-          <div className="min-w-0 pr-0 md:pr-6 flex flex-col justify-between">
-            <BottomBandHabits
-              initialHabits={habitsRes?.habits || []}
-              todayStr={todayStr}
-            />
-          </div>
-
-          {/* Section 2: Active Projects */}
-          <div className="min-w-0 md:border-l border-stone-200/60 dark:border-zinc-800/60 px-0 md:px-6 flex flex-col justify-between">
-            <BottomBandProjects
-              projects={projects || []}
-            />
-          </div>
-
-          {/* Section 3: Recent Ideas */}
-          <div className="min-w-0 md:border-l border-stone-200/60 dark:border-zinc-800/60 pl-0 md:pl-6 flex flex-col justify-between">
-            <BottomBandIdeas
-              initialNotes={notes || []}
-            />
-          </div>
-        </div>
-      </main>
-
-      {/* Floating Bottom Navigation (Dock) pinned at viewport bottom */}
-      <WorkspaceDock />
-    </div>
+    <Variant3DashboardView
+      displayName={displayName}
+      greetingTime={greetingTime}
+      dayName={dayName}
+      dateFormatted={dateFormatted}
+      weekNumber={weekNumber}
+    />
   );
 }

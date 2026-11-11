@@ -79,7 +79,15 @@ export default {
 
         // Unified Canvas Edition color tokens
         'canvas': '#FAF9F5',
-        'paper': '#FFFFFF',
+        'paper': '#FAF9F5',
+        'ivory': '#FDFCF9',
+        'borderWarm': '#E7E5E4',
+        'borderSubtle': '#F0EEE9',
+        'sage': '#10B981',
+        'amberWarm': '#F59E0B',
+        'textMain': '#1F2937',
+        'textMuted': '#6B7280',
+        'textSubtle': '#9CA3AF',
       },
       borderRadius: {
         DEFAULT: '0.125rem',
@@ -100,7 +108,7 @@ export default {
         'margin': '2.5rem',
       },
       fontFamily: {
-        serif: ['Newsreader', 'Georgia', 'serif'],
+        serif: ['Fraunces', 'Newsreader', 'Georgia', 'serif'],
         sans: ['var(--font-sans)', 'Geist', 'Hanken Grotesk', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['var(--font-mono)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
         display: ['Newsreader', 'Georgia', 'serif'],

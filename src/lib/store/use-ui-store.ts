@@ -22,6 +22,8 @@ interface UIState {
   setCreateProjectOpen: (open: boolean) => void;
   openCreateProject: () => void;
   closeCreateProject: () => void;
+  isLandingPage: boolean;
+  setLandingPage: (isLanding: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -63,4 +65,6 @@ export const useUIStore = create<UIState>((set) => ({
   setCreateProjectOpen: (open: boolean) => set({ isCreateProjectOpen: open }),
   openCreateProject: () => set({ isCreateProjectOpen: true, isModalOpen: true }),
   closeCreateProject: () => set({ isCreateProjectOpen: false, isModalOpen: false }),
+  isLandingPage: false,
+  setLandingPage: (isLanding: boolean) => set({ isLandingPage: isLanding }),
 }));

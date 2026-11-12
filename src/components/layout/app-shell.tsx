@@ -13,9 +13,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const setDockVisible = useUIStore((state) => state.setDockVisible);
   const isModalOpen = useUIStore((state) => state.isModalOpen);
   const isCreateProjectOpen = useUIStore((state) => state.isCreateProjectOpen);
+  const isLandingPage = useUIStore((state) => state.isLandingPage);
 
   const isModalActive = isModalOpen || isCreateProjectOpen;
-  const isDockHidden = isModalActive || !isDockVisible;
+  const isDockHidden = isLandingPage || isModalActive || !isDockVisible;
 
   // Synchronize persisted dock visibility from localStorage
   useEffect(() => {

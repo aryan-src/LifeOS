@@ -1,7 +1,14 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { HeroLandingPage } from '@/components/landing/hero-landing-page';
 import { DashboardCommandCenter } from '@/components/dashboard/dashboard-command-center';
+
+export const metadata: Metadata = {
+  title: 'LifeOS: budget, tasks, habits and projects in one dashboard',
+  description:
+    'Track pocket money, daily tasks, habits, projects and ideas on one calm dashboard. Free to start.',
+};
 
 export const dynamic = 'force-dynamic';
 

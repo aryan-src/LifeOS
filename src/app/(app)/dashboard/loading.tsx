@@ -9,7 +9,7 @@ import { NotesSkeleton } from '@/components/dashboard/notes-quadrant';
 export default function DashboardLoading() {
   return (
     <div className="flex flex-col w-full animate-pulse">
-      <div className="px-4 sm:px-6 md:px-10 py-8 flex flex-col gap-4 max-w-[1360px] mx-auto w-full">
+      <div className="px-2 py-4 sm:py-6 flex flex-col gap-4 w-full max-w-none">
         {/* Header Skeleton */}
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-stone-200/80 dark:border-stone-800/80">
           <div className="flex flex-col min-w-0">

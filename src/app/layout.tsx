@@ -1,22 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { AppShell } from '@/components/layout/app-shell';
-import { WorkspaceHeader } from '@/components/navigation/workspace-header';
 import { Analytics } from '@vercel/analytics/react';
 import { getValidSiteUrl } from '@/lib/utils/url';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-sans',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-mono',
-});
 
 const siteUrlObject = getValidSiteUrl();
 const siteUrl = siteUrlObject.toString();
@@ -51,9 +36,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className="font-sans">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -63,14 +47,9 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="bg-[#FAF9F5] dark:bg-zinc-950 font-sans text-stone-900 dark:text-zinc-100 antialiased selection:bg-secondary-container selection:text-on-secondary-container"
+        className="font-sans antialiased selection:bg-secondary-container selection:text-on-secondary-container"
       >
-        <AppShell>
-          <WorkspaceHeader />
-          <main className="w-full max-w-7xl mx-auto px-6 pb-16 sm:pb-20 flex-1 flex flex-col">
-            {children}
-          </main>
-        </AppShell>
+        {children}
         <Analytics />
       </body>
     </html>

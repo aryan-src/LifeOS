@@ -2,6 +2,17 @@ import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { HeroLandingPage } from '@/components/landing/hero-landing-page';
+import { Navbar } from '@/components/landing/navbar';
+import { Hero } from '@/components/landing/hero';
+import { DashboardPreview } from '@/components/landing/dashboard-preview';
+import { ProblemSolution } from '@/components/landing/problem-solution';
+import { TaglineReveal } from '@/components/landing/tagline-reveal';
+import { Benefits } from '@/components/landing/benefits';
+import { HowItWorks } from '@/components/landing/how-it-works';
+import { FAQ } from '@/components/landing/faq';
+import { FinalCTA } from '@/components/landing/final-cta';
+import { Footer } from '@/components/landing/footer';
+import { FAQ_JSON_LD } from '@/components/landing/demo-data';
 
 describe('LifeOS Editorial Landing Page', () => {
   it('renders full landing page structure with hero, mock frame, and ctas', () => {
@@ -76,5 +87,48 @@ describe('LifeOS Editorial Landing Page', () => {
     // Structured Data JSON-LD
     expect(html).toContain('application/ld+json');
     expect(html).toContain('FAQPage');
+  });
+
+  it('all Start free links point to /login relative route', () => {
+    const html = renderToString(<HeroLandingPage />);
+    const startFreeMatches = [...html.matchAll(/href="([^"]+)"[^>]*>Start free/g)];
+
+    expect(startFreeMatches.length).toBeGreaterThanOrEqual(3);
+    startFreeMatches.forEach((match) => {
+      expect(match[1]).toBe('/login');
+    });
+  });
+
+  it('footer contains mailto link and 2026 LifeOS copyright', () => {
+    const html = renderToString(<Footer />);
+    expect(html).toContain('href="mailto:aryan.prajapati.dev@gmail.com"');
+    expect(html).toContain('© 2026 LifeOS');
+  });
+
+  it('JSON-LD schema matches FAQ schema.org specification', () => {
+    expect(FAQ_JSON_LD['@context']).toBe('https://schema.org');
+    expect(FAQ_JSON_LD['@type']).toBe('FAQPage');
+    expect(FAQ_JSON_LD.mainEntity.length).toBe(7);
+    expect(FAQ_JSON_LD.mainEntity[0].name).toBe('What is LifeOS?');
+  });
+
+  it('individual modular components render properly', () => {
+    expect(renderToString(<Navbar />)).toContain('Skip to content');
+    expect(renderToString(<Hero />)).toContain('Your whole student life');
+    expect(renderToString(<DashboardPreview />)).toContain('₹1,212');
+    expect(renderToString(<ProblemSolution />)).toContain('Money in one app');
+    expect(renderToString(<TaglineReveal />)).toContain('Plan');
+    expect(renderToString(<Benefits />)).toContain('Five trackers');
+    expect(renderToString(<HowItWorks />)).toContain('Set up once');
+    expect(renderToString(<FAQ />)).toContain('Questions, answered');
+    expect(renderToString(<FinalCTA />)).toContain('Put your whole day');
+    expect(renderToString(<Footer />)).toContain('© 2026 LifeOS');
+  });
+
+  it('renders with the isolated .landing wrapper without dark mode classes', () => {
+    const html = renderToString(<HeroLandingPage />);
+    expect(html).toContain('class="landing');
+    // Ensure no dark: Tailwind class variants are rendered inside the landing page
+    expect(html).not.toMatch(/\bdark:[a-zA-Z0-9_-]+/);
   });
 });

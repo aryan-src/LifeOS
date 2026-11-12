@@ -167,12 +167,12 @@ export function Variant3DashboardView({
 
   return (
     <div
-      className="w-full xl:w-[calc(100vw-3rem)] max-w-[1400px] xl:relative xl:left-1/2 xl:-translate-x-1/2 min-h-0 my-auto py-2 flex items-center justify-center font-sans antialiased selection:bg-amber-100"
+      className="w-full max-w-none min-h-0 my-auto py-1 sm:py-2 flex items-center justify-center font-sans antialiased selection:bg-amber-100"
       data-purpose="dashboard-stage"
     >
       {/* BEGIN: MasterGlassFrame */}
       <div
-        className="w-full max-w-[1400px] min-h-[850px] lg:h-[920px] bg-[#FAF9F5] dark:bg-zinc-900/95 p-3.5 rounded-3xl border border-[#DCDAD4] dark:border-zinc-800 shadow-2xl flex flex-col md:flex-row gap-3.5 overflow-hidden transition-colors"
+        className="w-full max-w-none min-h-[850px] lg:h-[920px] bg-[#FAF9F5] dark:bg-zinc-900/95 p-2.5 rounded-3xl border border-[#DCDAD4] dark:border-zinc-800 shadow-2xl flex flex-col md:flex-row gap-7 md:gap-8 overflow-hidden transition-colors"
         data-purpose="dashboard-viewport-container"
       >
         {/* BEGIN: LeftNavigationRail */}

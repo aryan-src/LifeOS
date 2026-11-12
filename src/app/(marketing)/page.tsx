@@ -1,8 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { HeroLandingPage } from '@/components/landing/hero-landing-page';
-import { DashboardCommandCenter } from '@/components/dashboard/dashboard-command-center';
 
 export const metadata: Metadata = {
   title: 'LifeOS: budget, tasks, habits and projects in one dashboard',
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 /**
- * RootPage — LifeOS Workspace & Command Center
- * Routes authenticated users to the unified single-screen workspace canvas,
- * or serves the high-performance editorial landing hero page.
+ * RootPage — Public Editorial Landing Page
+ * Routes authenticated users to the workspace dashboard (/dashboard),
+ * or serves the isolated calm editorial landing page with no app header or sidebar.
  */
 export default async function RootPage({
   searchParams,
@@ -33,9 +33,9 @@ export default async function RootPage({
       return <HeroLandingPage />;
     }
 
-    // Authenticated users navigating to / immediately render the workspace command center
+    // Authenticated users navigating to / immediately redirect to the workspace command center
     if (user || params?.view === 'dashboard') {
-      return <DashboardCommandCenter />;
+      redirect('/dashboard');
     }
 
     return <HeroLandingPage />;

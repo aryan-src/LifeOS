@@ -8,6 +8,7 @@ import { WorkspaceDock } from '@/components/navigation/workspace-dock';
 import { WorkspaceHeader } from '@/components/navigation/workspace-header';
 import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
 import { SubmissionsAndFocusCard } from '@/components/dashboard/submissions-and-focus-card';
+import { Variant3DashboardView } from '@/components/dashboard/variant3-dashboard-view';
 
 describe('Dashboard Layout & Element Visibility Verification', () => {
   it('renders PocketMoneyWidget with fully visible 7-day outflow chart and day labels', () => {
@@ -206,5 +207,40 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Finances');
     expect(html).toContain('Notes');
     expect(html).toContain('Settings');
+  });
+
+  it('renders Variant3DashboardView with full-width stage, p-2.5 shell padding, gap-7/gap-8 sidebar separation, and gap-3 inter-card spacing', () => {
+    const html = renderToString(
+      <Variant3DashboardView
+        displayName="Aryan"
+        greetingTime="Good afternoon"
+        dayName="Thursday"
+        dateFormatted="12 Nov"
+        weekNumber={46}
+        initialHabits={[]}
+        initialProjects={[]}
+        initialNotes={[]}
+        initialAssignments={[]}
+        financialAnalytics={null}
+        todayTasks={[]}
+      />
+    );
+
+    // 1. Full-width workspace container & inner shell padding p-2.5
+    expect(html).toContain('data-purpose="dashboard-stage"');
+    expect(html).toContain('w-full max-w-none');
+    expect(html).toContain('data-purpose="dashboard-viewport-container"');
+    expect(html).toContain('p-2.5 rounded-3xl');
+
+    // 2. Clear gap between sidebar rail and main content (gap-7 / md:gap-8)
+    expect(html).toContain('gap-7 md:gap-8');
+    expect(html).toContain('data-purpose="nav-rail"');
+    expect(html).toContain('data-purpose="dashboard-workspace"');
+    expect(html).toContain('min-w-0');
+
+    // 3. Cut inter-card gaps by 50% (gap-3 row & column spacing)
+    expect(html).toContain('gap-3 min-w-0');
+    expect(html).toContain('data-purpose="2x2-bento-matrix"');
+    expect(html).toContain('gap-3 min-h-0');
   });
 });

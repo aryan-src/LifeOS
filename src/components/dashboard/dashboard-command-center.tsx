@@ -1,5 +1,12 @@
 import React from 'react';
 import { getUserProfile } from '@/lib/actions/profile';
+import { getHabits } from '@/lib/actions/habits';
+import { getProjectsWithMetrics } from '@/lib/actions/projects';
+import { getNotes } from '@/lib/actions/notes';
+import { getAssignments } from '@/lib/actions/assignments';
+import { getFinancialAnalytics } from '@/lib/actions/finances';
+import { getTasks } from '@/lib/actions/tasks';
+import { getTodayDate } from '@/lib/utils/date';
 import { Variant3DashboardView } from './variant3-dashboard-view';
 
 function getWeekNumber(d: Date): number {
@@ -11,7 +18,19 @@ function getWeekNumber(d: Date): number {
 }
 
 export async function DashboardCommandCenter() {
-  const profile = await getUserProfile().catch(() => null);
+  const todayStr = getTodayDate();
+
+  const [profile, habitsRes, projects, notes, assignments, financialAnalytics, todayTasks] =
+    await Promise.all([
+      getUserProfile().catch(() => null),
+      getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
+      getProjectsWithMetrics().catch(() => []),
+      getNotes().catch(() => []),
+      getAssignments().catch(() => []),
+      getFinancialAnalytics().catch(() => null),
+      getTasks(todayStr).catch(() => []),
+    ]);
+
   const displayName = profile?.display_name || 'Aryan';
 
   const now = new Date();
@@ -33,6 +52,12 @@ export async function DashboardCommandCenter() {
       dayName={dayName}
       dateFormatted={dateFormatted}
       weekNumber={weekNumber}
+      initialHabits={habitsRes?.habits || []}
+      initialProjects={projects || []}
+      initialNotes={notes || []}
+      initialAssignments={assignments || []}
+      financialAnalytics={financialAnalytics}
+      todayTasks={todayTasks || []}
     />
   );
 }

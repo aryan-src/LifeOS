@@ -3,6 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import type { HabitWithLog } from '@/lib/actions/habits';
+import type { ProjectWithMetrics } from '@/lib/actions/projects';
+import type { NoteWithProject } from '@/lib/actions/notes';
+import type { AssignmentWithProject } from '@/lib/actions/assignments';
+import type { FinancialAnalytics } from '@/lib/actions/finances';
+import type { TaskWithProject } from '@/lib/actions/tasks';
 
 interface Variant3DashboardProps {
   displayName?: string;
@@ -10,6 +16,12 @@ interface Variant3DashboardProps {
   dayName?: string;
   dateFormatted?: string;
   weekNumber?: number;
+  initialHabits?: HabitWithLog[];
+  initialProjects?: ProjectWithMetrics[];
+  initialNotes?: NoteWithProject[];
+  initialAssignments?: AssignmentWithProject[];
+  financialAnalytics?: FinancialAnalytics | null;
+  todayTasks?: TaskWithProject[];
 }
 
 export function Variant3DashboardView({
@@ -18,6 +30,12 @@ export function Variant3DashboardView({
   dayName = 'Wednesday',
   dateFormatted = '15 Nov',
   weekNumber = 46,
+  initialHabits = [],
+  initialProjects = [],
+  initialNotes = [],
+  initialAssignments = [],
+  financialAnalytics = null,
+  todayTasks = [],
 }: Variant3DashboardProps) {
   const openQuickCapture = useUIStore((s) => s.openQuickCapture);
 
@@ -65,39 +83,86 @@ export function Variant3DashboardView({
   const progress = timerDuration > 0 ? (timerDuration - timerLeft) / timerDuration : 0;
   const strokeDashoffset = Math.max(0, Math.min(264, circumference * (1 - progress)));
 
-  // Interactive Habits Matrix State
-  const [habitsData, setHabitsData] = useState([
-    {
-      id: 'h-1',
-      name: 'Solve HackerRank',
-      status: 'Done Today ✓',
-      days: [true, true, true, true, true, true, true],
-    },
-    {
-      id: 'h-2',
-      name: 'Paper Review',
-      status: 'In Progress',
-      days: [true, true, true, true, true, false, false],
-    },
-  ]);
+  // Angle in radians for indicator pulse circle: starts at top (-90 deg), rotates clockwise
+  const angle = progress * 2 * Math.PI;
+  const dotX = 50 + 42 * Math.cos(angle);
+  const dotY = 50 + 42 * Math.sin(angle);
 
-  const toggleHabitDay = (habitId: string, dayIndex: number) => {
-    setHabitsData((prev) =>
+  // Computed Telemetry
+  const totalBlocks = Math.max(6, todayTasks.length);
+  const completedBlocks = todayTasks.filter((t) => t.is_completed).length;
+  const dailyProgressPercent = totalBlocks > 0 ? Math.round((completedBlocks / totalBlocks) * 100) : 0;
+
+  // Streak calculation
+  const streakDays = initialHabits.length > 0 ? Math.max(...initialHabits.map((h) => h.streak || 0), 0) : 0;
+  const consistencyPercent =
+    initialHabits.length > 0
+      ? Math.round(
+          (initialHabits.filter((h) => h.is_completed_today).length / initialHabits.length) * 100
+        )
+      : 0;
+
+  // Pocket Money & Financials
+  const monthlyAllowance = financialAnalytics?.monthlyAllowance ?? 5000;
+  const remainingAllowance = financialAnalytics?.remainingAllowance ?? 0;
+  const todaySpent = financialAnalytics?.todaySpent ?? 0;
+  const allowancePercent =
+    monthlyAllowance > 0
+      ? Math.min(100, Math.round(((monthlyAllowance - remainingAllowance) / monthlyAllowance) * 100))
+      : 0;
+
+  // Weekly outflow bars
+  const weeklyDays = financialAnalytics?.weeklyDays || [];
+  const maxSpend = Math.max(1, ...weeklyDays.map((d) => d.spent || 0));
+
+  // Category breakdown
+  const categoryMap = (financialAnalytics?.categoryBreakdown || []).reduce<Record<string, number>>(
+    (acc, cat) => {
+      acc[cat.name.toLowerCase()] = cat.value;
+      return acc;
+    },
+    {}
+  );
+  const booksSpend = categoryMap['books'] || categoryMap['education'] || 0;
+  const cafeSpend = categoryMap['cafe'] || categoryMap['food'] || categoryMap['dining'] || 0;
+  const transitSpend = categoryMap['transit'] || categoryMap['travel'] || categoryMap['transport'] || 0;
+
+  // Upcoming Submissions
+  const pendingAssignments = (initialAssignments || []).filter(
+    (a) => a.status !== 'graded' && a.status !== 'submitted'
+  );
+  const displayAssignments = pendingAssignments.slice(0, 3);
+
+  // Habits Matrix
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const [localHabits, setLocalHabits] = useState(initialHabits);
+
+  useEffect(() => {
+    setLocalHabits(initialHabits);
+  }, [initialHabits]);
+
+  const toggleHabitDay = (habitId: string) => {
+    setLocalHabits((prev) =>
       prev.map((h) => {
         if (h.id !== habitId) return h;
-        const nextDays = [...h.days];
-        nextDays[dayIndex] = !nextDays[dayIndex];
-        const doneToday = nextDays[6]; // Sunday/today
         return {
           ...h,
-          days: nextDays,
-          status: doneToday ? 'Done Today ✓' : 'In Progress',
+          is_completed_today: !h.is_completed_today,
+          streak: !h.is_completed_today ? (h.streak || 0) + 1 : Math.max(0, (h.streak || 1) - 1),
         };
       })
     );
   };
 
-  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  // Active Projects
+  const activeProjects = (initialProjects || []).filter(
+    (p) => p.status === 'active' || p.status === 'backlog'
+  );
+  const displayProjects = activeProjects.slice(0, 3);
+
+  // Recent Ideas
+  const recentIdeas = (initialNotes || []).slice(0, 2);
+
   const userInitial = (displayName[0] || 'A').toUpperCase();
 
   return (
@@ -116,7 +181,7 @@ export function Variant3DashboardView({
           data-purpose="nav-rail"
         >
           {/* Top Rail Stack */}
-          <div className="flex flex-row md:flex-col items-center gap-2.5">
+          <div className="flex flex-row md:flex-col items-center gap-2.5 w-auto md:w-full">
             {/* Brand Hub Button */}
             <Link
               href="/"
@@ -221,7 +286,7 @@ export function Variant3DashboardView({
               <h1 className="font-serif text-2xl font-semibold tracking-tight text-textMain dark:text-zinc-100">
                 {greetingTime}, {displayName}
               </h1>
-              <span className="text-xs font-mono text-textMuted dark:text-zinc-400 bg-[#F3F1EA] dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-borderWarm dark:border-zinc-700">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-[#52443d] dark:text-[#f0e7e1] bg-[#f0e7e1] dark:bg-stone-800 border border-[#e2d8d2] dark:border-stone-700">
                 {dayName}, {dateFormatted} • Week {weekNumber}
               </span>
             </div>
@@ -280,7 +345,7 @@ export function Variant3DashboardView({
                     strokeWidth="4.5"
                     className="transition-all duration-500 ease-linear"
                   />
-                  <circle className="animate-pulse" cx="92" cy="50" fill="#1F2937" r="3.5" />
+                  <circle className="animate-pulse" cx={dotX} cy={dotY} fill="#1F2937" r="3.5" />
                 </svg>
                 <div className="absolute inset-2.5 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
                   <span className="text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
@@ -293,7 +358,7 @@ export function Variant3DashboardView({
               </div>
 
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex items-center gap-2 mb-1">
                   <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">
                     Zen Focus Timer
                   </span>
@@ -369,14 +434,18 @@ export function Variant3DashboardView({
               <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase">Daily Progress</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">66%</span>
+                  <span className={`font-semibold ${dailyProgressPercent > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-textMuted'}`}>
+                    {dailyProgressPercent}%
+                  </span>
                 </div>
                 <div className="my-1">
-                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">4 / 6</span>
+                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                    {completedBlocks} / {totalBlocks}
+                  </span>
                   <span className="text-[11px] text-textMuted dark:text-zinc-400 ml-1">blocks</span>
                 </div>
                 <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
-                  <div className="bg-sage h-1 rounded-full" style={{ width: '66%' }} />
+                  <div className="bg-sage h-1 rounded-full transition-all duration-300" style={{ width: `${dailyProgressPercent}%` }} />
                 </div>
               </div>
 
@@ -384,14 +453,15 @@ export function Variant3DashboardView({
               <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase">Habit Streak</span>
-                  <span className="text-amberWarm">🔥 19D</span>
+                  <span className={streakDays > 0 ? 'text-amberWarm font-semibold' : 'text-textMuted'}>
+                    {streakDays > 0 ? `🔥 ${streakDays}D` : '0D'}
+                  </span>
                 </div>
                 <div className="my-1">
-                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">100%</span>
+                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                    {consistencyPercent}%
+                  </span>
                   <span className="text-[11px] text-textMuted dark:text-zinc-400 ml-1">consistency</span>
-                </div>
-                <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
-                  <div className="bg-amberWarm h-1 rounded-full" style={{ width: '100%' }} />
                 </div>
               </div>
 
@@ -404,7 +474,6 @@ export function Variant3DashboardView({
                 <div className="my-1 flex items-baseline gap-1">
                   <span className="text-base font-serif font-semibold text-textMain dark:text-zinc-100">Deep Work</span>
                 </div>
-                <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400">Distractions blocked</div>
               </div>
             </div>
 
@@ -418,12 +487,16 @@ export function Variant3DashboardView({
               </div>
               <div className="my-auto py-1">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">₹823.50</span>
-                  <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400">/ ₹5,000</span>
+                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                    ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400">
+                    / ₹{monthlyAllowance.toLocaleString('en-IN')}
+                  </span>
                 </div>
               </div>
               <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-amberWarm h-1.5 rounded-full" style={{ width: '16.4%' }} />
+                <div className="bg-amberWarm h-1.5 rounded-full transition-all duration-300" style={{ width: `${allowancePercent}%` }} />
               </div>
             </div>
           </section>
@@ -447,33 +520,45 @@ export function Variant3DashboardView({
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-mono">
                   <span className="text-textMuted dark:text-zinc-400">Spent today:</span>
-                  <span className="font-bold text-textMain dark:text-zinc-100">₹0.00</span>
+                  <span className="font-bold text-textMain dark:text-zinc-100">₹{todaySpent.toFixed(2)}</span>
                 </div>
               </div>
 
-              {/* 7-Day Outflow Bars with Highlight Callouts */}
-              <div className="relative my-2 h-28 w-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl p-2.5 flex flex-col justify-end">
+              {/* 7-Day Outflow Bars */}
+              <div className="relative my-auto h-28 w-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl p-2.5 flex flex-col justify-end">
                 <div className="w-full h-16 flex items-end justify-between px-3 gap-2">
-                  <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '30%' }} />
-                  <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '55%' }} />
-                  {/* Peak Expense: Books */}
-                  <div className="w-8 bg-amberWarm/80 rounded-t hover:bg-amberWarm transition-colors relative" style={{ height: '90%' }}>
-                    <div className="absolute -top-7 -left-5 bg-textMain text-white font-mono text-[9px] px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-10">
-                      ₹340 • Books
-                      <div className="w-1.5 h-1.5 bg-textMain rotate-45 mx-auto -mb-1" />
-                    </div>
-                  </div>
-                  <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '40%' }} />
-                  <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '20%' }} />
-                  {/* Cafe Expense */}
-                  <div className="w-8 bg-sage rounded-t hover:bg-emerald-600 transition-colors relative" style={{ height: '70%' }}>
-                    <div className="absolute -top-7 -left-4 bg-emerald-800 text-white font-mono text-[9px] px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-10">
-                      ₹210 • Cafe
-                      <div className="w-1.5 h-1.5 bg-emerald-800 rotate-45 mx-auto -mb-1" />
-                    </div>
-                  </div>
-                  {/* Today: Zero */}
-                  <div className="w-8 bg-emerald-300 dark:bg-emerald-500/50 rounded-t hover:bg-emerald-400 transition-colors" style={{ height: '8%' }} />
+                  {weeklyDays.length > 0 ? (
+                    weeklyDays.map((d, idx) => {
+                      const h = maxSpend > 0 ? Math.round((d.spent / maxSpend) * 85) : 0;
+                      const isToday = d.isToday || idx === weeklyDays.length - 1;
+                      return (
+                        <div
+                          key={idx}
+                          title={`${d.dayLabel}: ₹${d.spent}`}
+                          className={`w-8 rounded-t transition-colors ${
+                            isToday
+                              ? 'bg-emerald-300 dark:bg-emerald-500/50 hover:bg-emerald-400'
+                              : d.spent > 300
+                              ? 'bg-amberWarm/80 hover:bg-amberWarm'
+                              : d.spent > 150
+                              ? 'bg-sage hover:bg-emerald-600'
+                              : 'bg-[#E5E2D9] dark:bg-zinc-700 hover:bg-stone-400'
+                          }`}
+                          style={{ height: `${h}%` }}
+                        />
+                      );
+                    })
+                  ) : (
+                    <>
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                    </>
+                  )}
                 </div>
                 <div className="w-full flex justify-between px-3 pt-1 border-t border-borderSubtle dark:border-zinc-800 text-[10px] font-mono text-textSubtle dark:text-zinc-500">
                   <span>Thu</span>
@@ -490,15 +575,21 @@ export function Variant3DashboardView({
               <div className="grid grid-cols-3 gap-2 shrink-0">
                 <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
                   <span className="text-textMuted dark:text-zinc-400">Books</span>
-                  <span className="font-semibold text-textMain dark:text-zinc-100">₹340</span>
+                  <span className={`font-semibold ${booksSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
+                    ₹{booksSpend}
+                  </span>
                 </div>
                 <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
                   <span className="text-textMuted dark:text-zinc-400">Cafe</span>
-                  <span className="font-semibold text-textMain dark:text-zinc-100">₹210</span>
+                  <span className={`font-semibold ${cafeSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
+                    ₹{cafeSpend}
+                  </span>
                 </div>
                 <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
                   <span className="text-textMuted dark:text-zinc-400">Transit</span>
-                  <span className="font-semibold text-textMain dark:text-zinc-100">₹120</span>
+                  <span className={`font-semibold ${transitSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
+                    ₹{transitSpend}
+                  </span>
                 </div>
               </div>
             </article>
@@ -510,63 +601,70 @@ export function Variant3DashboardView({
             >
               <div className="flex items-center justify-between shrink-0">
                 <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Upcoming Submissions</span>
-                <span className="text-[11px] font-mono text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-900/60">
-                  3 Pending
+                <span
+                  className={`text-[11px] font-mono px-2 py-0.5 rounded border ${
+                    pendingAssignments.length > 0
+                      ? 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60'
+                      : 'text-textMuted bg-[#FAF9F5] dark:bg-zinc-900 border-borderWarm dark:border-zinc-800'
+                  }`}
+                >
+                  {pendingAssignments.length} Pending
                 </span>
               </div>
 
-              <div className="space-y-2.5 my-auto py-2">
-                {/* Assignment 1: CS304 */}
-                <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between hover:border-stone-400 dark:hover:border-zinc-600 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 flex items-center justify-center text-xs font-mono font-bold shrink-0">
-                      CS
-                    </span>
-                    <div>
-                      <h2 className="text-xs font-semibold text-textMain dark:text-zinc-100">CS304: Microservices Arch</h2>
-                      <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">Due Friday • High Priority</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 font-medium">
-                    Critical
-                  </span>
+              {displayAssignments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                  <p className="text-xs font-semibold text-textMain dark:text-zinc-100">No pending submissions</p>
+                  <p className="text-[11px] font-mono text-textSubtle dark:text-zinc-400 mt-1">All caught up!</p>
                 </div>
-
-                {/* Assignment 2: CS301 */}
-                <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between hover:border-stone-400 dark:hover:border-zinc-600 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 flex items-center justify-center text-xs font-mono font-bold shrink-0">
-                      CS
-                    </span>
-                    <div>
-                      <h2 className="text-xs font-semibold text-textMain dark:text-zinc-100">CS301: Distributed Systems Lab</h2>
-                      <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">Due Sunday • Lab Report</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60 font-medium">
-                    In Progress
-                  </span>
+              ) : (
+                <div className="space-y-2.5 my-auto py-2">
+                  {displayAssignments.map((assignment) => {
+                    const subjectCode = (assignment.subject || 'CS').slice(0, 2).toUpperCase();
+                    const isCritical = assignment.status === 'submission_pending';
+                    const isDraft = assignment.status === 'not_started';
+                    return (
+                      <div
+                        key={assignment.id}
+                        className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between hover:border-stone-400 dark:hover:border-zinc-600 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`w-8 h-8 rounded-lg border flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
+                              isCritical
+                                ? 'bg-rose-100 dark:bg-rose-900/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300'
+                                : isDraft
+                                ? 'bg-emerald-100 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-amber-100 dark:bg-amber-900/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+                            }`}
+                          >
+                            {subjectCode}
+                          </span>
+                          <div>
+                            <h2 className="text-xs font-semibold text-textMain dark:text-zinc-100">{assignment.title}</h2>
+                            <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">
+                              {assignment.due_date ? `Due ${assignment.due_date}` : 'No due date'}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded border font-medium ${
+                            isCritical
+                              ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60'
+                              : isDraft
+                              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60'
+                              : 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-900/60'
+                          }`}
+                        >
+                          {isCritical ? 'Critical' : isDraft ? 'Drafted' : 'In Progress'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Assignment 3: ML102 */}
-                <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between hover:border-stone-400 dark:hover:border-zinc-600 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center justify-center text-xs font-mono font-bold shrink-0">
-                      ML
-                    </span>
-                    <div>
-                      <h2 className="text-xs font-semibold text-textMain dark:text-zinc-100">ML102: Vector Index Report</h2>
-                      <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">Due Nov 22 • Draft Ready</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 font-medium">
-                    Drafted
-                  </span>
-                </div>
-              </div>
+              )}
 
               <div className="flex items-center justify-between pt-2 border-t border-borderSubtle dark:border-zinc-800 text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
-                <span>3 assignments on schedule</span>
                 <Link href="/assignments" className="hover:text-textMain dark:hover:text-zinc-100 underline font-medium">
                   View LMS →
                 </Link>
@@ -580,47 +678,58 @@ export function Variant3DashboardView({
             >
               <div className="flex items-center justify-between shrink-0">
                 <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Habits Matrix</span>
-                <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400">Weekly Consistency</span>
               </div>
 
-              <div className="my-auto space-y-3 py-1">
-                {habitsData.map((habit) => (
-                  <div key={habit.id} className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-textMain dark:text-zinc-100">{habit.name}</span>
-                      <span
-                        className={`text-[11px] font-mono font-semibold ${
-                          habit.status === 'Done Today ✓'
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-amber-700 dark:text-amber-400'
-                        }`}
-                      >
-                        {habit.status}
-                      </span>
-                    </div>
-                    {/* 7-day checkboxes */}
-                    <div className="flex items-center justify-between gap-1.5">
-                      {habit.days.map((isDone, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => toggleHabitDay(habit.id, idx)}
-                          title={`${dayLabels[idx]}: ${isDone ? 'Completed' : 'Click to toggle'}`}
-                          className={`w-6 h-6 rounded-md text-[10px] font-mono flex items-center justify-center transition-all cursor-pointer ${
-                            isDone
-                              ? 'bg-sage text-white font-medium hover:opacity-90'
-                              : idx === 6
-                              ? 'bg-amber-400 text-white font-bold hover:bg-amber-500'
-                              : 'bg-[#E5E2D9] dark:bg-zinc-700 text-textMuted dark:text-zinc-400 hover:bg-stone-300'
+              {localHabits.length === 0 ? (
+                <div className="space-y-3 my-auto">
+                  <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900">
+                    <p className="text-xs font-semibold text-textMain dark:text-zinc-100">No habits tracked yet</p>
+                    <p className="text-[11px] font-mono text-textSubtle dark:text-zinc-400 mt-1">Click &apos;+ Add Habit&apos; to begin</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="my-auto space-y-3 py-1">
+                  {localHabits.slice(0, 2).map((habit) => (
+                    <div key={habit.id} className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-textMain dark:text-zinc-100">{habit.title}</span>
+                        <span
+                          className={`text-[11px] font-mono font-semibold ${
+                            habit.is_completed_today
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : 'text-amber-700 dark:text-amber-400'
                           }`}
                         >
-                          {dayLabels[idx]}
-                        </button>
-                      ))}
+                          {habit.is_completed_today ? 'Done Today ✓' : 'In Progress'}
+                        </span>
+                      </div>
+                      {/* 7-day checkboxes */}
+                      <div className="flex items-center justify-between gap-1.5">
+                        {dayLabels.map((lbl, idx) => {
+                          const isSunday = idx === 6;
+                          const isDone = isSunday ? habit.is_completed_today : true;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => toggleHabitDay(habit.id)}
+                              className={`w-6 h-6 rounded-md text-[10px] font-mono flex items-center justify-center transition-all cursor-pointer ${
+                                isDone
+                                  ? 'bg-sage text-white font-medium hover:opacity-90'
+                                  : isSunday
+                                  ? 'bg-amber-400 text-white font-bold hover:bg-amber-500'
+                                  : 'bg-[#E5E2D9] dark:bg-zinc-700 text-textMuted dark:text-zinc-400 hover:bg-stone-300'
+                              }`}
+                            >
+                              {lbl}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <div className="flex items-center justify-between pt-2 border-t border-borderSubtle dark:border-zinc-800 text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
                 <div className="flex items-center gap-1.5">
@@ -657,89 +766,84 @@ export function Variant3DashboardView({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
                 {/* Left Half: Active Projects */}
                 <div className="flex flex-col justify-between pr-0 sm:pr-2 border-b sm:border-b-0 sm:border-r border-borderWarm dark:border-zinc-800 pb-3 sm:pb-0">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Active Projects</span>
-                      <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">3 live</span>
+                  <div className="flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Active Projects</span>
+                        <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">{activeProjects.length} live</span>
+                      </div>
+                      {displayProjects.length === 0 ? (
+                        <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                          <p className="text-xs font-medium text-textSubtle dark:text-zinc-400">No active projects</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {displayProjects.map((project) => (
+                            <div key={project.id}>
+                              <div className="flex justify-between text-[11px] mb-1">
+                                <span className="font-medium text-textMain dark:text-zinc-200">{project.title}</span>
+                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
+                                  {project.completion_percentage || 0}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-sage h-1.5 rounded-full"
+                                  style={{ width: `${project.completion_percentage || 0}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2.5">
-                      {/* Project 1 */}
-                      <div>
-                        <div className="flex justify-between text-[11px] mb-1">
-                          <span className="font-medium text-textMain dark:text-zinc-200">HTML Academy</span>
-                          <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">85%</span>
-                        </div>
-                        <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-sage h-1.5 rounded-full" style={{ width: '85%' }} />
-                        </div>
-                      </div>
-                      {/* Project 2 */}
-                      <div>
-                        <div className="flex justify-between text-[11px] mb-1">
-                          <span className="font-medium text-textMain dark:text-zinc-200">HandTracker</span>
-                          <span className="font-mono text-amber-700 dark:text-amber-400 font-semibold">62%</span>
-                        </div>
-                        <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-amberWarm h-1.5 rounded-full" style={{ width: '62%' }} />
-                        </div>
-                      </div>
-                      {/* Project 3 */}
-                      <div>
-                        <div className="flex justify-between text-[11px] mb-1">
-                          <span className="font-medium text-textMain dark:text-zinc-200">SnapGuide</span>
-                          <span className="font-mono text-textMuted dark:text-zinc-400 font-semibold">40%</span>
-                        </div>
-                        <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-stone-400 dark:bg-zinc-600 h-1.5 rounded-full" style={{ width: '40%' }} />
-                        </div>
-                      </div>
-                    </div>
+                    <Link
+                      href="/projects"
+                      className="w-full py-1.5 bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 text-textMain dark:text-zinc-100 rounded-lg text-[11px] font-medium transition-colors mt-2 text-center block"
+                    >
+                      Sprint Board →
+                    </Link>
                   </div>
-                  <Link
-                    href="/projects"
-                    className="w-full py-1.5 mt-2 bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 text-textMain dark:text-zinc-100 rounded-lg text-[11px] font-medium transition-colors text-center block"
-                  >
-                    Sprint Board →
-                  </Link>
                 </div>
 
                 {/* Right Half: Recent Ideas */}
                 <div className="flex flex-col justify-between pl-0 sm:pl-1">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Recent Ideas</span>
-                      <span className="w-2 h-2 rounded-full bg-amberWarm" />
-                    </div>
-                    <div className="space-y-2">
-                      {/* Note Card 1 */}
-                      <div
-                        onClick={() => openQuickCapture('Idea: Avatar options')}
-                        className="p-2 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-colors cursor-pointer"
-                      >
-                        <span className="text-[9px] font-mono uppercase text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                          Design
-                        </span>
-                        <h3 className="text-xs font-semibold text-textMain dark:text-zinc-100 mt-1">Avatar options</h3>
+                  <div className="flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Recent Ideas</span>
+                        <span className={`w-2 h-2 rounded-full ${recentIdeas.length > 0 ? 'bg-amberWarm' : 'bg-stone-400'}`} />
                       </div>
-                      {/* Note Card 2 */}
-                      <div
-                        onClick={() => openQuickCapture('Idea: Portfolio note cards')}
-                        className="p-2 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-colors cursor-pointer"
-                      >
-                        <span className="text-[9px] font-mono uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                          Portfolio
-                        </span>
-                        <h3 className="text-xs font-semibold text-textMain dark:text-zinc-100 mt-1">Portfolio note cards</h3>
-                      </div>
+                      {recentIdeas.length === 0 ? (
+                        <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                          <p className="text-xs font-medium text-textSubtle dark:text-zinc-400">No ideas captured yet</p>
+                          <p className="text-[10px] font-mono text-textSubtle dark:text-zinc-400 mt-1">Click &apos;+ New Idea&apos; to begin</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {recentIdeas.map((note) => (
+                            <div
+                              key={note.id}
+                              onClick={() => openQuickCapture(`Idea: ${note.title}`)}
+                              className="p-2 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-colors cursor-pointer"
+                            >
+                              <span className="text-[9px] font-mono uppercase text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                                {note.project?.title || 'Idea'}
+                              </span>
+                              <h3 className="text-xs font-semibold text-textMain dark:text-zinc-100 mt-1 truncate">{note.title}</h3>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => openQuickCapture('Idea: ')}
+                      className="w-full py-1.5 bg-textMain dark:bg-zinc-100 hover:bg-neutral-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-lg text-[11px] font-medium transition-colors mt-2 cursor-pointer"
+                    >
+                      + New Idea
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openQuickCapture('Idea: ')}
-                    className="w-full py-1.5 mt-2 bg-textMain dark:bg-zinc-100 hover:bg-neutral-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                  >
-                    + New Idea
-                  </button>
                 </div>
               </div>
             </article>

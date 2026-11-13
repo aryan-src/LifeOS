@@ -162,32 +162,31 @@ export function Variant3DashboardView({
 
   return (
     <div
-      className="w-full max-w-[1440px] mx-auto min-h-[100dvh] flex flex-col justify-start font-sans antialiased selection:bg-amber-100"
+      className="w-full max-w-[1600px] mx-auto min-h-[100dvh] flex flex-col justify-start font-sans antialiased selection:bg-amber-100"
       data-purpose="dashboard-stage"
     >
       {/* BEGIN: MasterGlassFrame */}
       <div
-        className="w-full min-h-[100dvh] bg-[#FAF9F5] dark:bg-zinc-900/95 p-2 md:p-3 lg:p-4 rounded-none md:rounded-3xl border-0 md:border border-[#DCDAD4] dark:border-zinc-800 shadow-none md:shadow-2xl flex flex-col md:flex-row gap-2 md:gap-3 lg:gap-4 transition-colors overflow-hidden"
+        className="w-full flex-1 bg-[#FAF9F5] dark:bg-zinc-900/95 p-2.5 md:p-3.5 lg:p-4 rounded-none md:rounded-3xl border-0 md:border border-[#DCDAD4] dark:border-zinc-800 shadow-none md:shadow-xl flex flex-col md:flex-row gap-4 md:gap-5 lg:gap-6 transition-colors"
         data-purpose="dashboard-viewport-container"
       >
         {/* BEGIN: LeftNavigationRail */}
         <aside
-          className="w-full md:w-14 shrink-0 bg-[#F5F3EC] dark:bg-zinc-800/80 border border-[#E7E5E4] dark:border-zinc-700/60 rounded-2xl flex flex-row md:flex-col items-center py-2 md:py-4 justify-between select-none px-3 md:px-0"
+          className="w-full md:w-14 shrink-0 bg-[#F5F3EC] dark:bg-zinc-800/80 border border-[#E7E5E4] dark:border-zinc-700/60 rounded-2xl flex flex-row md:flex-col items-center py-2.5 md:py-4 px-3 md:px-0 justify-between select-none"
           data-purpose="nav-rail"
         >
           {/* Top Rail Stack */}
-          <div className="flex flex-row md:flex-col items-center gap-2.5 w-auto md:w-full">
+          <div className="flex flex-row md:flex-col items-center gap-2 md:gap-2.5 w-auto md:w-full">
             {/* Brand Hub Button */}
             <Link
               href="/"
               aria-label="LifeOS Master Switch"
-              className="w-9 h-9 rounded-full bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-sm hover:scale-105 transition-transform mb-0 md:mb-1"
+              className="w-9 h-9 rounded-full bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-sm hover:scale-105 transition-transform mb-0 md:mb-0.5"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
-            <div className="hidden md:block w-6 h-px bg-[#E2E0D8] dark:bg-zinc-700 my-1" />
             {/* Dock Icons */}
             <Link
               href="/dashboard"
@@ -272,16 +271,16 @@ export function Variant3DashboardView({
 
         {/* BEGIN: Main Dashboard Canvas */}
         <main
-          className="flex-1 flex flex-col gap-3 min-w-0 overflow-y-auto pb-20 md:pb-24"
+          className="flex-1 flex flex-col gap-2.5 md:gap-3.5 min-w-0 pb-0"
           data-purpose="dashboard-workspace"
         >
           {/* Top Greeting & Header Bar */}
-          <header className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 shrink-0 min-h-[36px]">
-            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 min-w-0">
+          <header className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 shrink-0 h-9">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0">
               <h1 className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-textMain dark:text-zinc-100 truncate">
                 {greetingTime}, {displayName}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-mono text-[#52443d] dark:text-[#f0e7e1] bg-[#f0e7e1] dark:bg-stone-800 border border-[#e2d8d2] dark:border-stone-700 shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-mono text-[#52443d] dark:text-[#f0e7e1] bg-[#f0e7e1] dark:bg-stone-800 border border-[#e2d8d2] dark:border-stone-700 shrink-0">
                 {dayName}, {dateFormatted} • Week {weekNumber}
               </span>
             </div>
@@ -290,8 +289,8 @@ export function Variant3DashboardView({
                 <input
                   onClick={() => openQuickCapture()}
                   readOnly
-                  className="w-44 lg:w-52 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
-                  placeholder="Search "
+                  className="w-48 lg:w-56 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
+                  placeholder="Search workspace or commands..."
                   type="text"
                 />
                 <svg className="w-3.5 h-3.5 text-textMuted absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,107 +300,108 @@ export function Variant3DashboardView({
             </div>
           </header>
 
-          {/* ROW 1: Top Summary Row (Focus Mode, Daily Progress, Habit Streak, Time Focused, Pocket Ledger) */}
+          {/* ROW 1: Wide Horizontal Focus Strip (Command Ribbon) */}
           <section
-            className="shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-3 md:p-3.5 shadow-xs transition-colors"
+            className="shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-3.5 lg:p-4 shadow-xs transition-colors flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 lg:gap-4 min-w-0"
             data-purpose="wide-focus-ribbon"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 min-w-0">
-              {/* ITEM 1: Focus Mode */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between gap-3 min-w-0 h-full sm:col-span-2 lg:col-span-1 xl:col-span-1">
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      fill="none"
-                      r="40"
-                      stroke="#10B981"
-                      strokeDasharray="251.2"
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      strokeWidth="5"
-                      className="transition-all duration-500 ease-linear"
-                    />
-                  </svg>
-                  <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
-                    <span className="text-xs sm:text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
-                      {timerFormatted}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-serif text-xs sm:text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Focus Mode</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse shrink-0" />
-                  </div>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(25)}
-                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
-                        timerDuration === 25 * 60
-                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                      }`}
-                    >
-                      25m
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(50)}
-                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
-                        timerDuration === 50 * 60
-                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                      }`}
-                    >
-                      50m
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(15)}
-                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
-                        timerDuration === 15 * 60
-                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                      }`}
-                    >
-                      15m
-                    </button>
-                    <button
-                      type="button"
-                      onClick={togglePlayPause}
-                      aria-label="Play/Pause Focus"
-                      className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-0.5 shrink-0 cursor-pointer"
-                    >
-                      {isTimerRunning ? (
-                        <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                          <rect x="6" y="4" width="4" height="16" />
-                          <rect x="14" y="4" width="4" height="16" />
-                        </svg>
-                      ) : (
-                        <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetTimer}
-                      aria-label="Reset Timer"
-                      className="w-6 h-6 rounded bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted hover:text-textMain dark:hover:text-zinc-100 text-[10px] font-mono flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-                    >
-                      ↻
-                    </button>
-                  </div>
+            {/* Zen Focus Mode Dial & Controls */}
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0 lg:pr-4 xl:pr-5 lg:border-r border-borderWarm dark:border-zinc-800 min-w-0">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    fill="none"
+                    r="40"
+                    stroke="#10B981"
+                    strokeDasharray="251.2"
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    strokeWidth="5"
+                    className="transition-all duration-500 ease-linear"
+                  />
+                </svg>
+                <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
+                  <span className="text-xs sm:text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                    {timerFormatted}
+                  </span>
                 </div>
               </div>
 
-              {/* ITEM 2: Daily Progress */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
+              <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Focus Mode</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse shrink-0" />
+                </div>
+                <div className="flex items-center gap-1 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => selectPreset(25)}
+                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
+                      timerDuration === 25 * 60
+                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                    }`}
+                  >
+                    25m
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectPreset(50)}
+                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
+                      timerDuration === 50 * 60
+                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                    }`}
+                  >
+                    50m
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectPreset(15)}
+                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
+                      timerDuration === 15 * 60
+                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                    }`}
+                  >
+                    15m
+                  </button>
+                  <button
+                    type="button"
+                    onClick={togglePlayPause}
+                    aria-label="Play/Pause Focus"
+                    className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-0.5 shrink-0 cursor-pointer"
+                  >
+                    {isTimerRunning ? (
+                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetTimer}
+                    aria-label="Reset Timer"
+                    className="w-6 h-6 rounded bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted hover:text-textMain dark:hover:text-zinc-100 text-[10px] font-mono flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                  >
+                    ↻
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: 3 Telemetry Chips */}
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2.5 lg:gap-3 min-w-0">
+              {/* Daily Progress */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[105px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase truncate">Daily Progress</span>
                   <span className="font-semibold text-textMain dark:text-zinc-100 shrink-0 ml-1">{dailyProgressPercent}%</span>
@@ -420,8 +420,8 @@ export function Variant3DashboardView({
                 </div>
               </div>
 
-              {/* ITEM 3: Habit Streak */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
+              {/* Habit Streak */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[105px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase truncate">Habit Streak</span>
                   <span className="text-textMuted dark:text-zinc-400 font-semibold shrink-0 ml-1">{streakDays > 0 ? `${streakDays}D` : '0D'}</span>
@@ -439,8 +439,8 @@ export function Variant3DashboardView({
                 </div>
               </div>
 
-              {/* ITEM 4: TIME FOCUSED */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
+              {/* TIME FOCUSED */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[105px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase truncate">TIME FOCUSED</span>
                   <span className="w-2 h-2 rounded-full bg-sage animate-pulse shrink-0 ml-1" />
@@ -453,28 +453,28 @@ export function Variant3DashboardView({
                   <div className="bg-sage h-1 rounded-full" style={{ width: '75%' }} />
                 </div>
               </div>
+            </div>
 
-              {/* ITEM 5: Pocket Ledger */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
-                <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
-                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Pocket Ledger</span>
-                  <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800 shrink-0 ml-1">
-                    {dateFormatted.split(' ')[1] || 'Nov'}
+            {/* Right: Pocket Ledger */}
+            <div className="w-full lg:w-56 xl:w-60 shrink-0 lg:pl-4 xl:pl-5 lg:border-l border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 py-0.5">
+              <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
+                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Pocket Ledger</span>
+                <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800 shrink-0 ml-1">
+                  {dateFormatted.split(' ')[1] || 'Nov'}
+                </span>
+              </div>
+              <div className="my-auto py-1.5">
+                <div className="flex items-baseline gap-1 truncate">
+                  <span className="text-xl sm:text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums truncate">
+                    ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
+                    / ₹{monthlyAllowance.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="my-auto py-1">
-                  <div className="flex items-baseline gap-1 truncate">
-                    <span className="text-lg sm:text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums truncate">
-                      ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                    <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
-                      / ₹{monthlyAllowance.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
-                <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-amberWarm h-1.5 rounded-full transition-all duration-300" style={{ width: `${allowancePercent}%` }} />
-                </div>
+              </div>
+              <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-amberWarm h-1.5 rounded-full transition-all duration-300" style={{ width: `${allowancePercent}%` }} />
               </div>
             </div>
           </section>
@@ -546,7 +546,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={() => openQuickCapture('Expense Books: ')}
                     aria-label="Configure Books category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
+                    className="px-2.5 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Books</span>
@@ -561,7 +561,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={() => openQuickCapture('Expense Cafe: ')}
                     aria-label="Configure Cafe category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
+                    className="px-2.5 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Cafe</span>
@@ -576,7 +576,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={() => openQuickCapture('Expense Transit: ')}
                     aria-label="Configure Transit category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
+                    className="px-2.5 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Transit</span>
@@ -776,7 +776,7 @@ export function Variant3DashboardView({
                 </div>
 
                 {/* Ideas Vault */}
-                <div className="flex flex-col justify-between pl-0 sm:pl-1 pt-2 sm:pt-0 h-full min-w-0">
+                <div className="flex flex-col justify-between pl-0 sm:pl-3 pt-3 sm:pt-0 h-full min-w-0">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Ideas</span>

@@ -209,7 +209,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Settings');
   });
 
-  it('renders Variant3DashboardView with responsive master frame, p-2/md:p-3/lg:p-4 shell padding, gap-2/md:gap-3/lg:gap-4 sidebar separation, and dock clearance', () => {
+  it('renders Variant3DashboardView with responsive master frame, p-2.5/md:p-3.5/lg:p-4 shell padding, gap-4/md:gap-5/lg:gap-6 sidebar separation, and dock clearance', () => {
     const html = renderToString(
       <Variant3DashboardView
         displayName="Aryan"
@@ -230,13 +230,13 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('data-purpose="dashboard-stage"');
     expect(html).toContain('min-h-[100dvh]');
     expect(html).toContain('data-purpose="dashboard-viewport-container"');
-    expect(html).toContain('p-2 md:p-3 lg:p-4');
+    expect(html).toContain('p-2.5 md:p-3.5 lg:p-4');
 
-    // 2. Sidebar rail and main content separation (gap-2 md:gap-3 lg:gap-4)
-    expect(html).toContain('gap-2 md:gap-3 lg:gap-4');
+    // 2. Sidebar rail and main content separation (gap-4 md:gap-5 lg:gap-6)
+    expect(html).toContain('gap-4 md:gap-5 lg:gap-6');
     expect(html).toContain('data-purpose="nav-rail"');
     expect(html).toContain('data-purpose="dashboard-workspace"');
-    expect(html).toContain('pb-20 md:pb-24');
+    expect(html).toContain('pb-0');
     expect(html).toContain('min-w-0');
 
     // 3. Wide focus ribbon & 2x2 bento matrix

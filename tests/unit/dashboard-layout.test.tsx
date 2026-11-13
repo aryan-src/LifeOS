@@ -209,7 +209,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Settings');
   });
 
-  it('renders Variant3DashboardView with responsive master frame, p-2.5/md:p-3.5/lg:p-4 shell padding, gap-4/md:gap-5/lg:gap-6 sidebar separation, and dock clearance', () => {
+  it('renders Variant3DashboardView with responsive master frame, p-2.5/md:p-3.5/lg:p-4 shell padding, clean full-width workspace, and dock clearance without side rail', () => {
     const html = renderToString(
       <Variant3DashboardView
         displayName="Aryan"
@@ -232,9 +232,8 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('data-purpose="dashboard-viewport-container"');
     expect(html).toContain('p-2.5 md:p-3.5 lg:p-4');
 
-    // 2. Sidebar rail and main content separation (gap-4 md:gap-5 lg:gap-6)
-    expect(html).toContain('gap-4 md:gap-5 lg:gap-6');
-    expect(html).toContain('data-purpose="nav-rail"');
+    // 2. Side navigation rail is removed; workspace occupies full width
+    expect(html).not.toContain('data-purpose="nav-rail"');
     expect(html).toContain('data-purpose="dashboard-workspace"');
     expect(html).toContain('pb-0');
     expect(html).toContain('min-w-0');

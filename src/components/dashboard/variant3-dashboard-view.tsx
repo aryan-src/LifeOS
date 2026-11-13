@@ -158,8 +158,6 @@ export function Variant3DashboardView({
   // Recent Ideas
   const recentIdeas = (initialNotes || []).slice(0, 2);
 
-  const userInitial = (displayName[0] || 'A').toUpperCase();
-
   return (
     <div
       className="w-full max-w-[1600px] mx-auto min-h-[100dvh] flex flex-col justify-start font-sans antialiased selection:bg-amber-100"
@@ -167,108 +165,9 @@ export function Variant3DashboardView({
     >
       {/* BEGIN: MasterGlassFrame */}
       <div
-        className="w-full flex-1 bg-[#FAF9F5] dark:bg-zinc-900/95 p-2.5 md:p-3.5 lg:p-4 rounded-none md:rounded-3xl border-0 md:border border-[#DCDAD4] dark:border-zinc-800 shadow-none md:shadow-xl flex flex-col md:flex-row gap-4 md:gap-5 lg:gap-6 transition-colors"
+        className="w-full flex-1 bg-[#FAF9F5] dark:bg-zinc-900/95 p-2.5 md:p-3.5 lg:p-4 rounded-none md:rounded-3xl border-0 md:border border-[#DCDAD4] dark:border-zinc-800 shadow-none md:shadow-xl flex flex-col transition-colors"
         data-purpose="dashboard-viewport-container"
       >
-        {/* BEGIN: LeftNavigationRail */}
-        <aside
-          className="w-full md:w-14 shrink-0 bg-[#F5F3EC] dark:bg-zinc-800/80 border border-[#E7E5E4] dark:border-zinc-700/60 rounded-2xl flex flex-row md:flex-col items-center py-2.5 md:py-4 px-3 md:px-0 justify-between select-none"
-          data-purpose="nav-rail"
-        >
-          {/* Top Rail Stack */}
-          <div className="flex flex-row md:flex-col items-center gap-2 md:gap-2.5 w-auto md:w-full">
-            {/* Brand Hub Button */}
-            <Link
-              href="/"
-              aria-label="LifeOS Master Switch"
-              className="w-9 h-9 rounded-full bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-sm hover:scale-105 transition-transform mb-0 md:mb-0.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            {/* Dock Icons */}
-            <Link
-              href="/dashboard"
-              aria-label="Command Cockpit"
-              className="w-9 h-9 rounded-xl bg-white dark:bg-zinc-700 border border-[#E2E0D8] dark:border-zinc-600 text-textMain dark:text-zinc-100 shadow-xs flex items-center justify-center transition-colors"
-            >
-              <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <rect height="7" rx="1" width="7" x="3" y="3" />
-                <rect height="7" rx="1" width="7" x="14" y="3" />
-                <rect height="7" rx="1" width="7" x="14" y="14" />
-                <rect height="7" rx="1" width="7" x="3" y="14" />
-              </svg>
-            </Link>
-            <Link
-              href="/finances"
-              aria-label="Pocket Money & Ledger"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/assignments"
-              aria-label="Submissions & Academics"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/habits"
-              aria-label="Habits Tracker"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/projects"
-              aria-label="Active Projects"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/notes"
-              aria-label="Ideas Vault"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          </div>
-          {/* Bottom User Controls */}
-          <div className="flex flex-row md:flex-col items-center gap-2">
-            <Link
-              href="/settings"
-              aria-label="Settings"
-              className="w-9 h-9 rounded-xl hover:bg-white/80 dark:hover:bg-zinc-700/60 border border-transparent hover:border-[#E2E0D8] dark:hover:border-zinc-600 text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 flex items-center justify-center transition-all"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/settings"
-              aria-label={`${displayName} Profile`}
-              className="w-8 h-8 rounded-full bg-[#E5E2D9] dark:bg-zinc-700 border-2 border-white dark:border-zinc-800 flex items-center justify-center text-xs font-mono font-bold text-textMain dark:text-zinc-100 shadow-xs hover:scale-105 transition-transform"
-            >
-              {userInitial}
-            </Link>
-          </div>
-        </aside>
-        {/* END: LeftNavigationRail */}
-
         {/* BEGIN: Main Dashboard Canvas */}
         <main
           className="flex-1 flex flex-col gap-2.5 md:gap-3.5 min-w-0 pb-0"

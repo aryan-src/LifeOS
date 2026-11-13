@@ -162,12 +162,12 @@ export function Variant3DashboardView({
 
   return (
     <div
-      className="w-full max-w-[1400px] mx-auto min-h-0 my-auto py-2 sm:py-4 flex items-center justify-center font-sans antialiased selection:bg-amber-100"
+      className="w-full max-w-[1440px] mx-auto min-h-[100dvh] flex flex-col justify-start font-sans antialiased selection:bg-amber-100"
       data-purpose="dashboard-stage"
     >
       {/* BEGIN: MasterGlassFrame */}
       <div
-        className="w-full max-w-[1400px] h-[920px] bg-[#FAF9F5] dark:bg-zinc-900/95 p-3.5 rounded-3xl border border-[#DCDAD4] dark:border-zinc-800 shadow-2xl flex flex-col md:flex-row gap-3.5 overflow-hidden transition-colors"
+        className="w-full min-h-[100dvh] bg-[#FAF9F5] dark:bg-zinc-900/95 p-2 md:p-3 lg:p-4 rounded-none md:rounded-3xl border-0 md:border border-[#DCDAD4] dark:border-zinc-800 shadow-none md:shadow-2xl flex flex-col md:flex-row gap-2 md:gap-3 lg:gap-4 transition-colors overflow-hidden"
         data-purpose="dashboard-viewport-container"
       >
         {/* BEGIN: LeftNavigationRail */}
@@ -272,25 +272,25 @@ export function Variant3DashboardView({
 
         {/* BEGIN: Main Dashboard Canvas */}
         <main
-          className="flex-1 flex flex-col gap-3 min-w-0 overflow-hidden"
+          className="flex-1 flex flex-col gap-3 min-w-0 overflow-y-auto pb-20 md:pb-24"
           data-purpose="dashboard-workspace"
         >
           {/* Top Greeting & Header Bar */}
-          <header className="flex items-center justify-between shrink-0 px-1 py-0.5">
-            <div className="flex items-baseline gap-3">
-              <h1 className="font-serif text-2xl font-semibold tracking-tight text-textMain dark:text-zinc-100">
+          <header className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 shrink-0 min-h-[36px]">
+            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 min-w-0">
+              <h1 className="font-serif text-xl sm:text-2xl font-semibold tracking-tight text-textMain dark:text-zinc-100 truncate">
                 {greetingTime}, {displayName}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-[#52443d] dark:text-[#f0e7e1] bg-[#f0e7e1] dark:bg-stone-800 border border-[#e2d8d2] dark:border-stone-700">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-mono text-[#52443d] dark:text-[#f0e7e1] bg-[#f0e7e1] dark:bg-stone-800 border border-[#e2d8d2] dark:border-stone-700 shrink-0">
                 {dayName}, {dateFormatted} • Week {weekNumber}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <div className="relative hidden sm:block">
                 <input
                   onClick={() => openQuickCapture()}
                   readOnly
-                  className="w-52 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
+                  className="w-44 lg:w-52 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
                   placeholder="Search "
                   type="text"
                 />
@@ -301,114 +301,113 @@ export function Variant3DashboardView({
             </div>
           </header>
 
-          {/* ROW 1: Wide Horizontal Focus Strip (Command Ribbon) */}
+          {/* ROW 1: Top Summary Row (Focus Mode, Daily Progress, Habit Streak, Time Focused, Pocket Ledger) */}
           <section
-            className="shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-5 shadow-xs overflow-hidden py-3.5 px-4 h-[169px]"
+            className="shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-3 md:p-3.5 shadow-xs transition-colors"
             data-purpose="wide-focus-ribbon"
           >
-            {/* Zen Focus Engine Dial */}
-            <div className="flex items-center gap-4 shrink-0 pr-5 border-r border-borderWarm dark:border-zinc-800">
-              <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    fill="none"
-                    r="40"
-                    stroke="#10B981"
-                    strokeDasharray="251.2"
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    strokeWidth="5"
-                    className="transition-all duration-500 ease-linear"
-                  />
-                </svg>
-                <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
-                  <span className="text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
-                    {timerFormatted}
-                  </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 min-w-0">
+              {/* ITEM 1: Focus Mode */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between gap-3 min-w-0 h-full sm:col-span-2 lg:col-span-1 xl:col-span-1">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="40"
+                      stroke="#10B981"
+                      strokeDasharray="251.2"
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      strokeWidth="5"
+                      className="transition-all duration-500 ease-linear"
+                    />
+                  </svg>
+                  <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                      {timerFormatted}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-serif text-xs sm:text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Focus Mode</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => selectPreset(25)}
+                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
+                        timerDuration === 25 * 60
+                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                      }`}
+                    >
+                      25m
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => selectPreset(50)}
+                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
+                        timerDuration === 50 * 60
+                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                      }`}
+                    >
+                      50m
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => selectPreset(15)}
+                      className={`px-1.5 py-0.5 text-[10px] sm:text-[11px] font-mono rounded transition-colors ${
+                        timerDuration === 15 * 60
+                          ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
+                          : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
+                      }`}
+                    >
+                      15m
+                    </button>
+                    <button
+                      type="button"
+                      onClick={togglePlayPause}
+                      aria-label="Play/Pause Focus"
+                      className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-0.5 shrink-0 cursor-pointer"
+                    >
+                      {isTimerRunning ? (
+                        <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                          <rect x="6" y="4" width="4" height="16" />
+                          <rect x="14" y="4" width="4" height="16" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetTimer}
+                      aria-label="Reset Timer"
+                      className="w-6 h-6 rounded bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted hover:text-textMain dark:hover:text-zinc-100 text-[10px] font-mono flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                    >
+                      ↻
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Focus Mode</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => selectPreset(25)}
-                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
-                      timerDuration === 25 * 60
-                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                    }`}
-                  >
-                    25m
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => selectPreset(50)}
-                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
-                      timerDuration === 50 * 60
-                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                    }`}
-                  >
-                    50m
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => selectPreset(15)}
-                    className={`px-2 py-0.5 text-[11px] font-mono rounded transition-colors ${
-                      timerDuration === 15 * 60
-                        ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium shadow-xs'
-                        : 'bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted dark:text-zinc-400 hover:text-textMain'
-                    }`}
-                  >
-                    15m
-                  </button>
-                  <button
-                    type="button"
-                    onClick={togglePlayPause}
-                    aria-label="Play/Pause Focus"
-                    className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-0.5 cursor-pointer"
-                  >
-                    {isTimerRunning ? (
-                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                        <rect x="6" y="4" width="4" height="16" />
-                        <rect x="14" y="4" width="4" height="16" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetTimer}
-                    aria-label="Reset Timer"
-                    className="w-6 h-6 rounded bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMuted hover:text-textMain dark:hover:text-zinc-100 text-[11px] font-mono flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    ↻
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Center: Telemetry Chips */}
-            <div className="flex-1 grid grid-cols-3 gap-3 min-w-0">
-              {/* Daily Progress */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
+              {/* ITEM 2: Daily Progress */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
-                  <span className="uppercase">Daily Progress</span>
-                  <span className="font-semibold text-textMain dark:text-zinc-100">{dailyProgressPercent}%</span>
+                  <span className="uppercase truncate">Daily Progress</span>
+                  <span className="font-semibold text-textMain dark:text-zinc-100 shrink-0 ml-1">{dailyProgressPercent}%</span>
                 </div>
-                <div className="my-auto">
-                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                <div className="my-auto py-1">
+                  <span className="text-xl sm:text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
                     {completedBlocks}
                   </span>
                   <span className="text-xs font-mono text-textMuted dark:text-zinc-400"> / {totalBlocks}</span>
@@ -421,14 +420,14 @@ export function Variant3DashboardView({
                 </div>
               </div>
 
-              {/* Habit Streak */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
+              {/* ITEM 3: Habit Streak */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
-                  <span className="uppercase">Habit Streak</span>
-                  <span className="text-textMuted dark:text-zinc-400 font-semibold">{streakDays > 0 ? `${streakDays}D` : '0D'}</span>
+                  <span className="uppercase truncate">Habit Streak</span>
+                  <span className="text-textMuted dark:text-zinc-400 font-semibold shrink-0 ml-1">{streakDays > 0 ? `${streakDays}D` : '0D'}</span>
                 </div>
-                <div className="my-auto">
-                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">{consistencyPercent}%</span>
+                <div className="my-auto py-1">
+                  <span className="text-xl sm:text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">{consistencyPercent}%</span>
                 </div>
                 <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
                   <div
@@ -440,53 +439,51 @@ export function Variant3DashboardView({
                 </div>
               </div>
 
-              {/* Shield State / TIME FOCUSED */}
-              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
+              {/* ITEM 4: TIME FOCUSED */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
-                  <span className="uppercase">TIME FOCUSED</span>
-                  <span className="w-2 h-2 rounded-full bg-sage animate-pulse" />
+                  <span className="uppercase truncate">TIME FOCUSED</span>
+                  <span className="w-2 h-2 rounded-full bg-sage animate-pulse shrink-0 ml-1" />
                 </div>
-                <div className="my-auto flex items-baseline justify-between">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">3h 45m</span>
-                    <span className="text-xs font-mono text-textMuted dark:text-zinc-400">/ 5h</span>
-                  </div>
+                <div className="my-auto py-1 flex items-baseline gap-1 truncate">
+                  <span className="text-xl sm:text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">3h 45m</span>
+                  <span className="text-xs font-mono text-textMuted dark:text-zinc-400 shrink-0">/ 5h</span>
                 </div>
                 <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
                   <div className="bg-sage h-1 rounded-full" style={{ width: '75%' }} />
                 </div>
               </div>
-            </div>
 
-            {/* Right: Pocket Money Balance Fully Fitted */}
-            <div className="w-52 shrink-0 pl-5 border-l border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full py-1">
-              <div className="flex items-center justify-between">
-                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Pocket Ledger</span>
-                <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800">
-                  {dateFormatted.split(' ')[1] || 'Nov'}
-                </span>
-              </div>
-              <div className="my-auto">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
-                    ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                  <span className="text-xs font-mono text-textMuted dark:text-zinc-400">
-                    / ₹{monthlyAllowance.toLocaleString('en-IN')}
+              {/* ITEM 5: Pocket Ledger */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between min-w-0 h-full min-h-[110px]">
+                <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
+                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100 truncate">Pocket Ledger</span>
+                  <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800 shrink-0 ml-1">
+                    {dateFormatted.split(' ')[1] || 'Nov'}
                   </span>
                 </div>
-              </div>
-              <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-amberWarm h-1.5 rounded-full transition-all duration-300" style={{ width: `${allowancePercent}%` }} />
+                <div className="my-auto py-1">
+                  <div className="flex items-baseline gap-1 truncate">
+                    <span className="text-lg sm:text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums truncate">
+                      ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
+                      / ₹{monthlyAllowance.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-amberWarm h-1.5 rounded-full transition-all duration-300" style={{ width: `${allowancePercent}%` }} />
+                </div>
               </div>
             </div>
           </section>
 
-          {/* ROW 2: Balanced 2x2 Bento Matrix */}
-          <section className="flex-1 grid grid-cols-2 grid-rows-2 gap-3 min-h-0" data-purpose="2x2-bento-matrix">
+          {/* ROW 2 & 3: Bento Matrix (Expenses, Submissions, Habits, Projects & Ideas) */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-0" data-purpose="2x2-bento-matrix">
             {/* CARD 1: Expense Matrix */}
             <article
-              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
+              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden min-w-0"
               data-purpose="pocket-money-card"
             >
               <div className="flex items-center justify-between shrink-0 mb-2">
@@ -544,12 +541,12 @@ export function Variant3DashboardView({
 
               {/* Bottom Category Spend Buttons */}
               <div className="flex flex-col gap-1.5 shrink-0 mt-2">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => openQuickCapture('Expense Books: ')}
                     aria-label="Configure Books category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Books</span>
@@ -564,7 +561,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={() => openQuickCapture('Expense Cafe: ')}
                     aria-label="Configure Cafe category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Cafe</span>
@@ -579,7 +576,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={() => openQuickCapture('Expense Transit: ')}
                     aria-label="Configure Transit category slot"
-                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer min-w-0"
                   >
                     <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
                       <span className="truncate">Transit</span>
@@ -595,7 +592,7 @@ export function Variant3DashboardView({
 
             {/* CARD 2: Upcoming Submissions */}
             <article
-              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
+              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden min-w-0"
               data-purpose="submissions-card"
             >
               <div className="flex items-center justify-between shrink-0 mb-2">
@@ -667,7 +664,7 @@ export function Variant3DashboardView({
 
             {/* CARD 3: Habits Matrix */}
             <article
-              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
+              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden min-w-0"
               data-purpose="habits-card"
             >
               <div className="flex items-center justify-between shrink-0 mb-2">
@@ -692,9 +689,9 @@ export function Variant3DashboardView({
                   {localHabits.slice(0, 2).map((habit) => (
                     <div key={habit.id} className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-textMain dark:text-zinc-100">{habit.title}</span>
+                        <span className="text-xs font-medium text-textMain dark:text-zinc-100 truncate">{habit.title}</span>
                         <span
-                          className={`text-[11px] font-mono font-semibold ${
+                          className={`text-[11px] font-mono font-semibold shrink-0 ml-1 ${
                             habit.is_completed_today
                               ? 'text-emerald-700 dark:text-emerald-400'
                               : 'text-amber-700 dark:text-amber-400'
@@ -704,7 +701,7 @@ export function Variant3DashboardView({
                         </span>
                       </div>
                       {/* 7-day checkboxes */}
-                      <div className="flex items-center justify-between gap-1.5">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         {dayLabels.map((lbl, idx) => {
                           const isSunday = idx === 6;
                           const isDone = isSunday ? habit.is_completed_today : true;
@@ -734,12 +731,12 @@ export function Variant3DashboardView({
 
             {/* CARD 4: Active Projects & Ideas Split */}
             <article
-              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
+              className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden min-w-0"
               data-purpose="projects-ideas-card"
             >
-              <div className="grid grid-cols-2 gap-3 h-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
                 {/* Active Projects */}
-                <div className="flex flex-col justify-between pr-3 border-r border-borderWarm dark:border-zinc-800 h-full">
+                <div className="flex flex-col justify-between pr-0 sm:pr-3 border-b sm:border-b-0 sm:border-r border-borderWarm dark:border-zinc-800 pb-3 sm:pb-0 h-full min-w-0">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Projects</span>
@@ -754,8 +751,8 @@ export function Variant3DashboardView({
                         {displayProjects.map((project) => (
                           <div key={project.id}>
                             <div className="flex justify-between text-[11px] mb-1">
-                              <span className="font-medium text-textMain dark:text-zinc-200">{project.title}</span>
-                              <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
+                              <span className="font-medium text-textMain dark:text-zinc-200 truncate">{project.title}</span>
+                              <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold shrink-0 ml-1">
                                 {project.completion_percentage || 0}%
                               </span>
                             </div>
@@ -779,7 +776,7 @@ export function Variant3DashboardView({
                 </div>
 
                 {/* Ideas Vault */}
-                <div className="flex flex-col justify-between pl-1 h-full">
+                <div className="flex flex-col justify-between pl-0 sm:pl-1 pt-2 sm:pt-0 h-full min-w-0">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Ideas</span>

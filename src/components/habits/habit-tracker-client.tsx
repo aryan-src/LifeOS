@@ -269,14 +269,14 @@ export function HabitTrackerClient({
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-stone-500 dark:text-zinc-400 font-mono text-xs uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-textMuted dark:text-zinc-400 font-mono text-xs uppercase tracking-wider mb-1">
             <Calendar className="size-3.5" />
             <span>{formatCalendarDate(todayStr, 'header')}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-zinc-100">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
             Habit Tracker
           </h1>
-          <p className="text-sm text-stone-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-textMuted dark:text-zinc-400 mt-1">
             Zero-latency daily routines and weekly consistency tracking.
           </p>
         </div>
@@ -284,7 +284,7 @@ export function HabitTrackerClient({
         <button
           type="button"
           onClick={() => setIsAddingOpen(!isAddingOpen)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 text-xs font-medium transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-textMain hover:bg-stone-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 text-xs font-medium transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
         >
           <Plus className="size-4" />
           <span>New Habit</span>
@@ -295,16 +295,16 @@ export function HabitTrackerClient({
       {isAddingOpen && (
         <form
           onSubmit={handleCreateHabit}
-          className="p-5 sm:p-6 rounded-3xl border border-stone-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs space-y-4 animate-in fade-in slide-in-from-top-2 duration-150"
+          className="p-5 sm:p-6 rounded-3xl border border-borderWarm dark:border-zinc-800 bg-ivory dark:bg-zinc-900/60 shadow-xs space-y-4 animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-semibold text-stone-600 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="font-mono text-xs font-semibold text-textMuted dark:text-zinc-400 uppercase tracking-wider">
               Add New Habit Routine
             </span>
             <button
               type="button"
               onClick={() => setIsAddingOpen(false)}
-              className="text-stone-400 hover:text-stone-600 dark:hover:text-zinc-200 text-xs font-mono cursor-pointer"
+              className="text-textSubtle hover:text-textMain dark:hover:text-zinc-200 text-xs font-mono cursor-pointer"
             >
               Cancel
             </button>
@@ -316,21 +316,21 @@ export function HabitTrackerClient({
               placeholder="Habit title (e.g. Read 20 Pages, Morning Walk)"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-borderWarm dark:border-zinc-800 bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-sage/20 focus:border-sage"
             />
             <input
               type="text"
               placeholder="Description or trigger (optional)"
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-borderWarm dark:border-zinc-800 bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-sage/20 focus:border-sage"
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="submit"
               disabled={isSubmitting || !newTitle.trim()}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-sage hover:bg-emerald-600 text-white font-medium text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
             >
               {isSubmitting ? 'Saving...' : 'Add Habit'}
             </button>
@@ -339,12 +339,12 @@ export function HabitTrackerClient({
       )}
 
       {/* TOP SECTION: Today's Progress Card */}
-      <div className="rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900/50 p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-3xl border border-borderWarm dark:border-zinc-800/60 bg-ivory dark:bg-zinc-900/50 p-6 sm:p-8 shadow-xs space-y-6">
         {/* Progress Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-textMuted dark:text-zinc-400">
                 Today&apos;s Progress
               </span>
               {todayProgressPercent === 100 && totalHabitsCount > 0 && (
@@ -354,7 +354,7 @@ export function HabitTrackerClient({
                 </span>
               )}
             </div>
-            <p className="text-stone-500 dark:text-zinc-400 text-xs sm:text-sm mt-1">
+            <p className="text-textMuted dark:text-zinc-400 text-xs sm:text-sm mt-1">
               {totalHabitsCount === 0
                 ? 'No habits created yet. Click "New Habit" to start your daily streaks.'
                 : todayProgressPercent === 100
@@ -364,33 +364,33 @@ export function HabitTrackerClient({
           </div>
 
           <div className="flex items-baseline gap-1 font-mono shrink-0">
-            <span className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-zinc-100">
+            <span className="text-3xl sm:text-4xl font-bold tracking-tight text-textMain dark:text-zinc-100">
               {todayProgressPercent}%
             </span>
-            <span className="text-xs text-stone-400 dark:text-zinc-500">
+            <span className="text-xs text-textSubtle dark:text-zinc-500">
               ({completedTodayCount}/{totalHabitsCount})
             </span>
           </div>
         </div>
 
         {/* Smooth Notion Cream Progress Bar */}
-        <div className="w-full h-2.5 rounded-full bg-stone-100 dark:bg-zinc-800 overflow-hidden">
+        <div className="w-full h-2.5 rounded-full bg-[#F5F3EC] dark:bg-zinc-800 overflow-hidden">
           <div
-            className="h-full rounded-full bg-[#10B981] dark:bg-emerald-500 transition-all duration-300 ease-out"
+            className="h-full rounded-full bg-sage dark:bg-emerald-500 transition-all duration-300 ease-out"
             style={{ width: `${todayProgressPercent}%` }}
           />
         </div>
 
         {/* Interactive Habit Checklist */}
-        <div className="divide-y divide-stone-100 dark:divide-zinc-800/60 pt-2">
+        <div className="divide-y divide-borderWarm/60 dark:divide-zinc-800/60 pt-2">
           {optimisticHabits.length === 0 ? (
             <div className="py-10 text-center flex flex-col items-center gap-2">
-              <p className="text-sm font-medium text-stone-700 dark:text-zinc-300">No habits configured yet.</p>
-              <p className="text-xs text-stone-500 max-w-sm">Build daily streaks for focus blocks, reading, workouts, or problem sets.</p>
+              <p className="text-sm font-medium text-textMain dark:text-zinc-300">No habits configured yet.</p>
+              <p className="text-xs text-textMuted max-w-sm">Build daily streaks for focus blocks, reading, workouts, or problem sets.</p>
               <button
                 type="button"
                 onClick={() => setIsAddingOpen(true)}
-                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-900 text-stone-100 dark:bg-stone-100 dark:text-stone-900 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
+                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-textMain text-ivory dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
               >
                 + Add your first habit
               </button>
@@ -411,8 +411,8 @@ export function HabitTrackerClient({
                       onClick={() => handleToggleHabit(habit.id, todayStr)}
                       className={`size-7 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer active:scale-90 shrink-0 ${
                         isDoneToday
-                          ? 'bg-[#10B981] border-[#10B981] text-white shadow-xs'
-                          : 'border-stone-300 dark:border-zinc-700 hover:border-[#10B981] hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-transparent'
+                          ? 'bg-sage border-sage text-white shadow-xs'
+                          : 'border-borderWarm dark:border-zinc-700 hover:border-sage hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-transparent'
                       }`}
                       aria-label={`Toggle habit: ${habit.title}`}
                       title={isDoneToday ? 'Mark as incomplete' : 'Mark as completed'}
@@ -424,14 +424,14 @@ export function HabitTrackerClient({
                       <span
                         className={`text-sm sm:text-base font-medium tracking-tight truncate transition-colors ${
                           isDoneToday
-                            ? 'line-through text-stone-400 dark:text-zinc-500'
-                            : 'text-stone-900 dark:text-zinc-100'
+                            ? 'line-through text-textSubtle dark:text-zinc-500'
+                            : 'text-textMain dark:text-zinc-100'
                         }`}
                       >
                         {habit.title}
                       </span>
                       {habit.description && (
-                        <span className="text-xs text-stone-500 dark:text-zinc-400 truncate">
+                        <span className="text-xs text-textMuted dark:text-zinc-400 truncate">
                           {habit.description}
                         </span>
                       )}
@@ -443,10 +443,10 @@ export function HabitTrackerClient({
                     {/* Streak Badge */}
                     {habit.streak > 0 && (
                       <div
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 font-mono text-xs font-semibold select-none"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#FBF1D8] dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 text-[#8F5B0F] dark:text-amber-300 font-mono text-xs font-semibold select-none"
                         title={`Current streak: ${habit.streak} consecutive days`}
                       >
-                        <Flame className="size-3.5 text-amber-600 dark:text-amber-400 fill-amber-500" />
+                        <Flame className="size-3.5 text-amberWarm dark:text-amber-400 fill-amberWarm" />
                         <span>{`${habit.streak}d`}</span>
                       </div>
                     )}
@@ -462,8 +462,8 @@ export function HabitTrackerClient({
                             onClick={() => handleToggleHabit(habit.id, d.date)}
                             className={`size-3.5 rounded-full transition-all cursor-pointer ${
                               completed
-                                ? 'bg-[#10B981] dark:bg-emerald-400'
-                                : 'bg-stone-200 dark:bg-zinc-800 hover:bg-stone-300 dark:hover:bg-zinc-700'
+                                ? 'bg-sage dark:bg-emerald-400'
+                                : 'bg-[#EAE7DF] dark:bg-zinc-800 hover:bg-[#D5D1C7] dark:hover:bg-zinc-700'
                             } ${d.isToday ? 'ring-2 ring-emerald-500/30' : ''}`}
                             title={`${d.dayLabel} (${d.date}): ${completed ? 'Completed' : 'Missed'} • Click to toggle`}
                           />
@@ -475,7 +475,7 @@ export function HabitTrackerClient({
                     <button
                       type="button"
                       onClick={() => handleDeleteHabit(habit.id)}
-                      className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-all cursor-pointer"
+                      className="p-1.5 rounded-lg text-textSubtle hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 opacity-60 group-hover:opacity-100 transition-all cursor-pointer"
                       title="Delete habit"
                       aria-label="Delete habit"
                     >
@@ -490,29 +490,29 @@ export function HabitTrackerClient({
       </div>
 
       {/* BOTTOM SECTION: Weekly Consistency (Recharts) */}
-      <div className="rounded-3xl border border-stone-200/60 dark:border-zinc-800/60 bg-white dark:bg-zinc-900/50 p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-3xl border border-borderWarm dark:border-zinc-800/60 bg-ivory dark:bg-zinc-900/50 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-textMuted dark:text-zinc-400">
               Weekly Consistency
             </span>
-            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-stone-900 dark:text-zinc-100 mt-0.5">
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-textMain dark:text-zinc-100 mt-0.5 font-serif">
               7-Day Habit Completion Pattern
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs sm:text-sm text-textMuted dark:text-zinc-400 mt-1">
               Visualizing consistency across all active routines.
             </p>
           </div>
 
           {/* Quick Metrics */}
           <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-            <div className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-800">
-              <span className="text-stone-400 dark:text-zinc-500 mr-1.5">7D Avg:</span>
-              <span className="font-bold text-stone-900 dark:text-zinc-100">
+            <div className="px-3 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-800/60 border border-borderWarm dark:border-zinc-800">
+              <span className="text-textSubtle dark:text-zinc-500 mr-1.5">7D Avg:</span>
+              <span className="font-bold text-textMain dark:text-zinc-100">
                 {weeklyAvgPercent}%
               </span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 font-semibold">
+            <div className="px-3 py-1.5 rounded-xl bg-[#E1EEE6] dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 text-[#065F46] dark:text-emerald-300 font-semibold">
               <span className="mr-1">Today:</span>
               <span>{completedTodayCount}/{totalHabitsCount}</span>
             </div>

@@ -80,20 +80,20 @@ function LoginContent() {
       <div className="text-center mb-8">
         <Link
           href="/"
-          className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 shadow-sm text-stone-800 dark:text-stone-200 mb-5 group hover:border-stone-300 dark:hover:border-zinc-700 transition-all"
+          className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-xs text-textMain dark:text-zinc-200 mb-5 group hover:border-textSubtle dark:hover:border-zinc-700 transition-all"
         >
           <span className="font-mono text-base font-semibold tracking-tight">✦</span>
         </Link>
-        <h1 className="text-2xl font-serif font-medium tracking-tight text-stone-900 dark:text-stone-100">
+        <h1 className="text-2xl font-serif font-medium tracking-tight text-textMain dark:text-zinc-100">
           LifeOS
         </h1>
-        <p className="mt-2 text-xs text-stone-500 dark:text-stone-400 font-sans leading-relaxed">
+        <p className="mt-2 text-xs text-textMuted dark:text-zinc-400 font-sans leading-relaxed">
           Your personal operating system for academics, finances, and deep flow.
         </p>
       </div>
 
       {/* Login Card */}
-      <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-stone-200/70 dark:border-zinc-800/80 rounded-2xl p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+      <div className="bg-ivory dark:bg-zinc-900/90 backdrop-blur-sm border border-borderWarm dark:border-zinc-800 rounded-2xl p-7 shadow-xs">
         {/* Error Alert Banner */}
         {error && (
           <div
@@ -110,12 +110,12 @@ function LoginContent() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800 text-stone-800 dark:text-stone-100 text-sm font-medium hover:bg-stone-50 dark:hover:bg-zinc-700/60 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm active:scale-[0.99]"
+          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-borderWarm dark:border-zinc-700/80 bg-[#FAF9F5] hover:bg-[#F5F3EC] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-textMain dark:text-zinc-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sage dark:focus:ring-zinc-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-xs active:scale-[0.99] cursor-pointer"
         >
           {loading ? (
             <div className="flex items-center gap-2">
               <svg
-                className="animate-spin h-4 w-4 text-stone-500"
+                className="animate-spin h-4 w-4 text-textMuted"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -145,8 +145,8 @@ function LoginContent() {
         </button>
 
         {/* Security & Multi-Tenant Info */}
-        <div className="mt-6 pt-5 border-t border-stone-100 dark:border-zinc-800/80 text-center">
-          <p className="text-[11px] text-stone-400 dark:text-stone-500 font-mono">
+        <div className="mt-6 pt-5 border-t border-borderWarm/60 dark:border-zinc-800/80 text-center">
+          <p className="text-[11px] text-textSubtle dark:text-zinc-500 font-mono">
             Secured by Supabase Row-Level Security
           </p>
         </div>
@@ -156,7 +156,7 @@ function LoginContent() {
       <div className="mt-8 text-center">
         <Link
           href="/"
-          className="text-xs text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-colors font-sans"
+          className="text-xs text-textMuted hover:text-textMain dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors font-sans"
         >
           ← Return to home
         </Link>
@@ -167,10 +167,10 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-stone-50 text-stone-900 dark:bg-zinc-950 dark:text-stone-100 font-sans selection:bg-stone-200 dark:selection:bg-zinc-800">
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[#FAF9F5] text-textMain dark:bg-zinc-950 dark:text-zinc-100 font-sans selection:bg-[#E1EEE6] dark:selection:bg-zinc-800">
       <Suspense
         fallback={
-          <div className="w-full max-w-sm p-8 text-center text-xs text-stone-400">
+          <div className="w-full max-w-sm p-8 text-center text-xs text-textSubtle">
             Loading...
           </div>
         }

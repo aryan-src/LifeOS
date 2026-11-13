@@ -290,22 +290,22 @@ export function TaskChecklist({
         {/* 2. Filter & View Tabs with Actions */}
         <div className="flex flex-wrap items-center justify-between gap-space-sm py-space-xs">
           {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-1 p-1 bg-stone-100/80 dark:bg-zinc-900/80 border border-stone-200/60 dark:border-zinc-800/60 rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-[#F5F3EC] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl">
             <button
               type="button"
               onClick={() => handleTabChange('today')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'today'
-                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
-                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
+                  ? 'bg-ivory text-textMain shadow-xs border border-borderWarm/60 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-semibold'
+                  : 'text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-200 hover:bg-[#FAF9F5]/70 dark:hover:bg-zinc-800/50'
               }`}
             >
               <span>Today &amp; Overdue</span>
               <span
                 className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
                   activeTab === 'today'
-                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
-                    : 'text-stone-400 dark:text-zinc-500'
+                    ? 'bg-[#FAF9F5] text-textMain border border-borderWarm/50 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-textSubtle dark:text-zinc-500'
                 }`}
               >
                 {counts.today}
@@ -316,16 +316,16 @@ export function TaskChecklist({
               onClick={() => handleTabChange('upcoming')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'upcoming'
-                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
-                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
+                  ? 'bg-ivory text-textMain shadow-xs border border-borderWarm/60 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-semibold'
+                  : 'text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-200 hover:bg-[#FAF9F5]/70 dark:hover:bg-zinc-800/50'
               }`}
             >
               <span>Upcoming</span>
               <span
                 className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
                   activeTab === 'upcoming'
-                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
-                    : 'text-stone-400 dark:text-zinc-500'
+                    ? 'bg-[#FAF9F5] text-textMain border border-borderWarm/50 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-textSubtle dark:text-zinc-500'
                 }`}
               >
                 {counts.upcoming}
@@ -336,16 +336,16 @@ export function TaskChecklist({
               onClick={() => handleTabChange('completed')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'completed'
-                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
-                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
+                  ? 'bg-ivory text-textMain shadow-xs border border-borderWarm/60 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-semibold'
+                  : 'text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-200 hover:bg-[#FAF9F5]/70 dark:hover:bg-zinc-800/50'
               }`}
             >
               <span>Completed</span>
               <span
                 className={`px-1.5 py-0.2 rounded-full font-mono text-[11px] tabular-nums ${
                   activeTab === 'completed'
-                    ? 'bg-stone-100 text-stone-800 dark:bg-zinc-700 dark:text-zinc-200'
-                    : 'text-stone-400 dark:text-zinc-500'
+                    ? 'bg-[#FAF9F5] text-textMain border border-borderWarm/50 dark:bg-zinc-700 dark:text-zinc-200'
+                    : 'text-textSubtle dark:text-zinc-500'
                 }`}
               >
                 {counts.completed}
@@ -356,8 +356,8 @@ export function TaskChecklist({
               onClick={() => handleTabChange('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all hidden sm:inline-flex cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-white text-stone-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100 font-semibold'
-                  : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-200/50 dark:hover:bg-zinc-800/50'
+                  ? 'bg-ivory text-textMain shadow-xs border border-borderWarm/60 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 font-semibold'
+                  : 'text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-200 hover:bg-[#FAF9F5]/70 dark:hover:bg-zinc-800/50'
               }`}
             >
               All Tasks

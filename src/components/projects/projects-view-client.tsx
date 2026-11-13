@@ -175,10 +175,10 @@ export function ProjectsViewClient({
       {/* TopBar Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-zinc-100">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
             Projects
           </h1>
-          <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-textMuted dark:text-zinc-400 mt-0.5">
             Milestones, roadmaps, task execution, and budget tracking.
           </p>
         </div>
@@ -189,7 +189,7 @@ export function ProjectsViewClient({
           <div
             role="tablist"
             aria-label="Projects view mode"
-            className="inline-flex items-center p-1 bg-stone-100 dark:bg-zinc-900/90 border border-stone-200/80 dark:border-zinc-800 rounded-xl shadow-2xs text-xs font-semibold text-stone-600 dark:text-zinc-400"
+            className="inline-flex items-center p-1 bg-[#F5F3EC] dark:bg-zinc-900/90 border border-borderWarm dark:border-zinc-800 rounded-xl shadow-2xs text-xs font-semibold text-textMuted dark:text-zinc-400"
           >
             <button
               type="button"
@@ -198,8 +198,8 @@ export function ProjectsViewClient({
               onClick={() => handleViewChange('board')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'board'
-                  ? 'bg-white dark:bg-zinc-800 shadow-xs text-stone-900 dark:text-zinc-100 font-medium'
-                  : 'hover:text-stone-900 dark:hover:text-zinc-200'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
               <Kanban className="w-3.5 h-3.5" />
@@ -213,8 +213,8 @@ export function ProjectsViewClient({
               onClick={() => handleViewChange('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'list'
-                  ? 'bg-white dark:bg-zinc-800 shadow-xs text-stone-900 dark:text-zinc-100 font-medium'
-                  : 'hover:text-stone-900 dark:hover:text-zinc-200'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -228,8 +228,8 @@ export function ProjectsViewClient({
               onClick={() => handleViewChange('timeline')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'timeline'
-                  ? 'bg-white dark:bg-zinc-800 shadow-xs text-stone-900 dark:text-zinc-100 font-medium'
-                  : 'hover:text-stone-900 dark:hover:text-zinc-200'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
               <CalendarRange className="w-3.5 h-3.5" />
@@ -244,7 +244,7 @@ export function ProjectsViewClient({
               setCreateDefaultStatus('active');
               setIsCreateOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:py-2 bg-[#22332a] hover:bg-[#1a2720] dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs md:text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:py-2 bg-textMain hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs md:text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Project</span>
@@ -258,67 +258,67 @@ export function ProjectsViewClient({
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"
       >
         {/* Metric 1: Active Workstreams */}
-        <div className="bg-white dark:bg-zinc-900 border border-stone-200/70 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
-          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-stone-500 dark:text-zinc-400 uppercase">
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
             <span>Active Workstreams</span>
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sage" />
             </span>
           </div>
           <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl font-extrabold text-stone-900 dark:text-zinc-100 font-mono">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
               {activeCount}
             </span>
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#E1EEE6] dark:bg-emerald-950/50 text-[#065F46] dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
               Across Domains
             </span>
           </div>
         </div>
 
         {/* Metric 2: Overall Velocity */}
-        <div className="bg-white dark:bg-zinc-900 border border-stone-200/70 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
-          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-stone-500 dark:text-zinc-400 uppercase">
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
             <span>Overall Velocity</span>
-            <TrendingUp className="w-4 h-4 text-stone-400 dark:text-zinc-500" />
+            <TrendingUp className="w-4 h-4 text-textSubtle dark:text-zinc-500" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-stone-900 dark:text-zinc-100 font-mono">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
               {`${avgVelocity}%`}
             </span>
-            <span className="text-xs text-stone-400 dark:text-zinc-500 font-mono">
+            <span className="text-xs text-textSubtle dark:text-zinc-500 font-mono">
               Avg card pace
             </span>
           </div>
         </div>
 
         {/* Metric 3: Completed / Q4 */}
-        <div className="bg-white dark:bg-zinc-900 border border-stone-200/70 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
-          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-stone-500 dark:text-zinc-400 uppercase">
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
             <span>Completed / Q4</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 className="w-4 h-4 text-sage" />
           </div>
           <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl font-extrabold text-stone-900 dark:text-zinc-100 font-mono">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
               {completedCount}
             </span>
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#E1EEE6] dark:bg-emerald-950/50 text-[#065F46] dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
               Achieved
             </span>
           </div>
         </div>
 
         {/* Metric 4: Stalled Items */}
-        <div className="bg-white dark:bg-zinc-900 border border-stone-200/70 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
-          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-stone-500 dark:text-zinc-400 uppercase">
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
             <span>Stalled Items</span>
-            <PauseCircle className="w-4 h-4 text-amber-500" />
+            <PauseCircle className="w-4 h-4 text-amberWarm" />
           </div>
           <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl font-extrabold text-stone-900 dark:text-zinc-100 font-mono">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
               {pausedCount}
             </span>
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 border border-stone-200/60 dark:border-zinc-700/60 rounded-md">
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#FAF9F5] dark:bg-zinc-800 text-textMuted dark:text-zinc-400 border border-borderWarm dark:border-zinc-700/60 rounded-md">
               On hold
             </span>
           </div>
@@ -331,7 +331,7 @@ export function ProjectsViewClient({
         className="flex flex-wrap items-center justify-between gap-3 text-xs"
       >
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono uppercase text-[11px] text-stone-400 dark:text-zinc-500 tracking-wider font-semibold mr-1 flex items-center gap-1">
+          <span className="font-mono uppercase text-[11px] text-textSubtle dark:text-zinc-500 tracking-wider font-semibold mr-1 flex items-center gap-1">
             <Filter className="w-3 h-3" />
             Filter:
           </span>
@@ -341,7 +341,7 @@ export function ProjectsViewClient({
             aria-label="Filter by Status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | ProjectStatus)}
-            className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 rounded-lg text-stone-800 dark:text-zinc-200 font-medium hover:border-stone-300 dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-stone-400"
+            className="px-3 py-1.5 bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-lg text-textMain dark:text-zinc-200 font-medium hover:border-textSubtle dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-sage"
           >
             <option value="all">All Statuses</option>
             <option value="backlog">Backlog</option>
@@ -357,7 +357,7 @@ export function ProjectsViewClient({
             onChange={(e) =>
               setPriorityFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
             }
-            className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 rounded-lg text-stone-800 dark:text-zinc-200 font-medium hover:border-stone-300 dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-stone-400"
+            className="px-3 py-1.5 bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-lg text-textMain dark:text-zinc-200 font-medium hover:border-textSubtle dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-sage"
           >
             <option value="all">All Priorities</option>
             <option value="4">P1 - Urgent</option>
@@ -370,13 +370,13 @@ export function ProjectsViewClient({
         {/* Quick Search & Count */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-stone-400 dark:text-zinc-500 absolute left-2.5 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-textSubtle dark:text-zinc-500 absolute left-2.5 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search projects, tags, slugs..."
-              className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 rounded-lg text-xs placeholder:text-stone-400 dark:placeholder:text-zinc-500 text-stone-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#22332a] dark:focus:ring-zinc-600"
+              className="w-full pl-8 pr-3 py-1.5 bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-lg text-xs placeholder:text-textSubtle dark:placeholder:text-zinc-500 text-textMain dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-sage"
             />
           </div>
 

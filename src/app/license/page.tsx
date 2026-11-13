@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 
 export default function LicensePage() {
   return (
-    <div className="min-h-screen bg-[#fff8f5] dark:bg-[#121110] text-[#1e1b18] dark:text-[#f5f5f0] font-sans antialiased selection:bg-[#2f5c3a] selection:text-white transition-colors py-12 px-6 sm:px-8">
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 font-sans antialiased selection:bg-sage selection:text-white transition-colors py-12 px-6 sm:px-8">
       <div className="max-w-3xl mx-auto space-y-10">
         {/* Navigation */}
-        <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-4">
+        <div className="flex items-center justify-between border-b border-borderWarm dark:border-zinc-800 pb-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors font-mono"
+            className="inline-flex items-center gap-2 text-sm text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 transition-colors font-mono"
           >
             <ArrowLeft size={16} />
             <span>Return to Overview</span>
@@ -25,7 +25,7 @@ export default function LicensePage() {
             href="https://github.com/aryan-src/LifeOS"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-mono text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-mono text-textSubtle hover:text-textMain dark:hover:text-zinc-200 transition-colors"
           >
             <span>GitHub Repository</span>
             <ExternalLink size={12} />
@@ -34,20 +34,20 @@ export default function LicensePage() {
 
         {/* Header */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-stone-200/70 dark:bg-stone-800/60 border border-stone-300 dark:border-stone-700 text-stone-800 dark:text-stone-200 text-xs font-mono">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#FAF9F5] dark:bg-zinc-800/60 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-200 text-xs font-mono">
             <Scale size={14} />
             <span>Open Source Software</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
             MIT License
           </h1>
-          <p className="text-base text-stone-600 dark:text-stone-400 leading-relaxed">
+          <p className="text-base text-textMuted dark:text-zinc-400 leading-relaxed">
             Copyright &copy; 2026 Aryan Prajapati. LifeOS is open source software distributed under the terms of the MIT License.
           </p>
         </div>
 
         {/* License Block */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 font-mono text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed space-y-4 shadow-xs">
+        <div className="p-6 sm:p-8 rounded-2xl bg-ivory dark:bg-zinc-900/60 border border-borderWarm dark:border-zinc-800 font-mono text-xs sm:text-sm text-textMain dark:text-zinc-300 leading-relaxed space-y-4 shadow-xs">
           <p>
             Permission is hereby granted, free of charge, to any person obtaining a copy
             of this software and associated documentation files (the &quot;Software&quot;), to deal
@@ -60,7 +60,7 @@ export default function LicensePage() {
             The above copyright notice and this permission notice shall be included in all
             copies or substantial portions of the Software.
           </p>
-          <p className="uppercase text-stone-500 dark:text-stone-400 text-xs">
+          <p className="uppercase text-textSubtle dark:text-zinc-400 text-xs">
             THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
             IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
             FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -72,9 +72,9 @@ export default function LicensePage() {
         </div>
 
         {/* Footer */}
-        <div className="pt-8 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs font-mono text-stone-500">
+        <div className="pt-8 border-t border-borderWarm dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-textSubtle">
           <span>LifeOS Architecture</span>
-          <Link href="/privacy" className="hover:text-stone-900 dark:hover:text-stone-200 transition-colors">
+          <Link href="/privacy" className="hover:text-textMain dark:hover:text-zinc-200 transition-colors">
             Privacy Statement
           </Link>
         </div>

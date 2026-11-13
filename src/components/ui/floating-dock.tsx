@@ -136,8 +136,8 @@ const FloatingDockMobile = ({
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md border shadow-sm transition-colors",
                       isActive
-                        ? "bg-white text-stone-900 border-stone-300 dark:bg-zinc-800 dark:text-stone-100 dark:border-zinc-700 shadow-xs"
-                        : "bg-white/90 text-stone-600 border-stone-200/70 hover:bg-stone-100 dark:bg-zinc-900/90 dark:text-stone-300 dark:border-zinc-800 dark:hover:bg-zinc-800"
+                        ? "bg-ivory text-textMain border-borderWarm dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 shadow-xs"
+                        : "bg-ivory/90 text-textMuted border-borderWarm/70 hover:bg-[#FAF9F5] dark:bg-zinc-900/90 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800"
                     )}
                     aria-label={item.title}
                     title={item.title}
@@ -261,8 +261,8 @@ function IconContainer({
         className={cn(
           "relative flex aspect-square items-center justify-center rounded-full origin-bottom transition-colors cursor-pointer select-none",
           isActive
-            ? "bg-white text-stone-900 shadow-sm dark:bg-zinc-800 dark:text-stone-100 ring-1 ring-stone-900/5 dark:ring-white/10"
-            : "bg-stone-100/70 hover:bg-stone-200/60 dark:bg-zinc-900/60 dark:hover:bg-zinc-800/60 text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 border border-stone-200/30 dark:border-zinc-800/40"
+            ? "bg-ivory text-textMain shadow-xs dark:bg-zinc-800 dark:text-zinc-100 ring-1 ring-borderWarm dark:ring-white/10"
+            : "bg-[#F5F3EC]/80 hover:bg-ivory dark:bg-zinc-900/60 dark:hover:bg-zinc-800/60 text-textMuted hover:text-textMain dark:text-zinc-400 dark:hover:text-zinc-100 border border-borderWarm/60 dark:border-zinc-800/40"
         )}
       >
         <AnimatePresence>
@@ -271,7 +271,7 @@ function IconContainer({
               initial={{ opacity: 0, y: 10, x: "-50%" }}
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 2, x: "-50%" }}
-              className="absolute -top-10 left-1/2 -translate-x-1/2 w-fit rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs font-medium whitespace-pre text-stone-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-100 pointer-events-none z-50"
+              className="absolute -top-10 left-1/2 -translate-x-1/2 w-fit rounded-md border border-borderWarm bg-ivory px-2 py-0.5 text-xs font-medium whitespace-pre text-textMain shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 pointer-events-none z-50"
             >
               {title}
             </motion.div>

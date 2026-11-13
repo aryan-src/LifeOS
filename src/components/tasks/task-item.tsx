@@ -102,8 +102,8 @@ export function TaskItem({
     <div
       className={`group relative flex items-start justify-between p-3.5 sm:p-4 rounded-xl transition-all duration-200 ${
         task.is_completed
-          ? 'bg-stone-50/70 dark:bg-zinc-900/30 opacity-75 hover:opacity-100 border border-stone-200/60 dark:border-zinc-800/40'
-          : 'bg-white dark:bg-zinc-900/70 hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 border border-stone-200/80 dark:border-zinc-800/70 shadow-2xs hover:shadow-xs'
+          ? 'bg-[#FAF9F5]/70 dark:bg-zinc-900/30 opacity-75 hover:opacity-100 border border-borderWarm/60 dark:border-zinc-800/40'
+          : 'bg-ivory dark:bg-zinc-900/70 hover:bg-[#FAF9F5] dark:hover:bg-zinc-800/40 border border-borderWarm dark:border-zinc-800/70 shadow-2xs hover:shadow-xs'
       }`}
     >
       <div className="flex items-start gap-3.5 min-w-0 flex-1">
@@ -122,8 +122,8 @@ export function TaskItem({
           }
           className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors cursor-pointer ${
             task.is_completed
-              ? 'bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-2 border-stone-900 dark:border-zinc-100 shadow-xs'
-              : 'border-2 border-stone-300 dark:border-zinc-600 bg-white dark:bg-zinc-900/80 hover:border-stone-400 dark:hover:border-zinc-400 hover:bg-stone-50 dark:hover:bg-zinc-800 shadow-2xs'
+              ? 'bg-textMain dark:bg-zinc-100 text-white dark:text-zinc-900 border-2 border-textMain dark:border-zinc-100 shadow-xs'
+              : 'border-2 border-borderWarm dark:border-zinc-600 bg-ivory dark:bg-zinc-900/80 hover:border-stone-400 dark:hover:border-zinc-400 hover:bg-[#FAF9F5] dark:hover:bg-zinc-800 shadow-2xs'
           }`}
         >
           {task.is_completed && (

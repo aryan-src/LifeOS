@@ -343,17 +343,17 @@ export function LedgerTable({
       >
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-zinc-100">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
               {timeframeTitle}
             </h1>
             <span
               id="record-counter-badge"
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-stone-200/60 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 border border-stone-300/40 dark:border-zinc-700/40"
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-ivory dark:bg-zinc-800 text-textMuted dark:text-zinc-300 border border-borderWarm dark:border-zinc-700/60"
             >
               {filteredItems.length} records
             </span>
           </div>
-          <p className="mt-1.5 text-sm text-stone-500 dark:text-zinc-400 tracking-normal font-normal">
+          <p className="mt-1.5 text-sm text-textMuted dark:text-zinc-400 tracking-normal font-normal">
             Student pocket money outlays, allowance records, and daily expense flow.
           </p>
         </div>
@@ -362,7 +362,7 @@ export function LedgerTable({
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Filter Tabs (Segmented Control) */}
           <div
-            className="inline-flex p-1 bg-stone-200/50 dark:bg-zinc-800/60 rounded-xl border border-stone-200/70 dark:border-zinc-700/60"
+            className="inline-flex p-1 bg-[#F5F3EC] dark:bg-zinc-800/60 rounded-xl border border-borderWarm dark:border-zinc-700/60"
             role="tablist"
           >
             {[
@@ -388,8 +388,8 @@ export function LedgerTable({
                   }
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-white dark:bg-zinc-900 text-stone-900 dark:text-zinc-100 shadow-2xs font-semibold'
-                      : 'text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200'
+                      ? 'bg-ivory dark:bg-zinc-900 text-textMain dark:text-zinc-100 shadow-2xs font-semibold'
+                      : 'text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-200'
                   }`}
                 >
                   {tab.label}
@@ -400,15 +400,15 @@ export function LedgerTable({
 
           {/* View Switcher (Table / Grid) */}
           {onViewModeChange && (
-            <div className="inline-flex p-1 bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 rounded-xl shadow-2xs">
+            <div className="inline-flex p-1 bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl shadow-2xs">
               <button
                 type="button"
                 onClick={() => onViewModeChange('table')}
                 title="Table View"
                 className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'table'
-                    ? 'bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-zinc-100'
-                    : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                    ? 'bg-[#F5F3EC] dark:bg-zinc-800 text-textMain dark:text-zinc-100'
+                    : 'text-textSubtle dark:text-zinc-500 hover:text-textMain dark:hover:text-zinc-300'
                 }`}
               >
                 <TableIcon className="w-4 h-4" />
@@ -419,8 +419,8 @@ export function LedgerTable({
                 title="Grid Cards View"
                 className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                   viewMode === 'cards'
-                    ? 'bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-zinc-100'
-                    : 'text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300'
+                    ? 'bg-[#F5F3EC] dark:bg-zinc-800 text-textMain dark:text-zinc-100'
+                    : 'text-textSubtle dark:text-zinc-500 hover:text-textMain dark:hover:text-zinc-300'
                 }`}
               >
                 <LayoutGrid className="w-4 h-4" />
@@ -433,7 +433,7 @@ export function LedgerTable({
             <button
               type="button"
               onClick={onRecordExpense}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 active:scale-98 rounded-xl shadow-sm transition-all focus:outline-hidden focus:ring-2 focus:ring-stone-400 focus:ring-offset-2 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-white bg-textMain hover:bg-stone-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 active:scale-98 rounded-xl shadow-xs transition-all focus:outline-hidden focus:ring-2 focus:ring-sage focus:ring-offset-2 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Record Expense</span>
@@ -458,14 +458,14 @@ export function LedgerTable({
               data-purpose="quick-metrics"
             >
               {/* Card 1: Total Spent */}
-              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+              <div className="bg-ivory dark:bg-zinc-900/80 border border-borderWarm dark:border-zinc-800/70 rounded-xl p-3.5 shadow-xs">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-textMuted dark:text-zinc-500">
                   Total Spent
                 </span>
                 <div className="mt-1 flex items-baseline gap-1.5">
                   <span
                     id="kpi-total"
-                    className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums"
+                    className="text-base font-semibold font-mono text-textMain dark:text-zinc-100 tabular-nums"
                   >
                     {`-${currencySymbol}${totalSpent.toFixed(2)}`}
                   </span>
@@ -476,32 +476,32 @@ export function LedgerTable({
               </div>
 
               {/* Card 2: Daily Average */}
-              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+              <div className="bg-ivory dark:bg-zinc-900/80 border border-borderWarm dark:border-zinc-800/70 rounded-xl p-3.5 shadow-xs">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-textMuted dark:text-zinc-500">
                   Daily Average
                 </span>
                 <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="text-base font-semibold font-mono text-stone-900 dark:text-zinc-100 tabular-nums">
+                  <span className="text-base font-semibold font-mono text-textMain dark:text-zinc-100 tabular-nums">
                     {`${currencySymbol}${dailyAverage.toFixed(2)}`}
                   </span>
-                  <span className="text-[11px] text-stone-400 dark:text-zinc-500">
+                  <span className="text-[11px] text-textSubtle dark:text-zinc-500">
                     / day
                   </span>
                 </div>
               </div>
 
               {/* Card 3: Top Outlay Category */}
-              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+              <div className="bg-ivory dark:bg-zinc-900/80 border border-borderWarm dark:border-zinc-800/70 rounded-xl p-3.5 shadow-xs">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-textMuted dark:text-zinc-500">
                   Top Outlay Category
                 </span>
                 <div className="mt-1 flex items-center gap-1.5">
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${topCategoryBadge.dot}`}
                   />
-                  <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 truncate">
+                  <span className="text-sm font-medium text-textMain dark:text-zinc-200 truncate">
                     {topCategoryData.name}{' '}
-                    <span className="font-mono text-xs text-stone-500 dark:text-zinc-400">
+                    <span className="font-mono text-xs text-textMuted dark:text-zinc-400">
                       ({currencySymbol}
                       {topCategoryData.amount.toFixed(0)})
                     </span>
@@ -510,15 +510,15 @@ export function LedgerTable({
               </div>
 
               {/* Card 4: Monthly Budget Cap */}
-              <div className="bg-white/80 dark:bg-zinc-900/80 border border-stone-200/70 dark:border-zinc-800/70 rounded-xl p-3.5">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 dark:text-zinc-500">
+              <div className="bg-ivory dark:bg-zinc-900/80 border border-borderWarm dark:border-zinc-800/70 rounded-xl p-3.5 shadow-xs">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-textMuted dark:text-zinc-500">
                   Monthly Budget Cap
                 </span>
                 <div className="mt-1 flex items-baseline justify-between">
-                  <span className="text-sm font-semibold font-mono text-stone-800 dark:text-zinc-200 tabular-nums">
+                  <span className="text-sm font-semibold font-mono text-textMain dark:text-zinc-200 tabular-nums">
                     {budgetUsagePercent.toFixed(1)}%
                   </span>
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium font-mono">
+                  <span className="text-[11px] text-sage dark:text-emerald-400 font-medium font-mono">
                     {currencySymbol}
                     {monthlyCap.toLocaleString()} max
                   </span>
@@ -533,7 +533,7 @@ export function LedgerTable({
       {/* BEGIN: Search & Filter Inline Toolbar */}
       <div className="flex items-center justify-between gap-4 px-1">
         <div className="relative w-full max-w-xs">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-stone-400 dark:text-zinc-500">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-textSubtle dark:text-zinc-500">
             <Search className="w-3.5 h-3.5" />
           </span>
           <input
@@ -545,13 +545,13 @@ export function LedgerTable({
               setCurrentPage(1);
             }}
             placeholder="Filter description, category..."
-            className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-zinc-900/80 border border-stone-200/80 dark:border-zinc-800 rounded-lg text-xs placeholder:text-stone-400 dark:placeholder:text-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-stone-400 focus:border-stone-400 text-stone-800 dark:text-zinc-100 transition-all"
+            className="w-full pl-8 pr-3 py-1.5 bg-ivory dark:bg-zinc-900/80 border border-borderWarm dark:border-zinc-800 rounded-lg text-xs placeholder:text-textSubtle dark:placeholder:text-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-sage focus:border-sage text-textMain dark:text-zinc-100 transition-all shadow-xs"
           />
         </div>
 
         {/* Quick inline pill status */}
-        <div className="hidden sm:flex items-center gap-2 text-xs text-stone-400 dark:text-zinc-500">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <div className="hidden sm:flex items-center gap-2 text-xs text-textMuted dark:text-zinc-500">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-sage" />
           <span>Auto-synced</span>
         </div>
       </div>
@@ -559,7 +559,7 @@ export function LedgerTable({
 
       {/* BEGIN: LedgerDataTableCard */}
       <div
-        className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl shadow-subtle overflow-hidden transition-all duration-300 ease-out"
+        className="bg-ivory dark:bg-zinc-900/90 backdrop-blur-xs border border-borderWarm dark:border-zinc-800/80 rounded-2xl shadow-xs overflow-hidden transition-all duration-300 ease-out"
         data-purpose="ledger-table-wrapper"
       >
         <div className="overflow-x-auto overflow-y-hidden min-h-[420px]">
@@ -569,7 +569,7 @@ export function LedgerTable({
           >
             {/* Table Header */}
             <thead>
-              <tr className="border-b border-stone-200/70 dark:border-zinc-800/70 bg-stone-50/70 dark:bg-zinc-800/40 text-[11px] font-semibold uppercase tracking-wider text-stone-400 dark:text-zinc-500 select-none">
+              <tr className="border-b border-borderWarm dark:border-zinc-800/70 bg-[#FAF9F5] dark:bg-zinc-800/40 text-[11px] font-semibold uppercase tracking-wider text-textMuted dark:text-zinc-500 select-none">
                 <th className="py-3 px-4 sm:px-6 w-[130px]" scope="col">
                   Date
                 </th>
@@ -652,19 +652,19 @@ export function LedgerTable({
                             damping: 25,
                             delay: Math.min(index * 0.02, 0.2),
                           }}
-                          className="group transition-colors duration-150 hover:bg-stone-50/80 dark:hover:bg-zinc-800/40"
+                          className="group transition-colors duration-150 hover:bg-[#FAF9F5] dark:hover:bg-zinc-800/40"
                         >
                         {/* Date */}
-                        <td className="py-3 px-4 sm:px-6 font-mono text-xs text-stone-500 dark:text-zinc-400 whitespace-nowrap">
+                        <td className="py-3 px-4 sm:px-6 font-mono text-xs text-textMuted dark:text-zinc-400 whitespace-nowrap">
                           {row.date}
                         </td>
 
                         {/* Description */}
-                        <td className="py-3 px-4 sm:px-6 font-medium text-stone-800 dark:text-zinc-100 whitespace-nowrap">
+                        <td className="py-3 px-4 sm:px-6 font-medium text-textMain dark:text-zinc-100 whitespace-nowrap">
                           <div className="flex flex-col">
                             <span>{row.description}</span>
                             {row.payee_or_source && (
-                              <span className="text-[11px] text-stone-400 dark:text-zinc-500 font-normal">
+                              <span className="text-[11px] text-textMuted dark:text-zinc-500 font-normal">
                                 {row.payee_or_source}
                               </span>
                             )}
@@ -683,16 +683,16 @@ export function LedgerTable({
                               <span>{row.category.name}</span>
                             </span>
                           ) : (
-                            <span className="text-stone-300 dark:text-zinc-600 font-light">
+                            <span className="text-textSubtle dark:text-zinc-600 font-light">
                               —
                             </span>
                           )}
                         </td>
 
                         {/* Project */}
-                        <td className="py-3 px-4 sm:px-6 text-stone-300 dark:text-zinc-600 font-light whitespace-nowrap">
+                        <td className="py-3 px-4 sm:px-6 text-textSubtle dark:text-zinc-600 font-light whitespace-nowrap">
                           {row.project ? (
-                            <span className="font-mono text-xs text-stone-600 dark:text-zinc-400">
+                            <span className="font-mono text-xs text-textMuted dark:text-zinc-400">
                               #{row.project.slug}
                             </span>
                           ) : (
@@ -704,7 +704,7 @@ export function LedgerTable({
                         <td
                           className={`py-3 px-4 sm:px-6 text-right font-mono font-medium tabular-nums whitespace-nowrap ${
                             isIncome
-                              ? 'text-emerald-600/90 dark:text-emerald-400'
+                              ? 'text-sage dark:text-emerald-400'
                               : 'text-rose-600/90 dark:text-rose-400'
                           }`}
                         >
@@ -718,7 +718,7 @@ export function LedgerTable({
                               type="button"
                               onClick={() => handleEditClick(row)}
                               title="Edit entry"
-                              className="p-1 rounded-md text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-200 hover:bg-stone-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                              className="p-1 rounded-md text-textSubtle dark:text-zinc-500 hover:text-textMain dark:hover:text-zinc-200 hover:bg-[#FAF9F5] dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -726,7 +726,7 @@ export function LedgerTable({
                               type="button"
                               onClick={() => handleDeleteClick(row.id)}
                               title="Delete entry"
-                              className="p-1 rounded-md text-stone-400 dark:text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                              className="p-1 rounded-md text-textSubtle dark:text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -744,27 +744,27 @@ export function LedgerTable({
 
         {/* BEGIN: TableFooterPagination */}
         <div
-          className="px-4 sm:px-6 py-4 border-t border-stone-200/60 dark:border-zinc-800/60 bg-stone-50/40 dark:bg-zinc-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs"
+          className="px-4 sm:px-6 py-4 border-t border-borderWarm dark:border-zinc-800/60 bg-[#FAF9F5]/40 dark:bg-zinc-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs"
           data-purpose="table-pagination"
         >
           <p
-            className="text-stone-500 dark:text-zinc-400 font-mono"
+            className="text-textMuted dark:text-zinc-400 font-mono"
             id="pagination-status"
           >
             Showing{' '}
-            <span className="font-semibold text-stone-700 dark:text-zinc-200">
+            <span className="font-semibold text-textMain dark:text-zinc-200">
               {filteredItems.length === 0 ? 0 : startIndex + 1}
             </span>
             –
             <span
-              className="font-semibold text-stone-700 dark:text-zinc-200"
+              className="font-semibold text-textMain dark:text-zinc-200"
               id="current-visible-count"
             >
               {Math.min(startIndex + itemsPerPage, filteredItems.length)}
             </span>{' '}
             of{' '}
             <span
-              className="font-semibold text-stone-700 dark:text-zinc-200"
+              className="font-semibold text-textMain dark:text-zinc-200"
               id="total-count-label"
             >
               {filteredItems.length}

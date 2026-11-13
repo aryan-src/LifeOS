@@ -403,17 +403,17 @@ export function AssignmentsView({
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
         <div>
           {/* Category Badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-[11px] font-mono tracking-wider text-amber-800 dark:text-amber-300 uppercase font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FBF1D8] dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amberWarm animate-pulse" />
+            <span className="text-[11px] font-mono tracking-wider text-[#8F5B0F] dark:text-amber-300 uppercase font-semibold">
               Academics
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
             Assignment Tracker
           </h1>
-          <p className="mt-1 text-sm text-[#7A766F] dark:text-stone-400 max-w-2xl leading-relaxed">
+          <p className="mt-1 text-sm text-textMuted dark:text-zinc-400 max-w-2xl leading-relaxed">
             Track coursework deadlines, prioritize pending submissions, and record assignment grades across all current modules.
           </p>
         </div>
@@ -421,14 +421,14 @@ export function AssignmentsView({
         {/* View Mode & New Assignment Action Buttons */}
         <div className="flex items-center flex-wrap gap-3">
           {/* View Mode Switcher */}
-          <div className="flex items-center p-1 bg-stone-200/50 dark:bg-stone-800 rounded-xl border border-[#EAE6DF]/70 dark:border-stone-700/60 text-xs font-medium">
+          <div className="flex items-center p-1 bg-[#F5F3EC] dark:bg-stone-800 rounded-xl border border-borderWarm dark:border-stone-700/60 text-xs font-medium">
             <button
               type="button"
               onClick={() => setViewMode('kanban')}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'kanban'
-                  ? 'bg-white dark:bg-stone-900 text-[#1A1A1A] dark:text-stone-100 shadow-xs border border-stone-200/80 dark:border-stone-700 font-semibold cursor-default'
-                  : 'text-[#7A766F] dark:text-stone-400 hover:text-[#1A1A1A] dark:hover:text-stone-100 cursor-pointer'
+                  ? 'bg-ivory dark:bg-stone-900 text-textMain dark:text-stone-100 shadow-xs border border-borderWarm dark:border-stone-700 font-semibold cursor-default'
+                  : 'text-textMuted dark:text-stone-400 hover:text-textMain dark:hover:text-stone-100 cursor-pointer'
               }`}
             >
               <Kanban size={13} />
@@ -439,8 +439,8 @@ export function AssignmentsView({
               onClick={() => setViewMode('list')}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-stone-900 text-[#1A1A1A] dark:text-stone-100 shadow-xs border border-stone-200/80 dark:border-stone-700 font-semibold cursor-default'
-                  : 'text-[#7A766F] dark:text-stone-400 hover:text-[#1A1A1A] dark:hover:text-stone-100 cursor-pointer'
+                  ? 'bg-ivory dark:bg-stone-900 text-textMain dark:text-stone-100 shadow-xs border border-borderWarm dark:border-stone-700 font-semibold cursor-default'
+                  : 'text-textMuted dark:text-stone-400 hover:text-textMain dark:hover:text-stone-100 cursor-pointer'
               }`}
             >
               <List size={13} />
@@ -456,7 +456,7 @@ export function AssignmentsView({
               setCreateDefaultStatus('not_started');
               setIsCreateOpen(true);
             }}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-[#1A1A1A] dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] text-white dark:text-stone-900 text-xs font-semibold rounded-xl shadow-xs transition-all duration-150 cursor-pointer"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-textMain dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] text-white dark:text-stone-900 text-xs font-semibold rounded-xl shadow-xs transition-all duration-150 cursor-pointer"
           >
             <Plus size={14} />
             <span>New Assignment</span>
@@ -542,20 +542,20 @@ export function AssignmentsView({
       {/* Upper KPI Summary Cards (Stitch Design) */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Tracked */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-stone-400/60 transition-all">
-          <div className="flex items-center justify-between text-[#7A766F] dark:text-stone-400">
+        <div className="bg-ivory dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-textSubtle transition-all">
+          <div className="flex items-center justify-between text-textMuted dark:text-stone-400">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Total Tracked
             </span>
-            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
+            <div className="w-8 h-8 rounded-lg bg-[#FAF9F5] dark:bg-stone-800 flex items-center justify-center text-textMain dark:text-stone-300">
               <BookOpen size={16} />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 font-mono">
+            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 font-mono">
               {metrics.total}
             </div>
-            <div className="text-xs text-[#7A766F] dark:text-stone-400 mt-1">
+            <div className="text-xs text-textMuted dark:text-stone-400 mt-1">
               Across {metrics.moduleCount} academic{' '}
               {metrics.moduleCount === 1 ? 'module' : 'modules'}
             </div>
@@ -563,18 +563,18 @@ export function AssignmentsView({
         </div>
 
         {/* Card 2: Submission Pending (Highlighted Amber) */}
-        <div className="bg-[#FFFDF7] dark:bg-amber-950/20 rounded-2xl p-4 sm:p-5 border-2 border-amber-300 dark:border-amber-700/60 shadow-xs flex flex-col justify-between group hover:border-amber-400 transition-all">
+        <div className="bg-ivory dark:bg-amber-950/20 rounded-2xl p-4 sm:p-5 border-2 border-amber-300 dark:border-amber-700/60 shadow-xs flex flex-col justify-between group hover:border-amber-400 transition-all">
           <div className="flex items-center justify-between text-amber-800 dark:text-amber-300">
             <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-amberWarm animate-pulse" />
               Submission Pending
             </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-100/70 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-300">
+            <div className="w-8 h-8 rounded-lg bg-[#FBF1D8] dark:bg-amber-900/40 flex items-center justify-center text-[#8F5B0F] dark:text-amber-300">
               <Clock size={16} />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 flex items-baseline gap-2 font-mono">
+            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 flex items-baseline gap-2 font-mono">
               <span>{metrics.pendingSubmission}</span>
               {metrics.urgentPendingCount > 0 && (
                 <span className="text-xs font-normal text-amber-700 dark:text-amber-300 font-mono">
@@ -589,48 +589,48 @@ export function AssignmentsView({
         </div>
 
         {/* Card 3: Submitted & Done (Soft Emerald) */}
-        <div className="bg-[#FAFCFA] dark:bg-emerald-950/20 rounded-2xl p-4 sm:p-5 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex flex-col justify-between group hover:border-emerald-300 transition-all">
-          <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+        <div className="bg-ivory dark:bg-emerald-950/20 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-emerald-800/60 shadow-xs flex flex-col justify-between group hover:border-sage transition-all">
+          <div className="flex items-center justify-between text-[#065F46] dark:text-emerald-300">
             <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-sage" />
               Submitted &amp; Done
             </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+            <div className="w-8 h-8 rounded-lg bg-[#E1EEE6] dark:bg-emerald-900/40 flex items-center justify-center text-sage dark:text-emerald-300">
               <CheckCircle2 size={16} />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 font-mono">
+            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 font-mono">
               {metrics.completed}
             </div>
-            <div className="text-xs text-emerald-700 dark:text-emerald-300/90 mt-1 font-medium">
+            <div className="text-xs text-[#065F46] dark:text-emerald-300/90 mt-1 font-medium">
               Turned in or officially evaluated
             </div>
           </div>
         </div>
 
         {/* Card 4: Graded Average */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-stone-400/60 transition-all">
-          <div className="flex items-center justify-between text-[#7A766F] dark:text-stone-400">
+        <div className="bg-ivory dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-textSubtle transition-all">
+          <div className="flex items-center justify-between text-textMuted dark:text-stone-400">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Graded Average
             </span>
-            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
+            <div className="w-8 h-8 rounded-lg bg-[#FAF9F5] dark:bg-stone-800 flex items-center justify-center text-textMain dark:text-stone-300">
               <Award size={16} />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-[#1A1A1A] dark:text-stone-100 flex items-baseline gap-2 font-mono">
+            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 flex items-baseline gap-2 font-mono">
               <span>
                 {metrics.avgPercentage !== null ? `${metrics.avgPercentage}%` : '—'}
               </span>
               {letterGrade && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono font-medium">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#FAF9F5] dark:bg-stone-800 text-textMain dark:text-stone-300 font-mono font-medium">
                   {letterGrade}
                 </span>
               )}
             </div>
-            <div className="text-xs text-[#7A766F] dark:text-stone-400 mt-1">
+            <div className="text-xs text-textMuted dark:text-stone-400 mt-1">
               {metrics.gradedCount > 0
                 ? `Based on ${metrics.gradedCount} evaluated ${
                     metrics.gradedCount === 1 ? 'assessment' : 'assessments'
@@ -642,19 +642,19 @@ export function AssignmentsView({
       </section>
 
       {/* Filter and Search Bar (Warm Cream/Charcoal Stitch Toolbar) */}
-      <section className="bg-white dark:bg-stone-900 rounded-2xl p-2.5 sm:p-3 border border-[#EAE6DF] dark:border-stone-800 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      <section className="bg-ivory dark:bg-stone-900 rounded-2xl p-2.5 sm:p-3 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         {/* Search Input Box */}
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A766F] dark:text-stone-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textSubtle dark:text-stone-400"
           />
           <input
             type="text"
             placeholder="Search assignments by title, course code, or tag..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-stone-50/70 dark:bg-stone-800/60 border border-transparent rounded-xl text-[#1A1A1A] dark:text-stone-100 placeholder-[#7A766F] dark:placeholder-stone-400 focus:bg-white dark:focus:bg-stone-900 focus:border-stone-300 dark:focus:border-stone-700 focus:outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-2 text-xs bg-[#FAF9F5] dark:bg-stone-800/60 border border-transparent rounded-xl text-textMain dark:text-stone-100 placeholder-textSubtle dark:placeholder-stone-400 focus:bg-ivory dark:focus:bg-stone-900 focus:border-borderWarm dark:focus:border-stone-700 focus:outline-none transition-colors"
           />
         </div>
 

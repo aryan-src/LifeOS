@@ -242,5 +242,13 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('data-purpose="wide-focus-ribbon"');
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
     expect(html).toContain('gap-3 min-h-0');
+
+    // 4. Focus Mode circular dial
+    expect(html).toContain('Focus Mode');
+    expect(html).toContain('25:00');
+    expect(html).toContain('stroke="#EAE7DF"');
+    expect(html).toContain('stroke="#10B981"');
+    expect(html).toContain('stroke-dasharray="251.2"');
+    expect(html).toContain('border-radius:9999px');
   });
 });

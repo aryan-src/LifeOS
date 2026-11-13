@@ -206,7 +206,7 @@ export function Variant3DashboardView({
           >
             {/* Zen Focus Mode Dial & Controls */}
             <div className="flex items-center gap-3 sm:gap-4 shrink-0 lg:pr-4 xl:pr-5 lg:border-r border-borderWarm dark:border-zinc-800 min-w-0">
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
                   <circle
@@ -222,7 +222,10 @@ export function Variant3DashboardView({
                     className="transition-all duration-500 ease-linear"
                   />
                 </svg>
-                <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
+                <div
+                  className="absolute inset-[13%] rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm/80 dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center"
+                  style={{ borderRadius: '9999px' }}
+                >
                   <span className="text-xs sm:text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
                     {timerFormatted}
                   </span>

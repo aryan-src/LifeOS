@@ -79,14 +79,9 @@ export function Variant3DashboardView({
   const timerSecs = timerLeft % 60;
   const timerFormatted = `${timerMins < 10 ? '0' : ''}${timerMins}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
 
-  const circumference = 264;
+  const circumference = 251.2;
   const progress = timerDuration > 0 ? (timerDuration - timerLeft) / timerDuration : 0;
-  const strokeDashoffset = Math.max(0, Math.min(264, circumference * (1 - progress)));
-
-  // Angle in radians for indicator pulse circle: starts at top (-90 deg), rotates clockwise
-  const angle = progress * 2 * Math.PI;
-  const dotX = 50 + 42 * Math.cos(angle);
-  const dotY = 50 + 42 * Math.sin(angle);
+  const strokeDashoffset = Math.max(0, Math.min(251.2, circumference * (1 - progress)));
 
   // Computed Telemetry
   const totalBlocks = Math.max(6, todayTasks.length);
@@ -167,12 +162,12 @@ export function Variant3DashboardView({
 
   return (
     <div
-      className="w-full max-w-none min-h-0 my-auto py-1 sm:py-2 flex items-center justify-center font-sans antialiased selection:bg-amber-100"
+      className="w-full max-w-[1400px] mx-auto min-h-0 my-auto py-2 sm:py-4 flex items-center justify-center font-sans antialiased selection:bg-amber-100"
       data-purpose="dashboard-stage"
     >
       {/* BEGIN: MasterGlassFrame */}
       <div
-        className="w-full max-w-none min-h-[850px] lg:h-[920px] bg-[#FAF9F5] dark:bg-zinc-900/95 p-2.5 rounded-3xl border border-[#DCDAD4] dark:border-zinc-800 shadow-2xl flex flex-col md:flex-row gap-7 md:gap-8 overflow-hidden transition-colors"
+        className="w-full max-w-[1400px] h-[920px] bg-[#FAF9F5] dark:bg-zinc-900/95 p-3.5 rounded-3xl border border-[#DCDAD4] dark:border-zinc-800 shadow-2xl flex flex-col md:flex-row gap-3.5 overflow-hidden transition-colors"
         data-purpose="dashboard-viewport-container"
       >
         {/* BEGIN: LeftNavigationRail */}
@@ -277,12 +272,12 @@ export function Variant3DashboardView({
 
         {/* BEGIN: Main Dashboard Canvas */}
         <main
-          className="flex-1 flex flex-col gap-3 min-w-0 overflow-y-auto lg:overflow-hidden pr-0 lg:pr-1"
+          className="flex-1 flex flex-col gap-3 min-w-0 overflow-hidden"
           data-purpose="dashboard-workspace"
         >
           {/* Top Greeting & Header Bar */}
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between shrink-0 px-1 py-0.5 gap-2">
-            <div className="flex flex-wrap items-baseline gap-3">
+          <header className="flex items-center justify-between shrink-0 px-1 py-0.5">
+            <div className="flex items-baseline gap-3">
               <h1 className="font-serif text-2xl font-semibold tracking-tight text-textMain dark:text-zinc-100">
                 {greetingTime}, {displayName}
               </h1>
@@ -291,80 +286,56 @@ export function Variant3DashboardView({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-theme-switcher'))}
-                aria-label="Customize Dashboard Widgets"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F5F3EC] dark:bg-zinc-800 hover:bg-[#FAF9F5] dark:hover:bg-zinc-700 border border-borderWarm dark:border-zinc-700 hover:border-stone-400 text-xs font-mono text-textMuted hover:text-textMain dark:hover:text-zinc-100 transition-all shadow-xs active:scale-95 cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5 text-textMuted" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-                </svg>
-                <span>Customize</span>
-              </button>
-
               <div className="relative hidden sm:block">
                 <input
                   onClick={() => openQuickCapture()}
                   readOnly
-                  className="w-52 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
-                  placeholder="Search commands (⌘K)..."
+                  className="w-52 pl-7 pr-3 py-1 text-xs rounded-full bg-[#F5F3EC] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700 text-textMain dark:text-zinc-100 placeholder:text-textSubtle focus:ring-1 focus:ring-stone-400 focus:border-stone-400 cursor-pointer"
+                  placeholder="Search "
                   type="text"
                 />
                 <svg className="w-3.5 h-3.5 text-textMuted absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 </svg>
               </div>
-
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3F1EB] dark:bg-zinc-800/80 border border-borderWarm dark:border-zinc-700 text-xs font-mono text-emerald-800 dark:text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-sage animate-pulse" />
-                Synced
-              </span>
             </div>
           </header>
 
           {/* ROW 1: Wide Horizontal Focus Strip (Command Ribbon) */}
           <section
-            className="min-h-[188px] shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col lg:flex-row items-center justify-between gap-5 shadow-xs overflow-hidden"
+            className="shrink-0 bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-5 shadow-xs overflow-hidden py-3.5 px-4 h-[169px]"
             data-purpose="wide-focus-ribbon"
           >
-            {/* Left: Zen Focus Engine with Dial */}
-            <div className="flex items-center gap-4 shrink-0 pr-0 lg:pr-4 border-b lg:border-b-0 lg:border-r border-borderWarm dark:border-zinc-800 w-full lg:w-auto pb-3 lg:pb-0 justify-between lg:justify-start">
-              <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
+            {/* Zen Focus Engine Dial */}
+            <div className="flex items-center gap-4 shrink-0 pr-5 border-r border-borderWarm dark:border-zinc-800">
+              <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" fill="none" r="42" stroke="#EAE7DF" strokeWidth="4.5" className="dark:stroke-zinc-800" />
+                  <circle cx="50" cy="50" fill="none" r="40" stroke="#EAE7DF" strokeWidth="5" className="dark:stroke-zinc-800" />
                   <circle
                     cx="50"
                     cy="50"
                     fill="none"
-                    r="42"
+                    r="40"
                     stroke="#10B981"
-                    strokeDasharray="264"
+                    strokeDasharray="251.2"
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
-                    strokeWidth="4.5"
+                    strokeWidth="5"
                     className="transition-all duration-500 ease-linear"
                   />
-                  <circle className="animate-pulse" cx={dotX} cy={dotY} fill="#1F2937" r="3.5" />
                 </svg>
-                <div className="absolute inset-2.5 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
+                <div className="absolute inset-2 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 shadow-inner flex flex-col items-center justify-center">
                   <span className="text-sm font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
                     {timerFormatted}
-                  </span>
-                  <span className="text-[8px] font-mono text-emerald-700 dark:text-emerald-400 font-medium uppercase tracking-tight">
-                    {isTimerRunning ? 'Running' : 'Focus'}
                   </span>
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">
-                    Zen Focus Timer
-                  </span>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isTimerRunning ? 'bg-sage animate-ping' : 'bg-sage'}`} />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Focus Mode</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
                 </div>
-
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -403,7 +374,7 @@ export function Variant3DashboardView({
                     type="button"
                     onClick={togglePlayPause}
                     aria-label="Play/Pause Focus"
-                    className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-1 cursor-pointer"
+                    className="w-6 h-6 rounded-full bg-sage text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform ml-0.5 cursor-pointer"
                   >
                     {isTimerRunning ? (
                       <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
@@ -428,69 +399,79 @@ export function Variant3DashboardView({
               </div>
             </div>
 
-            {/* Center: Live Telemetry Chips */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-              {/* Metric 1: Sprint Progress */}
-              <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between">
+            {/* Center: Telemetry Chips */}
+            <div className="flex-1 grid grid-cols-3 gap-3 min-w-0">
+              {/* Daily Progress */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase">Daily Progress</span>
-                  <span className={`font-semibold ${dailyProgressPercent > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-textMuted'}`}>
-                    {dailyProgressPercent}%
-                  </span>
+                  <span className="font-semibold text-textMain dark:text-zinc-100">{dailyProgressPercent}%</span>
                 </div>
-                <div className="my-1">
-                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
-                    {completedBlocks} / {totalBlocks}
+                <div className="my-auto">
+                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
+                    {completedBlocks}
                   </span>
-                  <span className="text-[11px] text-textMuted dark:text-zinc-400 ml-1">blocks</span>
+                  <span className="text-xs font-mono text-textMuted dark:text-zinc-400"> / {totalBlocks}</span>
                 </div>
                 <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
-                  <div className="bg-sage h-1 rounded-full transition-all duration-300" style={{ width: `${dailyProgressPercent}%` }} />
+                  <div
+                    className="bg-sage h-1 rounded-full transition-all duration-300"
+                    style={{ width: `${dailyProgressPercent}%` }}
+                  />
                 </div>
               </div>
 
-              {/* Metric 2: Academic Streak */}
-              <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between">
+              {/* Habit Streak */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
                   <span className="uppercase">Habit Streak</span>
-                  <span className={streakDays > 0 ? 'text-amberWarm font-semibold' : 'text-textMuted'}>
-                    {streakDays > 0 ? `🔥 ${streakDays}D` : '0D'}
-                  </span>
+                  <span className="text-textMuted dark:text-zinc-400 font-semibold">{streakDays > 0 ? `${streakDays}D` : '0D'}</span>
                 </div>
-                <div className="my-1">
-                  <span className="text-xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
-                    {consistencyPercent}%
-                  </span>
-                  <span className="text-[11px] text-textMuted dark:text-zinc-400 ml-1">consistency</span>
+                <div className="my-auto">
+                  <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">{consistencyPercent}%</span>
+                </div>
+                <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
+                  <div
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      consistencyPercent > 0 ? 'bg-sage' : 'bg-stone-400 dark:bg-zinc-600'
+                    }`}
+                    style={{ width: `${consistencyPercent}%` }}
+                  />
                 </div>
               </div>
 
-              {/* Metric 3: Shield State */}
-              <div className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between">
+              {/* Shield State / TIME FOCUSED */}
+              <div className="p-3 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between text-[11px] text-textMuted dark:text-zinc-400 font-mono">
-                  <span className="uppercase">Shield State</span>
-                  <span className="w-2 h-2 rounded-full bg-sage" />
+                  <span className="uppercase">TIME FOCUSED</span>
+                  <span className="w-2 h-2 rounded-full bg-sage animate-pulse" />
                 </div>
-                <div className="my-1 flex items-baseline gap-1">
-                  <span className="text-base font-serif font-semibold text-textMain dark:text-zinc-100">Deep Work</span>
+                <div className="my-auto flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">3h 45m</span>
+                    <span className="text-xs font-mono text-textMuted dark:text-zinc-400">/ 5h</span>
+                  </div>
+                </div>
+                <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 rounded-full h-1 overflow-hidden">
+                  <div className="bg-sage h-1 rounded-full" style={{ width: '75%' }} />
                 </div>
               </div>
             </div>
 
-            {/* Right: Pocket Money Quick Balance */}
-            <div className="w-full lg:w-64 shrink-0 pl-0 lg:pl-4 border-t lg:border-t-0 lg:border-l border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full py-1 lg:py-0.5">
+            {/* Right: Pocket Money Balance Fully Fitted */}
+            <div className="w-52 shrink-0 pl-5 border-l border-borderWarm dark:border-zinc-800 flex flex-col justify-between h-full py-1">
               <div className="flex items-center justify-between">
-                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Pocket Money</span>
+                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Pocket Ledger</span>
                 <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800">
-                  Nov 2026
+                  {dateFormatted.split(' ')[1] || 'Nov'}
                 </span>
               </div>
-              <div className="my-auto py-1">
+              <div className="my-auto">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-mono font-bold text-textMain dark:text-zinc-100 tabular-nums">
                     ₹{remainingAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[11px] font-mono text-textMuted dark:text-zinc-400">
+                  <span className="text-xs font-mono text-textMuted dark:text-zinc-400">
                     / ₹{monthlyAllowance.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -502,47 +483,37 @@ export function Variant3DashboardView({
           </section>
 
           {/* ROW 2: Balanced 2x2 Bento Matrix */}
-          <section
-            className="flex-1 grid grid-cols-1 md:grid-cols-2 grid-rows-none md:grid-rows-2 gap-3 min-h-0"
-            data-purpose="2x2-bento-matrix"
-          >
-            {/* CARD 1: Pocket Money 7-Day Expense Details & Category Spend */}
+          <section className="flex-1 grid grid-cols-2 grid-rows-2 gap-3 min-h-0" data-purpose="2x2-bento-matrix">
+            {/* CARD 1: Expense Matrix */}
             <article
               className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
               data-purpose="pocket-money-card"
             >
-              <div className="flex items-center justify-between shrink-0">
+              <div className="flex items-center justify-between shrink-0 mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Expense</span>
+                  <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Expenses</span>
                   <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800">
-                    Last 7 Days
+                    7D
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-mono">
-                  <span className="text-textMuted dark:text-zinc-400">Spent today:</span>
-                  <span className="font-bold text-textMain dark:text-zinc-100">₹{todaySpent.toFixed(2)}</span>
-                </div>
+                <span className="text-xs font-mono font-bold text-textMain dark:text-zinc-100">
+                  ₹{todaySpent.toFixed(2)}
+                </span>
               </div>
 
               {/* 7-Day Outflow Bars */}
-              <div className="relative my-auto h-28 w-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl p-2.5 flex flex-col justify-end">
-                <div className="w-full h-16 flex items-end justify-between px-3 gap-2">
-                  {weeklyDays.length > 0 ? (
+              <div className="relative flex-1 w-full bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-xl p-3.5 my-2 flex flex-col justify-end min-h-[148px]">
+                <div className="w-full flex-1 flex items-end justify-between px-3 gap-2.5 pb-2">
+                  {weeklyDays.length > 0 && maxSpend > 0 ? (
                     weeklyDays.map((d, idx) => {
-                      const h = maxSpend > 0 ? Math.round((d.spent / maxSpend) * 85) : 0;
+                      const h = Math.max(6, Math.round((d.spent / maxSpend) * 85));
                       const isToday = d.isToday || idx === weeklyDays.length - 1;
                       return (
                         <div
                           key={idx}
                           title={`${d.dayLabel}: ₹${d.spent}`}
-                          className={`w-8 rounded-t transition-colors ${
-                            isToday
-                              ? 'bg-emerald-300 dark:bg-emerald-500/50 hover:bg-emerald-400'
-                              : d.spent > 300
-                              ? 'bg-amberWarm/80 hover:bg-amberWarm'
-                              : d.spent > 150
-                              ? 'bg-sage hover:bg-emerald-600'
-                              : 'bg-[#E5E2D9] dark:bg-zinc-700 hover:bg-stone-400'
+                          className={`flex-1 rounded-t transition-colors ${
+                            isToday ? 'bg-sage' : 'bg-[#E5E2D9] dark:bg-zinc-700 hover:bg-stone-400'
                           }`}
                           style={{ height: `${h}%` }}
                         />
@@ -550,17 +521,17 @@ export function Variant3DashboardView({
                     })
                   ) : (
                     <>
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
-                      <div className="w-8 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '0%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '8%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '12%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '6%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '15%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '10%' }} />
+                      <div className="flex-1 bg-[#E5E2D9] dark:bg-zinc-700 rounded-t hover:bg-stone-400 transition-colors" style={{ height: '8%' }} />
+                      <div className="flex-1 bg-sage rounded-t" style={{ height: '22%' }} />
                     </>
                   )}
                 </div>
-                <div className="w-full flex justify-between px-3 pt-1 border-t border-borderSubtle dark:border-zinc-800 text-[10px] font-mono text-textSubtle dark:text-zinc-500">
+                <div className="w-full flex justify-between px-2 pt-2 border-t border-borderSubtle dark:border-zinc-800 text-[10px] font-mono text-textSubtle dark:text-zinc-500 shrink-0">
                   <span>Thu</span>
                   <span>Fri</span>
                   <span>Sat</span>
@@ -571,51 +542,74 @@ export function Variant3DashboardView({
                 </div>
               </div>
 
-              {/* Bottom Category Spend Pills */}
-              <div className="grid grid-cols-3 gap-2 shrink-0">
-                <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-textMuted dark:text-zinc-400">Books</span>
-                  <span className={`font-semibold ${booksSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
-                    ₹{booksSpend}
-                  </span>
-                </div>
-                <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-textMuted dark:text-zinc-400">Cafe</span>
-                  <span className={`font-semibold ${cafeSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
-                    ₹{cafeSpend}
-                  </span>
-                </div>
-                <div className="px-2.5 py-1 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-textMuted dark:text-zinc-400">Transit</span>
-                  <span className={`font-semibold ${transitSpend > 0 ? 'text-textMain dark:text-zinc-100' : 'text-textSubtle'}`}>
-                    ₹{transitSpend}
-                  </span>
+              {/* Bottom Category Spend Buttons */}
+              <div className="flex flex-col gap-1.5 shrink-0 mt-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openQuickCapture('Expense Books: ')}
+                    aria-label="Configure Books category slot"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                  >
+                    <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
+                      <span className="truncate">Books</span>
+                      <svg className="w-2.5 h-2.5 text-textSubtle group-hover:text-textMain shrink-0 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-textMain dark:text-zinc-100 shrink-0 ml-1">₹{booksSpend}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openQuickCapture('Expense Cafe: ')}
+                    aria-label="Configure Cafe category slot"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                  >
+                    <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
+                      <span className="truncate">Cafe</span>
+                      <svg className="w-2.5 h-2.5 text-textSubtle group-hover:text-textMain shrink-0 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-textMain dark:text-zinc-100 shrink-0 ml-1">₹{cafeSpend}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openQuickCapture('Expense Transit: ')}
+                    aria-label="Configure Transit category slot"
+                    className="px-2 py-1.5 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 flex items-center justify-between text-[11px] font-mono group transition-all text-left shadow-xs cursor-pointer"
+                  >
+                    <span className="text-textMuted dark:text-zinc-400 group-hover:text-textMain dark:group-hover:text-zinc-100 flex items-center gap-1 min-w-0">
+                      <span className="truncate">Transit</span>
+                      <svg className="w-2.5 h-2.5 text-textSubtle group-hover:text-textMain shrink-0 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-textMain dark:text-zinc-100 shrink-0 ml-1">₹{transitSpend}</span>
+                  </button>
                 </div>
               </div>
             </article>
 
-            {/* CARD 2: Upcoming Submissions Assignment Queue */}
+            {/* CARD 2: Upcoming Submissions */}
             <article
               className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
               data-purpose="submissions-card"
             >
-              <div className="flex items-center justify-between shrink-0">
-                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Upcoming Submissions</span>
-                <span
-                  className={`text-[11px] font-mono px-2 py-0.5 rounded border ${
-                    pendingAssignments.length > 0
-                      ? 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60'
-                      : 'text-textMuted bg-[#FAF9F5] dark:bg-zinc-900 border-borderWarm dark:border-zinc-800'
-                  }`}
-                >
-                  {pendingAssignments.length} Pending
+              <div className="flex items-center justify-between shrink-0 mb-2">
+                <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">
+                  Upcoming Submissions
+                </span>
+                <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400 bg-[#FAF9F5] dark:bg-zinc-900 px-2 py-0.5 rounded border border-borderWarm dark:border-zinc-800">
+                  Queue
                 </span>
               </div>
 
               {displayAssignments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
-                  <p className="text-xs font-semibold text-textMain dark:text-zinc-100">No pending submissions</p>
-                  <p className="text-[11px] font-mono text-textSubtle dark:text-zinc-400 mt-1">All caught up!</p>
+                  <p className="text-xs font-mono font-medium text-textSubtle dark:text-zinc-400">No pending submissions</p>
                 </div>
               ) : (
                 <div className="space-y-2.5 my-auto py-2">
@@ -671,21 +665,27 @@ export function Variant3DashboardView({
               </div>
             </article>
 
-            {/* CARD 3: Habits 7-Day Tracker with Streak Counts */}
+            {/* CARD 3: Habits Matrix */}
             <article
               className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
               data-purpose="habits-card"
             >
-              <div className="flex items-center justify-between shrink-0">
+              <div className="flex items-center justify-between shrink-0 mb-2">
                 <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Habits Matrix</span>
+                <Link
+                  href="/habits"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 text-textMain dark:text-zinc-100 text-[11px] font-mono font-medium shadow-xs transition-all active:scale-95 cursor-pointer"
+                >
+                  <svg className="w-3 h-3 text-textMuted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Add Habit</span>
+                </Link>
               </div>
 
               {localHabits.length === 0 ? (
-                <div className="space-y-3 my-auto">
-                  <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900">
-                    <p className="text-xs font-semibold text-textMain dark:text-zinc-100">No habits tracked yet</p>
-                    <p className="text-[11px] font-mono text-textSubtle dark:text-zinc-400 mt-1">Click &apos;+ Add Habit&apos; to begin</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                  <p className="text-xs font-mono font-medium text-textSubtle dark:text-zinc-400">No habits recorded</p>
                 </div>
               ) : (
                 <div className="my-auto space-y-3 py-1">
@@ -730,120 +730,89 @@ export function Variant3DashboardView({
                   ))}
                 </div>
               )}
-
-              <div className="flex items-center justify-between pt-2 border-t border-borderSubtle dark:border-zinc-800 text-[11px] font-mono text-textMuted dark:text-zinc-400 shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => window.dispatchEvent(new CustomEvent('open-theme-switcher'))}
-                    aria-label="Customize Habits View"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 text-textMuted hover:text-textMain dark:hover:text-zinc-100 text-[11px] font-mono font-medium shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <svg className="w-3 h-3 text-textMuted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="3" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-                    </svg>
-                    <span>Customize</span>
-                  </button>
-                  <Link
-                    href="/habits"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 text-textMain dark:text-zinc-100 text-[11px] font-mono font-medium shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    <svg className="w-3 h-3 text-textMuted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span>Add Habit</span>
-                  </Link>
-                </div>
-              </div>
             </article>
 
-            {/* CARD 4: Active Projects & Recent Ideas Split Card */}
+            {/* CARD 4: Active Projects & Ideas Split */}
             <article
               className="bg-ivory dark:bg-zinc-950/40 border border-borderWarm dark:border-zinc-800 rounded-2xl p-4 flex flex-col justify-between shadow-xs overflow-hidden"
               data-purpose="projects-ideas-card"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
-                {/* Left Half: Active Projects */}
-                <div className="flex flex-col justify-between pr-0 sm:pr-2 border-b sm:border-b-0 sm:border-r border-borderWarm dark:border-zinc-800 pb-3 sm:pb-0">
-                  <div className="flex flex-col justify-between h-full">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Active Projects</span>
-                        <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">{activeProjects.length} live</span>
-                      </div>
-                      {displayProjects.length === 0 ? (
-                        <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
-                          <p className="text-xs font-medium text-textSubtle dark:text-zinc-400">No active projects</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2.5">
-                          {displayProjects.map((project) => (
-                            <div key={project.id}>
-                              <div className="flex justify-between text-[11px] mb-1">
-                                <span className="font-medium text-textMain dark:text-zinc-200">{project.title}</span>
-                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
-                                  {project.completion_percentage || 0}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                                <div
-                                  className="bg-sage h-1.5 rounded-full"
-                                  style={{ width: `${project.completion_percentage || 0}%` }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+              <div className="grid grid-cols-2 gap-3 h-full">
+                {/* Active Projects */}
+                <div className="flex flex-col justify-between pr-3 border-r border-borderWarm dark:border-zinc-800 h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Projects</span>
+                      <span className="text-[10px] font-mono text-textMuted dark:text-zinc-400">{activeProjects.length} active</span>
                     </div>
-                    <Link
-                      href="/projects"
-                      className="w-full py-1.5 bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 text-textMain dark:text-zinc-100 rounded-lg text-[11px] font-medium transition-colors mt-2 text-center block"
-                    >
-                      Sprint Board →
-                    </Link>
+                    {displayProjects.length === 0 ? (
+                      <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                        <p className="text-xs font-mono font-medium text-textSubtle dark:text-zinc-400">No active projects</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {displayProjects.map((project) => (
+                          <div key={project.id}>
+                            <div className="flex justify-between text-[11px] mb-1">
+                              <span className="font-medium text-textMain dark:text-zinc-200">{project.title}</span>
+                              <span className="font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
+                                {project.completion_percentage || 0}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-[#EAE7DF] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-sage h-1.5 rounded-full"
+                                style={{ width: `${project.completion_percentage || 0}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  <Link
+                    href="/projects"
+                    className="w-full py-1.5 bg-[#FAF9F5] dark:bg-zinc-900 hover:bg-[#F2EFE8] dark:hover:bg-zinc-800 border border-borderWarm dark:border-zinc-800 text-textMain dark:text-zinc-100 rounded-lg text-[11px] font-mono font-medium transition-colors mt-2 text-center block"
+                  >
+                    Sprint Board →
+                  </Link>
                 </div>
 
-                {/* Right Half: Recent Ideas */}
-                <div className="flex flex-col justify-between pl-0 sm:pl-1">
-                  <div className="flex flex-col justify-between h-full">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Recent Ideas</span>
-                        <span className={`w-2 h-2 rounded-full ${recentIdeas.length > 0 ? 'bg-amberWarm' : 'bg-stone-400'}`} />
-                      </div>
-                      {recentIdeas.length === 0 ? (
-                        <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
-                          <p className="text-xs font-medium text-textSubtle dark:text-zinc-400">No ideas captured yet</p>
-                          <p className="text-[10px] font-mono text-textSubtle dark:text-zinc-400 mt-1">Click &apos;+ New Idea&apos; to begin</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {recentIdeas.map((note) => (
-                            <div
-                              key={note.id}
-                              onClick={() => openQuickCapture(`Idea: ${note.title}`)}
-                              className="p-2 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-colors cursor-pointer"
-                            >
-                              <span className="text-[9px] font-mono uppercase text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                                {note.project?.title || 'Idea'}
-                              </span>
-                              <h3 className="text-xs font-semibold text-textMain dark:text-zinc-100 mt-1 truncate">{note.title}</h3>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {/* Ideas Vault */}
+                <div className="flex flex-col justify-between pl-1 h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-serif text-sm font-semibold text-textMain dark:text-zinc-100">Ideas</span>
+                      <span className={`w-2 h-2 rounded-full ${recentIdeas.length > 0 ? 'bg-amberWarm' : 'bg-stone-400 dark:bg-zinc-600'}`} />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => openQuickCapture('Idea: ')}
-                      className="w-full py-1.5 bg-textMain dark:bg-zinc-100 hover:bg-neutral-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-lg text-[11px] font-medium transition-colors mt-2 cursor-pointer"
-                    >
-                      + New Idea
-                    </button>
+                    {recentIdeas.length === 0 ? (
+                      <div className="p-4 text-center border border-dashed border-borderWarm dark:border-zinc-800 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 my-auto">
+                        <p className="text-xs font-mono font-medium text-textSubtle dark:text-zinc-400">No ideas recorded</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {recentIdeas.map((note) => (
+                          <div
+                            key={note.id}
+                            onClick={() => openQuickCapture(`Idea: ${note.title}`)}
+                            className="p-2 rounded-xl bg-[#FAF9F5] dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 hover:border-stone-400 dark:hover:border-zinc-600 transition-colors cursor-pointer"
+                          >
+                            <span className="text-[9px] font-mono uppercase text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                              {note.project?.title || 'Idea'}
+                            </span>
+                            <h3 className="text-xs font-semibold text-textMain dark:text-zinc-100 mt-1 truncate">{note.title}</h3>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => openQuickCapture('Idea: ')}
+                    className="w-full py-1.5 bg-textMain dark:bg-zinc-100 hover:bg-neutral-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-lg text-[11px] font-mono font-medium transition-colors mt-2 cursor-pointer"
+                  >
+                    + New Idea
+                  </button>
                 </div>
               </div>
             </article>

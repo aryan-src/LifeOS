@@ -209,7 +209,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Settings');
   });
 
-  it('renders Variant3DashboardView with full-width stage, p-2.5 shell padding, gap-7/gap-8 sidebar separation, and gap-3 inter-card spacing', () => {
+  it('renders Variant3DashboardView with master frame, p-3.5 shell padding, gap-3.5 sidebar separation, and gap-3 inter-card spacing', () => {
     const html = renderToString(
       <Variant3DashboardView
         displayName="Aryan"
@@ -226,20 +226,20 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
       />
     );
 
-    // 1. Full-width workspace container & inner shell padding p-2.5
+    // 1. Master frame container & inner shell padding p-3.5
     expect(html).toContain('data-purpose="dashboard-stage"');
-    expect(html).toContain('w-full max-w-none');
+    expect(html).toContain('max-w-[1400px]');
     expect(html).toContain('data-purpose="dashboard-viewport-container"');
-    expect(html).toContain('p-2.5 rounded-3xl');
+    expect(html).toContain('p-3.5 rounded-3xl');
 
-    // 2. Clear gap between sidebar rail and main content (gap-7 / md:gap-8)
-    expect(html).toContain('gap-7 md:gap-8');
+    // 2. Sidebar rail and main content separation (gap-3.5)
+    expect(html).toContain('gap-3.5');
     expect(html).toContain('data-purpose="nav-rail"');
     expect(html).toContain('data-purpose="dashboard-workspace"');
     expect(html).toContain('min-w-0');
 
-    // 3. Cut inter-card gaps by 50% (gap-3 row & column spacing)
-    expect(html).toContain('gap-3 min-w-0');
+    // 3. Wide focus ribbon & 2x2 bento matrix
+    expect(html).toContain('data-purpose="wide-focus-ribbon"');
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
     expect(html).toContain('gap-3 min-h-0');
   });

@@ -22,4 +22,10 @@ describe('Burger Button Theme Switcher in TopHeader', () => {
     const html = renderToString(<TopHeader />);
     expect(html).toContain('rounded-full bg-current');
   });
+
+  it('renders direct mode toggle button in top navigation bar', () => {
+    const html = renderToString(<TopHeader />);
+    expect(html).toMatch(/aria-label="Switch to (dark|light) mode"/);
+    expect(html).toMatch(/title="Switch to (dark|light) mode"/);
+  });
 });

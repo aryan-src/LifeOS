@@ -1131,4 +1131,27 @@ html[data-theme="tactile"] body,
   box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
 }
 
+/* ==========================================================================
+   WebGL Ink-Bleed View Transition
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  mask-image: var(--ink-mask);
+  -webkit-mask-image: var(--ink-mask);
+  mask-size: 100vw 100vh;
+  -webkit-mask-size: 100vw 100vh;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
 

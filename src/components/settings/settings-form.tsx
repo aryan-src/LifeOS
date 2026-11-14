@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile } from '@/lib/actions/profile';
 import { saveTheme } from '@/lib/theme/use-theme';
+import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
 import {
   User,
   Coins,
@@ -44,6 +45,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
 
   const [isPending, startTransition] = useTransition();
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const { triggerThemeTransition } = useInkThemeTransition();
 
   // Sync with localStorage on client mount
   useEffect(() => {
@@ -54,9 +56,15 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
     }
   }, []);
 
-  const handleThemeChange = (themeId: string) => {
-    setThemePreference(themeId);
-    saveTheme(themeId);
+  const handleThemeChange = (
+    themeId: string,
+    event?: React.MouseEvent | React.KeyboardEvent
+  ) => {
+    if (themeId === themePreference) return;
+    triggerThemeTransition(event ?? null, () => {
+      setThemePreference(themeId);
+      saveTheme(themeId);
+    });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -227,7 +235,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
                 <button
                   type="button"
                   key={theme.id}
-                  onClick={() => handleThemeChange(theme.id)}
+                  onClick={(e) => handleThemeChange(theme.id, e)}
                   className={`flex flex-col text-left p-4 rounded-xl border transition-all cursor-pointer ${
                     isSelected
                       ? 'border-primary bg-surface-container-high/60 ring-1 ring-primary/30'

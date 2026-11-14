@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { updateProfile } from '@/lib/actions/profile';
 import { saveTheme, applyThemeToDOM } from '@/lib/theme/use-theme';
+import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
 import type { Profile } from '@/types/database.types';
 
 export interface ThemeOption {
@@ -209,6 +210,7 @@ export function WorkspaceAtmosphereSelector({
   const [activeTheme, setActiveTheme] = useState<ThemeOption['id']>(() => normalizeTheme(initialTheme));
   const [isPending, startTransition] = useTransition();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { triggerThemeTransition } = useInkThemeTransition();
 
   // Sync client state on mount
   useEffect(() => {
@@ -232,15 +234,23 @@ export function WorkspaceAtmosphereSelector({
     }, 2800);
   };
 
-  const handleSelectTheme = (themeId: ThemeOption['id']) => {
-    // 1. Instant optimistic DOM update & localStorage sync
-    setActiveTheme(themeId);
-    applyThemeToDOM(themeId);
-    saveTheme(themeId);
+  const handleSelectTheme = (
+    themeId: ThemeOption['id'],
+    event?: React.MouseEvent | React.KeyboardEvent
+  ) => {
+    if (themeId === activeTheme) return;
+
+    // Trigger the organic WebGL ink-bleed view transition from origin coordinates
+    triggerThemeTransition(event ?? null, () => {
+      // 1. Instant synchronous DOM update & localStorage sync between old & new snapshots
+      setActiveTheme(themeId);
+      applyThemeToDOM(themeId);
+      saveTheme(themeId);
+      onThemeChanged?.(themeId);
+    });
 
     const themeObj = WORKSPACE_THEMES.find((t) => t.id === themeId);
     showToast(`Atmosphere switched to: ${themeObj?.title || themeId}`);
-    onThemeChanged?.(themeId);
 
     // 2. Persist to Supabase public.profiles (theme_preference)
     startTransition(async () => {
@@ -300,11 +310,11 @@ export function WorkspaceAtmosphereSelector({
               role="radio"
               tabIndex={0}
               aria-checked={isSelected}
-              onClick={() => handleSelectTheme(theme.id)}
+              onClick={(e) => handleSelectTheme(theme.id, e)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  handleSelectTheme(theme.id);
+                  handleSelectTheme(theme.id, e);
                 }
               }}
               whileHover={{ scale: 1.025, y: -2 }}

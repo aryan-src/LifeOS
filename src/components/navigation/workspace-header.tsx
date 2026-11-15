@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useTheme } from '@/lib/theme/use-theme';
+import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
+import { Sun, Moon } from 'lucide-react';
 
 interface WorkspaceHeaderProps {
   displayName?: string;
@@ -20,6 +23,14 @@ export function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const pathname = usePathname();
   const [userName, setUserName] = useState(displayName);
+  const { isDark, toggleLightDark } = useTheme();
+  const { triggerThemeTransition } = useInkThemeTransition();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const storeIsDockVisible = useUIStore((state) => state.isDockVisible);
   const storeToggleDock = useUIStore((state) => state.toggleDock);
 
@@ -152,7 +163,27 @@ export function WorkspaceHeader({
         </div>
 
         {/* Right: Utility Icons, Schedule & Profile */}
-        <div className="flex items-center space-x-2.5 sm:space-x-3 text-textMuted dark:text-zinc-400">
+        <div className="flex items-center space-x-2 sm:space-x-2.5 text-textMuted dark:text-zinc-400">
+          {/* Direct Dark / Light Mode Toggle Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              triggerThemeTransition(e, () => {
+                toggleLightDark();
+              });
+            }}
+            className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            data-purpose="theme-toggle-button"
+          >
+            {mounted && isDark ? (
+              <Sun className="w-4 h-4 text-amber-500 hover:rotate-45 transition-transform" />
+            ) : (
+              <Moon className="w-4 h-4 text-textMuted dark:text-zinc-400 hover:-rotate-12 transition-transform" />
+            )}
+          </button>
+
           <Link
             href="/tasks"
             className={`p-1.5 rounded-md transition-colors ${

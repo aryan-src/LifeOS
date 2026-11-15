@@ -33,4 +33,12 @@ describe('Burger Button Dock Toggle Tests', () => {
     useUIStore.getState().toggleDock();
     expect(useUIStore.getState().isDockVisible).toBe(true);
   });
+
+  it('renders dark/light mode toggle button in WorkspaceHeader', () => {
+    const html = renderToString(<WorkspaceHeader />);
+
+    expect(html).toContain('data-purpose="theme-toggle-button"');
+    expect(html).toMatch(/aria-label="Switch to (dark|light) mode"/);
+    expect(html).toMatch(/title="Switch to (dark|light) mode"/);
+  });
 });

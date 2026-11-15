@@ -100,10 +100,9 @@ export class InkTransition {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       reducedMotion.addEventListener('change', () => this.scheduleCapture(0));
 
+      this.scheduleCapture(10);
       if (document.fonts) {
-        void document.fonts.ready.then(() => this.scheduleCapture(50));
-      } else {
-        this.scheduleCapture(100);
+        void document.fonts.ready.then(() => this.scheduleCapture(100));
       }
     }
   }
@@ -354,6 +353,7 @@ export class InkTransition {
     try {
       for (const theme of themes) {
         const snap = await capturePage(theme, scale, renderer.maxTextureSize);
+        if (!snap) continue;
         if (gen !== this.captureGen) return;
         if (snap.key !== layoutKey(renderScale())) {
           this.captureQueued = true;

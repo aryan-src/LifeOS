@@ -99,7 +99,6 @@ export class InkRenderer {
     this.gl = gl;
     this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
     this.init();
-    this.ensureDefaultTextures();
   }
 
   private init(): void {
@@ -116,34 +115,6 @@ export class InkRenderer {
     gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
   }
 
-  /**
-   * Initializes baseline 2x2 solid color textures so transitions can immediately animate
-   * even before background snapshots finish capturing.
-   */
-  private ensureDefaultTextures(): void {
-    const gl = this.gl;
-    const defaults: Record<Theme, [number, number, number, number]> = {
-      light: [250, 249, 245, 255], // #FAF9F5
-      dark: [11, 11, 12, 255],     // #0B0B0C
-    };
-
-    for (const theme of ['light', 'dark'] as const) {
-      if (!this.textures.has(theme)) {
-        const texture = this.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        const data = new Uint8Array(defaults[theme]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-        this.textures.set(theme, {
-          texture,
-          width: 1,
-          height: 1,
-          scale: 1,
-          key: 'default',
-        });
-      }
-    }
-  }
-
   /** Context loss/restore hooks. `onRestored` should re-upload snapshots. */
   watchContext(onLost: () => void, onRestored: () => void): void {
     this.canvas.addEventListener('webglcontextlost', (e) => {
@@ -157,7 +128,6 @@ export class InkRenderer {
     this.canvas.addEventListener('webglcontextrestored', () => {
       this.lost = false;
       this.init();
-      this.ensureDefaultTextures();
       onRestored();
     });
   }
@@ -192,12 +162,12 @@ export class InkRenderer {
     entry.key = snapshot.key;
   }
 
-  /** True when a snapshot for `theme` exists or has default baseline texture. */
+  /** True when a real snapshot for `theme` exists and matches the current layout. */
   hasValid(theme: Theme, key: string): boolean {
     if (this.lost) return false;
     const entry = this.textures.get(theme);
     if (!entry) return false;
-    return entry.key === key || entry.key === 'default';
+    return entry.key === key && entry.width > 1 && entry.height > 1;
   }
 
   /**

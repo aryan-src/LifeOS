@@ -13,6 +13,10 @@ describe('useInkThemeTransition hook', () => {
           contains: vi.fn().mockReturnValue(false),
           toggle: vi.fn(),
         },
+        style: {
+          setProperty: vi.fn(),
+          removeProperty: vi.fn(),
+        },
         setAttribute: vi.fn(),
         removeAttribute: vi.fn(),
       },
@@ -20,17 +24,7 @@ describe('useInkThemeTransition hook', () => {
         appendChild: vi.fn(),
       },
       getElementById: vi.fn().mockReturnValue(null),
-      createElementNS: vi.fn().mockImplementation((_ns: string, tag: string) => {
-        const el = {
-          id: '',
-          style: {},
-          setAttribute: vi.fn(),
-          querySelector: vi.fn().mockReturnValue({ setAttribute: vi.fn() }),
-          remove: vi.fn(),
-          innerHTML: '',
-        };
-        return el;
-      }),
+      querySelector: vi.fn().mockReturnValue(null),
     };
 
     const dummyWindow = {
@@ -159,5 +153,90 @@ describe('useInkThemeTransition hook', () => {
       'data-theme-transitioning',
       'true'
     );
+  });
+
+  it('sets CSS variables for sprite-sheet mask coordinates and duration', () => {
+    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    let finishCallback: () => void = () => {};
+    const finishedPromise = new Promise<void>((resolve) => {
+      finishCallback = resolve;
+    });
+
+    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
+      cb();
+      return {
+        ready: Promise.resolve(),
+        finished: finishedPromise,
+      };
+    });
+
+    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
+      startViewTransitionMock;
+
+    const applyTheme = vi.fn();
+    const hook = getHookInstance();
+
+    const mockMouseEvent = {
+      clientX: 500,
+      clientY: 100,
+    } as unknown as React.MouseEvent;
+
+    hook.triggerThemeTransition(mockMouseEvent, applyTheme, { duration: 1100 });
+
+    const setProperty = (globalThis.document.documentElement.style as unknown as { setProperty: ReturnType<typeof vi.fn> }).setProperty;
+    expect(setProperty).toHaveBeenCalledWith('--mask-x', expect.stringContaining('px'));
+    expect(setProperty).toHaveBeenCalledWith('--mask-y', expect.stringContaining('px'));
+    expect(setProperty).toHaveBeenCalledWith('--mask-x-end', expect.stringContaining('px'));
+    expect(setProperty).toHaveBeenCalledWith('--mask-size', expect.stringContaining('px'));
+    expect(setProperty).toHaveBeenCalledWith('--ink-duration', '1100ms');
+
+    // Clean up transition
+    finishCallback();
+  });
+
+  it('ignores extra clicks while a transition is active (click debounce)', async () => {
+    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    let finishCallback: () => void = () => {};
+    const finishedPromise = new Promise<void>((resolve) => {
+      finishCallback = resolve;
+    });
+
+    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
+      cb();
+      return {
+        ready: Promise.resolve(),
+        finished: finishedPromise,
+      };
+    });
+
+    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
+      startViewTransitionMock;
+
+    const applyTheme1 = vi.fn();
+    const applyTheme2 = vi.fn();
+    const hook = getHookInstance();
+
+    // First trigger starts transition
+    hook.triggerThemeTransition(null, applyTheme1);
+    expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
+    expect(applyTheme1).toHaveBeenCalledTimes(1);
+
+    // Second trigger while active is ignored
+    hook.triggerThemeTransition(null, applyTheme2);
+    expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
+    expect(applyTheme2).not.toHaveBeenCalled();
+
+    // Finish first transition and wait for microtasks
+    finishCallback();
+    await finishedPromise;
+    await new Promise((r) => setTimeout(r, 10));
+
+    // After finish, next trigger is accepted
+    const applyTheme3 = vi.fn();
+    hook.triggerThemeTransition(null, applyTheme3);
+    expect(startViewTransitionMock).toHaveBeenCalledTimes(2);
+    expect(applyTheme3).toHaveBeenCalledTimes(1);
   });
 });

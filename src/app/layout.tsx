@@ -39,6 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="font-sans">
       <head>
+        <link
+          rel="preload"
+          href="/images/ink-mask-spritesheet.webp"
+          as="image"
+          type="image/webp"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme')||'nordic';if(t==='spatial-glass'){document.documentElement.setAttribute('data-theme','spatial-glass');}else if(t==='risograph'||t==='crimson-dark'||t==='crimson-cream'||t==='crimson-light'){document.documentElement.setAttribute('data-theme','risograph');if(t==='crimson-dark'||t==='crimson-cream'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}else if(t==='tui'||t==='dark'){document.documentElement.setAttribute('data-theme','tui');document.documentElement.classList.add('dark');}else if(t==='tactile'){document.documentElement.setAttribute('data-theme','tactile');document.documentElement.classList.remove('dark');}else{document.documentElement.setAttribute('data-theme','nordic');document.documentElement.classList.remove('dark');}}catch(e){}})();`,

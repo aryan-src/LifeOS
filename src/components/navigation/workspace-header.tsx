@@ -188,6 +188,8 @@ export function WorkspaceHeader({
           {/* Direct Dark / Light Mode Toggle Button */}
           <button
             type="button"
+            id="theme-toggle-btn"
+            data-theme-toggle="true"
             onClick={(e) => handleToggleTheme(e)}
             className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage relative z-[10001]"
             aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}

@@ -1135,6 +1135,18 @@ html[data-theme="tactile"] body,
    Zero-Latency View Transitions Ink-Bleed Mask
    ========================================================================== */
 
+/* ==========================================================================
+   WebGL Ink-Bleed View Transition
+   ========================================================================== */
+@keyframes ink-bleed-hold {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
 /* Freeze all element CSS transitions during capture so the snapshot is 100% crisp */
 [data-theme-transitioning],
 [data-theme-transitioning] *,
@@ -1145,7 +1157,7 @@ html[data-theme="tactile"] body,
 
 /* Lock root snapshot geometry (prevents Chrome object-fit: fill stretching / ghosting) */
 ::view-transition-group(root) {
-  animation: none;
+  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
 }
 
 ::view-transition-old(root),
@@ -1156,7 +1168,7 @@ html[data-theme="tactile"] body,
   height: 100vh;
   object-fit: none;
   object-position: top left;
-  animation: none;
+  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
   mix-blend-mode: normal;
 }
 
@@ -1166,10 +1178,12 @@ html[data-theme="tactile"] body,
 
 ::view-transition-new(root) {
   z-index: 2;
-  mask-image: url(#ink-bleed-mask);
-  -webkit-mask-image: url(#ink-bleed-mask);
-  mask-size: 100vw 100vh;
-  -webkit-mask-size: 100vw 100vh;
+  mask-image: var(--ink-mask);
+  -webkit-mask-image: var(--ink-mask);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-position: 0 0;
+  -webkit-mask-position: 0 0;
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
 }

@@ -155,9 +155,9 @@ describe('useInkThemeTransition hook', () => {
 
     expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
     expect(applyTheme).toHaveBeenCalledTimes(1);
-    expect(globalThis.document.createElementNS).toHaveBeenCalledWith(
-      'http://www.w3.org/2000/svg',
-      'svg'
+    expect(globalThis.document.documentElement.setAttribute).toHaveBeenCalledWith(
+      'data-theme-transitioning',
+      'true'
     );
   });
 });

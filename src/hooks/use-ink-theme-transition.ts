@@ -7,6 +7,7 @@ export interface InkTransitionOptions {
   duration?: number;   // ms (default: 1500)
   noiseScale?: number; // frequency of ink tendrils (default: 4.5)
   turbulence?: number; // splatter & droplet spread (default: 0.28)
+  ignoreReducedMotion?: boolean;
 }
 
 const VERTEX_SHADER = `
@@ -80,6 +81,7 @@ const FRAGMENT_SHADER = `
     float d2 = length((vec2(0.0, 1.0) - u_origin) * vec2(u_aspect, 1.0));
     float d3 = length((vec2(1.0, 1.0) - u_origin) * vec2(u_aspect, 1.0));
     float maxDist = max(max(d0, d1), max(d2, d3));
+    maxDist = max(maxDist, 0.0001);
 
     float dist = length(delta) / maxDist;
 
@@ -106,9 +108,15 @@ export function useInkThemeTransition() {
       applyTheme: () => void,
       options: InkTransitionOptions = {}
     ) => {
-      const { duration = 1500, noiseScale = 4.5, turbulence = 0.28 } = options;
+      const {
+        duration = 1500,
+        noiseScale = 4.5,
+        turbulence = 0.28,
+        ignoreReducedMotion = false,
+      } = options;
 
       const prefersReducedMotion =
+        !ignoreReducedMotion &&
         typeof window !== "undefined" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -145,7 +153,12 @@ export function useInkThemeTransition() {
       canvas.width = 480;
       canvas.height = Math.max(270, Math.round(480 / aspect));
 
-      const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false });
+      const gl = canvas.getContext("webgl", {
+        alpha: true,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: true,
+      });
+
       if (!gl) {
         doc.startViewTransition(() => flushSync(() => applyTheme()));
         return;
@@ -183,18 +196,51 @@ export function useInkThemeTransition() {
       gl.uniform1f(gl.getUniformLocation(program, "u_seed"), Math.random() * 100);
       const progressLoc = gl.getUniformLocation(program, "u_progress");
 
+      // Set the transition hold duration on :root so view-transition pseudo-elements stay alive
+      document.documentElement.style.setProperty("--ink-duration", `${duration}ms`);
+
       // Pre-render initial frame (-0.03 progress) so ::view-transition-new is masked from frame 0
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(progressLoc, -0.03);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      document.documentElement.style.setProperty(
-        "--ink-mask",
-        `url(${canvas.toDataURL("image/png")})`
-      );
+
+      const initialMaskUrl = `url(${canvas.toDataURL("image/png")})`;
+      document.documentElement.style.setProperty("--ink-mask", initialMaskUrl);
+
+      // Create or update runtime <style> element to guarantee immediate mask updates across all engines
+      let styleEl = document.getElementById("ink-transition-runtime-style") as HTMLStyleElement | null;
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "ink-transition-runtime-style";
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        ::view-transition-new(root) {
+          mask-image: ${initialMaskUrl} !important;
+          -webkit-mask-image: ${initialMaskUrl} !important;
+          mask-size: 100% 100% !important;
+          -webkit-mask-size: 100% 100% !important;
+        }
+      `;
 
       let animId: number | null = null;
+      let isCleanedUp = false;
+
+      const cleanup = () => {
+        if (isCleanedUp) return;
+        isCleanedUp = true;
+        if (animId !== null) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
+        document.documentElement.style.removeProperty("--ink-mask");
+        document.documentElement.style.removeProperty("--ink-duration");
+        const el = document.getElementById("ink-transition-runtime-style");
+        if (el) el.remove();
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      };
 
       const transition = doc.startViewTransition(() => {
         flushSync(() => {
@@ -207,7 +253,10 @@ export function useInkThemeTransition() {
           const start = performance.now();
 
           const renderFrame = (now: number) => {
-            const rawT = Math.min((now - start) / duration, 1);
+            if (isCleanedUp) return;
+
+            const elapsed = now - start;
+            const rawT = Math.min(elapsed / duration, 1);
             const eased = easeInOutCubic(rawT);
             // Map [-0.03, 1.05] so frame 0 is completely hidden and frame 1 covers 100%
             const progress = -0.03 + eased * 1.08;
@@ -218,28 +267,38 @@ export function useInkThemeTransition() {
             gl.uniform1f(progressLoc, progress);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-            document.documentElement.style.setProperty(
-              "--ink-mask",
-              `url(${canvas.toDataURL("image/png")})`
-            );
+            const frameUrl = `url(${canvas.toDataURL("image/png")})`;
+            document.documentElement.style.setProperty("--ink-mask", frameUrl);
+
+            const el = document.getElementById("ink-transition-runtime-style");
+            if (el) {
+              el.textContent = `
+                ::view-transition-new(root) {
+                  mask-image: ${frameUrl} !important;
+                  -webkit-mask-image: ${frameUrl} !important;
+                  mask-size: 100% 100% !important;
+                  -webkit-mask-size: 100% 100% !important;
+                }
+              `;
+            }
 
             if (rawT < 1) {
               animId = requestAnimationFrame(renderFrame);
+            } else {
+              cleanup();
             }
           };
 
           animId = requestAnimationFrame(renderFrame);
         })
-        .catch(() => {});
+        .catch(() => {
+          cleanup();
+        });
 
       transition.finished
         .catch(() => {})
         .finally(() => {
-          if (animId !== null) {
-            cancelAnimationFrame(animId);
-          }
-          document.documentElement.style.removeProperty("--ink-mask");
-          gl.getExtension("WEBGL_lose_context")?.loseContext();
+          cleanup();
         });
     },
     []

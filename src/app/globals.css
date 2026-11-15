@@ -1134,9 +1134,18 @@ html[data-theme="tactile"] body,
 /* ==========================================================================
    WebGL Ink-Bleed View Transition
    ========================================================================== */
+@keyframes ink-bleed-hold {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;
+  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
   mix-blend-mode: normal;
 }
 
@@ -1148,8 +1157,10 @@ html[data-theme="tactile"] body,
   z-index: 2;
   mask-image: var(--ink-mask);
   -webkit-mask-image: var(--ink-mask);
-  mask-size: 100vw 100vh;
-  -webkit-mask-size: 100vw 100vh;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-position: 0 0;
+  -webkit-mask-position: 0 0;
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
 }

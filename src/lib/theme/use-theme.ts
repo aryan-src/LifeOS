@@ -114,9 +114,10 @@ export function useTheme() {
   };
 
   const toggleLightDark = () => {
-    const isDocDark = document.documentElement.classList.contains('dark');
-    const newTheme = isDocDark ? 'light' : 'dark';
+    const nextDark = !isDark;
+    const newTheme = nextDark ? 'crimson-dark' : 'nordic';
     setTheme(newTheme);
+    return newTheme;
   };
 
   return {

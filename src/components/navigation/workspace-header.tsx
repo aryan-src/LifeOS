@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUIStore } from '@/lib/store/use-ui-store';
@@ -37,6 +37,20 @@ export function WorkspaceHeader({
   const isDockVisible = isDockVisibleProp !== undefined ? isDockVisibleProp : storeIsDockVisible;
   const toggleDock = onToggleDockProp || storeToggleDock;
 
+  const handleToggleTheme = useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent | null) => {
+      const nextTheme = isDark ? 'nordic' : 'crimson-dark';
+      triggerThemeTransition(
+        e,
+        () => {
+          toggleLightDark();
+        },
+        { targetTheme: nextTheme }
+      );
+    },
+    [isDark, toggleLightDark, triggerThemeTransition]
+  );
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem('lifeos_display_name');
@@ -44,26 +58,33 @@ export function WorkspaceHeader({
     } catch {}
   }, []);
 
-  // Keyboard shortcut: Cmd/Ctrl + B to toggle dock
+  // Keyboard shortcuts: Cmd/Ctrl + B to toggle dock, T to toggle theme
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
-        const target = e.target as HTMLElement | null;
-        if (
-          target &&
-          (target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA' ||
-            target.isContentEditable)
-        ) {
-          return;
-        }
         e.preventDefault();
         toggleDock();
+        return;
+      }
+
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        handleToggleTheme(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleDock]);
+  }, [toggleDock, handleToggleTheme]);
 
   const isLandingPage = useUIStore((state) => state.isLandingPage);
 
@@ -167,11 +188,7 @@ export function WorkspaceHeader({
           {/* Direct Dark / Light Mode Toggle Button */}
           <button
             type="button"
-            onClick={(e) => {
-              triggerThemeTransition(e, () => {
-                toggleLightDark();
-              });
-            }}
+            onClick={(e) => handleToggleTheme(e)}
             className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage relative z-[10001]"
             aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}

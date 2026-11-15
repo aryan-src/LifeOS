@@ -119,11 +119,20 @@ export function useInkThemeTransition() {
 
       // 5. Synchronously mutate documentElement inside startViewTransition before flushSync
       const transition = doc.startViewTransition(() => {
-        const isCurrentDark = document.documentElement.classList.contains("dark");
-        const nextIsDark = !isCurrentDark;
-        document.documentElement.classList.toggle("dark", nextIsDark);
-        const nextTheme = options.targetTheme || (nextIsDark ? "crimson-dark" : "nordic");
-        document.documentElement.setAttribute("data-theme", nextTheme);
+        if (options.targetTheme) {
+          const isTargetDark =
+            options.targetTheme.includes("dark") ||
+            options.targetTheme === "tui" ||
+            options.targetTheme === "spatial-glass";
+          document.documentElement.classList.toggle("dark", isTargetDark);
+          document.documentElement.setAttribute("data-theme", options.targetTheme);
+        } else {
+          const isCurrentDark = document.documentElement.classList.contains("dark");
+          const nextIsDark = !isCurrentDark;
+          document.documentElement.classList.toggle("dark", nextIsDark);
+          const nextTheme = nextIsDark ? "crimson-dark" : "nordic";
+          document.documentElement.setAttribute("data-theme", nextTheme);
+        }
 
         flushSync(() => {
           applyTheme();

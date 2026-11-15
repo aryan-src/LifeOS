@@ -172,10 +172,11 @@ export function WorkspaceHeader({
                 toggleLightDark();
               });
             }}
-            className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage relative z-[10001]"
             aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             data-purpose="theme-toggle-button"
+            data-ink-live
           >
             {mounted && isDark ? (
               <Sun className="w-4 h-4 text-amber-500 hover:rotate-45 transition-transform" />

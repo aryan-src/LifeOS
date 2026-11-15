@@ -2,32 +2,21 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
+import * as inkModule from '@/lib/ink-bleed/inkTransition';
+import { inkParams } from '@/lib/ink-bleed/gl/params';
 
 describe('useInkThemeTransition hook', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-
-    const dummyDoc = {
-      documentElement: {
-        style: {
-          setProperty: vi.fn(),
-          removeProperty: vi.fn(),
-        },
-      },
-    };
-
-    const dummyWindow = {
+    (globalThis as unknown as { window: unknown }).window = {
       innerWidth: 1000,
       innerHeight: 800,
       matchMedia: vi.fn().mockReturnValue({ matches: false }),
     };
-
-    (globalThis as unknown as { document: unknown }).document = dummyDoc;
-    (globalThis as unknown as { window: unknown }).window = dummyWindow;
   });
 
   afterEach(() => {
-    delete (globalThis as unknown as { document?: unknown }).document;
+    vi.restoreAllMocks();
     delete (globalThis as unknown as { window?: unknown }).window;
   });
 
@@ -41,96 +30,52 @@ describe('useInkThemeTransition hook', () => {
     return hookResult;
   }
 
-  it('calls applyTheme directly when document.startViewTransition is undefined', () => {
-    const doc = globalThis.document as unknown as { startViewTransition?: unknown };
-    delete doc.startViewTransition;
+  it('calls applyTheme directly when window is undefined', () => {
+    // @ts-expect-error simulating SSR
+    delete globalThis.window;
 
     const applyTheme = vi.fn();
     const hook = getHookInstance();
-
     hook.triggerThemeTransition(null, applyTheme);
 
     expect(applyTheme).toHaveBeenCalledTimes(1);
   });
 
-  it('calls applyTheme directly when prefers-reduced-motion is true', () => {
-    globalThis.window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-      matches: query.includes('prefers-reduced-motion: reduce'),
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+  it('delegates to InkTransition.toggle with click coordinates', () => {
+    const mockToggle = vi.fn();
+    const mockInk = {
+      toggle: mockToggle,
+    } as unknown as inkModule.InkTransition;
 
-    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition = vi.fn();
-
-    const applyTheme = vi.fn();
-    const hook = getHookInstance();
-
-    hook.triggerThemeTransition(null, applyTheme);
-
-    expect(applyTheme).toHaveBeenCalledTimes(1);
-    expect(
-      (globalThis.document as unknown as { startViewTransition: ReturnType<typeof vi.fn> }).startViewTransition
-    ).not.toHaveBeenCalled();
-  });
-
-  it('executes startViewTransition when supported and reduced-motion is false', () => {
-    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-
-    const readyPromise = Promise.resolve();
-    const finishedPromise = Promise.resolve();
-
-    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
-      cb();
-      return {
-        ready: readyPromise,
-        finished: finishedPromise,
-      };
-    });
-
-    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
-      startViewTransitionMock;
-
-    // createElement for canvas in node mock
-    (globalThis.document as unknown as { createElement: unknown }).createElement = vi.fn().mockReturnValue({
-      getContext: vi.fn().mockReturnValue(null), // returns null to test fallback path
-    });
+    vi.spyOn(inkModule, 'getGlobalInkTransition').mockReturnValue(mockInk);
 
     const applyTheme = vi.fn();
     const hook = getHookInstance();
 
     const mockMouseEvent = {
-      clientX: 300,
-      clientY: 400,
+      clientX: 250,
+      clientY: 350,
     } as unknown as React.MouseEvent;
 
-    hook.triggerThemeTransition(mockMouseEvent, applyTheme);
+    hook.triggerThemeTransition(mockMouseEvent, applyTheme, { duration: 1500 });
 
-    expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
-    expect(applyTheme).toHaveBeenCalledTimes(1);
+    expect(inkParams.duration).toBe(1.5);
+    expect(mockToggle).toHaveBeenCalledTimes(1);
+    expect(mockToggle).toHaveBeenCalledWith(
+      { x: 250, y: 350 },
+      undefined,
+      applyTheme,
+      undefined
+    );
   });
 
-  it('falls back to viewport center when triggered via keyboard event', () => {
-    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+  it('delegates to InkTransition.toggle with undefined coordinates on keyboard event', () => {
+    const mockToggle = vi.fn();
+    const mockInk = {
+      toggle: mockToggle,
+    } as unknown as inkModule.InkTransition;
 
-    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
-      cb();
-      return {
-        ready: Promise.resolve(),
-        finished: Promise.resolve(),
-      };
-    });
-
-    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
-      startViewTransitionMock;
-
-    (globalThis.document as unknown as { createElement: unknown }).createElement = vi.fn().mockReturnValue({
-      getContext: vi.fn().mockReturnValue(null),
-    });
+    vi.spyOn(inkModule, 'getGlobalInkTransition').mockReturnValue(mockInk);
 
     const applyTheme = vi.fn();
     const hook = getHookInstance();
@@ -141,7 +86,12 @@ describe('useInkThemeTransition hook', () => {
 
     hook.triggerThemeTransition(mockKeyboardEvent, applyTheme);
 
-    expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
-    expect(applyTheme).toHaveBeenCalledTimes(1);
+    expect(mockToggle).toHaveBeenCalledTimes(1);
+    expect(mockToggle).toHaveBeenCalledWith(
+      undefined,
+      undefined,
+      applyTheme,
+      undefined
+    );
   });
 });

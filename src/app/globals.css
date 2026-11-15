@@ -1132,37 +1132,50 @@ html[data-theme="tactile"] body,
 }
 
 /* ==========================================================================
-   WebGL Ink-Bleed View Transition
+   Ink Bleed Theme Transition Overlay (codemure-official/ink-bleed-theme-changer)
    ========================================================================== */
-@keyframes ink-bleed-hold {
-  from {
-    visibility: visible;
-  }
-  to {
-    visibility: visible;
-  }
+
+.ink-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
-  mix-blend-mode: normal;
+.ink-canvas.is-active {
+  visibility: visible;
 }
 
-::view-transition-old(root) {
-  z-index: 1;
+/* CSS fallback transition (used without WebGL2 or under prefers-reduced-motion) */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition:
+    background-color var(--theme-fade, 0.45s) ease,
+    border-color var(--theme-fade, 0.45s) ease,
+    color var(--theme-fade, 0.45s) ease,
+    fill var(--theme-fade, 0.45s) ease,
+    stroke var(--theme-fade, 0.45s) ease,
+    box-shadow var(--theme-fade, 0.45s) ease !important;
 }
 
-::view-transition-new(root) {
-  z-index: 2;
-  mask-image: var(--ink-mask);
-  -webkit-mask-image: var(--ink-mask);
-  mask-size: 100% 100%;
-  -webkit-mask-size: 100% 100%;
-  mask-position: 0 0;
-  -webkit-mask-position: 0 0;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
+.theme-toggle__icon {
+  overflow: visible;
+}
+
+.theme-toggle__body {
+  fill: currentColor;
+}
+
+.theme-toggle__rays {
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
 }
 
 

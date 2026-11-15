@@ -41,7 +41,7 @@ export default function RootLayout({
       <head>
         <link
           rel="preload"
-          href="/images/ink-mask-spritesheet.webp"
+          href="/ink-mask.webp"
           as="image"
           type="image/webp"
         />

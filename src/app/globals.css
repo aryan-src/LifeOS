@@ -1168,34 +1168,24 @@ html[data-theme="tactile"] body,
   height: 100vh;
   object-fit: none;
   object-position: top left;
+  animation: none;
   mix-blend-mode: normal;
 }
 
 ::view-transition-old(root) {
-  animation: none;
   z-index: 1;
 }
 
 ::view-transition-new(root) {
   z-index: 2;
-  animation: ink-spread var(--ink-duration, 1.1s) steps(31) forwards;
-  mask-image: url('/images/ink-mask-spritesheet.webp');
-  -webkit-mask-image: url('/images/ink-mask-spritesheet.webp');
-  mask-size: calc(var(--mask-size, 4000px) * 32) var(--mask-size, 4000px);
-  -webkit-mask-size: calc(var(--mask-size, 4000px) * 32) var(--mask-size, 4000px);
+  mask-image: url('/ink-mask.webp');
+  -webkit-mask-image: url('/ink-mask.webp');
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
-}
-
-@keyframes ink-spread {
-  0% {
-    mask-position: var(--mask-x, 0px) var(--mask-y, 0px);
-    -webkit-mask-position: var(--mask-x, 0px) var(--mask-y, 0px);
-  }
-  100% {
-    mask-position: var(--mask-x-end, -100000px) var(--mask-y, 0px);
-    -webkit-mask-position: var(--mask-x-end, -100000px) var(--mask-y, 0px);
-  }
+  mask-size: calc(8 * 100%) calc(6 * 100%);
+  -webkit-mask-size: calc(8 * 100%) calc(6 * 100%);
+  mask-position: 0% 0%;
+  -webkit-mask-position: 0% 0%;
 }
 
 

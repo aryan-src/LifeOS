@@ -1157,7 +1157,7 @@ html[data-theme="tactile"] body,
 
 /* Lock root snapshot geometry (prevents Chrome object-fit: fill stretching / ghosting) */
 ::view-transition-group(root) {
-  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
+  animation: ink-bleed-hold var(--ink-duration, 2200ms) linear both;
 }
 
 ::view-transition-old(root),
@@ -1168,7 +1168,7 @@ html[data-theme="tactile"] body,
   height: 100vh;
   object-fit: none;
   object-position: top left;
-  animation: ink-bleed-hold var(--ink-duration, 1500ms) linear both;
+  animation: ink-bleed-hold var(--ink-duration, 2200ms) linear both;
   mix-blend-mode: normal;
 }
 

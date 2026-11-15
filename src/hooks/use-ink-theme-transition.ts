@@ -4,9 +4,9 @@ import { useCallback } from "react";
 import { flushSync } from "react-dom";
 
 export interface InkTransitionOptions {
-  duration?: number;   // ms (default: 1500)
-  noiseScale?: number; // frequency of ink tendrils (default: 4.5)
-  turbulence?: number; // splatter & droplet spread (default: 0.28)
+  duration?: number;   // ms (default: 2200)
+  noiseScale?: number; // frequency of ink tendrils (default: 2.4)
+  turbulence?: number; // splatter & droplet spread (default: 0.20)
   targetTheme?: string;
   ignoreReducedMotion?: boolean;
 }
@@ -86,20 +86,22 @@ const FRAGMENT_SHADER = `
 
     float dist = length(delta) / maxDist;
 
-    // Domain-warped fBm for organic tendrils & detached ink droplets
+    // Domain-warped fBm for organic tendrils & soft liquid bleeding
     vec2 p = uv * vec2(u_aspect, 1.0) * u_noiseScale + vec2(u_seed);
     float warp = fbm(p);
-    float noise = fbm(p + warp * 0.65);
+    float noise = fbm(p + warp * 0.45);
 
     float edge = dist - u_progress * (1.0 + u_turbulence) + (noise * u_turbulence);
-    float alpha = 1.0 - smoothstep(-0.008, 0.008, edge);
+    // Soft feathered frontier for silky smooth, paper-absorbing liquid bleeding
+    float alpha = 1.0 - smoothstep(-0.04, 0.04, edge);
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
   }
 `;
 
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function easeSmooth(t: number): number {
+  // Harmonic sinusoidal ease delivers uniform, silky liquid motion without violent peak acceleration
+  return -(Math.cos(Math.PI * t) - 1) / 2;
 }
 
 function getCanvasDataUrl(canvas: HTMLCanvasElement): string {
@@ -208,9 +210,9 @@ export function useInkThemeTransition() {
       options: InkTransitionOptions = {}
     ) => {
       const {
-        duration = 1500,
-        noiseScale = 4.5,
-        turbulence = 0.28,
+        duration = 2200,
+        noiseScale = 2.4,
+        turbulence = 0.20,
         ignoreReducedMotion = false,
       } = options;
 
@@ -292,7 +294,7 @@ export function useInkThemeTransition() {
               },
               {
                 duration,
-                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)",
                 pseudoElement: "::view-transition-new(root)",
               }
             );
@@ -335,11 +337,11 @@ export function useInkThemeTransition() {
       // Set hold duration so the pseudo-elements stay active for the whole animation
       document.documentElement.style.setProperty("--ink-duration", `${duration}ms`);
 
-      // Pre-render initial frame (-0.03 progress) so ::view-transition-new is masked from frame 0
+      // Pre-render initial frame (-0.05 progress) so ::view-transition-new is masked from frame 0
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(progressLoc, -0.03);
+      gl.uniform1f(progressLoc, -0.05);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       const initialMaskUrl = `url(${getCanvasDataUrl(canvas)})`;
@@ -407,8 +409,8 @@ export function useInkThemeTransition() {
 
             const elapsed = now - start;
             const rawT = Math.min(elapsed / duration, 1);
-            const eased = easeInOutCubic(rawT);
-            const progress = -0.03 + eased * 1.08;
+            const eased = easeSmooth(rawT);
+            const progress = -0.05 + eased * 1.20;
 
             gl.viewport(0, 0, canvas.width, canvas.height);
             gl.clearColor(0, 0, 0, 0);

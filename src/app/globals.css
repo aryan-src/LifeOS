@@ -1132,50 +1132,46 @@ html[data-theme="tactile"] body,
 }
 
 /* ==========================================================================
-   Ink Bleed Theme Transition Overlay (codemure-official/ink-bleed-theme-changer)
+   Zero-Latency View Transitions Ink-Bleed Mask
    ========================================================================== */
 
-.ink-canvas {
+/* Freeze all element CSS transitions during capture so the snapshot is 100% crisp */
+[data-theme-transitioning],
+[data-theme-transitioning] *,
+[data-theme-transitioning] *::before,
+[data-theme-transitioning] *::after {
+  transition: none !important;
+}
+
+/* Lock root snapshot geometry (prevents Chrome object-fit: fill stretching / ghosting) */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
   position: fixed;
   inset: 0;
-  z-index: 9999;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
+  object-fit: none;
+  object-position: top left;
+  animation: none;
+  mix-blend-mode: normal;
 }
 
-.ink-canvas.is-active {
-  visibility: visible;
+::view-transition-old(root) {
+  z-index: 1;
 }
 
-/* CSS fallback transition (used without WebGL2 or under prefers-reduced-motion) */
-html.theme-fade,
-html.theme-fade *,
-html.theme-fade *::before,
-html.theme-fade *::after {
-  transition:
-    background-color var(--theme-fade, 0.45s) ease,
-    border-color var(--theme-fade, 0.45s) ease,
-    color var(--theme-fade, 0.45s) ease,
-    fill var(--theme-fade, 0.45s) ease,
-    stroke var(--theme-fade, 0.45s) ease,
-    box-shadow var(--theme-fade, 0.45s) ease !important;
-}
-
-.theme-toggle__icon {
-  overflow: visible;
-}
-
-.theme-toggle__body {
-  fill: currentColor;
-}
-
-.theme-toggle__rays {
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
+::view-transition-new(root) {
+  z-index: 2;
+  mask-image: url(#ink-bleed-mask);
+  -webkit-mask-image: url(#ink-bleed-mask);
+  mask-size: 100vw 100vh;
+  -webkit-mask-size: 100vw 100vh;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
 }
 
 

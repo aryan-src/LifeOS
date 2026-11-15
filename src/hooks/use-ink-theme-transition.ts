@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { flushSync } from "react-dom";
 
 export interface InkTransitionOptions {
-  duration?: number;   // ms (default: 750)
+  duration?: number;   // ms (default: 1500)
   noiseScale?: number; // frequency of ink tendrils (default: 4.5)
   turbulence?: number; // splatter & droplet spread (default: 0.28)
 }
@@ -106,7 +106,7 @@ export function useInkThemeTransition() {
       applyTheme: () => void,
       options: InkTransitionOptions = {}
     ) => {
-      const { duration = 750, noiseScale = 4.5, turbulence = 0.28 } = options;
+      const { duration = 1500, noiseScale = 4.5, turbulence = 0.28 } = options;
 
       const prefersReducedMotion =
         typeof window !== "undefined" &&

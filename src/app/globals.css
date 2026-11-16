@@ -1196,4 +1196,20 @@ html[data-theme="tactile"] body,
   -webkit-mask-size: 100% 100%;
 }
 
+/* Light -> Dark: Deep obsidian ink tendrils with physical depth shadow and glossy blue-white rim */
+[data-transition-dir="to-dark"]::view-transition-new(root) {
+  filter:
+    drop-shadow(0 0 1.5px rgba(147, 197, 253, 0.55))
+    drop-shadow(0 3px 8px rgba(3, 3, 5, 0.85))
+    drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+}
+
+/* Dark -> Light: Advancing cream canvas framed by a thick glossy Venom-black symbiote bead & blue specular edge */
+[data-transition-dir="to-light"]::view-transition-new(root) {
+  filter:
+    drop-shadow(0 0 2px rgba(3, 3, 5, 1))
+    drop-shadow(0 0 6px rgba(3, 3, 5, 0.95))
+    drop-shadow(0 0 12px rgba(59, 130, 246, 0.45));
+}
+
 

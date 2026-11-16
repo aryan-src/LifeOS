@@ -225,6 +225,11 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
       'data-theme-transitioning',
       'true'
     );
+    expect(dummyDoc.documentElement.setAttribute).toHaveBeenCalledWith(
+      'data-transition-dir',
+      expect.stringMatching(/^(to-dark|to-light)$/)
+    );
+    expect(dummyDoc.createElement).not.toHaveBeenCalledWith('canvas');
     expect(startViewTransitionMock).toHaveBeenCalledTimes(1);
     expect(applyTheme).toHaveBeenCalledTimes(1);
   });
@@ -289,6 +294,7 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
     await finishedPromise;
 
     expect(dummyDoc.documentElement.removeAttribute).toHaveBeenCalledWith('data-theme-transitioning');
+    expect(dummyDoc.documentElement.removeAttribute).toHaveBeenCalledWith('data-transition-dir');
     expect(dummyDoc.documentElement.style.removeProperty).toHaveBeenCalledWith('--ink-mask');
   });
 
@@ -405,6 +411,7 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
     await finishedPromise;
 
     expect(dummyDoc.documentElement.removeAttribute).toHaveBeenCalledWith('data-theme-transitioning');
+    expect(dummyDoc.documentElement.removeAttribute).toHaveBeenCalledWith('data-transition-dir');
     expect(dummyDoc.documentElement.style.removeProperty).toHaveBeenCalledWith('--ink-mask');
   });
 

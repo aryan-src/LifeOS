@@ -4,10 +4,22 @@ import { renderToString } from 'react-dom/server';
 import {
   useInkThemeTransition,
   createVenomInkMaskDataUri,
+  VENOM_CONFIG,
 } from '@/hooks/use-ink-theme-transition';
 
 describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
   let animateMock: ReturnType<typeof vi.fn>;
+  let createdCanvas: {
+    id: string;
+    setAttribute: ReturnType<typeof vi.fn>;
+    style: { cssText: string };
+    width: number;
+    height: number;
+    getContext: ReturnType<typeof vi.fn>;
+    showPopover: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+    parentNode: unknown;
+  } | null;
   let dummyDoc: {
     documentElement: {
       classList: {
@@ -22,11 +34,13 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
       };
       setAttribute: ReturnType<typeof vi.fn>;
       removeAttribute: ReturnType<typeof vi.fn>;
+      getAttribute: ReturnType<typeof vi.fn>;
       animate: ReturnType<typeof vi.fn>;
     };
     body: {
       appendChild: ReturnType<typeof vi.fn>;
     };
+    createElement: ReturnType<typeof vi.fn>;
     getElementById: ReturnType<typeof vi.fn>;
     querySelector: ReturnType<typeof vi.fn>;
   };
@@ -37,6 +51,8 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
     animateMock = vi.fn().mockReturnValue({
       finished: Promise.resolve(),
     });
+
+    createdCanvas = null;
 
     dummyDoc = {
       documentElement: {
@@ -52,11 +68,48 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
         },
         setAttribute: vi.fn(),
         removeAttribute: vi.fn(),
+        getAttribute: vi.fn().mockReturnValue(null),
         animate: animateMock,
       },
       body: {
-        appendChild: vi.fn(),
+        appendChild: vi.fn().mockImplementation((el: unknown) => {
+          if (createdCanvas && el === createdCanvas) {
+            createdCanvas.parentNode = dummyDoc.body;
+          }
+        }),
       },
+      createElement: vi.fn().mockImplementation((tag: string) => {
+        if (tag === 'canvas') {
+          createdCanvas = {
+            id: '',
+            setAttribute: vi.fn(),
+            style: { cssText: '' },
+            width: 0,
+            height: 0,
+            getContext: vi.fn().mockReturnValue({
+              scale: vi.fn(),
+              clearRect: vi.fn(),
+              beginPath: vi.fn(),
+              moveTo: vi.fn(),
+              lineTo: vi.fn(),
+              closePath: vi.fn(),
+              fill: vi.fn(),
+              stroke: vi.fn(),
+              arc: vi.fn(),
+              ellipse: vi.fn(),
+              save: vi.fn(),
+              restore: vi.fn(),
+            }),
+            showPopover: vi.fn(),
+            remove: vi.fn().mockImplementation(() => {
+              if (createdCanvas) createdCanvas.parentNode = null;
+            }),
+            parentNode: null,
+          };
+          return createdCanvas;
+        }
+        return {};
+      }),
       getElementById: vi.fn().mockReturnValue(null),
       querySelector: vi.fn().mockReturnValue(null),
     };
@@ -273,6 +326,96 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
         expect.anything(),
       ],
       expect.anything()
+    );
+  });
+
+  it('exposes VENOM_CONFIG with all required tunables within valid ranges', () => {
+    expect(VENOM_CONFIG).toBeDefined();
+    expect(VENOM_CONFIG.TENDRIL_COUNT).toBeGreaterThanOrEqual(6);
+    expect(VENOM_CONFIG.TENDRIL_COUNT).toBeLessThanOrEqual(10);
+
+    expect(VENOM_CONFIG.TENDRIL_LENGTH).toBeGreaterThanOrEqual(0.15);
+    expect(VENOM_CONFIG.TENDRIL_LENGTH).toBeLessThanOrEqual(0.35);
+
+    expect(VENOM_CONFIG.GOO_SMOOTHNESS).toBeGreaterThanOrEqual(0.02);
+    expect(VENOM_CONFIG.GOO_SMOOTHNESS).toBeLessThanOrEqual(0.04);
+
+    expect(VENOM_CONFIG.WRITHE_AMOUNT).toBeGreaterThanOrEqual(0.005);
+    expect(VENOM_CONFIG.WRITHE_AMOUNT).toBeLessThanOrEqual(0.015);
+
+    expect(VENOM_CONFIG.GLOSS_STRENGTH).toBeGreaterThanOrEqual(0);
+    expect(VENOM_CONFIG.GLOSS_STRENGTH).toBeLessThanOrEqual(1);
+
+    expect(VENOM_CONFIG.DURATION_MS).toBeGreaterThanOrEqual(1000);
+    expect(VENOM_CONFIG.DURATION_MS).toBeLessThanOrEqual(1200);
+  });
+
+  it('creates popover overlay canvas and cleans it up when transition finishes', async () => {
+    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const readyPromise = Promise.resolve();
+    let finishCallback: () => void = () => {};
+    const finishedPromise = new Promise<void>((resolve) => {
+      finishCallback = resolve;
+    });
+
+    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
+      cb();
+      return {
+        ready: readyPromise,
+        finished: finishedPromise,
+      };
+    });
+
+    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
+      startViewTransitionMock;
+
+    const applyTheme = vi.fn();
+    const hook = getHookInstance();
+
+    hook.triggerThemeTransition(null, applyTheme);
+
+    expect(dummyDoc.createElement).toHaveBeenCalledWith('canvas');
+    expect(createdCanvas).not.toBeNull();
+    expect(createdCanvas?.id).toBe('venom-symbiote-canvas');
+    expect(createdCanvas?.setAttribute).toHaveBeenCalledWith('popover', 'manual');
+    expect(dummyDoc.body.appendChild).toHaveBeenCalledWith(createdCanvas);
+
+    await readyPromise;
+    finishCallback();
+    await finishedPromise;
+
+    expect(createdCanvas?.remove).toHaveBeenCalled();
+  });
+
+  it('uses VENOM_CONFIG.DURATION_MS by default when options.duration is omitted', async () => {
+    globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+
+    const readyPromise = Promise.resolve();
+    const finishedPromise = Promise.resolve();
+
+    const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
+      cb();
+      return {
+        ready: readyPromise,
+        finished: finishedPromise,
+      };
+    });
+
+    (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
+      startViewTransitionMock;
+
+    const applyTheme = vi.fn();
+    const hook = getHookInstance();
+
+    hook.triggerThemeTransition(null, applyTheme);
+    await readyPromise;
+
+    expect(animateMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        duration: VENOM_CONFIG.DURATION_MS,
+      })
     );
   });
 });

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile } from '@/lib/actions/profile';
 import { saveTheme, applyThemeToDOM } from '@/lib/theme/use-theme';
-import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
 import { getFullAccountExport } from '@/lib/actions/export';
 import {
   formatNoteAsMarkdown,
@@ -120,7 +119,6 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const [toastVisible, setToastVisible] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string>('Last synced 2m ago');
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState<boolean>(false);
-  const { triggerThemeTransition } = useInkThemeTransition();
 
   // Export micro-interaction states
   const [exportState, setExportState] = useState<{
@@ -175,21 +173,10 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   };
 
   // Switch Theme
-  const handleSelectTheme = (
-    themeId: string,
-    event?: React.MouseEvent | React.KeyboardEvent
-  ) => {
-    triggerThemeTransition(event ?? null, () => {
-      const isDark =
-        themeId === 'spatial-glass' ||
-        themeId === 'tui' ||
-        themeId === 'crimson-dark';
-      document.documentElement.classList.toggle('dark', isDark);
-      document.documentElement.setAttribute('data-theme', themeId);
-      setThemePreference(themeId);
-      saveTheme(themeId);
-      applyThemeToDOM(themeId);
-    });
+  const handleSelectTheme = (themeId: string) => {
+    setThemePreference(themeId);
+    saveTheme(themeId);
+    applyThemeToDOM(themeId);
     const themeObj = THEMES.find((t) => t.id === themeId);
     showToast(`Atmosphere set to: ${themeObj?.title || themeId}`);
   };

@@ -15,12 +15,10 @@ import {
 import { useUIStore } from '@/lib/store/use-ui-store';
 import { signOutAction } from '@/lib/actions/profile';
 import { useTheme } from '@/lib/theme/use-theme';
-import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
 
 export function TopHeader() {
   const { toggleDock, isDockVisible } = useUIStore();
   const { theme, isDark, setTheme, toggleLightDark } = useTheme();
-  const { triggerThemeTransition } = useInkThemeTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -48,29 +46,10 @@ export function TopHeader() {
     }
   }, [isMenuOpen]);
 
-  const handleToggleTheme = (e?: React.MouseEvent | React.KeyboardEvent) => {
-    triggerThemeTransition(e ?? null, () => {
-      toggleLightDark();
-    });
-  };
-
-  const handleSetLightMode = (e?: React.MouseEvent | React.KeyboardEvent) => {
-    triggerThemeTransition(e ?? null, () => {
-      setTheme('light');
-    });
-  };
-
-  const handleSetDarkMode = (e?: React.MouseEvent | React.KeyboardEvent) => {
-    triggerThemeTransition(e ?? null, () => {
-      setTheme('dark');
-    });
-  };
-
-  const handleSetSystemMode = (e?: React.MouseEvent | React.KeyboardEvent) => {
-    triggerThemeTransition(e ?? null, () => {
-      setTheme('default');
-    });
-  };
+  const setLightMode = () => setTheme('light');
+  const setDarkMode = () => setTheme('dark');
+  const setSystemMode = () => setTheme('default');
+  const toggleTheme = () => toggleLightDark();
 
   return (
     <header
@@ -111,21 +90,6 @@ export function TopHeader() {
               aria-label="Search records"
             />
           </div>
-
-          {/* Direct Dark/Light Mode Toggle Button */}
-          <button
-            type="button"
-            onClick={(e) => handleToggleTheme(e)}
-            className="flex items-center justify-center p-2 rounded-lg text-on-surface-variant hover:text-on-surface dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-900 border border-transparent transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
-            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDarkMode ? (
-              <Sun className="size-4 text-amber-400 transition-transform hover:rotate-45" />
-            ) : (
-              <Moon className="size-4 text-zinc-600 dark:text-zinc-400 transition-transform hover:-rotate-12" />
-            )}
-          </button>
 
           {/* Burger Button to switch between dark and light theme */}
           <div className="relative" ref={menuRef}>
@@ -180,7 +144,7 @@ export function TopHeader() {
 
                 {/* Direct Dark Mode Switch Row */}
                 <div
-                  onClick={(e) => handleToggleTheme(e)}
+                  onClick={toggleTheme}
                   className="flex items-center justify-between p-2 rounded-xl bg-surface-container-low dark:bg-zinc-800/60 hover:bg-surface-container dark:hover:bg-zinc-800 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -213,7 +177,7 @@ export function TopHeader() {
                 <div className="grid grid-cols-3 gap-1 p-1 bg-surface-container dark:bg-zinc-950/60 rounded-xl border border-outline-variant/20 dark:border-zinc-800/60">
                   <button
                     type="button"
-                    onClick={(e) => handleSetLightMode(e)}
+                    onClick={setLightMode}
                     className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
                       theme === 'light'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'
@@ -226,7 +190,7 @@ export function TopHeader() {
 
                   <button
                     type="button"
-                    onClick={(e) => handleSetDarkMode(e)}
+                    onClick={setDarkMode}
                     className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
                       theme === 'dark' || theme === 'crimson-dark'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'
@@ -239,7 +203,7 @@ export function TopHeader() {
 
                   <button
                     type="button"
-                    onClick={(e) => handleSetSystemMode(e)}
+                    onClick={setSystemMode}
                     className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-400 ${
                       theme === 'default'
                         ? 'bg-surface-container-lowest dark:bg-zinc-800 text-on-surface dark:text-zinc-100 shadow-xs'

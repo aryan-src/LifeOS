@@ -1,12 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUIStore } from '@/lib/store/use-ui-store';
-import { useTheme } from '@/lib/theme/use-theme';
-import { useInkThemeTransition } from '@/hooks/use-ink-theme-transition';
-import { Sun, Moon } from 'lucide-react';
 
 interface WorkspaceHeaderProps {
   displayName?: string;
@@ -23,33 +20,11 @@ export function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const pathname = usePathname();
   const [userName, setUserName] = useState(displayName);
-  const { isDark, toggleLightDark } = useTheme();
-  const { triggerThemeTransition } = useInkThemeTransition();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const storeIsDockVisible = useUIStore((state) => state.isDockVisible);
   const storeToggleDock = useUIStore((state) => state.toggleDock);
 
   const isDockVisible = isDockVisibleProp !== undefined ? isDockVisibleProp : storeIsDockVisible;
   const toggleDock = onToggleDockProp || storeToggleDock;
-
-  const handleToggleTheme = useCallback(
-    (e: React.MouseEvent | React.KeyboardEvent | null) => {
-      const nextTheme = isDark ? 'nordic' : 'crimson-dark';
-      triggerThemeTransition(
-        e,
-        () => {
-          toggleLightDark();
-        },
-        { targetTheme: nextTheme }
-      );
-    },
-    [isDark, toggleLightDark, triggerThemeTransition]
-  );
 
   useEffect(() => {
     try {
@@ -58,33 +33,26 @@ export function WorkspaceHeader({
     } catch {}
   }, []);
 
-  // Keyboard shortcuts: Cmd/Ctrl + B to toggle dock, T to toggle theme
+  // Keyboard shortcut: Cmd/Ctrl + B to toggle dock
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        const target = e.target as HTMLElement | null;
+        if (
+          target &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
         e.preventDefault();
         toggleDock();
-        return;
-      }
-
-      if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === 't') {
-        e.preventDefault();
-        handleToggleTheme(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleDock, handleToggleTheme]);
+  }, [toggleDock]);
 
   const isLandingPage = useUIStore((state) => state.isLandingPage);
 
@@ -184,26 +152,7 @@ export function WorkspaceHeader({
         </div>
 
         {/* Right: Utility Icons, Schedule & Profile */}
-        <div className="flex items-center space-x-2 sm:space-x-2.5 text-textMuted dark:text-zinc-400">
-          {/* Direct Dark / Light Mode Toggle Button */}
-          <button
-            type="button"
-            id="theme-toggle-btn"
-            data-theme-toggle="true"
-            onClick={(e) => handleToggleTheme(e)}
-            className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage relative z-[10001]"
-            aria-label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            data-purpose="theme-toggle-button"
-            data-ink-live
-          >
-            {mounted && isDark ? (
-              <Sun className="w-4 h-4 text-amber-500 hover:rotate-45 transition-transform" />
-            ) : (
-              <Moon className="w-4 h-4 text-textMuted dark:text-zinc-400 hover:-rotate-12 transition-transform" />
-            )}
-          </button>
-
+        <div className="flex items-center space-x-2.5 sm:space-x-3 text-textMuted dark:text-zinc-400">
           <Link
             href="/tasks"
             className={`p-1.5 rounded-md transition-colors ${

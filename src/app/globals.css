@@ -24,9 +24,9 @@
   .dark {
     --faint: #7e7869;
     /* Overridden to match LifeOS Dark aesthetic */
-    --ruri: #F5F4F0;
+    --ruri: #e9e5dc;
     --ruri-soft: #3d3b36;
-    --deep: #050507;
+    --deep: #0f0e0d;
   }
 
   html, body {
@@ -84,28 +84,28 @@
 
 /* ==========================================================================
    Theme A: "Crimson Dark" (Black Background Variant)
-   Primary Page: #050507
-   Elevated Surface: #0B0C10
-   Primary Text: #F5F4F0
+   Primary Page: #0B0B0C
+   Elevated Surface: #141416
+   Primary Text: #FFFDD0
    Muted Text: #D6D2B8
-   Primary Accent: #DC143C (Button text: #F5F4F0)
+   Primary Accent: #DC143C (Button text: #FFFDD0)
    Hover/Active: #A30E2B (Glow: rgba(220, 20, 60, 0.25))
-   Standard Divider: rgba(255, 255, 255, 0.08)
-   Card Border: rgba(255, 255, 255, 0.08)
+   Standard Divider: #262629
+   Card Border: rgba(255, 253, 208, 0.12)
    ========================================================================== */
 
 :root[data-theme="crimson-dark"],
 :root[data-theme="crimson-cream"],
 .theme-crimson-dark,
 .theme-crimson-cream {
-  --theme-bg-page: #050507;
-  --theme-bg-surface: #0B0C10;
-  --theme-text-primary: #F5F4F0;
+  --theme-bg-page: #0B0B0C;
+  --theme-bg-surface: #141416;
+  --theme-text-primary: #FFFDD0;
   --theme-text-muted: #D6D2B8;
   --theme-accent: #DC143C;
   --theme-accent-hover: #A30E2B;
-  --theme-border-divider: rgba(255, 255, 255, 0.08);
-  --theme-border-card: rgba(255, 255, 255, 0.08);
+  --theme-border-divider: #262629;
+  --theme-border-card: rgba(255, 253, 208, 0.12);
   --theme-glow: rgba(220, 20, 60, 0.25);
   --color-from: rgba(220, 20, 60, 0.6);
   color-scheme: dark;
@@ -126,7 +126,7 @@ html[data-theme="crimson-cream"] body,
 [data-theme="crimson-cream"] .dark\:bg-zinc-950,
 [data-theme="crimson-dark"] .dark\:bg-neutral-950,
 [data-theme="crimson-cream"] .dark\:bg-neutral-950 {
-  background-color: #050507 !important;
+  background-color: #0B0B0C !important;
 }
 
 /* 2. Secondary / Elevated Surface Background (cards, sidebar, modals, inputs, nav) */
@@ -176,7 +176,7 @@ html[data-theme="crimson-cream"] body,
 [data-theme="crimson-cream"] textarea,
 [data-theme="crimson-dark"] select,
 [data-theme="crimson-cream"] select {
-  background-color: #0B0C10 !important;
+  background-color: #141416 !important;
 }
 
 /* 3. Primary Text & Active Icons */
@@ -220,7 +220,7 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-cream"] textarea,
 [data-theme="crimson-dark"] select,
 [data-theme="crimson-cream"] select {
-  color: #F5F4F0 !important;
+  color: #FFFDD0 !important;
 }
 
 /* 4. Secondary / Muted Text & Labels */
@@ -269,14 +269,14 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-dark"] .badge-primary,
 [data-theme="crimson-cream"] .badge-primary {
   background-color: #DC143C !important;
-  color: #F5F4F0 !important;
+  color: #FFFDD0 !important;
 }
 
 [data-theme="crimson-dark"] button[type="submit"]:not(.bg-transparent) *,
 [data-theme="crimson-cream"] button[type="submit"]:not(.bg-transparent) *,
 [data-theme="crimson-dark"] .bg-primary *,
 [data-theme="crimson-cream"] .bg-primary * {
-  color: #F5F4F0 !important;
+  color: #FFFDD0 !important;
 }
 
 [data-theme="crimson-dark"] .text-primary,
@@ -374,10 +374,10 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-cream"] .dark\:border-neutral-800\/80,
 [data-theme="crimson-dark"] .dark\:border-neutral-700\/60,
 [data-theme="crimson-cream"] .dark\:border-neutral-700\/60 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: #262629 !important;
 }
 
-/* Subtle card borders with top specular highlight */
+/* Subtle card borders */
 [data-theme="crimson-dark"] .bg-surface-container-lowest,
 [data-theme="crimson-cream"] .bg-surface-container-lowest,
 [data-theme="crimson-dark"] section.bg-surface-container-lowest,
@@ -385,11 +385,8 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-dark"] .rounded-2xl.border,
 [data-theme="crimson-cream"] .rounded-2xl.border,
 [data-theme="crimson-dark"] .rounded-xl.border,
-[data-theme="crimson-cream"] .rounded-xl.border,
-[data-theme="crimson-dark"] .bg-card,
-[data-theme="crimson-cream"] .bg-card {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  border-top-color: rgba(255, 255, 255, 0.12) !important;
+[data-theme="crimson-cream"] .rounded-xl.border {
+  border-color: rgba(255, 253, 208, 0.12) !important;
 }
 
 /* Active card selection in Settings */
@@ -433,14 +430,14 @@ html[data-theme="crimson-cream"],
 [data-theme="crimson-cream"] .dark\:fill-zinc-800,
 [data-theme="crimson-dark"] .fill-stone-200,
 [data-theme="crimson-cream"] .fill-stone-200 {
-  fill: rgba(255, 255, 255, 0.08) !important;
+  fill: #262629 !important;
 }
 
 /* Text Selection in Crimson Dark */
 [data-theme="crimson-dark"] ::selection,
 [data-theme="crimson-cream"] ::selection {
   background-color: #DC143C !important;
-  color: #F5F4F0 !important;
+  color: #FFFDD0 !important;
 }
 
 /* ==========================================================================
@@ -929,11 +926,9 @@ html.dark [data-theme="nordic"] {
 html[data-theme="nordic"].dark body,
 [data-theme="nordic"].dark main,
 html.dark [data-theme="nordic"] body,
-html.dark [data-theme="nordic"] main,
-html.dark body,
-html.dark main {
-  background-color: #050507 !important;
-  color: #F5F4F0 !important;
+html.dark [data-theme="nordic"] main {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
 }
 
 [data-theme="nordic"].dark .bg-surface-container-lowest,
@@ -941,12 +936,9 @@ html.dark main {
 [data-theme="nordic"].dark section.rounded-2xl,
 html.dark [data-theme="nordic"] .bg-surface-container-lowest,
 html.dark [data-theme="nordic"] .bg-card,
-html.dark [data-theme="nordic"] section.rounded-2xl,
-html.dark .bg-surface-container-lowest,
-html.dark .bg-card {
-  background-color: #0B0C10 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  border-top-color: rgba(255, 255, 255, 0.12) !important;
+html.dark [data-theme="nordic"] section.rounded-2xl {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
 }
 
 [data-theme="nordic"].dark button[type="submit"],
@@ -1137,79 +1129,6 @@ html[data-theme="tactile"] body,
 
 .shadow-floating {
   box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
-}
-
-/* ==========================================================================
-   Zero-Latency View Transitions Ink-Bleed Mask
-   ========================================================================== */
-
-/* ==========================================================================
-   Crisp Ink-Bleed Sprite-Sheet View Transition
-   ========================================================================== */
-
-/* Freeze all element CSS transitions and animations during capture so snapshot is 100% crisp */
-[data-theme-transitioning],
-[data-theme-transitioning] *,
-[data-theme-transitioning] *::before,
-[data-theme-transitioning] *::after {
-  transition: none !important;
-  animation-duration: 0.001ms !important;
-}
-
-/* Fallback 200ms crossfade when View Transitions are not supported */
-[data-theme-crossfading],
-[data-theme-crossfading] body,
-[data-theme-crossfading] main {
-  transition: background-color 200ms ease, color 200ms ease !important;
-}
-
-/* Lock root snapshot geometry (prevents Chrome object-fit: fill stretching / ghosting) */
-::view-transition-group(root) {
-  animation: none;
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: none;
-  object-position: top left;
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
-  z-index: 1;
-}
-
-::view-transition-new(root) {
-  z-index: 2;
-  mask-image: var(--ink-mask);
-  -webkit-mask-image: var(--ink-mask);
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-position: 0 0;
-  -webkit-mask-position: 0 0;
-  mask-size: 100% 100%;
-  -webkit-mask-size: 100% 100%;
-}
-
-/* Light -> Dark: Deep obsidian ink tendrils with physical depth shadow and glossy blue-white rim */
-[data-transition-dir="to-dark"]::view-transition-new(root) {
-  filter:
-    drop-shadow(0 0 1.5px rgba(147, 197, 253, 0.55))
-    drop-shadow(0 3px 8px rgba(3, 3, 5, 0.85))
-    drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
-}
-
-/* Dark -> Light: Advancing cream canvas framed by a thick glossy Venom-black symbiote bead & blue specular edge */
-[data-transition-dir="to-light"]::view-transition-new(root) {
-  filter:
-    drop-shadow(0 0 2px rgba(3, 3, 5, 1))
-    drop-shadow(0 0 6px rgba(3, 3, 5, 0.95))
-    drop-shadow(0 0 12px rgba(59, 130, 246, 0.45));
 }
 
 

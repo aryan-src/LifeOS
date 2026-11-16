@@ -24,10 +24,8 @@ export function applyThemeToDOM(theme: string) {
 
   if (theme === 'spatial-glass') {
     root.setAttribute('data-theme', 'spatial-glass');
-    root.classList.add('dark');
   } else if (theme === 'risograph') {
     root.setAttribute('data-theme', 'risograph');
-    root.classList.remove('dark');
   } else if (theme === 'nordic' || theme === 'default' || theme === 'stone') {
     root.setAttribute('data-theme', 'nordic');
     root.classList.remove('dark');
@@ -38,10 +36,10 @@ export function applyThemeToDOM(theme: string) {
     root.setAttribute('data-theme', 'tactile');
     root.classList.remove('dark');
   } else if (theme === 'crimson-dark' || theme === 'crimson-cream') {
-    root.setAttribute('data-theme', 'crimson-dark');
+    root.setAttribute('data-theme', 'risograph');
     root.classList.add('dark');
   } else if (theme === 'crimson-light') {
-    root.setAttribute('data-theme', 'crimson-light');
+    root.setAttribute('data-theme', 'risograph');
     root.classList.remove('dark');
   } else if (theme === 'system') {
     root.setAttribute('data-theme', 'nordic');
@@ -114,10 +112,9 @@ export function useTheme() {
   };
 
   const toggleLightDark = () => {
-    const nextDark = !isDark;
-    const newTheme = nextDark ? 'crimson-dark' : 'nordic';
+    const isDocDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDocDark ? 'light' : 'dark';
     setTheme(newTheme);
-    return newTheme;
   };
 
   return {

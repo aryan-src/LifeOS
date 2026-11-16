@@ -4,6 +4,8 @@ import { renderToString } from 'react-dom/server';
 import {
   useInkThemeTransition,
   createVenomInkMaskDataUri,
+  generateOrganicInkSvg,
+  INK_TRANSITION_CONFIG,
   VENOM_CONFIG,
 } from '@/hooks/use-ink-theme-transition';
 
@@ -350,7 +352,21 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
     expect(VENOM_CONFIG.DURATION_MS).toBeLessThanOrEqual(1200);
   });
 
-  it('creates popover overlay canvas and cleans it up when transition finishes', async () => {
+  it('generates morphing organic ink SVG mask with smooth Bézier paths and satellite droplets', () => {
+    const svg0 = generateOrganicInkSvg(0.0, 950, 40, 1000, 800);
+    expect(svg0).toContain('<svg');
+    expect(svg0).toContain('<path');
+    expect(svg0).toContain('fill="#000"');
+
+    const svgHalf = generateOrganicInkSvg(0.5, 950, 40, 1000, 800);
+    expect(svgHalf).toContain('<circle');
+    expect(svgHalf.length).toBeGreaterThan(svg0.length);
+
+    const svgFull = generateOrganicInkSvg(1.0, 950, 40, 1000, 800);
+    expect(svgFull).toContain('</svg>');
+  });
+
+  it('sets up organic SVG ink mask and cleans up when transition finishes', async () => {
     globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     const readyPromise = Promise.resolve();
@@ -375,17 +391,21 @@ describe('useInkThemeTransition with Vector SVG Data URI & WAAPI', () => {
 
     hook.triggerThemeTransition(null, applyTheme);
 
-    expect(dummyDoc.createElement).toHaveBeenCalledWith('canvas');
-    expect(createdCanvas).not.toBeNull();
-    expect(createdCanvas?.id).toBe('venom-symbiote-canvas');
-    expect(createdCanvas?.setAttribute).toHaveBeenCalledWith('popover', 'manual');
-    expect(dummyDoc.body.appendChild).toHaveBeenCalledWith(createdCanvas);
+    expect(dummyDoc.documentElement.setAttribute).toHaveBeenCalledWith(
+      'data-theme-transitioning',
+      'true'
+    );
+    expect(dummyDoc.documentElement.style.setProperty).toHaveBeenCalledWith(
+      '--ink-mask',
+      expect.stringMatching(/^url\("data:image\/svg\+xml,/)
+    );
 
     await readyPromise;
     finishCallback();
     await finishedPromise;
 
-    expect(createdCanvas?.remove).toHaveBeenCalled();
+    expect(dummyDoc.documentElement.removeAttribute).toHaveBeenCalledWith('data-theme-transitioning');
+    expect(dummyDoc.documentElement.style.removeProperty).toHaveBeenCalledWith('--ink-mask');
   });
 
   it('uses VENOM_CONFIG.DURATION_MS by default when options.duration is omitted', async () => {

@@ -3,15 +3,12 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import {
   useInkThemeTransition,
-  getInkKeyframes,
-  INK_GRID_COLS,
-  INK_GRID_ROWS,
-  INK_GRID_FRAMES,
-  INK_DEFAULT_DURATION,
+  easeInOutCubic,
+  injectVenomSvgMask,
+  VENOM_DEFAULT_DURATION,
 } from '@/hooks/use-ink-theme-transition';
 
-describe('useInkThemeTransition hook', () => {
-  let animateMock: ReturnType<typeof vi.fn>;
+describe('useInkThemeTransition hook & GPU Liquid SVG Mask', () => {
   let dummyDoc: {
     documentElement: {
       classList: {
@@ -26,21 +23,19 @@ describe('useInkThemeTransition hook', () => {
       };
       setAttribute: ReturnType<typeof vi.fn>;
       removeAttribute: ReturnType<typeof vi.fn>;
-      animate: ReturnType<typeof vi.fn>;
     };
     body: {
       appendChild: ReturnType<typeof vi.fn>;
     };
     getElementById: ReturnType<typeof vi.fn>;
     querySelector: ReturnType<typeof vi.fn>;
+    createElementNS: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
     vi.restoreAllMocks();
 
-    animateMock = vi.fn().mockReturnValue({
-      finished: Promise.resolve(),
-    });
+    const createdElements: Record<string, unknown> = {};
 
     dummyDoc = {
       documentElement: {
@@ -56,28 +51,58 @@ describe('useInkThemeTransition hook', () => {
         },
         setAttribute: vi.fn(),
         removeAttribute: vi.fn(),
-        animate: animateMock,
       },
       body: {
-        appendChild: vi.fn(),
+        appendChild: vi.fn().mockImplementation((el: unknown) => el),
       },
-      getElementById: vi.fn().mockReturnValue(null),
+      getElementById: vi.fn().mockImplementation((id: string) => createdElements[id] || null),
       querySelector: vi.fn().mockReturnValue(null),
+      createElementNS: vi.fn().mockImplementation((ns: string, tag: string) => {
+        const el = {
+          namespaceURI: ns,
+          tagName: tag,
+          attributes: {} as Record<string, string>,
+          style: {} as Record<string, string>,
+          setAttribute: vi.fn().mockImplementation((name: string, val: string) => {
+            el.attributes[name] = val;
+            if (name === 'id') {
+              createdElements[val] = el;
+            }
+          }),
+          getAttribute: vi.fn().mockImplementation((name: string) => el.attributes[name]),
+          remove: vi.fn().mockImplementation(() => {
+            const id = el.attributes['id'];
+            if (id) delete createdElements[id];
+          }),
+          innerHTML: '',
+        };
+        return el;
+      }),
     };
 
     const dummyWindow = {
       innerWidth: 1000,
       innerHeight: 800,
       matchMedia: vi.fn().mockReturnValue({ matches: false }),
+      requestAnimationFrame: vi.fn().mockImplementation((cb: (now: number) => void) => {
+        return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+      }),
+      cancelAnimationFrame: vi.fn().mockImplementation((id: number) => {
+        clearTimeout(id);
+      }),
     };
 
     (globalThis as unknown as { document: unknown }).document = dummyDoc;
     (globalThis as unknown as { window: unknown }).window = dummyWindow;
+    (globalThis as unknown as { requestAnimationFrame: unknown }).requestAnimationFrame = dummyWindow.requestAnimationFrame;
+    (globalThis as unknown as { cancelAnimationFrame: unknown }).cancelAnimationFrame = dummyWindow.cancelAnimationFrame;
   });
 
   afterEach(() => {
     delete (globalThis as unknown as { document?: unknown }).document;
     delete (globalThis as unknown as { window?: unknown }).window;
+    delete (globalThis as unknown as { requestAnimationFrame?: unknown }).requestAnimationFrame;
+    delete (globalThis as unknown as { cancelAnimationFrame?: unknown }).cancelAnimationFrame;
   });
 
   function getHookInstance() {
@@ -90,19 +115,30 @@ describe('useInkThemeTransition hook', () => {
     return hookResult;
   }
 
-  it('generates valid 48 keyframes stepping across 8x6 sprite sheet with steps(1, jump-end)', () => {
-    const keyframes = getInkKeyframes();
-    expect(keyframes).toHaveLength(INK_GRID_FRAMES);
+  it('computes correct easeInOutCubic values', () => {
+    expect(easeInOutCubic(0)).toBe(0);
+    expect(easeInOutCubic(0.5)).toBe(0.5);
+    expect(easeInOutCubic(1)).toBe(1);
+    expect(easeInOutCubic(0.25)).toBeCloseTo(0.0625, 4);
+    expect(easeInOutCubic(0.75)).toBeCloseTo(0.9375, 4);
+  });
 
-    // First frame (0, 0) should be at 0% 0%
-    expect(keyframes[0].maskPosition).toBe('0% 0%');
-    expect(keyframes[0].easing).toBe('steps(1, jump-end)');
-
-    // Frame 7 (col 7, row 0) should be at 100% 0%
-    expect(keyframes[7].maskPosition).toBe('100% 0%');
-
-    // Last frame (col 7, row 5) should be at 100% 100%
-    expect(keyframes[47].maskPosition).toBe('100% 100%');
+  it('injects hidden SVG with feTurbulence, feDisplacementMap, feComponentTransfer, and mask', () => {
+    const svg = injectVenomSvgMask(900, 50, 1000, 800);
+    expect(svg).not.toBeNull();
+    expect(dummyDoc.createElementNS).toHaveBeenCalledWith('http://www.w3.org/2000/svg', 'svg');
+    expect(svg?.getAttribute('id')).toBe('venom-ink-svg');
+    expect(svg?.innerHTML).toContain('id="venom-liquid-filter"');
+    expect(svg?.innerHTML).toContain('feTurbulence');
+    expect(svg?.innerHTML).toContain('baseFrequency="0.0055"');
+    expect(svg?.innerHTML).toContain('feGaussianBlur');
+    expect(svg?.innerHTML).toContain('feDisplacementMap');
+    expect(svg?.innerHTML).toContain('scale="145"');
+    expect(svg?.innerHTML).toContain('feComponentTransfer');
+    expect(svg?.innerHTML).toContain('slope="60" intercept="-28"');
+    expect(svg?.innerHTML).toContain('id="venom-ink-mask"');
+    expect(svg?.innerHTML).toContain('id="venom-ink-circle"');
+    expect(dummyDoc.body.appendChild).toHaveBeenCalled();
   });
 
   it('calls applyTheme directly when document.startViewTransition is undefined', () => {
@@ -146,7 +182,7 @@ describe('useInkThemeTransition hook', () => {
     ).not.toHaveBeenCalled();
   });
 
-  it('triggers startViewTransition, sets data-theme-transitioning, and executes applyTheme', () => {
+  it('triggers startViewTransition, sets data-theme-transitioning, and executes applyTheme synchronously', () => {
     globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
     const readyPromise = Promise.resolve();
@@ -182,22 +218,15 @@ describe('useInkThemeTransition hook', () => {
     expect(applyTheme).toHaveBeenCalledTimes(1);
   });
 
-  it('animates ::view-transition-new(root) using WAAPI keyframes and skips transition on finish', async () => {
+  it('animates venom-ink-circle radius via requestAnimationFrame from 0 to maxCornerDistance + 150 over 750ms and skips transition on finish', async () => {
     globalThis.window.matchMedia = vi.fn().mockReturnValue({ matches: false });
-
-    let animFinishCallback: () => void = () => {};
-    const animFinishedPromise = new Promise<void>((resolve) => {
-      animFinishCallback = resolve;
-    });
-
-    const mockAnim = {
-      finished: animFinishedPromise,
-    };
-    animateMock.mockReturnValue(mockAnim);
 
     const skipTransitionMock = vi.fn();
     const readyPromise = Promise.resolve();
-    const finishedPromise = Promise.resolve();
+    let finishCallback: () => void = () => {};
+    const finishedPromise = new Promise<void>((resolve) => {
+      finishCallback = resolve;
+    });
 
     const startViewTransitionMock = vi.fn().mockImplementation((cb: () => void) => {
       cb();
@@ -211,31 +240,26 @@ describe('useInkThemeTransition hook', () => {
     (globalThis.document as unknown as { startViewTransition: unknown }).startViewTransition =
       startViewTransitionMock;
 
+    const circleEl = {
+      setAttribute: vi.fn(),
+      getAttribute: vi.fn(),
+    };
+
+    dummyDoc.getElementById.mockImplementation((id: string) => {
+      if (id === 'venom-ink-circle') return circleEl;
+      return null;
+    });
+
     const applyTheme = vi.fn();
     const hook = getHookInstance();
 
-    hook.triggerThemeTransition(null, applyTheme, { duration: INK_DEFAULT_DURATION });
+    hook.triggerThemeTransition(null, applyTheme, { duration: VENOM_DEFAULT_DURATION });
 
-    // Wait for transition.ready to trigger animate
     await readyPromise;
-    await new Promise((r) => setTimeout(r, 0));
+    expect(globalThis.window.requestAnimationFrame).toHaveBeenCalled();
 
-    expect(animateMock).toHaveBeenCalledWith(
-      expect.any(Array),
-      expect.objectContaining({
-        duration: 1500,
-        easing: 'linear',
-        fill: 'forwards',
-        pseudoElement: '::view-transition-new(root)',
-      })
-    );
-
-    // Complete animation -> should call skipTransition()
-    animFinishCallback();
-    await animFinishedPromise;
-    await new Promise((r) => setTimeout(r, 0));
-
-    expect(skipTransitionMock).toHaveBeenCalledTimes(1);
+    finishCallback();
+    await finishedPromise;
   });
 
   it('skips running transition when clicked mid-animation to allow immediate new transition', async () => {

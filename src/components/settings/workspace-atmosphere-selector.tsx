@@ -243,6 +243,12 @@ export function WorkspaceAtmosphereSelector({
     // Trigger the organic WebGL ink-bleed view transition from origin coordinates
     triggerThemeTransition(event ?? null, () => {
       // 1. Instant synchronous DOM update & localStorage sync between old & new snapshots
+      const isDark =
+        (themeId as string) === 'spatial-glass' ||
+        (themeId as string) === 'tui' ||
+        (themeId as string) === 'crimson-dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.setAttribute('data-theme', themeId);
       setActiveTheme(themeId);
       applyThemeToDOM(themeId);
       saveTheme(themeId);

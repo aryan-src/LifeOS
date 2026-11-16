@@ -180,6 +180,12 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     event?: React.MouseEvent | React.KeyboardEvent
   ) => {
     triggerThemeTransition(event ?? null, () => {
+      const isDark =
+        themeId === 'spatial-glass' ||
+        themeId === 'tui' ||
+        themeId === 'crimson-dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.setAttribute('data-theme', themeId);
       setThemePreference(themeId);
       saveTheme(themeId);
       applyThemeToDOM(themeId);

@@ -1186,10 +1186,8 @@ html[data-theme="tactile"] body,
 
 ::view-transition-new(root) {
   z-index: 2;
-  mask-image: url(#venom-ink-mask);
-  -webkit-mask-image: url(#venom-ink-mask);
-  mask-size: 100vw 100vh;
-  -webkit-mask-size: 100vw 100vh;
+  mask-image: var(--ink-mask);
+  -webkit-mask-image: var(--ink-mask);
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
 }

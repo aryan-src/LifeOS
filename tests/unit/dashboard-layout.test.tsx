@@ -243,12 +243,14 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
     expect(html).toContain('gap-3 min-h-0');
 
-    // 4. Focus Mode circular dial
-    expect(html).toContain('Focus Mode');
-    expect(html).toContain('25:00');
-    expect(html).toContain('stroke="#EAE7DF"');
-    expect(html).toContain('stroke="#10B981"');
-    expect(html).toContain('stroke-dasharray="251.2"');
-    expect(html).toContain('border-radius:9999px');
+    // 4. Daily Loop Stats Row and Today Card Slot
+    expect(html).toContain('Life Score');
+    expect(html).toContain('Daily Streak');
+    expect(html).toContain('Time Focused');
+    expect(html).toContain('Pocket Ledger');
+    expect(html).toContain('Today');
+    expect(html).toContain('Today Card Slot');
+    expect(html).toContain('Phase 2 Placeholder');
+    expect(html).toContain('align-items: stretch');
   });
 });

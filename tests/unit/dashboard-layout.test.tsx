@@ -243,15 +243,17 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
     expect(html).toContain('gap-3 min-h-0');
 
-    // 4. Daily Loop Stats Row and Today Card Slot
+    // 4. Daily Loop Stats Row and Today Card (placeholder removed)
     expect(html).toContain('Life Score');
     expect(html).toContain('Daily Streak');
     expect(html).toContain('Time Focused');
     expect(html).toContain('Pocket Ledger');
+    expect(html).toContain('data-purpose="today-card"');
     expect(html).toContain('Today');
-    expect(html).toContain('Today Card Slot');
-    expect(html).toContain('Phase 2 Placeholder');
-    expect(html).toContain('align-items: stretch');
+    expect(html).not.toContain('Today Card Slot');
+    expect(html).not.toContain('Phase 2 Placeholder');
+    expect(html).not.toContain('3-Column Grid');
+    expect(html).not.toContain('align-items: stretch');
   });
 
   it('enforces Phase 1 review fixes: lining-nums, real habit_logs without future-done days, dynamic streak count, no italics, matching serif headings, Pocket Ledger left label, and hidden zero delta pill', () => {
@@ -318,6 +320,19 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
           ],
           userTimezone: 'Asia/Kolkata',
           isTimezoneNull: false,
+          todayDateStr: '2026-11-17',
+          todayMode: 'daytime',
+          todayCheckIn: null,
+          focusInsight: {
+            peakHour: null,
+            formattedPeakTime: null,
+            totalSessions: 0,
+            totalMinutes: 0,
+            daysTracked: 0,
+            hasEnoughData: false,
+            insightText: null,
+          },
+          todayExpenseAmount: 0,
         }}
       />
     );
@@ -348,5 +363,119 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
 
     // 8. "vs yesterday" pill hidden when deltaVsYesterday is 0
     expect(html).not.toContain('vs yesterday');
+  });
+
+  it('renders TodayCard Morning, Daytime, and Evening states cleanly without placeholder text or italics', () => {
+    const baseLoop = {
+      lifeScore: { total: 40, habitsScore: 20, focusScore: 0, tasksScore: 5, financeScore: 15, deltaVsYesterday: 5 },
+      streakState: {
+        currentStreak: 4,
+        bestStreak: 4,
+        freezesEarnedTotal: 0,
+        freezesUsedTotal: 0,
+        freezesLeft: 0,
+        isTodayQualified: false,
+        nextMilestone: 7,
+        streakPreview: { current: 4, next: 5, isPreviewActive: false },
+        checklist: {
+          hasFocusSession: false,
+          hasHabitCompleted: true,
+          hasExpenseLogged: false,
+          completedCount: 1,
+          totalRequired: 2,
+          isQualified: false,
+        },
+        history: [],
+      },
+      timeFocused: { minutes: 0, goalMinutes: 240, formattedTime: '0m', formattedGoal: '4h goal', percent: 0 },
+      pocketLedger: { spentAmount: 0, monthlyAllowance: 15000, remainingAllowance: 15000, allowancePercent: 0, currentMonth: 'Nov' },
+      weekStrip: [
+        { dayLabel: 'M', date: '2026-11-16', isToday: false, isPast: true, isFuture: false, isQualified: true, isFrozen: false },
+        { dayLabel: 'T', date: '2026-11-17', isToday: true, isPast: false, isFuture: false, isQualified: false, isFrozen: false },
+        { dayLabel: 'W', date: '2026-11-18', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+        { dayLabel: 'T', date: '2026-11-19', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+        { dayLabel: 'F', date: '2026-11-20', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+        { dayLabel: 'S', date: '2026-11-21', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+        { dayLabel: 'S', date: '2026-11-22', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      ],
+      userTimezone: 'Asia/Kolkata',
+      isTimezoneNull: false,
+      todayDateStr: '2026-11-17',
+      todayCheckIn: null,
+      focusInsight: {
+        peakHour: null,
+        formattedPeakTime: null,
+        totalSessions: 0,
+        totalMinutes: 0,
+        daysTracked: 0,
+        hasEnoughData: false,
+        insightText: null,
+      },
+      todayExpenseAmount: 0,
+    };
+
+    const morningHtml = renderToString(
+      <Variant3DashboardView
+        dailyLoopData={{ ...baseLoop, todayMode: 'morning' }}
+        todayTasks={[
+          {
+            id: 't-1',
+            user_id: 'u-1',
+            project_id: null,
+            title: 'Revise OS Ch. 4',
+            description: null,
+            is_completed: false,
+            in_progress: false,
+            priority: 3,
+            due_date: '2026-11-17',
+            sort_order: 0,
+            completed_at: null,
+            created_at: '2026-11-17T01:00:00Z',
+            updated_at: '2026-11-17T01:00:00Z',
+          },
+        ]}
+      />
+    );
+    expect(morningHtml).toContain('data-today-mode="morning"');
+    expect(morningHtml).toContain('Morning');
+    expect(morningHtml).toContain('Start my day');
+    expect(morningHtml).toContain('Revise OS Ch. 4');
+    expect(morningHtml).not.toContain('italic');
+
+    const daytimeHtml = renderToString(
+      <Variant3DashboardView
+        dailyLoopData={{ ...baseLoop, todayMode: 'daytime' }}
+      />
+    );
+    expect(daytimeHtml).toContain('data-today-mode="daytime"');
+    expect(daytimeHtml).toContain('Daytime');
+    expect(daytimeHtml).toContain('Start Focus (');
+    expect(daytimeHtml).toContain('Daily minimum');
+    expect(daytimeHtml).toContain('Focus Queue');
+    expect(daytimeHtml).not.toContain('italic');
+
+    const eveningHtml = renderToString(
+      <Variant3DashboardView
+        dailyLoopData={{
+          ...baseLoop,
+          todayMode: 'evening',
+          todayCheckIn: {
+            id: 'ci-1',
+            user_id: 'u-1',
+            check_in_date: '2026-11-17',
+            mood: 'great',
+            reflection_text: 'Wrapped up Phase 2 cleanly.',
+            finished_task_titles: ['Revise OS Ch. 4'],
+          },
+        }}
+      />
+    );
+    expect(eveningHtml).toContain('data-today-mode="evening"');
+    expect(eveningHtml).toContain('Evening');
+    expect(eveningHtml).toContain('How was today?');
+    expect(eveningHtml).toContain('What you finished today');
+    expect(eveningHtml).toContain('Wrapped up Phase 2 cleanly.');
+    expect(eveningHtml).toContain('Day closed ✓');
+    expect(eveningHtml).not.toContain('italic');
   });
 });

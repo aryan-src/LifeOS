@@ -8,11 +8,15 @@ import type { ProjectWithMetrics } from '@/lib/actions/projects';
 import type { NoteWithProject } from '@/lib/actions/notes';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import type { FinancialAnalytics } from '@/lib/actions/finances';
-import type { TaskWithProject } from '@/lib/actions/tasks';
+import { toggleTask, type TaskWithProject } from '@/lib/actions/tasks';
 import type { DailyLoopDashboardData } from '@/lib/actions/daily-loop';
-import { StatsRow } from './stats-row/stats-row';
+import type { TodayMode } from '@/lib/daily-loop/types';
+import { StatsRow, buildDevMockDailyLoopData } from './stats-row/stats-row';
 import { TimezoneSync } from './timezone-sync';
-import { formatStreakBadge } from '@/lib/daily-loop/business-logic';
+import { TodayCard } from './today-card/today-card';
+import type { TodayTaskItem } from './today-card/morning-state';
+import type { FinishedTodayItem } from './today-card/evening-state';
+import { daysBetweenDateStrings, formatStreakBadge } from '@/lib/daily-loop/business-logic';
 
 interface Variant3DashboardProps {
   displayName?: string;
@@ -84,9 +88,30 @@ export function Variant3DashboardView({
     ],
     userTimezone: 'UTC',
     isTimezoneNull: false,
+    todayDateStr: '2026-11-17',
+    todayMode: 'daytime',
+    todayCheckIn: null,
+    focusInsight: {
+      peakHour: null,
+      formattedPeakTime: null,
+      totalSessions: 0,
+      totalMinutes: 0,
+      daysTracked: 0,
+      hasEnoughData: false,
+      insightText: null,
+    },
+    todayExpenseAmount: 0,
   };
 
+  const isDev = process.env.NODE_ENV !== 'production';
+  const [isDevMockActive, setIsDevMockActive] = useState(false);
+  const [devForcedTodayMode, setDevForcedTodayMode] = useState<TodayMode | null>(null);
+
   const effectiveDailyLoop = dailyLoopData || defaultDailyLoopData;
+  const activeTodayLoopData =
+    isDev && isDevMockActive
+      ? buildDevMockDailyLoopData(effectiveDailyLoop)
+      : effectiveDailyLoop;
 
   // Pocket Money & Financials
   const monthlyAllowance = financialAnalytics?.monthlyAllowance ?? 5000;
@@ -188,6 +213,111 @@ export function Variant3DashboardView({
     }
   };
 
+  // Today Tasks for Today Card
+  const [localTasks, setLocalTasks] = useState<TodayTaskItem[]>(() =>
+    (todayTasks || []).map((t) => ({
+      id: t.id,
+      title: t.title,
+      is_completed: Boolean(t.is_completed),
+    }))
+  );
+
+  useEffect(() => {
+    setLocalTasks(
+      (todayTasks || []).map((t) => ({
+        id: t.id,
+        title: t.title,
+        is_completed: Boolean(t.is_completed),
+      }))
+    );
+  }, [todayTasks]);
+
+  const handleToggleTask = async (taskId: string) => {
+    if (isDev && isDevMockActive && taskId.startsWith('dev-mock-')) {
+      setMockTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, is_completed: !t.is_completed } : t))
+      );
+      return;
+    }
+
+    const target = localTasks.find((t) => t.id === taskId);
+    if (!target) return;
+    const nextCompleted = !target.is_completed;
+
+    setLocalTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, is_completed: nextCompleted } : t))
+    );
+
+    try {
+      await toggleTask(taskId, nextCompleted);
+    } catch (err) {
+      console.error('Failed to toggle task status:', err);
+      setLocalTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, is_completed: target.is_completed } : t))
+      );
+    }
+  };
+
+  // Dev-only sample tasks (strictly in-memory, never persisted to DB)
+  const [mockTasks, setMockTasks] = useState<TodayTaskItem[]>([
+    { id: 'dev-mock-1', title: 'Revise OS Ch. 4 (Virtual Memory)', is_completed: false },
+    { id: 'dev-mock-2', title: 'Prepare Product Architecture RFC doc', is_completed: false },
+    { id: 'dev-mock-3', title: 'Review PRs & design tokens', is_completed: false },
+  ]);
+
+  const effectiveTodayTasks: TodayTaskItem[] =
+    isDev && isDevMockActive ? mockTasks : localTasks;
+
+  const deadlines48hCount =
+    isDev && isDevMockActive
+      ? 2
+      : pendingAssignments.filter((a) => {
+          if (!a.due_date) return false;
+          const dueDay = a.due_date.slice(0, 10);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDay)) return false;
+          const diffDays = daysBetweenDateStrings(effectiveDailyLoop.todayDateStr, dueDay);
+          return diffDays >= 0 && diffDays <= 2;
+        }).length;
+
+  const pendingHabitsCount =
+    isDev && isDevMockActive
+      ? 3
+      : localHabits.filter((h) => !h.is_completed_today).length;
+
+  const finishedTodayItems: FinishedTodayItem[] =
+    isDev && isDevMockActive
+      ? [
+          { id: 'mock-fin-1', title: 'Revise OS Ch. 4 (Virtual Memory)', meta: '2h 10m' },
+          { id: 'mock-fin-2', title: 'Morning Sunlight & Walk', meta: 'Habit' },
+          { id: 'mock-fin-3', title: 'Logged daily expenses', meta: '₹840' },
+        ]
+      : [
+          ...localTasks
+            .filter((t) => t.is_completed)
+            .map((t) => ({ id: `task-${t.id}`, title: t.title, meta: 'Task' })),
+          ...localHabits
+            .filter((h) => h.is_completed_today)
+            .map((h) => ({ id: `habit-${h.id}`, title: h.title, meta: 'Habit' })),
+          ...(effectiveDailyLoop.timeFocused.minutes > 0
+            ? [
+                {
+                  id: 'focus-today',
+                  title: 'Focus session',
+                  meta: effectiveDailyLoop.timeFocused.formattedTime,
+                },
+              ]
+            : []),
+          ...(effectiveDailyLoop.todayExpenseAmount > 0
+            ? [
+                {
+                  id: 'expense-today',
+                  title: 'Logged daily expenses',
+                  meta: `₹${Math.round(effectiveDailyLoop.todayExpenseAmount).toLocaleString('en-IN')}`,
+                },
+              ]
+            : []),
+        ];
+
   // Active Projects
   const activeProjects = (initialProjects || []).filter(
     (p) => p.status === 'active' || p.status === 'backlog'
@@ -246,6 +376,10 @@ export function Variant3DashboardView({
           <StatsRow
             data={effectiveDailyLoop}
             onOpenQuickCapture={openQuickCapture}
+            isDevMockActive={isDevMockActive}
+            onToggleDevMock={() => setIsDevMockActive((prev) => !prev)}
+            devForcedTodayMode={devForcedTodayMode}
+            onChangeDevTodayMode={setDevForcedTodayMode}
           />
 
           {/* 3. Band 4: 3-Column Asymmetric Bento Cockpit */}
@@ -488,51 +622,23 @@ export function Variant3DashboardView({
             </div>
 
             {/* ================= CENTER COLUMN (lg:col-span-4) ================= */}
-            {/* Full-Height Focus Mode Centerpiece / Today Card Placeholder */}
+            {/* Time-Aware Today Card (Morning / Daytime / Evening) */}
             <div className="lg:col-span-4 flex flex-col">
-              <div className="h-full flex flex-col justify-between p-5 sm:p-7 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_4px_rgba(0,0,0,0.03)] relative overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-[#006c49] dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <h3
-                      className="text-lg font-semibold text-stone-900 dark:text-zinc-100 tracking-tight"
-                      style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
-                    >
-                      Today
-                    </h3>
-                  </div>
-                  <span className="text-[11px] font-sans font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full">
-                    Phase 2 Placeholder
-                  </span>
-                </div>
-
-                {/* Center Placeholder Content */}
-                <div className="my-auto py-8 flex flex-col items-center justify-center text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-stone-100 dark:bg-zinc-800/80 border border-stone-200/70 dark:border-zinc-700/70 flex items-center justify-center text-stone-400 dark:text-zinc-500 mb-3.5 shadow-xs">
-                    <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <h4
-                    className="text-lg font-bold text-stone-900 dark:text-zinc-100 mb-1"
-                    style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
-                  >
-                    Today Card Slot
-                  </h4>
-                  <p className="text-xs text-stone-500 dark:text-zinc-400 max-w-xs font-serif leading-relaxed">
-                    Time-aware Today cockpit (Morning, Daytime, Evening states) will be mounted here in Phase 2.
-                  </p>
-                </div>
-
-                {/* Footer Status Bar */}
-                <div className="pt-3.5 border-t border-stone-100 dark:border-zinc-800 shrink-0 flex items-center justify-between text-xs text-stone-500 dark:text-zinc-400 font-sans">
-                  <span>3-Column Grid</span>
-                  <span className="font-mono text-[11px]">align-items: stretch</span>
-                </div>
-              </div>
+              <TodayCard
+                initialMode={activeTodayLoopData.todayMode}
+                userTimezone={activeTodayLoopData.userTimezone}
+                forcedMode={isDev ? devForcedTodayMode : null}
+                tasks={effectiveTodayTasks}
+                deadlines48hCount={deadlines48hCount}
+                pendingHabitsCount={pendingHabitsCount}
+                streakState={activeTodayLoopData.streakState}
+                focusInsight={activeTodayLoopData.focusInsight}
+                initialCheckIn={activeTodayLoopData.todayCheckIn}
+                finishedTodayItems={finishedTodayItems}
+                isDevMockActive={isDev && isDevMockActive}
+                onToggleTask={handleToggleTask}
+                onOpenQuickCapture={openQuickCapture}
+              />
             </div>
 
             {/* ================= RIGHT COLUMN (lg:col-span-4) ================= */}

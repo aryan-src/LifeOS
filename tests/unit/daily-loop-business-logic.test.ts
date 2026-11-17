@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
+  addDaysToDateString,
+  calculateHabitStreakFromDates,
   getUserLocalDate,
   getUserLocalHour,
   getTodayCardMode,
@@ -15,6 +17,7 @@ import {
   calculateFocusInsights,
   formatHourTo12h,
 } from '@/lib/daily-loop/business-logic';
+import { upsertDailyCheckInSchema } from '@/lib/validations';
 import type { DailyRecord, FocusSession, StreakFreezeLog, MoodRating } from '@/lib/daily-loop/types';
 
 describe('Daily Loop Business Logic — Timezone & Day Boundaries', () => {
@@ -522,9 +525,50 @@ describe('Focus Insights & Break Filtering', () => {
   });
 });
 
-describe('Mood Rating Type Contract', () => {
+describe('Mood Rating Type Contract & Evening Check-In Validation', () => {
   it('strictly supports the 5 ordered mood ratings matching icons', () => {
     const validRatings: MoodRating[] = ['exhausted', 'tough', 'neutral', 'good', 'great'];
     expect(validRatings).toHaveLength(5);
+
+    for (const mood of validRatings) {
+      const parsed = upsertDailyCheckInSchema.safeParse({
+        mood,
+        reflectionText: 'Solid progress today.',
+        finishedTaskTitles: ['Revise OS Ch. 4'],
+      });
+      expect(parsed.success).toBe(true);
+    }
+
+    const invalid = upsertDailyCheckInSchema.safeParse({
+      mood: 'difficult',
+      reflectionText: '',
+      finishedTaskTitles: [],
+    });
+    expect(invalid.success).toBe(false);
+  });
+});
+
+describe('Unbounded Habit Streak Derivation', () => {
+  it('computes a 100-day habit streak without any 60-day history cap', () => {
+    const today = '2026-11-17';
+    const dates: string[] = [];
+    for (let i = 0; i < 100; i++) {
+      dates.push(addDaysToDateString(today, -i));
+    }
+
+    expect(calculateHabitStreakFromDates(dates, today)).toBe(100);
+  });
+
+  it('computes a 120-day streak across a year boundary and keeps streak alive when today is pending', () => {
+    const today = '2026-03-01';
+    // 120 consecutive days ending yesterday (today not yet completed)
+    const dates: string[] = [];
+    for (let i = 1; i <= 120; i++) {
+      dates.push(addDaysToDateString(today, -i));
+    }
+    // Also add an accidental future date — must be ignored
+    dates.push(addDaysToDateString(today, 1));
+
+    expect(calculateHabitStreakFromDates(dates, today)).toBe(120);
   });
 });

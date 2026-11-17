@@ -126,7 +126,7 @@ export function WorkspaceHeader({
             className="flex items-center text-textMain dark:text-zinc-100 font-medium tracking-tight whitespace-nowrap hover:opacity-85 transition-opacity"
           >
             <span className="text-xl font-bold font-serif tracking-tight text-textMain dark:text-zinc-50 whitespace-nowrap inline-flex items-center">
-              Life<span className="text-textSubtle dark:text-zinc-500 font-light italic">OS</span>
+              Life<span className="text-textSubtle dark:text-zinc-500 font-light">OS</span>
             </span>
           </Link>
           {currentRouteLabel && (

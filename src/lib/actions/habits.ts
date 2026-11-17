@@ -5,7 +5,13 @@ import { revalidatePath } from 'next/cache';
 import type { Habit, HabitLog } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
-import { getTodayDate, getTomorrowDate, getTrailingDays } from '@/lib/utils/date';
+import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import { getUserProfile } from '@/lib/actions/profile';
+import {
+  addDaysToDateString,
+  calculateHabitStreakFromDates,
+  getUserLocalDate,
+} from '@/lib/daily-loop/business-logic';
 import {
   createHabitSchema,
   toggleHabitLogSchema,
@@ -84,41 +90,17 @@ const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
 ];
 
 /**
- * Calculates current consecutive daily completion streak for a habit.
- */
-function calculateStreak(
-  weeklyHistory: Record<string, boolean>,
-  todayStr: string,
-  trailingDays: Array<{ date: string }>
-): number {
-  let streak = 0;
-  // Iterate backwards starting from today or yesterday
-  const sortedDates = [...trailingDays].map((d) => d.date).reverse();
-
-  for (const date of sortedDates) {
-    if (weeklyHistory[date]) {
-      streak++;
-    } else if (date === todayStr) {
-      // If today is not completed yet, streak can still be alive from yesterday
-      continue;
-    } else {
-      break;
-    }
-  }
-
-  return streak;
-}
-
-/**
- * Fetches all habits for the authenticated user, paired with trailing 7-day completion logs.
- * Handles localized YYYY-MM-DD dates to prevent UTC midnight shifts.
+ * Fetches all habits for the authenticated user, paired with completion logs.
+ * Uses the user's profile timezone for day boundaries and computes streaks without
+ * any fixed history window (supporting 100+ day streaks).
  */
 export async function getHabits(): Promise<GetHabitsResult> {
-  const todayStr = getTodayDate();
-  const tomorrowStr = getTomorrowDate();
-  const trailingDays = getTrailingDays(7);
-  const streakWindowDays = getTrailingDays(60);
-  const oldestDate = streakWindowDays[0]?.date || todayStr;
+  const profile = await getUserProfile().catch(() => null);
+  const userTimezone = profile?.timezone || 'UTC';
+  const todayStr = getUserLocalDate(new Date(), userTimezone);
+  const trailingDates = Array.from({ length: 7 }, (_, i) =>
+    addDaysToDateString(todayStr, -(6 - i))
+  );
 
   try {
     const supabase = await createClient();
@@ -146,16 +128,18 @@ export async function getHabits(): Promise<GetHabitsResult> {
         // Return starter habits populated with realistic sample history
         const populatedStarter = DEFAULT_STARTER_HABITS.map((habit, idx) => {
           const hist: Record<string, boolean> = {};
-          trailingDays.forEach((d, dayIdx) => {
-            // Give varied mock completion patterns for the 7 days
-            hist[d.date] = d.isToday
+          const completedDates: string[] = [];
+          trailingDates.forEach((dStr, dayIdx) => {
+            const done = dStr === todayStr
               ? habit.is_completed_today
               : (dayIdx + idx) % 2 === 0;
+            hist[dStr] = done;
+            if (done) completedDates.push(dStr);
           });
           return {
             ...habit,
             weekly_history: hist,
-            streak: calculateStreak(hist, todayStr, trailingDays),
+            streak: calculateHabitStreakFromDates(completedDates, todayStr),
           };
         });
 
@@ -179,33 +163,47 @@ export async function getHabits(): Promise<GetHabitsResult> {
       return { habits: [], error: null, isSchemaMissing: false };
     }
 
-    // 2. Fetch logs for streak window (last 60 days, up to tomorrow for cross-timezone safety)
+    // 2. Fetch all completed habit logs with no fixed history cutoff (paginated so 100+ day streaks never truncate)
     const habitIds = habits.map((h) => h.id);
-    const { data: logsData, error: logsError } = await supabase
-      .from('habit_logs')
-      .select('*')
-      .in('habit_id', habitIds)
-      .gte('date', oldestDate)
-      .lte('date', tomorrowStr);
+    const logs: Pick<HabitLog, 'id' | 'habit_id' | 'date' | 'is_completed'>[] = [];
+    const PAGE_SIZE = 1000;
+    let offset = 0;
 
-    if (logsError) {
-      console.warn('Error fetching habit logs:', logsError);
+    while (true) {
+      const { data: pageData, error: logsError } = await supabase
+        .from('habit_logs')
+        .select('id, habit_id, date, is_completed')
+        .in('habit_id', habitIds)
+        .eq('is_completed', true)
+        .lte('date', todayStr)
+        .order('date', { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1);
+
+      if (logsError) {
+        console.warn('Error fetching habit logs:', logsError);
+        break;
+      }
+
+      const rows = pageData || [];
+      logs.push(...rows);
+      if (rows.length < PAGE_SIZE) {
+        break;
+      }
+      offset += PAGE_SIZE;
     }
 
-    const logs: HabitLog[] = logsData || [];
-
-    // Map logs to habit ID and date
-    const logMap = new Map<string, boolean>();
+    // Map completed dates per habit
+    const completedDatesByHabit = new Map<string, Set<string>>();
     const todayLogIdMap = new Map<string, string>();
-    const habitLogDatesMap = new Map<string, Map<string, boolean>>();
 
     for (const log of logs) {
-      const key = `${log.habit_id}_${log.date}`;
-      logMap.set(key, log.is_completed);
-      if (!habitLogDatesMap.has(log.habit_id)) {
-        habitLogDatesMap.set(log.habit_id, new Map());
+      if (!log.is_completed) continue;
+      let dateSet = completedDatesByHabit.get(log.habit_id);
+      if (!dateSet) {
+        dateSet = new Set<string>();
+        completedDatesByHabit.set(log.habit_id, dateSet);
       }
-      habitLogDatesMap.get(log.habit_id)!.set(log.date, log.is_completed);
+      dateSet.add(log.date);
       if (log.date === todayStr) {
         todayLogIdMap.set(log.habit_id, log.id);
       }
@@ -213,20 +211,14 @@ export async function getHabits(): Promise<GetHabitsResult> {
 
     // 3. Assemble HabitWithLog
     const result: HabitWithLog[] = habits.map((habit) => {
+      const completedSet = completedDatesByHabit.get(habit.id) || new Set<string>();
       const weeklyHistory: Record<string, boolean> = {};
-      for (const d of trailingDays) {
-        const isDone = logMap.get(`${habit.id}_${d.date}`) || false;
-        weeklyHistory[d.date] = isDone;
-      }
-      const habitDates = habitLogDatesMap.get(habit.id);
-      if (habitDates) {
-        for (const [dateStr, isDone] of habitDates.entries()) {
-          weeklyHistory[dateStr] = isDone;
-        }
+      for (const dStr of trailingDates) {
+        weeklyHistory[dStr] = completedSet.has(dStr);
       }
 
-      const isCompletedToday = weeklyHistory[todayStr] || false;
-      const streak = calculateStreak(weeklyHistory, todayStr, streakWindowDays);
+      const isCompletedToday = completedSet.has(todayStr);
+      const streak = calculateHabitStreakFromDates(completedSet, todayStr);
 
       return {
         ...habit,

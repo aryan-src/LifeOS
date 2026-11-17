@@ -376,6 +376,35 @@ export function formatStreakBadge(streak: number): string {
 }
 
 /**
+ * Computes a habit's consecutive daily completion streak directly from its
+ * completed YYYY-MM-DD dates with NO fixed history window (supports 100+ day streaks).
+ * If today is not yet completed, the streak stays alive from yesterday.
+ */
+export function calculateHabitStreakFromDates(
+  completedDates: Iterable<string>,
+  todayStr: string
+): number {
+  const completedSet = new Set<string>();
+  for (const d of completedDates) {
+    if (d <= todayStr) {
+      completedSet.add(d);
+    }
+  }
+
+  let cursor = completedSet.has(todayStr)
+    ? todayStr
+    : addDaysToDateString(todayStr, -1);
+
+  let streak = 0;
+  while (completedSet.has(cursor)) {
+    streak += 1;
+    cursor = addDaysToDateString(cursor, -1);
+  }
+
+  return streak;
+}
+
+/**
  * Computes Life Score (0-100) and delta vs yesterday.
  * Pure function: yesterday's score is computed using the identical formula from yesterday's data.
  *

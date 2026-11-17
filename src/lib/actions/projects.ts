@@ -94,7 +94,12 @@ export const getProjectsWithMetrics = cache(async (): Promise<ProjectWithMetrics
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    if (authError || !user) {
+      if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
+        return [];
+      }
+      throw new Error('Unauthorized');
+    }
 
     const {
       data: { session },

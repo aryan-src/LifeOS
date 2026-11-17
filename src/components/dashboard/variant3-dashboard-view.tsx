@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUIStore } from '@/lib/store/use-ui-store';
-import type { HabitWithLog } from '@/lib/actions/habits';
+import { toggleHabitLog, type HabitWithLog } from '@/lib/actions/habits';
 import type { ProjectWithMetrics } from '@/lib/actions/projects';
 import type { NoteWithProject } from '@/lib/actions/notes';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
@@ -74,13 +74,13 @@ export function Variant3DashboardView({
       currentMonth: 'Nov',
     },
     weekStrip: [
-      { dayLabel: 'M', date: '', isToday: false, isPast: true, isFuture: false, isQualified: false, isFrozen: false },
-      { dayLabel: 'T', date: '', isToday: true, isPast: false, isFuture: false, isQualified: false, isFrozen: false },
-      { dayLabel: 'W', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
-      { dayLabel: 'T', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
-      { dayLabel: 'F', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
-      { dayLabel: 'S', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
-      { dayLabel: 'S', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'M', date: 'fallback-0', isToday: false, isPast: true, isFuture: false, isQualified: false, isFrozen: false },
+      { dayLabel: 'T', date: 'fallback-1', isToday: true, isPast: false, isFuture: false, isQualified: false, isFrozen: false },
+      { dayLabel: 'W', date: 'fallback-2', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'T', date: 'fallback-3', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'F', date: 'fallback-4', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'S', date: 'fallback-5', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'S', date: 'fallback-6', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
     ],
     userTimezone: 'UTC',
     isTimezoneNull: false,
@@ -146,24 +146,46 @@ export function Variant3DashboardView({
   const displayAssignments = pendingAssignments.slice(0, 3);
 
   // Habits Matrix
-  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const [localHabits, setLocalHabits] = useState(initialHabits);
 
   useEffect(() => {
     setLocalHabits(initialHabits);
   }, [initialHabits]);
 
-  const toggleHabitDay = (habitId: string) => {
+  const handleToggleHabitDay = async (habitId: string, dateStr: string, isFuture: boolean) => {
+    if (isFuture || !dateStr || dateStr.startsWith('fallback-')) return;
+    const todayDateStr = effectiveDailyLoop.weekStrip.find((d) => d.isToday)?.date;
+
     setLocalHabits((prev) =>
       prev.map((h) => {
         if (h.id !== habitId) return h;
+        const isToday = dateStr === todayDateStr;
+        const currentDone = isToday
+          ? h.is_completed_today
+          : !!h.weekly_history?.[dateStr];
+        const nextDone = !currentDone;
+
         return {
           ...h,
-          is_completed_today: !h.is_completed_today,
-          streak: !h.is_completed_today ? (h.streak || 0) + 1 : Math.max(0, (h.streak || 1) - 1),
+          is_completed_today: isToday ? nextDone : h.is_completed_today,
+          weekly_history: {
+            ...(h.weekly_history || {}),
+            [dateStr]: nextDone,
+          },
+          streak: isToday
+            ? nextDone
+              ? (h.streak || 0) + 1
+              : Math.max(0, (h.streak || 1) - 1)
+            : h.streak,
         };
       })
     );
+
+    try {
+      await toggleHabitLog(habitId, dateStr);
+    } catch (err) {
+      console.error('Failed to toggle habit log:', err);
+    }
   };
 
   // Active Projects
@@ -242,8 +264,8 @@ export function Variant3DashboardView({
                 <div className="flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <h3
-                      className="text-base font-semibold tracking-tight text-stone-900 dark:text-zinc-100 font-sans"
-                      style={{ fontFamily: 'var(--font-sans, "Geist", "Inter", sans-serif)' }}
+                      className="text-base font-semibold tracking-tight text-stone-900 dark:text-zinc-100"
+                      style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
                     >
                       Expenses
                     </h3>
@@ -251,7 +273,10 @@ export function Variant3DashboardView({
                       {currentMonth}
                     </span>
                   </div>
-                  <span className="font-mono tabular-nums text-xl font-bold text-stone-900 dark:text-zinc-100 leading-none">
+                  <span
+                    className="font-mono tabular-nums lining-nums text-xl font-bold text-stone-900 dark:text-zinc-100 leading-none"
+                    style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                  >
                     ₹{totalExpenses.toFixed(2)}
                   </span>
                 </div>
@@ -300,7 +325,10 @@ export function Variant3DashboardView({
                       <span className="text-[9px] font-mono uppercase tracking-[0.14em] text-stone-400 dark:text-zinc-500">
                         {currentMonth} CYCLE
                       </span>
-                      <span className="text-lg font-mono font-bold tabular-nums text-stone-900 dark:text-zinc-100 leading-tight mt-0.5">
+                      <span
+                        className="text-lg font-mono font-bold tabular-nums lining-nums text-stone-900 dark:text-zinc-100 leading-tight mt-0.5"
+                        style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                      >
                         {totalExpenses > 0 ? `₹${Math.round(totalExpenses).toLocaleString('en-IN')}` : '₹0'}
                       </span>
                     </div>
@@ -326,7 +354,10 @@ export function Variant3DashboardView({
                               {cat.name}
                             </span>
                           </div>
-                          <span className="font-mono tabular-nums text-xs text-stone-600 dark:text-zinc-400 font-medium shrink-0 ml-2">
+                          <span
+                            className="font-mono tabular-nums lining-nums text-xs text-stone-600 dark:text-zinc-400 font-medium shrink-0 ml-2"
+                            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                          >
                             {pct}% · ₹{cat.spend.toLocaleString('en-IN')}
                           </span>
                         </button>
@@ -338,11 +369,11 @@ export function Variant3DashboardView({
 
               {/* Bottom Card - Habits Matrix */}
               <article
-                className="flex-1 p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200 min-w-0"
+                className="flex-1 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-start hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200 min-w-0"
                 data-purpose="habits-card"
               >
-                <div className="flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-2 pb-2.5 border-b border-stone-100 dark:border-zinc-800">
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-stone-100 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4 text-stone-500 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
@@ -366,30 +397,33 @@ export function Variant3DashboardView({
                   </div>
 
                   {localHabits.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 rounded-xl bg-stone-50/50 dark:bg-zinc-800/40 border border-dashed border-stone-300 dark:border-zinc-700 text-center my-2.5">
-                      <svg className="w-10 h-10 text-stone-300 dark:text-zinc-600 mb-1.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-stone-50/50 dark:bg-zinc-800/40 border border-dashed border-stone-300 dark:border-zinc-700 text-center my-1.5">
+                      <svg className="w-8 h-8 text-stone-300 dark:text-zinc-600 mb-1" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <p className="text-sm font-medium text-stone-700 dark:text-zinc-300 italic font-serif">
+                      <p className="text-sm font-medium text-stone-700 dark:text-zinc-300 font-serif">
                         No habits tracked yet.
                       </p>
-                      <p className="text-xs text-stone-400 dark:text-zinc-500 mt-1 max-w-xs font-serif">
+                      <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5 max-w-xs font-serif">
                         Create daily protocols to build recurring momentum.
                       </p>
                     </div>
                   ) : (
-                    <div className="flex-1 flex flex-col justify-center space-y-2.5 py-1">
+                    <div className="flex flex-col gap-2 py-0.5">
                       {localHabits.slice(0, 3).map((habit) => (
                         <div
                           key={habit.id}
-                          className="p-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60"
+                          className="p-2 sm:p-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60"
                         >
-                          <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="text-xs font-medium text-stone-900 dark:text-zinc-100 truncate font-sans">
                                 {habit.title}
                               </span>
-                              <span className="text-[10px] font-mono tabular-nums px-1.5 py-0.2 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-900/40 rounded shrink-0">
+                              <span
+                                className="text-[10px] font-mono tabular-nums lining-nums px-1.5 py-0.5 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-900/40 rounded shrink-0 font-medium"
+                                style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                              >
                                 🔥 {formatStreakBadge(habit.streak || 0)}
                               </span>
                             </div>
@@ -403,25 +437,44 @@ export function Variant3DashboardView({
                               {habit.is_completed_today ? 'Done Today ✓' : 'In Progress'}
                             </span>
                           </div>
-                          {/* 7-day checkboxes */}
+                          {/* 7-day checkboxes backed by real habit_logs */}
                           <div className="flex items-center justify-between gap-1">
-                            {dayLabels.map((lbl, idx) => {
-                              const isSunday = idx === 6;
-                              const isDone = isSunday ? habit.is_completed_today : true;
+                            {effectiveDailyLoop.weekStrip.map((day) => {
+                              const isDone = day.isFuture
+                                ? false
+                                : day.isToday
+                                ? habit.is_completed_today
+                                : !!habit.weekly_history?.[day.date];
+
+                              let btnClasses =
+                                'bg-stone-100 dark:bg-zinc-800/40 text-stone-300 dark:text-zinc-600 border border-stone-200/50 dark:border-zinc-800/60 cursor-default';
+
+                              if (!day.isFuture) {
+                                if (isDone) {
+                                  btnClasses =
+                                    'bg-[#006c49] dark:bg-emerald-600 text-white font-medium hover:opacity-90 cursor-pointer';
+                                } else if (day.isToday) {
+                                  btnClasses =
+                                    'border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-semibold cursor-pointer';
+                                } else {
+                                  btnClasses =
+                                    'bg-stone-100 dark:bg-zinc-800 text-stone-500 dark:text-zinc-400 border border-stone-200/60 dark:border-zinc-700/60 hover:bg-stone-200 dark:hover:bg-zinc-700 cursor-pointer';
+                                }
+                              }
+
                               return (
                                 <button
-                                  key={idx}
+                                  key={day.date}
                                   type="button"
-                                  onClick={() => toggleHabitDay(habit.id)}
-                                  className={`w-6 h-6 rounded-md text-[10px] font-mono flex items-center justify-center transition-all cursor-pointer ${
-                                    isDone
-                                      ? 'bg-[#006c49] text-white font-medium hover:opacity-90'
-                                      : isSunday
-                                      ? 'bg-amber-400 text-white font-bold hover:bg-amber-500'
-                                      : 'bg-stone-200 dark:bg-zinc-700 text-stone-600 dark:text-zinc-400 hover:bg-stone-300'
+                                  disabled={day.isFuture}
+                                  onClick={() => handleToggleHabitDay(habit.id, day.date, day.isFuture)}
+                                  className={`w-6 h-6 rounded-md text-[10px] font-mono tabular-nums lining-nums flex items-center justify-center transition-all ${btnClasses}`}
+                                  style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                                  title={`${day.dayLabel}${day.date && !day.date.startsWith('fallback-') ? ` (${day.date})` : ''}: ${
+                                    day.isFuture ? 'Upcoming' : isDone ? 'Completed' : 'Not done'
                                   }`}
                                 >
-                                  {lbl}
+                                  {day.dayLabel}
                                 </button>
                               );
                             })}
@@ -625,7 +678,7 @@ export function Variant3DashboardView({
                       <svg className="w-9 h-9 text-stone-300 dark:text-zinc-600 mx-auto mb-1" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                         <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <p className="text-xs text-stone-500 dark:text-zinc-400 italic font-serif">
+                      <p className="text-xs text-stone-500 dark:text-zinc-400 font-serif">
                         No ideas recorded yet for this cycle.
                       </p>
                       <p className="text-[11px] text-stone-400 dark:text-zinc-500 mt-1 font-serif">

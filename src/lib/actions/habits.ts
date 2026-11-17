@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { Habit, HabitLog } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
-import { getTodayDate, getTrailingDays } from '@/lib/utils/date';
+import { getTodayDate, getTomorrowDate, getTrailingDays } from '@/lib/utils/date';
 import {
   createHabitSchema,
   toggleHabitLogSchema,
@@ -115,8 +115,10 @@ function calculateStreak(
  */
 export async function getHabits(): Promise<GetHabitsResult> {
   const todayStr = getTodayDate();
+  const tomorrowStr = getTomorrowDate();
   const trailingDays = getTrailingDays(7);
-  const oldestDate = trailingDays[0]?.date || todayStr;
+  const streakWindowDays = getTrailingDays(60);
+  const oldestDate = streakWindowDays[0]?.date || todayStr;
 
   try {
     const supabase = await createClient();
@@ -177,14 +179,14 @@ export async function getHabits(): Promise<GetHabitsResult> {
       return { habits: [], error: null, isSchemaMissing: false };
     }
 
-    // 2. Fetch logs for trailing 7 days
+    // 2. Fetch logs for streak window (last 60 days, up to tomorrow for cross-timezone safety)
     const habitIds = habits.map((h) => h.id);
     const { data: logsData, error: logsError } = await supabase
       .from('habit_logs')
       .select('*')
       .in('habit_id', habitIds)
       .gte('date', oldestDate)
-      .lte('date', todayStr);
+      .lte('date', tomorrowStr);
 
     if (logsError) {
       console.warn('Error fetching habit logs:', logsError);
@@ -195,10 +197,15 @@ export async function getHabits(): Promise<GetHabitsResult> {
     // Map logs to habit ID and date
     const logMap = new Map<string, boolean>();
     const todayLogIdMap = new Map<string, string>();
+    const habitLogDatesMap = new Map<string, Map<string, boolean>>();
 
     for (const log of logs) {
       const key = `${log.habit_id}_${log.date}`;
       logMap.set(key, log.is_completed);
+      if (!habitLogDatesMap.has(log.habit_id)) {
+        habitLogDatesMap.set(log.habit_id, new Map());
+      }
+      habitLogDatesMap.get(log.habit_id)!.set(log.date, log.is_completed);
       if (log.date === todayStr) {
         todayLogIdMap.set(log.habit_id, log.id);
       }
@@ -211,9 +218,15 @@ export async function getHabits(): Promise<GetHabitsResult> {
         const isDone = logMap.get(`${habit.id}_${d.date}`) || false;
         weeklyHistory[d.date] = isDone;
       }
+      const habitDates = habitLogDatesMap.get(habit.id);
+      if (habitDates) {
+        for (const [dateStr, isDone] of habitDates.entries()) {
+          weeklyHistory[dateStr] = isDone;
+        }
+      }
 
       const isCompletedToday = weeklyHistory[todayStr] || false;
-      const streak = calculateStreak(weeklyHistory, todayStr, trailingDays);
+      const streak = calculateStreak(weeklyHistory, todayStr, streakWindowDays);
 
       return {
         ...habit,

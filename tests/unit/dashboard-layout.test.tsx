@@ -253,4 +253,100 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Phase 2 Placeholder');
     expect(html).toContain('align-items: stretch');
   });
+
+  it('enforces Phase 1 review fixes: lining-nums, real habit_logs without future-done days, dynamic streak count, no italics, matching serif headings, Pocket Ledger left label, and hidden zero delta pill', () => {
+    const html = renderToString(
+      <Variant3DashboardView
+        displayName="Aryan"
+        greetingTime="Good evening"
+        dayName="Tuesday"
+        dateFormatted="17 Nov"
+        weekNumber={47}
+        initialHabits={[
+          {
+            id: 'h-1',
+            user_id: 'u-1',
+            title: 'Morning Walk',
+            description: null,
+            created_at: '2026-11-01T00:00:00Z',
+            updated_at: '2026-11-01T00:00:00Z',
+            is_completed_today: false,
+            streak: 12,
+            weekly_history: {
+              '2026-11-16': true,
+              '2026-11-17': false,
+              '2026-11-18': true, // Future date should STILL never render as done
+            },
+          },
+        ]}
+        initialProjects={[]}
+        initialNotes={[]}
+        initialAssignments={[]}
+        financialAnalytics={null}
+        todayTasks={[]}
+        dailyLoopData={{
+          lifeScore: { total: 15, habitsScore: 0, focusScore: 0, tasksScore: 0, financeScore: 15, deltaVsYesterday: 0 },
+          streakState: {
+            currentStreak: 0,
+            bestStreak: 0,
+            freezesEarnedTotal: 0,
+            freezesUsedTotal: 0,
+            freezesLeft: 0,
+            isTodayQualified: false,
+            nextMilestone: 7,
+            streakPreview: { current: 0, next: 1, isPreviewActive: false },
+            checklist: {
+              hasFocusSession: false,
+              hasHabitCompleted: false,
+              hasExpenseLogged: false,
+              completedCount: 0,
+              totalRequired: 2,
+              isQualified: false,
+            },
+            history: [],
+          },
+          timeFocused: { minutes: 0, goalMinutes: 240, formattedTime: '0m', formattedGoal: '4h goal', percent: 0 },
+          pocketLedger: { spentAmount: 0, monthlyAllowance: 15000, remainingAllowance: 15000, allowancePercent: 0, currentMonth: 'Nov' },
+          weekStrip: [
+            { dayLabel: 'M', date: '2026-11-16', isToday: false, isPast: true, isFuture: false, isQualified: true, isFrozen: false },
+            { dayLabel: 'T', date: '2026-11-17', isToday: true, isPast: false, isFuture: false, isQualified: false, isFrozen: false },
+            { dayLabel: 'W', date: '2026-11-18', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+            { dayLabel: 'T', date: '2026-11-19', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+            { dayLabel: 'F', date: '2026-11-20', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+            { dayLabel: 'S', date: '2026-11-21', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+            { dayLabel: 'S', date: '2026-11-22', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+          ],
+          userTimezone: 'Asia/Kolkata',
+          isTimezoneNull: false,
+        }}
+      />
+    );
+
+    // 1. Lining & tabular numerals + 12D habit badge
+    expect(html).toContain('font-variant-numeric:lining-nums tabular-nums');
+    expect(html).toContain('12D');
+
+    // 2. Future days in habit strip are disabled and labeled Upcoming (never Completed)
+    expect(html).toContain('title="M (2026-11-16): Completed"');
+    expect(html).toContain('title="T (2026-11-17): Not done"');
+    expect(html).toContain('title="W (2026-11-18): Upcoming"');
+    expect(html).not.toContain('title="W (2026-11-18): Completed"');
+
+    // 3. Dynamic Daily Streak pill (0 of 2 today, never hardcoded 2 of 3 today)
+    expect(html).toContain('0 of 2 today');
+    expect(html).not.toContain('2 of 3 today');
+
+    // 4. Zero italics on the dashboard
+    expect(html).not.toContain('italic');
+
+    // 5. Expenses heading uses Playfair Display matching other cards
+    expect(html).toMatch(/font-family:&quot;Playfair Display&quot;, Georgia, serif[^>]*>Expenses<\/h3>/);
+
+    // 7. Pocket Ledger clearly labeled with "left"
+    expect(html).toContain('left of ₹');
+    expect(html).toContain('15,000');
+
+    // 8. "vs yesterday" pill hidden when deltaVsYesterday is 0
+    expect(html).not.toContain('vs yesterday');
+  });
 });

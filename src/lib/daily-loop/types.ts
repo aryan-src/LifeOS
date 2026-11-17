@@ -7,7 +7,8 @@ export type TodayMode = 'morning' | 'daytime' | 'evening';
 
 export type FocusMode = 'pomodoro' | 'short-break' | 'long-break' | 'stopwatch' | 'deep-work';
 
-export type CheckInMood = 'great' | 'good' | 'neutral' | 'difficult' | 'tough';
+// Ordered worst to best, matching the 5 mood reflection icons
+export type MoodRating = 'exhausted' | 'tough' | 'neutral' | 'good' | 'great';
 
 export interface FocusSession {
   id: string;
@@ -26,10 +27,9 @@ export interface DailyCheckIn {
   id?: string;
   user_id: string;
   check_in_date: string; // YYYY-MM-DD
-  mood: CheckInMood;
+  mood: MoodRating;
   reflection_text?: string | null;
   finished_task_titles: string[];
-  energy_rating?: number | null; // 1-5
   created_at?: string;
 }
 
@@ -43,20 +43,26 @@ export interface StreakFreezeLog {
 
 export interface DailyRecord {
   date: string; // YYYY-MM-DD
-  habitsCompleted: number;
-  habitsTotal: number;
-  tasksCompleted: number;
-  focusMinutes: number;
+  focusSessionsCompleted: number; // completed focus sessions (not breaks)
+  habitsCompleted: number;        // at least 1 habit completed
+  expensesLogged: number;         // at least 1 expense logged
+  // Additional telemetry metrics for Life Score and display
+  habitsTotal?: number;
+  tasksCompleted?: number;
+  focusMinutes?: number;
   focusGoalMinutes?: number;
   dailyExpenseAmount?: number;
   dailyAllowanceBudget?: number;
   hasCheckIn?: boolean;
 }
 
-export interface DailyMinimumRequirements {
-  minHabitsCompleted: number;
-  minTasksCompleted: number;
-  minFocusMinutes: number;
+export interface DailyMinimumChecklist {
+  hasFocusSession: boolean;
+  hasHabitCompleted: boolean;
+  hasExpenseLogged: boolean;
+  completedCount: number;
+  totalRequired: number; // 2
+  isQualified: boolean;
 }
 
 export interface StreakDayInfo {
@@ -80,6 +86,7 @@ export interface StreakState {
   isTodayQualified: boolean;
   nextMilestone: number;
   streakPreview: StreakPreview;
+  checklist: DailyMinimumChecklist;
   history: StreakDayInfo[];
 }
 

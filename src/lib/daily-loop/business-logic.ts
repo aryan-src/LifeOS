@@ -5,9 +5,10 @@
 
 import type {
   TodayMode,
+  FocusMode,
   FocusSession,
   DailyRecord,
-  DailyMinimumRequirements,
+  DailyMinimumChecklist,
   StreakFreezeLog,
   StreakState,
   StreakDayInfo,
@@ -15,11 +16,47 @@ import type {
   FocusInsight,
 } from './types';
 
-export const DEFAULT_DAILY_MINIMUM: DailyMinimumRequirements = {
-  minHabitsCompleted: 1,
-  minTasksCompleted: 1,
-  minFocusMinutes: 25,
-};
+export const FOCUS_MODES: readonly FocusMode[] = ['pomodoro', 'deep-work', 'stopwatch'] as const;
+export const BREAK_MODES: readonly FocusMode[] = ['short-break', 'long-break'] as const;
+
+/**
+ * Returns true if the session mode represents active focus work (not a rest break).
+ */
+export function isFocusMode(mode: string): boolean {
+  return mode === 'pomodoro' || mode === 'deep-work' || mode === 'stopwatch';
+}
+
+/**
+ * Determines if a focus session qualifies as a completed session:
+ * - Must be a focus mode (pomodoro, deep-work, stopwatch), never a break.
+ * - Completed normally at or above preset target duration (e.g. 15m, 25m, 50m).
+ * - A session ended early counts ONLY if at least 10 minutes (600 seconds) elapsed.
+ * - Only the actual elapsed time is logged and counted.
+ */
+export function isFocusSessionQualified(session: {
+  duration_seconds: number;
+  mode: FocusMode;
+  target_duration_seconds?: number | null;
+  completed_normally?: boolean;
+}): boolean {
+  if (!isFocusMode(session.mode)) {
+    return false;
+  }
+
+  // If completed normally at preset target duration (or flagged completed_normally)
+  if (session.completed_normally && session.duration_seconds > 0) {
+    return true;
+  }
+
+  if (session.target_duration_seconds && session.target_duration_seconds > 0) {
+    if (session.duration_seconds >= session.target_duration_seconds) {
+      return true;
+    }
+  }
+
+  // Session ended early counts only if at least 10 minutes (600 seconds) elapsed
+  return session.duration_seconds >= 600;
+}
 
 /**
  * Returns YYYY-MM-DD date string in the given IANA timezone.
@@ -68,20 +105,20 @@ export function getUserLocalHour(
 }
 
 /**
- * Determines Today Card Mode:
- * - morning: 05:00 - 11:59
- * - daytime: 12:00 - 17:59
- * - evening: 18:00 - 04:59
+ * Determines Today Card Mode aligned with the local calendar date:
+ * - morning: 00:00 - 11:59 (hours 0 - 11)
+ * - daytime: 12:00 - 17:59 (hours 12 - 17)
+ * - evening: 18:00 - 23:59 (hours 18 - 23)
  */
 export function getTodayCardMode(
   dateInput: Date | string | number = new Date(),
   timezone?: string
 ): TodayMode {
   const hour = getUserLocalHour(dateInput, timezone);
-  if (hour >= 5 && hour < 12) {
+  if (hour < 12) {
     return 'morning';
   }
-  if (hour >= 12 && hour < 18) {
+  if (hour < 18) {
     return 'daytime';
   }
   return 'evening';
@@ -100,39 +137,54 @@ export function isValidTimezone(tz: string): boolean {
 }
 
 /**
- * Evaluates whether a daily record fulfills the Daily Minimum qualification.
- * A day qualifies if ANY of these criteria are met:
- * 1. Focused for at least minFocusMinutes (default 25m)
- * 2. Completed at least minHabitsCompleted (default 1) AND minTasksCompleted (default 1)
- * 3. Completed at least 2 habits (even if no tasks) OR completed at least 2 tasks
+ * Evaluates the 3 Daily Minimum Checklist items:
+ * 1. At least 1 completed focus session
+ * 2. At least 1 habit completed
+ * 3. At least 1 expense logged
+ *
+ * Tasks do NOT count toward streak qualification.
  */
-export function isDailyMinimumMet(
-  record: DailyRecord,
-  config: Partial<DailyMinimumRequirements> = {}
+export function getDailyMinimumChecklist(record: DailyRecord): DailyMinimumChecklist {
+  const hasFocusSession = (record.focusSessionsCompleted ?? 0) >= 1;
+  const hasHabitCompleted = (record.habitsCompleted ?? 0) >= 1;
+  const hasExpenseLogged = (record.expensesLogged ?? 0) >= 1;
+
+  const completedCount =
+    (hasFocusSession ? 1 : 0) +
+    (hasHabitCompleted ? 1 : 0) +
+    (hasExpenseLogged ? 1 : 0);
+
+  return {
+    hasFocusSession,
+    hasHabitCompleted,
+    hasExpenseLogged,
+    completedCount,
+    totalRequired: 2,
+    isQualified: completedCount >= 2,
+  };
+}
+
+/**
+ * A day qualifies when at least 2 of the 3 Daily Minimum criteria are met:
+ * - At least 1 completed focus session
+ * - At least 1 habit completed
+ * - At least 1 expense logged
+ */
+export function isDailyMinimumMet(record: DailyRecord): boolean {
+  return getDailyMinimumChecklist(record).isQualified;
+}
+
+/**
+ * Backdating validation rule:
+ * Habit logs and expenses can be added or edited only for today and the previous 2 days
+ * in the user's timezone. Older dates (3+ days ago) and future dates are read-only for streak purposes.
+ */
+export function isDateEditableForStreak(
+  targetDateStr: string,
+  todayDateStr: string
 ): boolean {
-  const req = { ...DEFAULT_DAILY_MINIMUM, ...config };
-
-  if (record.focusMinutes >= req.minFocusMinutes) {
-    return true;
-  }
-
-  if (
-    record.habitsCompleted >= req.minHabitsCompleted &&
-    record.tasksCompleted >= req.minTasksCompleted
-  ) {
-    return true;
-  }
-
-  if (record.habitsCompleted >= 2 || record.tasksCompleted >= 2) {
-    return true;
-  }
-
-  // If user completed 100% of habits scheduled for that day (minimum 1 habit)
-  if (record.habitsTotal > 0 && record.habitsCompleted === record.habitsTotal) {
-    return true;
-  }
-
-  return false;
+  const diffDays = daysBetweenDateStrings(targetDateStr, todayDateStr);
+  return diffDays >= 0 && diffDays <= 2;
 }
 
 /**
@@ -163,7 +215,6 @@ export interface CalculateStreakOptions {
   dailyRecords: DailyRecord[];
   freezeLogs: StreakFreezeLog[];
   todayDateString: string;
-  config?: Partial<DailyMinimumRequirements>;
 }
 
 /**
@@ -171,11 +222,11 @@ export interface CalculateStreakOptions {
  * Rules:
  * - Freezes earned: 1 per 7 consecutive qualified days, maximum 2 held at a time.
  * - Freezes left = earned minus used (clamped 0 to 2).
- * - A day counts when its Daily Minimum is met.
+ * - A day counts when its Daily Minimum is met (2 of 3).
  * - The "12 -> 13" preview appears only when the Daily Minimum is already complete today.
  */
 export function calculateStreak(options: CalculateStreakOptions): StreakState {
-  const { dailyRecords, freezeLogs, todayDateString, config } = options;
+  const { dailyRecords, freezeLogs, todayDateString } = options;
 
   // Index daily records by date
   const recordsByDate = new Map<string, DailyRecord>();
@@ -189,13 +240,20 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
     frozenDates.add(f.freeze_date);
   }
 
+  const todayRecord = recordsByDate.get(todayDateString) || {
+    date: todayDateString,
+    focusSessionsCompleted: 0,
+    habitsCompleted: 0,
+    expensesLogged: 0,
+  };
+  const todayChecklist = getDailyMinimumChecklist(todayRecord);
+
   // Find timeline start
   const allDates = [...recordsByDate.keys(), ...frozenDates].filter(d => d <= todayDateString);
   allDates.sort();
 
   if (allDates.length === 0) {
-    const todayRecord = recordsByDate.get(todayDateString);
-    const isTodayQual = todayRecord ? isDailyMinimumMet(todayRecord, config) : false;
+    const isTodayQual = todayChecklist.isQualified;
     const streak = isTodayQual ? 1 : 0;
     return {
       currentStreak: streak,
@@ -210,6 +268,7 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
         next: 1,
         isPreviewActive: isTodayQual,
       },
+      checklist: todayChecklist,
       history: isTodayQual
         ? [{ date: todayDateString, isQualified: true, isFrozen: false }]
         : [],
@@ -232,7 +291,7 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
   for (let i = 0; i < totalDays; i++) {
     const d = addDaysToDateString(startDate, i);
     const record = recordsByDate.get(d);
-    const qualified = record ? isDailyMinimumMet(record, config) : false;
+    const qualified = record ? isDailyMinimumMet(record) : false;
     const isFrozen = frozenDates.has(d);
 
     if (qualified) {
@@ -251,7 +310,6 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
       // Missed day protected by a freeze
       freezesUsedTotal += 1;
       freezesHeld = Math.max(0, freezesHeld - 1);
-      // Streak is preserved, consecutive run continues or holds
       history.push({ date: d, isQualified: false, isFrozen: true });
     } else {
       // Missed day with no freeze: streak breaks
@@ -262,9 +320,7 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
   }
 
   // Evaluate today
-  const todayRecord = recordsByDate.get(todayDateString);
-  const isTodayQualified = todayRecord ? isDailyMinimumMet(todayRecord, config) : false;
-
+  const isTodayQualified = todayChecklist.isQualified;
   const baseStreakBeforeToday = currentStreak;
 
   if (isTodayQualified) {
@@ -296,6 +352,7 @@ export function calculateStreak(options: CalculateStreakOptions): StreakState {
     isTodayQualified,
     nextMilestone,
     streakPreview,
+    checklist: todayChecklist,
     history,
   };
 }
@@ -323,7 +380,7 @@ export function formatStreakBadge(streak: number): string {
  * Pure function: yesterday's score is computed using the identical formula from yesterday's data.
  *
  * Scoring breakdown:
- * - Habits (35%): completed / total (default full 35 if no habits scheduled)
+ * - Habits (35%): completed / total (default baseline 20 if no habits scheduled)
  * - Focus (30%): focusMinutes / daily_focus_goal_minutes (capped at 30)
  * - Tasks (20%): tasksCompleted / 3 (capped at 20)
  * - Finance (15%): adherence to daily allowance budget
@@ -335,20 +392,24 @@ export function calculateLifeScore(
   const computeScore = (rec: DailyRecord): Omit<LifeScoreBreakdown, 'deltaVsYesterday'> => {
     // 1. Habits (35 points)
     let habitsScore = 0;
-    if (rec.habitsTotal > 0) {
-      habitsScore = Math.min(35, Math.round((rec.habitsCompleted / rec.habitsTotal) * 35));
-    } else if (rec.habitsCompleted > 0) {
+    const habitsTotal = rec.habitsTotal ?? 0;
+    const habitsCompleted = rec.habitsCompleted ?? 0;
+    if (habitsTotal > 0) {
+      habitsScore = Math.min(35, Math.round((habitsCompleted / habitsTotal) * 35));
+    } else if (habitsCompleted > 0) {
       habitsScore = 35;
     } else {
-      habitsScore = 20; // baseline if no habits are configured
+      habitsScore = 20; // baseline if no habits configured
     }
 
     // 2. Focus (30 points)
     const focusGoal = rec.focusGoalMinutes && rec.focusGoalMinutes > 0 ? rec.focusGoalMinutes : 240;
-    const focusScore = Math.min(30, Math.round((rec.focusMinutes / focusGoal) * 30));
+    const focusMinutes = rec.focusMinutes ?? 0;
+    const focusScore = Math.min(30, Math.round((focusMinutes / focusGoal) * 30));
 
     // 3. Tasks (20 points, target 3 completed tasks)
-    const tasksScore = Math.min(20, Math.round((rec.tasksCompleted / 3) * 20));
+    const tasksCompleted = rec.tasksCompleted ?? 0;
+    const tasksScore = Math.min(20, Math.round((tasksCompleted / 3) * 20));
 
     // 4. Finance / Allowance (15 points)
     let financeScore = 15;
@@ -387,6 +448,7 @@ export function calculateLifeScore(
 /**
  * Computes Focus Insights from historical sessions.
  * Insight rules:
+ * - Filtered strictly to focus modes (breaks are excluded).
  * - Analyzes local peak hour.
  * - Hides insight (returns null insightText and null peakHour) until there are at least 14 distinct days of session data.
  */
@@ -394,9 +456,12 @@ export function calculateFocusInsights(
   sessions: FocusSession[],
   timezone?: string
 ): FocusInsight {
-  const validSessions = sessions.filter(s => s.duration_seconds > 0);
+  // Exclude breaks: short-break, long-break
+  const validFocusSessions = sessions.filter(
+    s => s.duration_seconds > 0 && isFocusMode(s.mode)
+  );
 
-  if (validSessions.length === 0) {
+  if (validFocusSessions.length === 0) {
     return {
       peakHour: null,
       formattedPeakTime: null,
@@ -413,7 +478,7 @@ export function calculateFocusInsights(
 
   let totalSeconds = 0;
 
-  for (const session of validSessions) {
+  for (const session of validFocusSessions) {
     totalSeconds += session.duration_seconds;
 
     const sessionDate = getUserLocalDate(session.started_at, timezone);
@@ -432,7 +497,7 @@ export function calculateFocusInsights(
     return {
       peakHour: null,
       formattedPeakTime: null,
-      totalSessions: validSessions.length,
+      totalSessions: validFocusSessions.length,
       totalMinutes,
       daysTracked,
       hasEnoughData: false,
@@ -457,7 +522,7 @@ export function calculateFocusInsights(
   return {
     peakHour,
     formattedPeakTime,
-    totalSessions: validSessions.length,
+    totalSessions: validFocusSessions.length,
     totalMinutes,
     daysTracked,
     hasEnoughData: true,

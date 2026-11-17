@@ -1,22 +1,32 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfile } from '@/lib/actions/profile';
+import type { ActionResponse } from '@/types/action.types';
+import { formatErrorMessage } from '@/lib/utils/errors';
+import { upsertDailyCheckInSchema, formatZodError } from '@/lib/validations';
 import {
+  addDaysToDateString,
   getUserLocalDate,
+  getTodayCardMode,
   calculateStreak,
   calculateLifeScore,
+  calculateFocusInsights,
   isFocusMode,
   isFocusSessionQualified,
   isDailyMinimumMet,
-  formatStreakBadge,
 } from '@/lib/daily-loop/business-logic';
 import type {
+  DailyCheckIn,
   DailyRecord,
+  FocusInsight,
   FocusSession,
+  MoodRating,
   StreakFreezeLog,
   StreakState,
   LifeScoreBreakdown,
+  TodayMode,
 } from '@/lib/daily-loop/types';
 
 export interface WeekStripDay {
@@ -49,6 +59,11 @@ export interface DailyLoopDashboardData {
   weekStrip: WeekStripDay[];
   userTimezone: string;
   isTimezoneNull: boolean;
+  todayDateStr: string;
+  todayMode: TodayMode;
+  todayCheckIn: DailyCheckIn | null;
+  focusInsight: FocusInsight;
+  todayExpenseAmount: number;
 }
 
 function computeWeekStrip(
@@ -99,14 +114,25 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
   const userTimezone = profile.timezone || 'UTC';
   const isTimezoneNull = !profile.timezone;
 
-  const todayStr = getUserLocalDate(new Date(), userTimezone);
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterdayStr = getUserLocalDate(yesterdayDate, userTimezone);
+  const now = new Date();
+  const todayStr = getUserLocalDate(now, userTimezone);
+  const yesterdayStr = addDaysToDateString(todayStr, -1);
+  const todayMode = getTodayCardMode(now, userTimezone);
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const now = new Date();
-  const currentMonthName = months[now.getMonth()];
+  const [todayYear, todayMonthStr] = todayStr.split('-');
+  const nowYearMonth = `${todayYear}-${todayMonthStr}`;
+  const currentMonthName = months[parseInt(todayMonthStr, 10) - 1] || 'Nov';
+
+  const emptyFocusInsight: FocusInsight = {
+    peakHour: null,
+    formattedPeakTime: null,
+    totalSessions: 0,
+    totalMinutes: 0,
+    daysTracked: 0,
+    hasEnoughData: false,
+    insightText: null,
+  };
 
   const fallbackData: DailyLoopDashboardData = {
     lifeScore: {
@@ -153,6 +179,11 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
     weekStrip: computeWeekStrip(todayStr, new Map(), new Set()),
     userTimezone,
     isTimezoneNull,
+    todayDateStr: todayStr,
+    todayMode,
+    todayCheckIn: null,
+    focusInsight: emptyFocusInsight,
+    todayExpenseAmount: 0,
   };
 
   try {
@@ -174,13 +205,14 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
       habitsRes,
       transactionsRes,
       todayTasksRes,
+      todayCheckInRes,
     ] = await Promise.all([
       supabase
         .from('focus_sessions')
         .select('*')
         .eq('user_id', user.id)
         .order('started_at', { ascending: false })
-        .limit(200)
+        .limit(500)
         .then((res) => {
           if (res.error) {
             if (res.error.code === '42P01') {
@@ -241,6 +273,38 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
         .eq('user_id', user.id)
         .eq('is_completed', true)
         .then((res) => ({ data: res.data || [] })),
+
+      supabase
+        .from('daily_check_ins')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('check_in_date', todayStr)
+        .maybeSingle()
+        .then((res) => {
+          if (res.error) {
+            if (res.error.code === '42P01') {
+              console.warn('[DailyLoop] Table daily_check_ins does not exist (42P01). Using fallback.');
+              return { data: null as DailyCheckIn | null };
+            }
+            console.error('[DailyLoop] Error querying daily_check_ins:', res.error);
+          }
+          if (!res.data) return { data: null as DailyCheckIn | null };
+          const row = res.data;
+          const finishedTitles = Array.isArray(row.finished_task_titles)
+            ? row.finished_task_titles.filter((item): item is string => typeof item === 'string')
+            : [];
+          return {
+            data: {
+              id: row.id,
+              user_id: row.user_id,
+              check_in_date: row.check_in_date,
+              mood: row.mood as MoodRating,
+              reflection_text: row.reflection_text ?? null,
+              finished_task_titles: finishedTitles,
+              created_at: row.created_at,
+            } as DailyCheckIn,
+          };
+        }),
     ]);
 
     const focusSessions = focusSessionsRes.data || [];
@@ -249,6 +313,7 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
     const totalHabitsCount = habitsRes.count || 0;
     const expenseTransactions = transactionsRes.data || [];
     const completedTasks = todayTasksRes.data || [];
+    const todayCheckIn = todayCheckInRes.data || null;
 
     // Aggregate daily telemetry into DailyRecord map indexed by YYYY-MM-DD
     const recordsByDate = new Map<string, DailyRecord>();
@@ -300,8 +365,7 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
       }
     }
 
-    // 3. Process Transactions
-    const nowYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    // 3. Process Transactions (using user-timezone month boundary)
     let currentMonthSpend = 0;
 
     for (const tx of expenseTransactions) {
@@ -326,9 +390,10 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
     }
 
     const todayRecord = getOrCreateRecord(todayStr);
+    todayRecord.hasCheckIn = Boolean(todayCheckIn);
     const yesterdayRecord = recordsByDate.get(yesterdayStr) || null;
 
-    // Calculate Streak & Life Score using pure functions
+    // Calculate Streak, Life Score & Focus Insights using pure functions
     const dailyRecordsArray = Array.from(recordsByDate.values());
     const streakState = calculateStreak({
       dailyRecords: dailyRecordsArray,
@@ -337,6 +402,7 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
     });
 
     const lifeScore = calculateLifeScore(todayRecord, yesterdayRecord);
+    const focusInsight = calculateFocusInsights(focusSessions, userTimezone);
 
     const goalMinutes = profile.daily_focus_goal_minutes || 240;
     const focusHours = Math.floor(todayFocusMinutes / 60);
@@ -376,9 +442,102 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
       weekStrip,
       userTimezone,
       isTimezoneNull,
+      todayDateStr: todayStr,
+      todayMode,
+      todayCheckIn,
+      focusInsight,
+      todayExpenseAmount: todayRecord.dailyExpenseAmount ?? 0,
     };
   } catch (err) {
     console.error('[DailyLoop] Unexpected error in getDailyLoopDashboardData:', err);
     return fallbackData;
+  }
+}
+
+export interface UpsertDailyCheckInInput {
+  mood: MoodRating;
+  reflectionText?: string | null;
+  finishedTaskTitles?: string[];
+}
+
+/**
+ * Saves or updates today's evening check-in in public.daily_check_ins.
+ * Uses the user's profile timezone for check_in_date and relies on
+ * UNIQUE(user_id, check_in_date) so editing later updates the same record.
+ */
+export async function upsertDailyCheckIn(
+  input: UpsertDailyCheckInInput
+): Promise<ActionResponse<DailyCheckIn>> {
+  const parsed = upsertDailyCheckInSchema.safeParse({
+    mood: input.mood,
+    reflectionText: input.reflectionText ?? null,
+    finishedTaskTitles: input.finishedTaskTitles ?? [],
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: formatZodError(parsed.error) };
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const profile = await getUserProfile();
+    const userTimezone = profile.timezone || 'UTC';
+    const checkInDate = getUserLocalDate(new Date(), userTimezone);
+
+    const { data, error } = await supabase
+      .from('daily_check_ins')
+      .upsert(
+        {
+          user_id: user.id,
+          check_in_date: checkInDate,
+          mood: parsed.data.mood,
+          reflection_text: parsed.data.reflectionText || null,
+          finished_task_titles: parsed.data.finishedTaskTitles,
+        },
+        { onConflict: 'user_id,check_in_date' }
+      )
+      .select('*')
+      .single();
+
+    if (error) {
+      if (error.code === '42P01') {
+        console.warn('[DailyLoop] Table daily_check_ins does not exist (42P01).');
+        return { success: false, error: 'Daily check-ins table is not yet initialized.' };
+      }
+      console.error('[DailyLoop] Error saving daily check-in:', error);
+      return { success: false, error: formatErrorMessage(error) };
+    }
+
+    const finishedTitles = Array.isArray(data.finished_task_titles)
+      ? data.finished_task_titles.filter((item): item is string => typeof item === 'string')
+      : [];
+
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        user_id: data.user_id,
+        check_in_date: data.check_in_date,
+        mood: data.mood as MoodRating,
+        reflection_text: data.reflection_text ?? null,
+        finished_task_titles: finishedTitles,
+        created_at: data.created_at,
+      },
+    };
+  } catch (err) {
+    console.error('[DailyLoop] Unexpected error in upsertDailyCheckIn:', err);
+    return { success: false, error: formatErrorMessage(err) };
   }
 }

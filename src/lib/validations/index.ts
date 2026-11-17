@@ -345,3 +345,28 @@ export const updateProfileSchema = z.object({
   timezone: z.string().trim().optional(),
   dailyFocusGoalMinutes: z.coerce.number().int().positive().optional(),
 });
+
+// -------------------------------------------------------------
+// Daily Loop Check-In Schemas
+// -------------------------------------------------------------
+export const dailyCheckInMoodEnum = z.enum([
+  'exhausted',
+  'tough',
+  'neutral',
+  'good',
+  'great',
+]);
+
+export const upsertDailyCheckInSchema = z.object({
+  mood: dailyCheckInMoodEnum,
+  reflectionText: z
+    .string()
+    .trim()
+    .max(1000, { message: 'Reflection cannot exceed 1000 characters.' })
+    .optional()
+    .nullable(),
+  finishedTaskTitles: z
+    .array(z.string().trim().min(1).max(240))
+    .max(50)
+    .default([]),
+});

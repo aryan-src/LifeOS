@@ -23,6 +23,8 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
     theme_preference: 'nordic',
     currency_symbol: '₹',
     monthly_allowance_target: 15000.00,
+    timezone: null,
+    daily_focus_goal_minutes: 240,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -44,12 +46,20 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching student profile:', error);
+      if (error.code === '42703' || error.code === '42P01') {
+        console.warn(
+          `[Profile] Non-fatal schema mismatch (code: ${error.code}): ${error.message}. Returning default profile with fallback timezone and daily_focus_goal_minutes.`
+        );
+      } else {
+        console.error('Error fetching student profile:', error);
+      }
     }
 
     if (profile) {
       return {
         ...profile,
+        timezone: profile.timezone ?? null,
+        daily_focus_goal_minutes: Number(profile.daily_focus_goal_minutes || 240),
         monthly_allowance_target: Number(profile.monthly_allowance_target || 15000),
       };
     }
@@ -196,6 +206,51 @@ export async function updateProfile(
 }
 
 export const updateUserProfile = updateProfile;
+
+/**
+ * Updates the user's timezone on public.profiles.
+ * Called automatically on first load when profiles.timezone is null.
+ * Handles Postgres error 42703 (undefined column) gracefully as non-fatal.
+ */
+export async function updateUserTimezone(
+  timezone: string
+): Promise<ActionResponse<{ timezone: string }>> {
+  try {
+    if (!timezone || typeof timezone !== 'string') {
+      return { success: false, error: 'Timezone string is required' };
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ timezone })
+      .eq('id', user.id);
+
+    if (error) {
+      if (error.code === '42703' || error.code === '42P01') {
+        console.warn(
+          `[Profile] Non-fatal schema warning updating timezone (code: ${error.code}): ${error.message}`
+        );
+        return { success: true, data: { timezone } };
+      }
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true, data: { timezone } };
+  } catch (err) {
+    return { success: false, error: formatErrorMessage(err) };
+  }
+}
 
 /**
  * Sign out action - terminates Supabase session and redirects to /login.

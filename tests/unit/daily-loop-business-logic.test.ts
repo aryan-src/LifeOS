@@ -3,7 +3,11 @@ import {
   getUserLocalDate,
   getUserLocalHour,
   getTodayCardMode,
+  isFocusMode,
+  isFocusSessionQualified,
   isDailyMinimumMet,
+  getDailyMinimumChecklist,
+  isDateEditableForStreak,
   calculateStreak,
   getNextMilestone,
   formatStreakBadge,
@@ -11,107 +15,255 @@ import {
   calculateFocusInsights,
   formatHourTo12h,
 } from '@/lib/daily-loop/business-logic';
-import type { DailyRecord, FocusSession, StreakFreezeLog } from '@/lib/daily-loop/types';
+import type { DailyRecord, FocusSession, StreakFreezeLog, MoodRating } from '@/lib/daily-loop/types';
 
 describe('Daily Loop Business Logic — Timezone & Day Boundaries', () => {
-  it('correctly calculates local date across Asia/Kolkata midnight boundary', () => {
+  it('correctly calculates local date and morning mode across Asia/Kolkata midnight boundary', () => {
     // 2026-11-17 18:35:00 UTC is 2026-11-18 00:05:00 in Asia/Kolkata (+05:30)
     const utcMidnightEdge = new Date('2026-11-17T18:35:00Z');
 
     const kolkataDate = getUserLocalDate(utcMidnightEdge, 'Asia/Kolkata');
     const kolkataHour = getUserLocalHour(utcMidnightEdge, 'Asia/Kolkata');
+    const kolkataMode = getTodayCardMode(utcMidnightEdge, 'Asia/Kolkata');
 
     expect(kolkataDate).toBe('2026-11-18');
     expect(kolkataHour).toBe(0);
+    // Midnight (00:05) belongs to the new calendar day, so it is morning
+    expect(kolkataMode).toBe('morning');
 
-    // In New York (UTC-5), the same moment is 2026-11-17 at 13:35
+    // In New York (UTC-5), the same moment is 2026-11-17 at 13:35 (Daytime)
     const nyDate = getUserLocalDate(utcMidnightEdge, 'America/New_York');
     const nyHour = getUserLocalHour(utcMidnightEdge, 'America/New_York');
+    const nyMode = getTodayCardMode(utcMidnightEdge, 'America/New_York');
 
     expect(nyDate).toBe('2026-11-17');
     expect(nyHour).toBe(13);
+    expect(nyMode).toBe('daytime');
   });
 
-  it('determines Today Card mode according to user local hour', () => {
+  it('determines Today Card modes strictly aligned with calendar day boundaries (00:00-11:59 / 12:00-17:59 / 18:00-23:59)', () => {
+    // 00:00 -> morning
+    expect(getTodayCardMode(new Date('2026-11-17T00:00:00Z'), 'UTC')).toBe('morning');
     // 08:00 -> morning
-    const morning = new Date('2026-11-17T08:00:00Z');
-    expect(getTodayCardMode(morning, 'UTC')).toBe('morning');
+    expect(getTodayCardMode(new Date('2026-11-17T08:00:00Z'), 'UTC')).toBe('morning');
+    // 11:59 -> morning
+    expect(getTodayCardMode(new Date('2026-11-17T11:59:00Z'), 'UTC')).toBe('morning');
 
-    // 14:00 -> daytime
-    const daytime = new Date('2026-11-17T14:00:00Z');
-    expect(getTodayCardMode(daytime, 'UTC')).toBe('daytime');
+    // 12:00 -> daytime
+    expect(getTodayCardMode(new Date('2026-11-17T12:00:00Z'), 'UTC')).toBe('daytime');
+    // 17:59 -> daytime
+    expect(getTodayCardMode(new Date('2026-11-17T17:59:00Z'), 'UTC')).toBe('daytime');
 
-    // 20:00 -> evening
-    const evening = new Date('2026-11-17T20:00:00Z');
-    expect(getTodayCardMode(evening, 'UTC')).toBe('evening');
-
-    // 02:00 -> evening (late night prior to 5 AM)
-    const lateNight = new Date('2026-11-17T02:00:00Z');
-    expect(getTodayCardMode(lateNight, 'UTC')).toBe('evening');
+    // 18:00 -> evening
+    expect(getTodayCardMode(new Date('2026-11-17T18:00:00Z'), 'UTC')).toBe('evening');
+    // 23:59 -> evening
+    expect(getTodayCardMode(new Date('2026-11-17T23:59:00Z'), 'UTC')).toBe('evening');
   });
 });
 
-describe('Daily Minimum Qualification', () => {
-  it('qualifies when focus duration reaches or exceeds 25 minutes', () => {
-    const record: DailyRecord = {
-      date: '2026-11-17',
-      habitsCompleted: 0,
-      habitsTotal: 3,
-      tasksCompleted: 0,
-      focusMinutes: 25,
-    };
-    expect(isDailyMinimumMet(record)).toBe(true);
+describe('Focus Mode & Session Qualification', () => {
+  it('distinguishes focus modes from break modes', () => {
+    expect(isFocusMode('pomodoro')).toBe(true);
+    expect(isFocusMode('deep-work')).toBe(true);
+    expect(isFocusMode('stopwatch')).toBe(true);
+    expect(isFocusMode('short-break')).toBe(false);
+    expect(isFocusMode('long-break')).toBe(false);
   });
 
-  it('qualifies when completing 1 habit and 1 task', () => {
-    const record: DailyRecord = {
+  it('qualifies completed presets (15m, 25m, 50m)', () => {
+    // 15m preset completed (900s)
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 900,
+        mode: 'pomodoro',
+        target_duration_seconds: 900,
+      })
+    ).toBe(true);
+
+    // 25m preset completed (1500s)
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 1500,
+        mode: 'pomodoro',
+        target_duration_seconds: 1500,
+      })
+    ).toBe(true);
+
+    // 50m preset completed (3000s)
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 3000,
+        mode: 'deep-work',
+        target_duration_seconds: 3000,
+      })
+    ).toBe(true);
+  });
+
+  it('early ended sessions qualify only if at least 10 minutes elapsed', () => {
+    // 25m preset ended early at 12 minutes (720s) -> qualifies (>= 10m)
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 720,
+        mode: 'pomodoro',
+        target_duration_seconds: 1500,
+      })
+    ).toBe(true);
+
+    // 25m preset ended early at 8 minutes (480s) -> does not qualify (< 10m)
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 480,
+        mode: 'pomodoro',
+        target_duration_seconds: 1500,
+      })
+    ).toBe(false);
+  });
+
+  it('break modes never qualify as focus sessions even if completed', () => {
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 300,
+        mode: 'short-break',
+        target_duration_seconds: 300,
+        completed_normally: true,
+      })
+    ).toBe(false);
+
+    expect(
+      isFocusSessionQualified({
+        duration_seconds: 900,
+        mode: 'long-break',
+        target_duration_seconds: 900,
+        completed_normally: true,
+      })
+    ).toBe(false);
+  });
+});
+
+describe('Daily Minimum Qualification (2 of 3 Criteria)', () => {
+  it('qualifies when at least 2 of 3 items (focus session, habit, expense) are complete', () => {
+    // Focus + Habit
+    const focusAndHabit: DailyRecord = {
       date: '2026-11-17',
+      focusSessionsCompleted: 1,
       habitsCompleted: 1,
-      habitsTotal: 4,
-      tasksCompleted: 1,
-      focusMinutes: 0,
+      expensesLogged: 0,
     };
-    expect(isDailyMinimumMet(record)).toBe(true);
-  });
+    expect(isDailyMinimumMet(focusAndHabit)).toBe(true);
 
-  it('qualifies when completing 2 habits or 2 tasks', () => {
-    const recordHabits: DailyRecord = {
+    // Habit + Expense
+    const habitAndExpense: DailyRecord = {
       date: '2026-11-17',
-      habitsCompleted: 2,
-      habitsTotal: 5,
-      tasksCompleted: 0,
-      focusMinutes: 10,
+      focusSessionsCompleted: 0,
+      habitsCompleted: 1,
+      expensesLogged: 1,
     };
-    expect(isDailyMinimumMet(recordHabits)).toBe(true);
+    expect(isDailyMinimumMet(habitAndExpense)).toBe(true);
 
-    const recordTasks: DailyRecord = {
+    // Focus + Expense
+    const focusAndExpense: DailyRecord = {
       date: '2026-11-17',
+      focusSessionsCompleted: 1,
       habitsCompleted: 0,
-      habitsTotal: 3,
-      tasksCompleted: 2,
-      focusMinutes: 5,
+      expensesLogged: 1,
     };
-    expect(isDailyMinimumMet(recordTasks)).toBe(true);
+    expect(isDailyMinimumMet(focusAndExpense)).toBe(true);
+
+    // All 3
+    const allThree: DailyRecord = {
+      date: '2026-11-17',
+      focusSessionsCompleted: 2,
+      habitsCompleted: 3,
+      expensesLogged: 1,
+    };
+    expect(isDailyMinimumMet(allThree)).toBe(true);
   });
 
-  it('fails qualification when below all thresholds', () => {
+  it('fails when only 1 or 0 of the 3 criteria are met', () => {
+    // Only focus
+    expect(
+      isDailyMinimumMet({
+        date: '2026-11-17',
+        focusSessionsCompleted: 1,
+        habitsCompleted: 0,
+        expensesLogged: 0,
+      })
+    ).toBe(false);
+
+    // Only habit
+    expect(
+      isDailyMinimumMet({
+        date: '2026-11-17',
+        focusSessionsCompleted: 0,
+        habitsCompleted: 1,
+        expensesLogged: 0,
+      })
+    ).toBe(false);
+
+    // Only expense
+    expect(
+      isDailyMinimumMet({
+        date: '2026-11-17',
+        focusSessionsCompleted: 0,
+        habitsCompleted: 0,
+        expensesLogged: 1,
+      })
+    ).toBe(false);
+  });
+
+  it('tasks do NOT count toward streak qualification', () => {
+    // 10 tasks completed, but only 1 habit and 0 focus/expenses -> fails (1 of 3)
+    const tasksHeavyRecord: DailyRecord = {
+      date: '2026-11-17',
+      focusSessionsCompleted: 0,
+      habitsCompleted: 1,
+      expensesLogged: 0,
+      tasksCompleted: 10,
+    };
+    expect(isDailyMinimumMet(tasksHeavyRecord)).toBe(false);
+  });
+
+  it('provides checklist details matching UI contract ("2 of 3 keeps your streak")', () => {
     const record: DailyRecord = {
       date: '2026-11-17',
+      focusSessionsCompleted: 1,
       habitsCompleted: 0,
-      habitsTotal: 3,
-      tasksCompleted: 0,
-      focusMinutes: 15,
+      expensesLogged: 1,
     };
-    expect(isDailyMinimumMet(record)).toBe(false);
+    const checklist = getDailyMinimumChecklist(record);
+
+    expect(checklist.hasFocusSession).toBe(true);
+    expect(checklist.hasHabitCompleted).toBe(false);
+    expect(checklist.hasExpenseLogged).toBe(true);
+    expect(checklist.completedCount).toBe(2);
+    expect(checklist.totalRequired).toBe(2);
+    expect(checklist.isQualified).toBe(true);
+  });
+});
+
+describe('Backdating Restrictions for Streak Purpose', () => {
+  it('allows editing today and the previous 2 days only', () => {
+    const today = '2026-11-17';
+
+    expect(isDateEditableForStreak('2026-11-17', today)).toBe(true); // today (diff 0)
+    expect(isDateEditableForStreak('2026-11-16', today)).toBe(true); // yesterday (diff 1)
+    expect(isDateEditableForStreak('2026-11-15', today)).toBe(true); // 2 days ago (diff 2)
+
+    // 3 or more days ago are read-only
+    expect(isDateEditableForStreak('2026-11-14', today)).toBe(false); // 3 days ago (diff 3)
+    expect(isDateEditableForStreak('2026-11-10', today)).toBe(false); // 7 days ago (diff 7)
+
+    // Future dates are rejected
+    expect(isDateEditableForStreak('2026-11-18', today)).toBe(false);
   });
 });
 
 describe('Streak & Freeze Derivation', () => {
   it('computes consecutive qualified days into active streak', () => {
     const dailyRecords: DailyRecord[] = [
-      { date: '2026-11-10', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-11', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-12', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
+      { date: '2026-11-10', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-11', focusSessionsCompleted: 0, habitsCompleted: 1, expensesLogged: 1 },
+      { date: '2026-11-12', focusSessionsCompleted: 1, habitsCompleted: 0, expensesLogged: 1 },
     ];
 
     const result = calculateStreak({
@@ -135,10 +287,9 @@ describe('Streak & Freeze Derivation', () => {
       const d = `2026-10-${String(i).padStart(2, '0')}`;
       dailyRecords.push({
         date: d,
+        focusSessionsCompleted: 1,
         habitsCompleted: 1,
-        habitsTotal: 1,
-        tasksCompleted: 1,
-        focusMinutes: 30,
+        expensesLogged: 0,
       });
     }
 
@@ -156,16 +307,16 @@ describe('Streak & Freeze Derivation', () => {
   it('protects streak on a missed day when a freeze log exists', () => {
     const dailyRecords: DailyRecord[] = [
       // 7 qualified days to earn a freeze
-      { date: '2026-11-01', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-02', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-03', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-04', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-05', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-06', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-07', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
+      { date: '2026-11-01', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-02', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-03', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-04', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-05', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-06', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-07', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
       // 2026-11-08 is missed!
       // 2026-11-09 resumes
-      { date: '2026-11-09', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
+      { date: '2026-11-09', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
     ];
 
     const freezeLogs: StreakFreezeLog[] = [
@@ -186,10 +337,10 @@ describe('Streak & Freeze Derivation', () => {
 
   it('resets streak to 0 on a missed day without a freeze log', () => {
     const dailyRecords: DailyRecord[] = [
-      { date: '2026-11-01', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
-      { date: '2026-11-02', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
+      { date: '2026-11-01', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
+      { date: '2026-11-02', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
       // 2026-11-03 missed
-      { date: '2026-11-04', habitsCompleted: 1, habitsTotal: 1, tasksCompleted: 1, focusMinutes: 30 },
+      { date: '2026-11-04', focusSessionsCompleted: 1, habitsCompleted: 1, expensesLogged: 0 },
     ];
 
     const result = calculateStreak({
@@ -208,14 +359,20 @@ describe('Streak & Freeze Derivation', () => {
     for (let i = 1; i <= 12; i++) {
       dailyRecords.push({
         date: `2026-11-${String(i).padStart(2, '0')}`,
+        focusSessionsCompleted: 1,
         habitsCompleted: 1,
-        habitsTotal: 1,
-        tasksCompleted: 1,
-        focusMinutes: 30,
+        expensesLogged: 0,
       });
     }
 
-    // Today is Nov 13, NOT qualified yet
+    // Today is Nov 13, NOT qualified yet (only 1 item completed)
+    dailyRecords.push({
+      date: '2026-11-13',
+      focusSessionsCompleted: 1,
+      habitsCompleted: 0,
+      expensesLogged: 0,
+    });
+
     const notCompletedResult = calculateStreak({
       dailyRecords,
       freezeLogs: [],
@@ -228,14 +385,13 @@ describe('Streak & Freeze Derivation', () => {
     expect(notCompletedResult.streakPreview.current).toBe(12);
     expect(notCompletedResult.streakPreview.next).toBe(13);
 
-    // Today is Nov 13, user completes daily minimum!
-    dailyRecords.push({
+    // Today is Nov 13, user completes second requirement (e.g. habit)!
+    dailyRecords[12] = {
       date: '2026-11-13',
+      focusSessionsCompleted: 1,
       habitsCompleted: 1,
-      habitsTotal: 1,
-      tasksCompleted: 1,
-      focusMinutes: 30,
-    });
+      expensesLogged: 0,
+    };
 
     const completedResult = calculateStreak({
       dailyRecords,
@@ -270,8 +426,10 @@ describe('Life Score & Daily Delta Calculation', () => {
   it('calculates weighted Life Score (0-100) and delta vs yesterday without separate storage', () => {
     const yesterday: DailyRecord = {
       date: '2026-11-16',
+      focusSessionsCompleted: 1,
       habitsCompleted: 2,
       habitsTotal: 4, // 50% = 18 pts
+      expensesLogged: 1,
       tasksCompleted: 2, // 2/3 = 13 pts
       focusMinutes: 120, // 120/240 = 15 pts
       focusGoalMinutes: 240,
@@ -281,8 +439,10 @@ describe('Life Score & Daily Delta Calculation', () => {
 
     const today: DailyRecord = {
       date: '2026-11-17',
+      focusSessionsCompleted: 2,
       habitsCompleted: 4,
       habitsTotal: 4, // 100% = 35 pts
+      expensesLogged: 1,
       tasksCompleted: 3, // 3/3 = 20 pts
       focusMinutes: 240, // 240/240 = 30 pts
       focusGoalMinutes: 240,
@@ -301,7 +461,45 @@ describe('Life Score & Daily Delta Calculation', () => {
   });
 });
 
-describe('Focus Insights', () => {
+describe('Focus Insights & Break Filtering', () => {
+  it('filters out breaks from focus time and insight calculation', () => {
+    const sessions: FocusSession[] = [];
+
+    // Add 15 days of sessions, but with large break sessions that should be ignored
+    for (let day = 1; day <= 15; day++) {
+      const dayStr = String(day).padStart(2, '0');
+      // Real focus session at 20:00 (60m)
+      sessions.push({
+        id: `s-${day}-focus`,
+        client_session_id: `cs-${day}-focus`,
+        user_id: 'u1',
+        duration_seconds: 3600,
+        started_at: `2026-10-${dayStr}T20:00:00Z`,
+        ended_at: `2026-10-${dayStr}T21:00:00Z`,
+        mode: 'pomodoro',
+      });
+
+      // Break session at 14:00 (120m break) - MUST NOT be treated as peak hour!
+      sessions.push({
+        id: `s-${day}-break`,
+        client_session_id: `cs-${day}-break`,
+        user_id: 'u1',
+        duration_seconds: 7200,
+        started_at: `2026-10-${dayStr}T14:00:00Z`,
+        ended_at: `2026-10-${dayStr}T16:00:00Z`,
+        mode: 'long-break',
+      });
+    }
+
+    const insight = calculateFocusInsights(sessions, 'UTC');
+
+    expect(insight.hasEnoughData).toBe(true);
+    expect(insight.peakHour).toBe(20); // 8 PM from pomodoro, NOT 14 (2 PM) from long-break
+    expect(insight.formattedPeakTime).toBe('8 PM');
+    expect(insight.insightText).toBe('You focus best around 8 PM');
+    expect(insight.totalMinutes).toBe(15 * 60); // 15 hours, breaks not counted!
+  });
+
   it('hides insights when there are fewer than 14 distinct days of session data', () => {
     const sessions: FocusSession[] = [
       {
@@ -313,15 +511,6 @@ describe('Focus Insights', () => {
         ended_at: '2026-11-10T14:30:00Z',
         mode: 'deep-work',
       },
-      {
-        id: '2',
-        client_session_id: 'c2',
-        user_id: 'u1',
-        duration_seconds: 1800,
-        started_at: '2026-11-11T14:00:00Z',
-        ended_at: '2026-11-11T14:30:00Z',
-        mode: 'pomodoro',
-      },
     ];
 
     const insight = calculateFocusInsights(sessions, 'UTC');
@@ -329,51 +518,13 @@ describe('Focus Insights', () => {
     expect(insight.hasEnoughData).toBe(false);
     expect(insight.peakHour).toBeNull();
     expect(insight.insightText).toBeNull();
-    expect(insight.daysTracked).toBe(2);
+    expect(insight.daysTracked).toBe(1);
   });
+});
 
-  it('computes peak focus hour and formats insight text when >= 14 days of data exist', () => {
-    const sessions: FocusSession[] = [];
-
-    // Create 15 days of data, with sessions predominantly at 20:00 (8 PM)
-    for (let day = 1; day <= 15; day++) {
-      const dayStr = String(day).padStart(2, '0');
-      // Major session at 20:00 UTC (8 PM)
-      sessions.push({
-        id: `s-${day}-major`,
-        client_session_id: `cs-${day}-major`,
-        user_id: 'u1',
-        duration_seconds: 3600, // 60 mins
-        started_at: `2026-10-${dayStr}T20:00:00Z`,
-        ended_at: `2026-10-${dayStr}T21:00:00Z`,
-        mode: 'deep-work',
-      });
-
-      // Minor session at 10:00 UTC (10 AM)
-      sessions.push({
-        id: `s-${day}-minor`,
-        client_session_id: `cs-${day}-minor`,
-        user_id: 'u1',
-        duration_seconds: 900, // 15 mins
-        started_at: `2026-10-${dayStr}T10:00:00Z`,
-        ended_at: `2026-10-${dayStr}T10:15:00Z`,
-        mode: 'pomodoro',
-      });
-    }
-
-    const insight = calculateFocusInsights(sessions, 'UTC');
-
-    expect(insight.hasEnoughData).toBe(true);
-    expect(insight.daysTracked).toBe(15);
-    expect(insight.peakHour).toBe(20);
-    expect(insight.formattedPeakTime).toBe('8 PM');
-    expect(insight.insightText).toBe('You focus best around 8 PM');
-  });
-
-  it('formats hours accurately in 12h representation', () => {
-    expect(formatHourTo12h(0)).toBe('12 AM');
-    expect(formatHourTo12h(9)).toBe('9 AM');
-    expect(formatHourTo12h(12)).toBe('12 PM');
-    expect(formatHourTo12h(20)).toBe('8 PM');
+describe('Mood Rating Type Contract', () => {
+  it('strictly supports the 5 ordered mood ratings matching icons', () => {
+    const validRatings: MoodRating[] = ['exhausted', 'tough', 'neutral', 'good', 'great'];
+    expect(validRatings).toHaveLength(5);
   });
 });

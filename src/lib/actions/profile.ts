@@ -14,10 +14,13 @@ import { cache } from 'react';
  * Deduplicates across RSC passes to eliminate redundant database calls.
  */
 export const getUserProfile = cache(async (): Promise<Profile> => {
+  const isDevBypass =
+    process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true';
+
   const defaultProfile: Profile = {
-    id: 'unauthenticated',
-    display_name: 'Student',
-    theme_preference: 'stone',
+    id: isDevBypass ? 'dev-local-user' : 'unauthenticated',
+    display_name: isDevBypass ? 'Aryan' : 'Student',
+    theme_preference: 'nordic',
     currency_symbol: '₹',
     monthly_allowance_target: 15000.00,
     created_at: new Date().toISOString(),
@@ -54,10 +57,12 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
     return {
       ...defaultProfile,
       id: user.id,
-      display_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Student',
+      display_name: user.user_metadata?.full_name || user.user_metadata?.name || (isDevBypass ? 'Aryan' : 'Student'),
     };
   } catch (err) {
-    console.error('Unhandled error in getUserProfile:', err);
+    if (!isDevBypass) {
+      console.error('Unhandled error in getUserProfile:', err);
+    }
     return defaultProfile;
   }
 });
@@ -92,7 +97,23 @@ export async function updateProfile(
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  if (authError || !user) {
+    if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
+      return {
+        success: true,
+        data: {
+          id: 'dev-local-user',
+          display_name: parsed.data.displayName || 'Aryan',
+          currency_symbol: parsed.data.currencySymbol || '₹',
+          theme_preference: parsed.data.themePreference || 'nordic',
+          monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      };
+    }
+    throw new Error('Unauthorized');
+  }
 
   const displayName = parsed.data.displayName;
   const currencySymbol = parsed.data.currencySymbol;

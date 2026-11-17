@@ -31,15 +31,15 @@ create table if not exists public.focus_sessions (
 -- 3. Create public.daily_check_ins Table
 -- Features:
 -- - One check-in per user per local calendar date (UNIQUE constraint).
+-- - Mood rating: exhausted, tough, neutral, good, great (worst to best, 5 mood icons).
 -- - Stores finished task titles snapshot in JSONB for reflection history.
 create table if not exists public.daily_check_ins (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references auth.users(id) on delete cascade,
     check_in_date date not null,
-    mood text not null check (mood in ('great', 'good', 'neutral', 'difficult', 'tough')),
+    mood text not null check (mood in ('exhausted', 'tough', 'neutral', 'good', 'great')),
     reflection_text text,
     finished_task_titles jsonb not null default '[]'::jsonb,
-    energy_rating integer check (energy_rating between 1 and 5),
     created_at timestamptz not null default now(),
     unique (user_id, check_in_date)
 );

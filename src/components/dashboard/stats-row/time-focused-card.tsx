@@ -27,12 +27,18 @@ export function TimeFocusedCard({ timeFocused }: TimeFocusedCardProps) {
 
       <div className="flex items-baseline gap-1.5 mb-3">
         <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-          style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
+          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums"
+          style={{
+            fontFamily: '"Playfair Display", Georgia, serif',
+            fontVariantNumeric: 'lining-nums tabular-nums',
+          }}
         >
           {timeFocused.formattedTime} active
         </span>
-        <span className="text-xs text-stone-500 dark:text-zinc-400 font-sans">
+        <span
+          className="text-xs text-stone-500 dark:text-zinc-400 font-sans tabular-nums lining-nums"
+          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+        >
           / {timeFocused.formattedGoal}
         </span>
       </div>

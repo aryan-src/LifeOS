@@ -10,13 +10,11 @@ interface LifeScoreCardProps {
 export function LifeScoreCard({ lifeScore }: LifeScoreCardProps) {
   const delta = lifeScore.deltaVsYesterday;
   const isPositive = delta > 0;
-  const isZero = delta === 0;
+  const hasDelta = typeof delta === 'number' && delta !== 0;
 
-  const deltaText = isZero ? '0 vs yesterday' : `${isPositive ? '+' : ''}${delta} vs yesterday`;
+  const deltaText = `${isPositive ? '+' : ''}${delta} vs yesterday`;
   const deltaBadgeClass = isPositive
     ? 'text-[#006c49] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/60'
-    : isZero
-    ? 'text-stone-600 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60'
     : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60';
 
   return (
@@ -28,19 +26,32 @@ export function LifeScoreCard({ lifeScore }: LifeScoreCardProps) {
         <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
           Life Score
         </span>
-        <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full ${deltaBadgeClass}`}>
-          {deltaText}
-        </span>
+        {hasDelta && (
+          <span
+            className={`text-[11px] font-mono tabular-nums lining-nums px-2 py-0.5 rounded-full ${deltaBadgeClass}`}
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            {deltaText}
+          </span>
+        )}
       </div>
 
       <div className="flex items-baseline gap-2 mb-3">
         <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-          style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
+          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums"
+          style={{
+            fontFamily: '"Playfair Display", Georgia, serif',
+            fontVariantNumeric: 'lining-nums tabular-nums',
+          }}
         >
           {lifeScore.total}
         </span>
-        <span className="text-xs text-stone-500 dark:text-zinc-400 font-sans">/ 100</span>
+        <span
+          className="text-xs text-stone-500 dark:text-zinc-400 font-sans tabular-nums lining-nums"
+          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+        >
+          / 100
+        </span>
       </div>
 
       <div className="space-y-2">

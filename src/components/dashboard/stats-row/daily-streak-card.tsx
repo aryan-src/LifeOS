@@ -18,20 +18,18 @@ export function DailyStreakCard({
 }: DailyStreakCardProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const { currentStreak, isTodayQualified, checklist, freezesLeft } = streakState;
+  const { currentStreak, isTodayQualified, checklist } = streakState;
 
-  let badgeText = '2 of 3 today';
+  let badgeText = `${checklist.completedCount} of 2 today`;
   let badgeClass =
-    'text-stone-600 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60';
+    checklist.completedCount === 1
+      ? 'text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60'
+      : 'text-stone-600 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60';
 
   if (isTodayQualified) {
     badgeText = 'Consistent';
     badgeClass =
-      'text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60';
-  } else if (freezesLeft > 0) {
-    badgeText = `${freezesLeft} freeze available`;
-    badgeClass =
-      'text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200/60 dark:border-cyan-800/60';
+      'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/60';
   }
 
   return (
@@ -46,7 +44,8 @@ export function DailyStreakCard({
         <button
           type="button"
           onClick={() => setIsPopoverOpen((prev) => !prev)}
-          className={`text-[11px] font-sans px-2 py-0.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity ${badgeClass}`}
+          className={`text-[11px] font-sans tabular-nums lining-nums px-2 py-0.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity ${badgeClass}`}
+          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
         >
           {badgeText}
         </button>
@@ -57,8 +56,11 @@ export function DailyStreakCard({
         onClick={() => setIsPopoverOpen((prev) => !prev)}
       >
         <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums group-hover:text-[#006c49] dark:group-hover:text-emerald-400 transition-colors"
-          style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
+          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums group-hover:text-[#006c49] dark:group-hover:text-emerald-400 transition-colors"
+          style={{
+            fontFamily: '"Playfair Display", Georgia, serif',
+            fontVariantNumeric: 'lining-nums tabular-nums',
+          }}
         >
           {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
         </span>

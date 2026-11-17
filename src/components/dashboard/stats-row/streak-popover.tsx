@@ -41,7 +41,10 @@ export function StreakPopover({
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800">
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-bold tracking-tight font-serif">
+              <span
+                className="text-xl font-bold tracking-tight font-serif tabular-nums lining-nums"
+                style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+              >
                 {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
               </span>
               <span className="text-base">🔥</span>
@@ -84,7 +87,14 @@ export function StreakPopover({
               } else if (day.isToday) {
                 circleStyle =
                   'border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-bold';
-                circleContent = <span className="text-[10px]">{currentStreak}</span>;
+                circleContent = (
+                  <span
+                    className="text-[10px] tabular-nums lining-nums"
+                    style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+                  >
+                    {currentStreak}
+                  </span>
+                );
               }
 
               return (
@@ -116,11 +126,12 @@ export function StreakPopover({
               Today&apos;s Minimum
             </span>
             <span
-              className={`text-xs font-semibold font-mono ${
+              className={`text-xs font-semibold font-mono tabular-nums lining-nums ${
                 checklist.isQualified
                   ? 'text-[#006c49] dark:text-emerald-400'
                   : 'text-amber-600 dark:text-amber-400'
               }`}
+              style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
             >
               {checklist.completedCount} of 2 required
             </span>
@@ -211,7 +222,10 @@ export function StreakPopover({
             ❄
           </div>
           <div>
-            <div className="text-xs font-semibold text-stone-800 dark:text-zinc-200 font-sans">
+            <div
+              className="text-xs font-semibold text-stone-800 dark:text-zinc-200 font-sans tabular-nums lining-nums"
+              style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+            >
               {freezesLeft} {freezesLeft === 1 ? 'freeze' : 'freezes'} left (max 2)
             </div>
             <div className="text-[11px] text-stone-500 dark:text-zinc-400 font-sans">

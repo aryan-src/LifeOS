@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition } from 'react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile } from '@/lib/actions/profile';
 import { saveTheme, applyThemeToDOM } from '@/lib/theme/use-theme';
+import { useRadialThemeTransition } from '@/hooks/use-radial-theme-transition';
 import { getFullAccountExport } from '@/lib/actions/export';
 import {
   formatNoteAsMarkdown,
@@ -119,6 +120,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const [toastVisible, setToastVisible] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string>('Last synced 2m ago');
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState<boolean>(false);
+  const { triggerThemeTransition } = useRadialThemeTransition();
 
   // Export micro-interaction states
   const [exportState, setExportState] = useState<{
@@ -173,10 +175,15 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   };
 
   // Switch Theme
-  const handleSelectTheme = (themeId: string) => {
-    setThemePreference(themeId);
-    saveTheme(themeId);
-    applyThemeToDOM(themeId);
+  const handleSelectTheme = (
+    themeId: string,
+    event?: React.MouseEvent | React.KeyboardEvent | null
+  ) => {
+    triggerThemeTransition(event || null, themeId, (t) => {
+      setThemePreference(t);
+      saveTheme(t);
+      applyThemeToDOM(t);
+    });
     const themeObj = THEMES.find((t) => t.id === themeId);
     showToast(`Atmosphere set to: ${themeObj?.title || themeId}`);
   };

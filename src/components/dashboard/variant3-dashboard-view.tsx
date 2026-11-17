@@ -9,6 +9,10 @@ import type { NoteWithProject } from '@/lib/actions/notes';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import type { FinancialAnalytics } from '@/lib/actions/finances';
 import type { TaskWithProject } from '@/lib/actions/tasks';
+import type { DailyLoopDashboardData } from '@/lib/actions/daily-loop';
+import { StatsRow } from './stats-row/stats-row';
+import { TimezoneSync } from './timezone-sync';
+import { formatStreakBadge } from '@/lib/daily-loop/business-logic';
 
 interface Variant3DashboardProps {
   displayName?: string;
@@ -22,6 +26,7 @@ interface Variant3DashboardProps {
   initialAssignments?: AssignmentWithProject[];
   financialAnalytics?: FinancialAnalytics | null;
   todayTasks?: TaskWithProject[];
+  dailyLoopData?: DailyLoopDashboardData | null;
 }
 
 export function Variant3DashboardView({
@@ -36,66 +41,52 @@ export function Variant3DashboardView({
   initialAssignments = [],
   financialAnalytics = null,
   todayTasks = [],
+  dailyLoopData = null,
 }: Variant3DashboardProps) {
   const openQuickCapture = useUIStore((s) => s.openQuickCapture);
 
-  // Focus Timer Interactive Engine
-  const [timerDuration, setTimerDuration] = useState(25 * 60);
-  const [timerLeft, setTimerLeft] = useState(25 * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-
-  useEffect(() => {
-    if (!isTimerRunning) return;
-    const interval = setInterval(() => {
-      setTimerLeft((prev) => {
-        if (prev <= 1) {
-          setIsTimerRunning(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
-
-  const selectPreset = (minutes: number) => {
-    const sec = minutes * 60;
-    setTimerDuration(sec);
-    setTimerLeft(sec);
-    setIsTimerRunning(false);
+  const defaultDailyLoopData: DailyLoopDashboardData = {
+    lifeScore: { total: 0, habitsScore: 0, focusScore: 0, tasksScore: 0, financeScore: 15, deltaVsYesterday: 0 },
+    streakState: {
+      currentStreak: 0,
+      bestStreak: 0,
+      freezesEarnedTotal: 0,
+      freezesUsedTotal: 0,
+      freezesLeft: 0,
+      isTodayQualified: false,
+      nextMilestone: 7,
+      streakPreview: { current: 0, next: 1, isPreviewActive: false },
+      checklist: { hasFocusSession: false, hasHabitCompleted: false, hasExpenseLogged: false, completedCount: 0, totalRequired: 2, isQualified: false },
+      history: [],
+    },
+    timeFocused: {
+      minutes: 0,
+      goalMinutes: 240,
+      formattedTime: '0m',
+      formattedGoal: '4h goal',
+      percent: 0,
+    },
+    pocketLedger: {
+      spentAmount: 0,
+      monthlyAllowance: 15000,
+      remainingAllowance: 15000,
+      allowancePercent: 0,
+      currentMonth: 'Nov',
+    },
+    weekStrip: [
+      { dayLabel: 'M', date: '', isToday: false, isPast: true, isFuture: false, isQualified: false, isFrozen: false },
+      { dayLabel: 'T', date: '', isToday: true, isPast: false, isFuture: false, isQualified: false, isFrozen: false },
+      { dayLabel: 'W', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'T', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'F', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'S', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+      { dayLabel: 'S', date: '', isToday: false, isPast: false, isFuture: true, isQualified: false, isFrozen: false },
+    ],
+    userTimezone: 'UTC',
+    isTimezoneNull: false,
   };
 
-  const togglePlayPause = () => {
-    if (timerLeft === 0) setTimerLeft(timerDuration);
-    setIsTimerRunning((prev) => !prev);
-  };
-
-  const resetTimer = () => {
-    setIsTimerRunning(false);
-    setTimerLeft(timerDuration);
-  };
-
-  const timerMins = Math.floor(timerLeft / 60);
-  const timerSecs = timerLeft % 60;
-  const timerFormatted = `${timerMins < 10 ? '0' : ''}${timerMins}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
-
-  const circumference = 251.2;
-  const progress = timerDuration > 0 ? (timerDuration - timerLeft) / timerDuration : 0;
-  const strokeDashoffset = Math.max(0, Math.min(251.2, circumference * (1 - progress)));
-
-  // Computed Telemetry
-  const totalBlocks = Math.max(6, todayTasks.length);
-  const completedBlocks = todayTasks.filter((t) => t.is_completed).length;
-  const dailyProgressPercent = totalBlocks > 0 ? Math.round((completedBlocks / totalBlocks) * 100) : 0;
-
-  // Streak calculation
-  const streakDays = initialHabits.length > 0 ? Math.max(...initialHabits.map((h) => h.streak || 0), 0) : 0;
-  const consistencyPercent =
-    initialHabits.length > 0
-      ? Math.round(
-          (initialHabits.filter((h) => h.is_completed_today).length / initialHabits.length) * 100
-        )
-      : 0;
+  const effectiveDailyLoop = dailyLoopData || defaultDailyLoopData;
 
   // Pocket Money & Financials
   const monthlyAllowance = financialAnalytics?.monthlyAllowance ?? 5000;
@@ -226,136 +217,14 @@ export function Variant3DashboardView({
             </div>
           </header>
 
-          {/* 2. Full-Width Telemetry Ribbon */}
-          <section
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 my-1 sm:my-2 gap-2.5 shrink-0"
-            data-purpose="wide-focus-ribbon"
-          >
-            {/* Card 1 - Daily Progress */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-                  Daily Progress
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-                  style={{ fontFamily: '"Lora", serif' }}
-                >
-                  {completedBlocks}/{totalBlocks}
-                </span>
-                <span className="text-xs text-stone-500 dark:text-zinc-400 font-serif">done</span>
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${dailyProgressPercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+          {/* Automatic Client Timezone Sync */}
+          <TimezoneSync isTimezoneNull={effectiveDailyLoop.isTimezoneNull} />
 
-            {/* Card 2 - Habit Streak */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-                  Habit Streak
-                </span>
-                <div className="inline-flex items-center gap-1 text-amber-500">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                    <path
-                      clipRule="evenodd"
-                      fillRule="evenodd"
-                      d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.527.82-1.17 2.107-1.17 3.52 0 .048.002.096.005.143-.377-.384-.71-.853-.948-1.378a1 1 0 00-1.666-.277C5.556 6.182 5 7.608 5 9.091 5 12.907 8.134 16 12 16c3.866 0 7-3.093 7-6.909 0-3.328-2.229-5.957-4.444-6.425a1 1 0 00-.73.136c-.22.146-.425.32-.615.518-.328-.27-.665-.548-.816-.767zM8.5 10.5A3.5 3.5 0 0012 14a3.5 3.5 0 003.5-3.5c0-1.636-1.042-3.033-2.33-3.418.156.495.19 1.042.062 1.58-.2 0.835-.788 1.488-1.528 1.776A1 1 0 0110.39 9.17c.074-.525-.015-1.063-.263-1.554C9.28 8.442 8.5 9.38 8.5 10.5z"
-                    />
-                  </svg>
-                  <span
-                    className="text-[15px] text-stone-900 dark:text-zinc-100 tracking-tight font-bold"
-                    style={{ fontFamily: '"Lora", serif' }}
-                  >
-                    {streakDays}D
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-                  style={{ fontFamily: '"Lora", serif' }}
-                >
-                  {consistencyPercent}%
-                </span>
-                <span className="text-xs text-stone-500 dark:text-zinc-400 font-serif">Consistency</span>
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${consistencyPercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 - Time Focused */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-                  Time Focused
-                </span>
-                <span className="w-2 h-2 rounded-full bg-[#006c49] animate-pulse" />
-              </div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-                  style={{ fontFamily: '"Lora", serif' }}
-                >
-                  {Math.floor((timerDuration - timerLeft) / 60)}m active
-                </span>
-                <span className="text-xs text-stone-500 dark:text-zinc-400 font-serif">today</span>
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${Math.round(progress * 100)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4 - Pocket Ledger */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-                  Pocket Ledger
-                </span>
-                <span className="text-[10px] font-mono text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                  {currentMonth}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span
-                  className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums"
-                  style={{ fontFamily: '"Lora", serif' }}
-                >
-                  ₹{remainingAllowance.toLocaleString('en-IN')}
-                </span>
-                <span className="text-xs text-stone-500 dark:text-zinc-400 font-serif">
-                  / ₹{monthlyAllowance.toLocaleString('en-IN')}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${allowancePercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
+          {/* 2. Full-Width Telemetry Ribbon (Stats Row) */}
+          <StatsRow
+            data={effectiveDailyLoop}
+            onOpenQuickCapture={openQuickCapture}
+          />
 
           {/* 3. Band 4: 3-Column Asymmetric Bento Cockpit */}
           <section
@@ -516,9 +385,14 @@ export function Variant3DashboardView({
                           className="p-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/60 border border-stone-200/60 dark:border-zinc-700/60"
                         >
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs font-medium text-stone-900 dark:text-zinc-100 truncate font-sans">
-                              {habit.title}
-                            </span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="text-xs font-medium text-stone-900 dark:text-zinc-100 truncate font-sans">
+                                {habit.title}
+                              </span>
+                              <span className="text-[10px] font-mono tabular-nums px-1.5 py-0.2 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-900/40 rounded shrink-0">
+                                🔥 {formatStreakBadge(habit.streak || 0)}
+                              </span>
+                            </div>
                             <span
                               className={`text-[11px] font-mono font-semibold shrink-0 ml-1 ${
                                 habit.is_completed_today
@@ -561,216 +435,49 @@ export function Variant3DashboardView({
             </div>
 
             {/* ================= CENTER COLUMN (lg:col-span-4) ================= */}
-            {/* Full-Height Focus Mode Centerpiece */}
+            {/* Full-Height Focus Mode Centerpiece / Today Card Placeholder */}
             <div className="lg:col-span-4 flex flex-col">
               <div className="h-full flex flex-col justify-between p-5 sm:p-7 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_4px_rgba(0,0,0,0.03)] relative overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-zinc-800 shrink-0">
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-[#006c49] dark:text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <h3
                       className="text-lg font-semibold text-stone-900 dark:text-zinc-100 tracking-tight"
                       style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
                     >
-                      Focus Mode
+                      Today
                     </h3>
                   </div>
+                  <span className="text-[11px] font-sans font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full">
+                    Phase 2 Placeholder
+                  </span>
                 </div>
 
-                {/* Timer Circular Display & Presets */}
-                <div className="my-auto py-4 sm:py-6 flex flex-col items-center justify-center text-center">
-                  <div
-                    className="relative flex items-center justify-center mb-5 shrink-0"
-                    style={{ borderRadius: '9999px' }}
-                  >
-                    <svg className="w-40 h-40 sm:w-44 sm:h-44 -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        fill="none"
-                        r="40"
-                        stroke="#EAE7DF"
-                        strokeWidth="5"
-                        className="dark:stroke-zinc-800"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        fill="none"
-                        r="40"
-                        stroke="#10B981"
-                        strokeDasharray="251.2"
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        strokeWidth="5"
-                        className="transition-all duration-500 ease-linear"
-                      />
+                {/* Center Placeholder Content */}
+                <div className="my-auto py-8 flex flex-col items-center justify-center text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-stone-100 dark:bg-zinc-800/80 border border-stone-200/70 dark:border-zinc-700/70 flex items-center justify-center text-stone-400 dark:text-zinc-500 mb-3.5 shadow-xs">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                      <span
-                        className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 leading-none tabular-nums"
-                        style={{ fontFamily: '"Lora", serif' }}
-                      >
-                        {timerFormatted}
-                      </span>
-                      <span className="text-[10px] font-semibold text-stone-400 dark:text-zinc-500 uppercase tracking-wider mt-1.5 font-sans">
-                        Focus Session
-                      </span>
-                    </div>
                   </div>
-
-                  {/* Preset Pills */}
-                  <div className="flex items-center justify-center gap-2 mb-5">
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(15)}
-                      className={`px-3 py-1 rounded-full text-xs transition-all font-sans cursor-pointer ${
-                        timerDuration === 15 * 60
-                          ? 'bg-[#006c49] text-white shadow-sm font-semibold'
-                          : 'border border-stone-200/80 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 font-medium hover:border-stone-300'
-                      }`}
-                    >
-                      15m
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(25)}
-                      className={`px-3.5 py-1 rounded-full text-xs transition-all font-sans cursor-pointer ${
-                        timerDuration === 25 * 60
-                          ? 'bg-[#006c49] text-white shadow-sm font-semibold'
-                          : 'border border-stone-200/80 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 font-medium hover:border-stone-300'
-                      }`}
-                    >
-                      25m
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => selectPreset(50)}
-                      className={`px-3 py-1 rounded-full text-xs transition-all font-sans cursor-pointer ${
-                        timerDuration === 50 * 60
-                          ? 'bg-[#006c49] text-white shadow-sm font-semibold'
-                          : 'border border-stone-200/80 dark:border-zinc-700 text-stone-600 dark:text-zinc-400 font-medium hover:border-stone-300'
-                      }`}
-                    >
-                      50m
-                    </button>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center justify-center gap-3 w-full max-w-xs">
-                    <button
-                      type="button"
-                      onClick={togglePlayPause}
-                      className="flex-1 h-10 px-5 rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-stone-800 dark:hover:bg-white transition-all flex items-center justify-center gap-2 shadow-sm text-[13px] font-medium font-sans cursor-pointer"
-                    >
-                      {isTimerRunning ? (
-                        <>
-                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
-                          </svg>
-                          <span>Pause Sprint</span>
-                        </>
-                      ) : timerLeft < timerDuration && timerLeft > 0 ? (
-                        <>
-                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                          <span>Resume Sprint</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                          <span>Start Focus</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetTimer}
-                      title="Reset Timer"
-                      className="h-10 w-10 rounded-xl bg-stone-100 dark:bg-zinc-800 hover:bg-stone-200/60 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-300 transition-colors flex items-center justify-center shrink-0 border border-stone-200/60 dark:border-zinc-700 cursor-pointer"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
+                  <h4
+                    className="text-lg font-bold text-stone-900 dark:text-zinc-100 mb-1"
+                    style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
+                  >
+                    Today Card Slot
+                  </h4>
+                  <p className="text-xs text-stone-500 dark:text-zinc-400 max-w-xs font-serif leading-relaxed">
+                    Time-aware Today cockpit (Morning, Daytime, Evening states) will be mounted here in Phase 2.
+                  </p>
                 </div>
 
-                {/* Bottom Focus Subject Bar (Focus Queue) */}
-                <div className="pt-3.5 border-t border-stone-100 dark:border-zinc-800 shrink-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-                        Focus Queue
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => openQuickCapture('Task: ')}
-                      className="text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 transition-colors text-[11px] font-medium flex items-center gap-1 font-sans cursor-pointer"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <span>Add Task</span>
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {/* Active Queue Task */}
-                    <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-[#006c49]/40 dark:border-emerald-500/40 shadow-xs flex items-center justify-between gap-3 cursor-pointer">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-5 h-5 rounded-full bg-[#006c49]/15 dark:bg-emerald-500/20 flex items-center justify-center shrink-0 text-[#006c49] dark:text-emerald-400">
-                          <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-semibold text-stone-900 dark:text-zinc-100 truncate font-serif">
-                            {todayTasks[0]?.title || 'Revise OS Ch. 4 (Virtual Memory)'}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-[#006c49] dark:text-emerald-400 shrink-0">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </div>
-
-                    {/* Secondary Queue Items */}
-                    <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-3 cursor-pointer">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-5 h-5 rounded-full border border-stone-300 dark:border-zinc-600 flex items-center justify-center shrink-0 text-stone-400">
-                          <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-medium text-stone-800 dark:text-zinc-200 truncate font-serif">
-                            {todayTasks[1]?.title || 'Prepare Product Architecture RFC doc'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-3 cursor-pointer">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-5 h-5 rounded-full border border-stone-300 dark:border-zinc-600 flex items-center justify-center shrink-0 text-stone-400">
-                          <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-medium text-stone-800 dark:text-zinc-200 truncate font-serif">
-                            {todayTasks[2]?.title || 'Review PRs & design tokens'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {/* Footer Status Bar */}
+                <div className="pt-3.5 border-t border-stone-100 dark:border-zinc-800 shrink-0 flex items-center justify-between text-xs text-stone-500 dark:text-zinc-400 font-sans">
+                  <span>3-Column Grid</span>
+                  <span className="font-mono text-[11px]">align-items: stretch</span>
                 </div>
               </div>
             </div>

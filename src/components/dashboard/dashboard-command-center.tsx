@@ -6,6 +6,7 @@ import { getNotes } from '@/lib/actions/notes';
 import { getAssignments } from '@/lib/actions/assignments';
 import { getFinancialAnalytics } from '@/lib/actions/finances';
 import { getTasks } from '@/lib/actions/tasks';
+import { getDailyLoopDashboardData } from '@/lib/actions/daily-loop';
 import { getTodayDate } from '@/lib/utils/date';
 import { Variant3DashboardView } from './variant3-dashboard-view';
 
@@ -20,16 +21,25 @@ function getWeekNumber(d: Date): number {
 export async function DashboardCommandCenter() {
   const todayStr = getTodayDate();
 
-  const [profile, habitsRes, projects, notes, assignments, financialAnalytics, todayTasks] =
-    await Promise.all([
-      getUserProfile().catch(() => null),
-      getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
-      getProjectsWithMetrics().catch(() => []),
-      getNotes().catch(() => []),
-      getAssignments().catch(() => []),
-      getFinancialAnalytics().catch(() => null),
-      getTasks(todayStr).catch(() => []),
-    ]);
+  const [
+    profile,
+    habitsRes,
+    projects,
+    notes,
+    assignments,
+    financialAnalytics,
+    todayTasks,
+    dailyLoopData,
+  ] = await Promise.all([
+    getUserProfile().catch(() => null),
+    getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
+    getProjectsWithMetrics().catch(() => []),
+    getNotes().catch(() => []),
+    getAssignments().catch(() => []),
+    getFinancialAnalytics().catch(() => null),
+    getTasks(todayStr).catch(() => []),
+    getDailyLoopDashboardData().catch(() => null),
+  ]);
 
   const displayName = profile?.display_name || 'Aryan';
 
@@ -58,6 +68,7 @@ export async function DashboardCommandCenter() {
       initialAssignments={assignments || []}
       financialAnalytics={financialAnalytics}
       todayTasks={todayTasks || []}
+      dailyLoopData={dailyLoopData}
     />
   );
 }

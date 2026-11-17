@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Sun, Moon } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useTheme } from '@/lib/theme/use-theme';
+import { useRadialThemeTransition } from '@/hooks/use-radial-theme-transition';
 
 interface WorkspaceHeaderProps {
   displayName?: string;
@@ -25,6 +29,9 @@ export function WorkspaceHeader({
 
   const isDockVisible = isDockVisibleProp !== undefined ? isDockVisibleProp : storeIsDockVisible;
   const toggleDock = onToggleDockProp || storeToggleDock;
+
+  const { isDark, setTheme } = useTheme();
+  const { triggerThemeTransition } = useRadialThemeTransition();
 
   useEffect(() => {
     try {
@@ -176,6 +183,43 @@ export function WorkspaceHeader({
               <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
             </svg>
             <span className="w-1.5 h-1.5 rounded-full bg-amberWarm absolute top-1 right-1" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              const nextTheme = isDark ? 'light' : 'dark';
+              triggerThemeTransition(e, nextTheme, setTheme);
+            }}
+            className="h-8 w-8 rounded-lg border border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-center text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 transition-colors cursor-pointer relative overflow-hidden shrink-0"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            suppressHydrationWarning
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {isDark ? (
+                <motion.div
+                  key="moon"
+                  initial={{ rotate: -90, scale: 0.7, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: 90, scale: 0.7, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                >
+                  <Moon className="w-4 h-4 text-zinc-300" strokeWidth={1.75} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="sun"
+                  initial={{ rotate: 90, scale: 0.7, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: -90, scale: 0.7, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                >
+                  <Sun className="w-4 h-4 text-stone-700" strokeWidth={1.75} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
           <div className="h-4 w-px bg-borderWarm dark:border-zinc-800/60 mx-1" />
           <Link

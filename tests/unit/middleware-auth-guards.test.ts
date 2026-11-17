@@ -116,4 +116,49 @@ describe('Middleware Route Guards (updateSession)', () => {
       });
     }
   });
+
+  describe('Local Development Auth Bypass (DEV_BYPASS_AUTH)', () => {
+    beforeEach(() => {
+      vi.mocked(createServerClient).mockReturnValue({
+        auth: {
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: null },
+            error: new Error('Auth session missing'),
+          }),
+        },
+      });
+    });
+
+    it('allows access to protected routes in development when DEV_BYPASS_AUTH is true', async () => {
+      (process.env as any).NODE_ENV = 'development';
+      process.env.DEV_BYPASS_AUTH = 'true';
+
+      const req = new NextRequest(new URL('http://localhost:3000/settings'));
+      const res = await updateSession(req);
+
+      expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('strictly enforces login redirects in production even if DEV_BYPASS_AUTH is true', async () => {
+      (process.env as any).NODE_ENV = 'production';
+      process.env.DEV_BYPASS_AUTH = 'true';
+
+      const req = new NextRequest(new URL('http://localhost:3000/settings'));
+      const res = await updateSession(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toContain('/login');
+    });
+
+    it('strictly enforces login redirects in development when DEV_BYPASS_AUTH is false or unset', async () => {
+      (process.env as any).NODE_ENV = 'development';
+      delete process.env.DEV_BYPASS_AUTH;
+
+      const req = new NextRequest(new URL('http://localhost:3000/settings'));
+      const res = await updateSession(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toContain('/login');
+    });
+  });
 });

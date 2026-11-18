@@ -241,7 +241,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     // 3. Wide focus ribbon & 2x2 bento matrix
     expect(html).toContain('data-purpose="wide-focus-ribbon"');
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
-    expect(html).toContain('gap-3 min-h-0');
+    expect(html).toContain('gap-6 items-start min-h-0');
 
     // 4. Daily Loop Stats Row and Today Card (placeholder removed)
     expect(html).toContain('Life Score');

@@ -41,7 +41,7 @@ export function DashboardRightColumn({
   const recentIdeas = notes.slice(0, 2);
 
   return (
-    <div className="lg:col-span-4 flex flex-col gap-3 sm:gap-4 min-w-0">
+    <div className="lg:col-span-3 space-y-6 min-w-0">
       {/* Assignments Card */}
       <Card
         as="article"

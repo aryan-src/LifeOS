@@ -46,7 +46,7 @@ describe('Modal State Synchronization & Footer Dock Auto-Hide Mechanics', () => 
     expect(useUIStore.getState().isModalOpen).toBe(false);
   });
 
-  it('renders AppShell footer dock at z-50 with exact full-width fixed styling', () => {
+  it('renders AppShell floating dock container at z-50 centered at bottom', () => {
     const html = renderToString(
       <AppShell>
         <div>Page Content</div>
@@ -54,9 +54,7 @@ describe('Modal State Synchronization & Footer Dock Auto-Hide Mechanics', () => 
     );
 
     expect(html).toContain('z-50');
-    expect(html).toContain(
-      'fixed bottom-0 left-0 right-0 w-full z-50 flex items-center justify-center py-1 px-4 backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-t border-stone-200/60 dark:border-zinc-800/60 shadow-xs overflow-visible'
-    );
+    expect(html).toContain('fixed bottom-5 inset-x-0 z-50 flex justify-center pointer-events-none px-4');
   });
 
   it('sets aria-hidden on footer dock when modal is active', () => {

@@ -1,27 +1,18 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 import {
-  AnimatePresence,
-  type MotionValue,
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-} from "motion/react";
-import {
-  LayoutDashboard,
-  Kanban,
-  CheckSquare,
+  LayoutGrid,
+  Folder,
+  ClipboardList,
   CheckCircle2,
   Wallet,
   FileText,
   Settings,
-  LayoutGrid,
-} from "lucide-react";
+} from 'lucide-react';
 
 export interface DockItem {
   title: string;
@@ -31,41 +22,49 @@ export interface DockItem {
 
 export const DEFAULT_DOCK_ITEMS: DockItem[] = [
   {
-    title: "Dashboard",
-    icon: <LayoutDashboard className="h-full w-full" />,
-    href: "/",
+    title: 'Dashboard',
+    icon: <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/dashboard',
   },
   {
-    title: "Projects",
-    icon: <Kanban className="h-full w-full" />,
-    href: "/projects",
+    title: 'Projects',
+    icon: <Folder className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/projects',
   },
   {
-    title: "Daily Tasks",
-    icon: <CheckSquare className="h-full w-full" />,
-    href: "/tasks",
+    title: 'Assignments',
+    icon: <ClipboardList className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/assignments',
   },
   {
-    title: "Habits",
-    icon: <CheckCircle2 className="h-full w-full" />,
-    href: "/habits",
+    title: 'Habits',
+    icon: <CheckCircle2 className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/habits',
   },
   {
-    title: "Finances",
-    icon: <Wallet className="h-full w-full" />,
-    href: "/finances",
+    title: 'Expenses',
+    icon: <Wallet className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/finances',
   },
   {
-    title: "Notes",
-    icon: <FileText className="h-full w-full" />,
-    href: "/notes",
+    title: 'Notes',
+    icon: <FileText className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/notes',
   },
   {
-    title: "Settings",
-    icon: <Settings className="h-full w-full" />,
-    href: "/settings",
+    title: 'Settings',
+    icon: <Settings className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden="true" />,
+    href: '/settings',
   },
 ];
+
+export function isDockRouteActive(pathname: string | null | undefined, href: string): boolean {
+  if (!pathname) return false;
+  if (href === '/' || href === '/dashboard') {
+    return pathname === '/' || pathname === '/dashboard';
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export interface FloatingDockProps {
   items?: DockItem[];
@@ -74,216 +73,55 @@ export interface FloatingDockProps {
   className?: string;
 }
 
-export const FloatingDock = ({
+/**
+ * Shared Stitch 7-icon floating pill navigation dock.
+ * Responsive across desktop and mobile without horizontal page overflow.
+ */
+export function FloatingDock({
   items = DEFAULT_DOCK_ITEMS,
   desktopClassName,
-  mobileClassName,
   className,
-}: FloatingDockProps) => {
-  return (
-    <>
-      <FloatingDockDesktop
-        className={desktopClassName || className}
-        items={items}
-      />
-      <FloatingDockMobile className={mobileClassName} items={items} />
-    </>
-  );
-};
-
-const FloatingDockMobile = ({
-  items,
-  className,
-}: {
-  items: DockItem[];
-  className?: string;
-}) => {
-  const [open, setOpen] = useState(false);
+}: FloatingDockProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("relative block md:hidden", className)}>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            layoutId="nav"
-            className="absolute inset-x-0 bottom-full mb-3 flex flex-col gap-2 items-center"
-          >
-            {items.map((item, idx) => {
-              const isActive =
-                item.href === "/" || item.href === "/dashboard"
-                  ? pathname === "/" || pathname === "/dashboard"
-                  : pathname === item.href || pathname.startsWith(item.href + "/");
-
-              const targetHref = item.href === "/" ? "/dashboard" : item.href;
-
-              return (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{
-                    opacity: 0,
-                    y: 10,
-                    transition: { delay: idx * 0.05 },
-                  }}
-                  transition={{ delay: (items.length - 1 - idx) * 0.05 }}
-                >
-                  <Link
-                    href={targetHref}
-                    key={item.title}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md border shadow-sm transition-colors",
-                      isActive
-                        ? "bg-ivory text-textMain border-borderWarm dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 shadow-xs"
-                        : "bg-ivory/90 text-textMuted border-borderWarm/70 hover:bg-[#FAF9F5] dark:bg-zinc-900/90 dark:text-zinc-300 dark:border-zinc-800 dark:hover:bg-zinc-800"
-                    )}
-                    aria-label={item.title}
-                    title={item.title}
-                  >
-                    <div className="h-4 w-4 flex items-center justify-center">
-                      {item.icon}
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md bg-white/90 dark:bg-zinc-950/90 border border-stone-200/60 dark:border-zinc-800/60 shadow-lg text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 transition-colors cursor-pointer"
-        aria-label="Toggle navigation dock"
-      >
-        <LayoutGrid className="h-5 w-5" />
-      </button>
-    </div>
-  );
-};
-
-const FloatingDockDesktop = ({
-  items,
-  className,
-}: {
-  items: DockItem[];
-  className?: string;
-}) => {
-  const mouseX = useMotionValue(Infinity);
-
-  return (
-    <motion.div
-      data-purpose="floating-dock-desktop"
-      onMouseMove={(e) => mouseX.set(e.pageX)}
-      onMouseLeave={() => mouseX.set(Infinity)}
+    <nav
+      aria-label="Primary workspace navigation"
+      data-purpose="floating-dock-pill"
       className={cn(
-        "mx-auto flex flex-row items-end justify-center h-12 gap-3 px-3 pb-1 overflow-visible hidden md:flex",
-        className
+        'pointer-events-auto inline-flex max-w-[calc(100vw-1.5rem)] items-center gap-1 sm:gap-1.5 rounded-full border border-outline-variant/40 bg-surface-container-lowest/95 px-2.5 sm:px-3 py-1.5 sm:py-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] backdrop-blur-md overflow-x-auto no-scrollbar',
+        desktopClassName || className
       )}
     >
-      {items.map((item) => (
-        <IconContainer key={item.title} mouseX={mouseX} {...item} />
-      ))}
-    </motion.div>
-  );
-};
+      {items.map((item) => {
+        const targetHref = item.href === '/' ? '/dashboard' : item.href;
+        const isActive = isDockRouteActive(pathname, item.href);
 
-function IconContainer({
-  mouseX,
-  title,
-  icon,
-  href,
-}: {
-  mouseX: MotionValue;
-  title: string;
-  icon: React.ReactNode;
-  href: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
-
-  const distance = useTransform(mouseX, (val) => {
-    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - bounds.x - bounds.width / 2;
-  });
-
-  const widthTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
-  const heightTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
-
-  const widthTransformIcon = useTransform(distance, [-150, 0, 150], [20, 40, 20]);
-  const heightTransformIcon = useTransform(distance, [-150, 0, 150], [20, 40, 20]);
-
-  const width = useSpring(widthTransform, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
-  });
-  const height = useSpring(heightTransform, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
-  });
-
-  const widthIcon = useSpring(widthTransformIcon, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
-  });
-  const heightIcon = useSpring(heightTransformIcon, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
-  });
-
-  const [hovered, setHovered] = useState(false);
-
-  const isActive =
-    href === "/" || href === "/dashboard"
-      ? pathname === "/" || pathname === "/dashboard"
-      : pathname === href || pathname.startsWith(href + "/");
-
-  const targetHref = href === "/" ? "/dashboard" : href;
-
-  return (
-    <Link
-      href={targetHref}
-      prefetch={true}
-      className="relative block"
-      title={title}
-      aria-label={title}
-    >
-      <motion.div
-        ref={ref}
-        style={{ width, height, transformOrigin: "bottom center" }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={cn(
-          "relative flex aspect-square items-center justify-center rounded-full origin-bottom transition-colors cursor-pointer select-none",
-          isActive
-            ? "bg-ivory text-textMain shadow-xs dark:bg-zinc-800 dark:text-zinc-100 ring-1 ring-borderWarm dark:ring-white/10"
-            : "bg-[#F5F3EC]/80 hover:bg-ivory dark:bg-zinc-900/60 dark:hover:bg-zinc-800/60 text-textMuted hover:text-textMain dark:text-zinc-400 dark:hover:text-zinc-100 border border-borderWarm/60 dark:border-zinc-800/40"
-        )}
-      >
-        <AnimatePresence>
-          {hovered && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 2, x: "-50%" }}
-              className="absolute -top-10 left-1/2 -translate-x-1/2 w-fit rounded-md border border-borderWarm bg-ivory px-2 py-0.5 text-xs font-medium whitespace-pre text-textMain shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 pointer-events-none z-50"
+        return (
+          <Link
+            key={item.title}
+            href={targetHref}
+            prefetch={true}
+            aria-label={item.title}
+            aria-current={isActive ? 'page' : undefined}
+            title={item.title}
+            className={cn(
+              'group relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50',
+              isActive
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            )}
+          >
+            {item.icon}
+            <span
+              className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-outline-variant/40 bg-surface-container-lowest px-2 py-0.5 font-mono text-[11px] font-medium text-on-surface opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:block"
+              aria-hidden="true"
             >
-              {title}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <motion.div
-          style={{ width: widthIcon, height: heightIcon }}
-          className="flex items-center justify-center"
-        >
-          {icon}
-        </motion.div>
-      </motion.div>
-    </Link>
+              {item.title}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

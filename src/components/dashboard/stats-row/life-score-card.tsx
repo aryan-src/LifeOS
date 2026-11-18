@@ -2,6 +2,9 @@
 
 import React from 'react';
 import type { LifeScoreBreakdown } from '@/lib/daily-loop/types';
+import { Card } from '@/components/ui/card';
+import { Pill } from '@/components/ui/pill';
+import { ProgressBar } from '@/components/ui/progress-bar';
 
 interface LifeScoreCardProps {
   lifeScore: LifeScoreBreakdown;
@@ -13,41 +16,40 @@ export function LifeScoreCard({ lifeScore }: LifeScoreCardProps) {
   const hasDelta = typeof delta === 'number' && delta !== 0;
 
   const deltaText = `${isPositive ? '+' : ''}${delta} vs yesterday`;
-  const deltaBadgeClass = isPositive
-    ? 'text-[#006c49] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/60'
-    : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60';
+  const statusLabel =
+    lifeScore.total >= 70
+      ? 'Strong rhythm'
+      : lifeScore.total >= 40
+      ? 'Building momentum'
+      : 'Starting today';
 
   return (
-    <div
-      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200 min-w-0"
+    <Card
+      padding="md"
+      surface="lowest"
+      className="flex flex-col justify-between gap-3 min-w-0"
       data-purpose="life-score-card"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
           Life Score
         </span>
         {hasDelta && (
-          <span
-            className={`text-[11px] font-mono tabular-nums lining-nums px-2 py-0.5 rounded-full ${deltaBadgeClass}`}
-            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
-          >
+          <Pill tone={isPositive ? 'secondary' : 'tertiary'}>
             {deltaText}
-          </span>
+          </Pill>
         )}
       </div>
 
-      <div className="flex items-baseline gap-2 mb-3">
+      <div className="flex items-baseline gap-1.5">
         <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums"
-          style={{
-            fontFamily: '"Playfair Display", Georgia, serif',
-            fontVariantNumeric: 'lining-nums tabular-nums',
-          }}
+          className="font-mono text-numeric-timer font-semibold tracking-tight text-on-surface"
+          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
         >
           {lifeScore.total}
         </span>
         <span
-          className="text-xs text-stone-500 dark:text-zinc-400 font-sans tabular-nums lining-nums"
+          className="font-mono text-label-md text-outline"
           style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
         >
           / 100
@@ -55,13 +57,17 @@ export function LifeScoreCard({ lifeScore }: LifeScoreCardProps) {
       </div>
 
       <div className="space-y-2">
-        <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-            style={{ width: `${Math.min(100, lifeScore.total)}%` }}
-          />
+        <ProgressBar
+          value={lifeScore.total}
+          tone="secondary"
+          size="xs"
+          label="Life Score"
+        />
+        <div className="flex items-center justify-between text-body-sm text-on-surface-variant">
+          <span className="font-mono text-label-sm text-outline">Daily index</span>
+          <span className="font-mono text-label-sm text-secondary">{statusLabel}</span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

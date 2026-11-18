@@ -13,6 +13,8 @@ import type {
   StreakState,
   TodayMode,
 } from '@/lib/daily-loop/types';
+import { Card } from '@/components/ui/card';
+import { Pill } from '@/components/ui/pill';
 import { MorningState, type TodayTaskItem } from './morning-state';
 import { DaytimeState, type ActiveTimerSnapshot } from './daytime-state';
 import { EveningState, type FinishedTodayItem } from './evening-state';
@@ -117,36 +119,31 @@ export function TodayCard({
     ? 'daytime'
     : clockMode;
 
-  const badgeClass =
+  const badgeTone =
     effectiveMode === 'morning'
-      ? 'text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60'
+      ? 'tertiary'
       : effectiveMode === 'evening'
-      ? 'text-stone-700 dark:text-zinc-200 bg-stone-100 dark:bg-zinc-800 border border-stone-200/70 dark:border-zinc-700'
-      : 'text-stone-600 dark:text-zinc-300 bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700';
+      ? 'neutral'
+      : 'secondary';
 
   return (
-    <article
-      className="h-full flex flex-col justify-between p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_4px_rgba(0,0,0,0.03)] relative"
+    <Card
+      as="article"
+      padding="md"
+      surface="lowest"
+      className="relative flex h-full flex-col justify-between"
       data-purpose="today-card"
       data-today-mode={effectiveMode}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-stone-100 dark:border-zinc-800 shrink-0">
-        <h3
-          className="text-base font-semibold text-stone-900 dark:text-zinc-100 tracking-tight"
-          style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
-        >
+      <div className="mb-4 flex shrink-0 items-center justify-between border-b border-outline-variant/30 pb-3">
+        <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
           Today
-        </h3>
+        </h2>
 
-        <span
-          className={`text-[11px] font-sans font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1.5 ${badgeClass}`}
-        >
-          {effectiveMode === 'evening' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-          )}
-          <span>{MODE_LABELS[effectiveMode]}</span>
-        </span>
+        <Pill tone={badgeTone} dot={true}>
+          {MODE_LABELS[effectiveMode]}
+        </Pill>
       </div>
 
       {/* Mode Content */}
@@ -189,6 +186,6 @@ export function TodayCard({
           isDevMockActive={isDevMockActive}
         />
       )}
-    </article>
+    </Card>
   );
 }

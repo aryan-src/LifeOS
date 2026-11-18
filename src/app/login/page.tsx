@@ -79,13 +79,21 @@ function LoginContent() {
       setError(null);
 
       const supabase = createClient();
-      const origin = window.location.origin;
-      const callbackUrl = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+
+      // Persist requested post-login path in a short-lived cookie so redirectTo stays clean
+      // and matches exact Supabase Redirect URL allow-list entries without query strings.
+      if (typeof document !== 'undefined') {
+        if (nextPath !== '/dashboard') {
+          document.cookie = `lifeos_oauth_next=${encodeURIComponent(nextPath)}; Path=/; Max-Age=300; SameSite=Lax`;
+        } else {
+          document.cookie = 'lifeos_oauth_next=; Path=/; Max-Age=0; SameSite=Lax';
+        }
+      }
 
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

@@ -1,9 +1,22 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Lightbulb,
+  Pin,
+  Rocket,
+  Sparkles,
+} from 'lucide-react';
 import { NoteCard } from './note-card';
 import { NoteCreateInput } from './note-create-input';
 import { DeskJotter } from './desk-jotter';
+import { Card } from '@/components/ui/card';
+import { Pill } from '@/components/ui/pill';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Modal } from '@/components/ui/modal';
 import {
   togglePinNote,
   deleteNote,
@@ -16,9 +29,16 @@ interface NotesGridProps {
   initialNotes: NoteWithProject[];
 }
 
+const LINING_NUMS_STYLE: React.CSSProperties = {
+  fontVariantNumeric: 'lining-nums tabular-nums',
+};
+
+const TAG_FILTERS = ['ai-research', 'engineering', 'design', 'academics'] as const;
+
 export function NotesGrid({ initialNotes }: NotesGridProps) {
   const [notes, setNotes] = useState(initialNotes);
-  const [selectedNoteForPromotion, setSelectedNoteForPromotion] = useState<NoteWithProject | null>(null);
+  const [selectedNoteForPromotion, setSelectedNoteForPromotion] =
+    useState<NoteWithProject | null>(null);
   const [isPromoting, setIsPromoting] = useState(false);
   const [promotionResult, setPromotionResult] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -32,18 +52,16 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     });
   };
 
-  // Synchronize state when server updates initialNotes
   useEffect(() => {
     setNotes(initialNotes);
   }, [initialNotes]);
 
-  // Load / persist Desk Jotter from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('lifeos_desk_jotter');
       if (saved) setDeskPadContent(saved);
     } catch {
-      // LocalStorage unavailable
+      // ignore storage errors
     }
   }, []);
 
@@ -52,7 +70,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     try {
       localStorage.setItem('lifeos_desk_jotter', val);
     } catch {
-      // Ignore
+      // ignore storage errors
     }
   };
 
@@ -87,7 +105,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
 
     const res = await createNote(null, formData);
     if (!res.success) {
-      setErrorMessage(res.error || 'Failed to capture spark.');
+      setErrorMessage(res.error || 'Failed to capture note.');
     }
   };
 
@@ -97,7 +115,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     if (!deskPadContent.trim() || isAppendingDeskPad) return;
     setIsAppendingDeskPad(true);
     try {
-      const title = deskPadContent.trim().split('\n')[0].slice(0, 60) || 'Desk Jotter Capture';
+      const title =
+        deskPadContent.trim().split('\n')[0].slice(0, 60) || 'Desk Jotter Capture';
       const formData = new FormData();
       formData.append('title', title);
       formData.append('content', deskPadContent.trim());
@@ -109,7 +128,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
         try {
           localStorage.removeItem('lifeos_desk_jotter');
         } catch {
-          // Ignore
+          // ignore
         }
       } else {
         setErrorMessage(res.error || 'Failed to save to vault.');
@@ -141,7 +160,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     setIsPromoting(false);
     if (res.success && res.data) {
       setPromotionResult(
-        `Successfully promoted to #${res.data.slug} (${res.data.tasks_created} tasks extracted).`
+        `Promoted to #${res.data.slug} (${res.data.tasks_created} tasks extracted).`
       );
       setTimeout(() => {
         setSelectedNoteForPromotion(null);
@@ -152,7 +171,6 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     }
   };
 
-  // Filter notes - memoized so keystrokes in desk jotter or quick capture do not recompute arrays
   const filteredNotes = useMemo(() => {
     if (!filterTag) return notes;
     return notes.filter(
@@ -170,110 +188,118 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
     [filteredNotes]
   );
 
-  // Analytics - memoized against notes array
-  const totalSparks = useMemo(() => notes.length, [notes]);
-  const promotedCount = useMemo(
-    () => notes.filter((n) => n.project_id).length,
-    [notes]
-  );
-  const conversionRate = useMemo(
-    () => (totalSparks > 0 ? Math.round((promotedCount / totalSparks) * 100) : 0),
-    [totalSparks, promotedCount]
-  );
+  const totalSparks = notes.length;
+  const promotedCount = useMemo(() => notes.filter((n) => n.project_id).length, [notes]);
+  const conversionRate =
+    totalSparks > 0 ? Math.round((promotedCount / totalSparks) * 100) : 0;
+
+  // Derived tag distribution from real notes (zero hardcoded percentages)
+  const tagDistribution = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const note of notes) {
+      const tags = Array.isArray(note.tags) && note.tags.length > 0 ? note.tags : ['untagged'];
+      for (const t of tags) {
+        counts.set(t, (counts.get(t) || 0) + 1);
+      }
+    }
+    const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const sum = entries.reduce((acc, [, c]) => acc + c, 0);
+    const toneClasses = ['bg-secondary', 'bg-on-tertiary-container', 'bg-primary', 'bg-outline'];
+    return entries.map(([tag, count], idx) => ({
+      tag,
+      count,
+      percent: sum > 0 ? Math.round((count / sum) * 100) : 0,
+      colorClass: toneClasses[idx % toneClasses.length],
+    }));
+  }, [notes]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-xl flex flex-col gap-space-xl">
-      {/* Toast Alert */}
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 sm:gap-8 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-16">
       {errorMessage && (
-        <div className="flex items-center justify-between rounded-xl border border-error-container bg-error-container p-4 text-on-error-container">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="material-symbols-outlined text-[18px]">error</span>
+        <div className="flex items-center justify-between rounded-xl border border-error/30 bg-error-container p-4 text-on-error-container">
+          <div className="flex items-center gap-2 font-sans text-body-sm font-medium">
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{errorMessage}</span>
           </div>
           <button
+            type="button"
             onClick={() => setErrorMessage(null)}
-            className="text-xs font-semibold hover:underline"
+            className="font-mono text-label-sm font-semibold hover:underline cursor-pointer"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Header Section */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-space-sm text-outline dark:text-zinc-400 font-label-sm text-label-sm">
-            <span>LifeOS</span>
-            <span className="text-outline-variant dark:text-zinc-600">/</span>
-            <span>Workspace</span>
-            <span className="text-outline-variant dark:text-zinc-600">/</span>
-            <span className="text-on-surface dark:text-zinc-100 font-medium">Ideas & Notes</span>
+      {/* Stitch Notes Page Header */}
+      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 md:flex-row md:items-end">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Pill tone="neutral" dot={true}>
+              {totalSparks} {totalSparks === 1 ? 'note' : 'notes'}
+            </Pill>
+            {promotedCount > 0 && (
+              <Pill tone="secondary">{promotedCount} promoted</Pill>
+            )}
           </div>
-          <div className="flex items-baseline gap-space-sm mt-1">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 tracking-tight">
-              Ideas & Notes
-            </h1>
-            <span className="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high dark:bg-zinc-800 text-on-surface-variant dark:text-zinc-300 font-medium">
-              {totalSparks} Active Sparks
-            </span>
-          </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 max-w-2xl">
-            Freeform scratchpad, quick capture repository, and 1-click project promotion engine.
+          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+            Notes
+          </h1>
+          <p className="max-w-2xl font-sans text-body-sm text-on-surface-variant">
+            Freeform scratchpad, quick capture repository, and one-click project promotion.
           </p>
         </div>
 
-        {/* Action Cluster */}
-        <div className="flex flex-wrap items-center gap-space-sm">
-          {/* Tag Filter Pills */}
-          <div className="flex items-center gap-1">
+        {/* Tag Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter notes by tag">
+          <button
+            type="button"
+            onClick={() => handleFilterChange(null)}
+            className={`rounded-full px-3 py-1 font-mono text-label-sm transition-colors cursor-pointer ${
+              filterTag === null
+                ? 'bg-primary text-on-primary font-medium'
+                : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            All
+          </button>
+          {TAG_FILTERS.map((tag) => (
             <button
-              onClick={() => handleFilterChange(null)}
-              className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
-                filterTag === null
-                  ? 'bg-surface-container-high dark:bg-zinc-800 text-on-surface dark:text-zinc-100 font-medium'
-                  : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100'
+              key={tag}
+              type="button"
+              onClick={() => handleFilterChange(filterTag === tag ? null : tag)}
+              className={`rounded-full px-3 py-1 font-mono text-label-sm transition-colors cursor-pointer ${
+                filterTag === tag
+                  ? 'bg-primary text-on-primary font-medium'
+                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
               }`}
             >
-              All
+              #{tag}
             </button>
-            {['ai-research', 'engineering', 'design', 'academics'].map((tag) => (
-              <button
-                key={tag}
-                onClick={() => handleFilterChange(filterTag === tag ? null : tag)}
-                className={`px-2.5 py-1 rounded font-label-sm text-label-sm transition-colors ${
-                  filterTag === tag
-                    ? 'bg-surface-container-high dark:bg-zinc-800 text-on-surface dark:text-zinc-100 font-medium'
-                    : 'text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100'
-                }`}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
       </header>
 
-      {/* Adaptive Spring Quick Capture Bar (Jahed AI-Input Design) */}
+      {/* Quick Capture Input */}
       <NoteCreateInput onSubmit={handleQuickSubmit} />
 
-      {/* Main Workspace Split: Core Cards Feed & Persistent Desk Jotter */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        {/* Primary Feed (Left 7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-space-xl">
-          {/* Pinned / High-Sparks Shelf */}
+      {/* Main Split Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left: Notes Stream (7 Cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
           {pinnedNotes.length > 0 && (
-            <section className="flex flex-col gap-space-sm">
+            <section className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-400">
-                  <span className="material-symbols-outlined text-[14px]">push_pin</span>
-                  <span>Pinned Sparks & High Impact</span>
+                <div className="flex items-center gap-1.5 font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <Pin className="h-3.5 w-3.5 text-secondary" aria-hidden="true" />
+                  <span>Pinned Notes</span>
                 </div>
-                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
+                <span className="font-mono text-label-sm text-outline" style={LINING_NUMS_STYLE}>
                   {pinnedNotes.length} pinned
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pinnedNotes.map((note) => (
                   <NoteCard
                     key={note.id}
@@ -287,30 +313,25 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             </section>
           )}
 
-          {/* Fresh Scratchpad Stream */}
-          <section className="flex flex-col gap-space-sm">
+          <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-wider text-outline dark:text-zinc-400">
-                <span className="material-symbols-outlined text-[14px]">stream</span>
-                <span>Fresh Scratchpad Stream</span>
+              <div className="flex items-center gap-1.5 font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
+                <Sparkles className="h-3.5 w-3.5 text-on-tertiary-container" aria-hidden="true" />
+                <span>Scratchpad Stream</span>
               </div>
-              <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400">
-                {unpinnedNotes.length} notes
+              <span className="font-mono text-label-sm text-outline" style={LINING_NUMS_STYLE}>
+                {unpinnedNotes.length} {unpinnedNotes.length === 1 ? 'note' : 'notes'}
               </span>
             </div>
 
             {unpinnedNotes.length === 0 && pinnedNotes.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-outline-variant/50 dark:border-zinc-800/60 p-12 text-center bg-surface-container-low/30 dark:bg-zinc-900/40">
-                <span className="material-symbols-outlined text-[36px] text-outline dark:text-zinc-400 mb-2">
-                  lightbulb
-                </span>
-                <p className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100">No ideas captured yet.</p>
-                <p className="font-body-sm text-body-sm text-outline dark:text-zinc-400 mt-1">
-                  Type a quick spark into the capture bar above or use Quick Capture (⌘K).
-                </p>
-              </div>
+              <EmptyState
+                icon={<Lightbulb className="h-5 w-5" />}
+                title="No ideas captured yet."
+                description="Type a quick thought into the capture bar above or press ⌘K from anywhere."
+              />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {unpinnedNotes.map((note) => (
                   <NoteCard
                     key={note.id}
@@ -325,9 +346,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           </section>
         </div>
 
-        {/* Right Column: Desk Jotter & Vault Dynamics (5 Cols - Spacious Jotter Room) */}
-        <div className="lg:col-span-5 flex flex-col gap-space-md">
-          {/* Spring-Animated Desk Jotter with Jahed AI-Input Design */}
+        {/* Right: Persistent Desk Jotter & Vault Metrics (5 Cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-4">
           <DeskJotter
             content={deskPadContent}
             onChange={handleDeskPadChange}
@@ -335,148 +355,161 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             isAppending={isAppendingDeskPad}
           />
 
-          {/* Vault Health & Metrics Card */}
-          <div className="bg-surface-container-lowest dark:bg-zinc-900/50 rounded-xl p-space-md shadow-sm flex flex-col gap-space-md border border-outline-variant/30 dark:border-zinc-800/60">
+          <Card padding="md" surface="lowest" className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="font-headline-sm text-headline-sm text-on-surface dark:text-zinc-100 font-semibold">
+              <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
                 Vault Dynamics
-              </span>
-              <span className="material-symbols-outlined text-[18px] text-outline dark:text-zinc-400">analytics</span>
+              </h2>
+              <BarChart3 className="h-4 w-4 text-on-surface-variant" aria-hidden="true" />
             </div>
 
-            <div className="grid grid-cols-2 gap-space-sm">
-              <div className="bg-surface-container-low dark:bg-zinc-800/40 p-space-sm rounded flex flex-col">
-                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
-                  Total Sparks
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-surface-container-low p-3">
+                <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  Total Notes
                 </span>
-                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold mt-1">
+                <div
+                  className="mt-1 font-mono text-stat-lg font-semibold text-on-surface"
+                  style={LINING_NUMS_STYLE}
+                >
                   {totalSparks}
-                </span>
-                <span className="font-label-sm text-label-sm text-secondary dark:text-emerald-400 mt-0.5">
-                  In Repository
-                </span>
+                </div>
+                <span className="font-mono text-[11px] text-secondary">In repository</span>
               </div>
 
-              <div className="bg-surface-container-low dark:bg-zinc-800/40 p-space-sm rounded flex flex-col">
-                <span className="font-label-sm text-label-sm text-outline dark:text-zinc-400 uppercase tracking-wider">
+              <div className="rounded-xl bg-surface-container-low p-3">
+                <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
                   Promoted
                 </span>
-                <span className="font-headline-lg text-headline-lg text-on-surface dark:text-zinc-100 font-semibold mt-1">
+                <div
+                  className="mt-1 font-mono text-stat-lg font-semibold text-on-surface"
+                  style={LINING_NUMS_STYLE}
+                >
                   {promotedCount}
-                </span>
-                <span className="font-label-sm text-label-sm text-on-surface-variant dark:text-zinc-400 mt-0.5">
+                </div>
+                <span
+                  className="font-mono text-[11px] text-on-surface-variant"
+                  style={LINING_NUMS_STYLE}
+                >
                   {conversionRate}% conversion
                 </span>
               </div>
             </div>
 
-            {/* Distribution Visual */}
-            <div className="flex flex-col gap-2 pt-1">
-              <div className="flex items-center justify-between font-label-sm text-label-sm">
-                <span className="text-on-surface-variant dark:text-zinc-300 font-medium">Idea Distribution</span>
-                <span className="text-outline dark:text-zinc-400">Top domains</span>
+            {tagDistribution.length > 0 && (
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant">
+                  <span>Tag distribution</span>
+                  <span className="text-outline">Live breakdown</span>
+                </div>
+                <div className="flex h-2 w-full overflow-hidden rounded-full bg-surface-container">
+                  {tagDistribution.map((entry) => (
+                    <div
+                      key={entry.tag}
+                      className={`h-full ${entry.colorClass}`}
+                      style={{ width: `${entry.percent}%` }}
+                      title={`#${entry.tag}: ${entry.percent}%`}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="w-full h-2 rounded-full bg-surface-container dark:bg-zinc-800 flex overflow-hidden">
-                <div className="h-full bg-primary dark:bg-zinc-200" style={{ width: '40%' }} title="AI & Research" />
-                <div className="h-full bg-secondary dark:bg-emerald-400" style={{ width: '30%' }} title="Engineering" />
-                <div className="h-full bg-tertiary-container dark:bg-amber-400" style={{ width: '15%' }} title="Design" />
-                <div className="h-full bg-outline dark:bg-zinc-600" style={{ width: '15%' }} title="Academics" />
-              </div>
-            </div>
-          </div>
+            )}
+          </Card>
         </div>
       </div>
 
-      {/* Relational "Promote to Project" Modal */}
-      {selectedNoteForPromotion && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-outline-variant/40 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-surface-container-high dark:border-zinc-800 pb-3">
-              <div className="flex items-center gap-2 text-primary dark:text-zinc-100">
-                <span className="material-symbols-outlined text-[20px]">rocket_launch</span>
-                <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-zinc-100">
-                  Promote Spark to Project
-                </h3>
+      {/* Promote Note to Project Modal (with shared focus trap & Esc dismissal) */}
+      <Modal
+        open={selectedNoteForPromotion !== null}
+        onClose={() => setSelectedNoteForPromotion(null)}
+        title="Promote Note to Project"
+        description="Creates a new project with a unique slug and extracts checklist items as child tasks."
+        maxWidth="lg"
+      >
+        {selectedNoteForPromotion && (
+          <form onSubmit={handleConfirmPromotion} className="space-y-4">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="promote-project-title"
+                className="block font-mono text-label-sm uppercase tracking-wider text-on-surface-variant"
+              >
+                Project Title
+              </label>
+              <input
+                id="promote-project-title"
+                name="title"
+                required
+                defaultValue={selectedNoteForPromotion.title}
+                className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-low px-3.5 py-2 font-sans text-body-sm text-on-surface focus:border-secondary focus:outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="promote-project-priority"
+                  className="block font-mono text-label-sm uppercase tracking-wider text-on-surface-variant"
+                >
+                  Priority
+                </label>
+                <select
+                  id="promote-project-priority"
+                  name="priority"
+                  defaultValue="2"
+                  className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 font-mono text-label-sm text-on-surface focus:border-secondary focus:outline-none"
+                >
+                  <option value="4">P1 - Urgent</option>
+                  <option value="3">P2 - High</option>
+                  <option value="2">P3 - Medium</option>
+                  <option value="1">P4 - Low</option>
+                </select>
               </div>
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="promote-project-budget"
+                  className="block font-mono text-label-sm uppercase tracking-wider text-on-surface-variant"
+                >
+                  Budget (₹)
+                </label>
+                <input
+                  id="promote-project-budget"
+                  name="budget"
+                  type="number"
+                  step="0.01"
+                  defaultValue="0.00"
+                  className="w-full rounded-xl border border-outline-variant/60 bg-surface-container-low px-3 py-2 font-mono text-label-sm text-on-surface focus:border-secondary focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {promotionResult && (
+              <div className="flex items-center gap-2 rounded-xl border border-secondary/30 bg-secondary/12 p-3 font-mono text-label-sm text-secondary">
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{promotionResult}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 border-t border-outline-variant/30 pt-3">
               <button
                 type="button"
                 onClick={() => setSelectedNoteForPromotion(null)}
-                className="rounded-lg p-1 text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100 hover:bg-surface-container dark:hover:bg-zinc-800"
+                className="rounded-xl border border-outline-variant/50 px-4 py-2 font-sans text-body-sm text-on-surface-variant transition-colors hover:bg-surface-container cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isPromoting}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-2 font-sans text-body-sm font-medium text-on-secondary transition-opacity hover:opacity-95 disabled:opacity-50 cursor-pointer"
+              >
+                <Rocket className="h-4 w-4" aria-hidden="true" />
+                <span>{isPromoting ? 'Promoting...' : 'Confirm Promotion'}</span>
               </button>
             </div>
-
-            <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400">
-              This initiates an atomic transaction creating a new Project, generating its unique slug, and extracting any markdown checklist items as child tasks.
-            </p>
-
-            <form onSubmit={handleConfirmPromotion} className="space-y-3.5">
-              <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Project Title</label>
-                <input
-                  name="title"
-                  required
-                  defaultValue={selectedNoteForPromotion.title}
-                  className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Priority</label>
-                  <select
-                    name="priority"
-                    defaultValue="2"
-                    className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-label-sm text-label-sm text-on-surface dark:text-zinc-100 focus:outline-none"
-                  >
-                    <option value="4">P1 - Urgent</option>
-                    <option value="3">P2 - High</option>
-                    <option value="2">P3 - Medium</option>
-                    <option value="1">P4 - Low</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="font-label-sm text-label-sm font-medium text-on-surface dark:text-zinc-200">Budget (₹)</label>
-                  <input
-                    name="budget"
-                    type="number"
-                    step="0.01"
-                    defaultValue="0.00"
-                    className="w-full rounded-lg border border-outline-variant/40 dark:border-zinc-700/60 bg-surface-container-low dark:bg-zinc-800/50 px-3 py-2 font-body-sm text-body-sm text-on-surface dark:text-zinc-100 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {promotionResult && (
-                <div className="flex items-center gap-2 rounded-lg border border-secondary/30 dark:border-emerald-800/40 bg-secondary-container dark:bg-emerald-950/40 p-2.5 font-label-sm text-label-sm text-on-secondary-fixed-variant dark:text-emerald-300">
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                  <span>{promotionResult}</span>
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-surface-container-high dark:border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => setSelectedNoteForPromotion(null)}
-                  className="rounded-lg px-3.5 py-1.5 font-body-sm text-body-sm text-outline dark:text-zinc-400 hover:text-on-surface dark:hover:text-zinc-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPromoting}
-                  className="flex items-center gap-1.5 rounded-lg bg-primary dark:bg-zinc-100 px-4 py-1.5 font-body-sm text-body-sm font-medium text-on-primary dark:text-zinc-900 hover:opacity-90 disabled:opacity-50"
-                >
-                  <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
-                  <span>{isPromoting ? 'Promoting...' : 'Confirm Promotion'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

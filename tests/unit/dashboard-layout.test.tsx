@@ -354,8 +354,9 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     // 4. Zero italics on the dashboard
     expect(html).not.toContain('italic');
 
-    // 5. Expenses heading uses Playfair Display matching other cards
-    expect(html).toMatch(/font-family:&quot;Playfair Display&quot;, Georgia, serif[^>]*>Expenses<\/h3>/);
+    // 5. Stitch typography rule: Playfair Display strictly for page title, Geist for card headings
+    expect(html).toContain('font-serif text-page-title');
+    expect(html).toMatch(/font-sans[^>]*>Expenses<\/h2>/);
 
     // 7. Pocket Ledger clearly labeled with "left"
     expect(html).toContain('left of ₹');

@@ -28,18 +28,50 @@ function GoogleIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
+function sanitizeInternalNextPath(rawPath: string | null): string {
+  if (!rawPath) return '/dashboard';
+  const trimmed = rawPath.trim();
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.includes('\\') ||
+    trimmed === '/'
+  ) {
+    return '/dashboard';
+  }
+  return trimmed;
+}
+
+function resolveInitialAuthError(
+  errorCode: string | null,
+  errorDescription: string | null
+): string | null {
+  if (!errorCode) return null;
+  if (errorCode === 'access_denied') {
+    return 'Google sign-in was cancelled. Please try again when ready.';
+  }
+  if (errorCode === 'auth_callback_failed' || errorCode === 'auth-failed') {
+    return 'Authentication session expired or failed. Please try again.';
+  }
+  if (errorDescription) {
+    return errorDescription;
+  }
+  return 'Unable to authenticate. Please try again.';
+}
+
 function LoginContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
-    searchParams.get('error')
-      ? searchParams.get('error') === 'auth_callback_failed'
-        ? 'Authentication session expired or failed. Please try again.'
-        : 'Unable to authenticate. Please try again.'
-      : null
+  const [error, setError] = useState<string | null>(() =>
+    resolveInitialAuthError(
+      searchParams.get('error'),
+      searchParams.get('error_description')
+    )
   );
 
-  const redirectTo = searchParams.get('redirectTo') || searchParams.get('next');
+  const nextPath = sanitizeInternalNextPath(
+    searchParams.get('redirectTo') || searchParams.get('next')
+  );
 
   const handleGoogleLogin = async () => {
     try {
@@ -48,10 +80,7 @@ function LoginContent() {
 
       const supabase = createClient();
       const origin = window.location.origin;
-
-      const callbackUrl = redirectTo
-        ? `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`
-        : `${origin}/auth/callback`;
+      const callbackUrl = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',

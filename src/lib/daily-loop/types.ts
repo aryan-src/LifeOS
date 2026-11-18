@@ -113,6 +113,15 @@ export type FocusTimerStatus = 'idle' | 'running' | 'paused' | 'finished' | 'bre
 
 export type PersistableFocusMode = 'pomodoro' | 'deep-work';
 
+export type FocusSessionErrorCode =
+  | 'dev_bypass'
+  | 'not_authenticated'
+  | 'validation'
+  | 'db_error'
+  | 'unknown';
+
+export type FocusSaveStatus = 'idle' | 'saved' | 'error';
+
 export interface PendingFocusSession {
   clientSessionId: string;
   mode: PersistableFocusMode;
@@ -148,6 +157,8 @@ export interface FocusTimerState {
   lastDurationMinutes: number;
   pendingUnsavedSessions: PendingFocusSession[];
   saveError: string | null;
+  saveErrorCode?: FocusSessionErrorCode | null;
+  lastSaveStatus?: FocusSaveStatus;
   soundEnabled: boolean;
   notificationsEnabled: boolean;
 }

@@ -4,7 +4,6 @@ import { renderToString } from 'react-dom/server';
 import { BentoSettings } from '@/components/settings/bento-settings';
 import type { Profile } from '@/types/database.types';
 
-// Mock server actions and export
 vi.mock('@/lib/actions/profile', () => ({
   updateProfile: vi.fn().mockResolvedValue({ success: true }),
   updateUserProfile: vi.fn().mockResolvedValue({ success: true }),
@@ -20,58 +19,56 @@ vi.mock('@/lib/actions/export', () => ({
 
 const mockProfile: Profile = {
   id: 'test-user-id',
-  display_name: 'Aryan',
-  theme_preference: 'default',
+  display_name: 'Maya Patel',
+  theme_preference: 'dark',
   currency_symbol: '₹',
   monthly_allowance_target: 5000,
+  daily_focus_goal_minutes: 240,
+  timezone: 'Asia/Kolkata',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
 
-describe('BentoSettings Component Tests', () => {
-  it('renders all 4 sections in 12-column Bento Grid architecture', () => {
+describe('Stitch Settings Screen (BentoSettings)', () => {
+  it('renders Playfair title, Light/Dark/System theme toggle, profile, budget baseline, and real exports with zero mockup artifacts', () => {
     const html = renderToString(
-      <BentoSettings initialProfile={mockProfile} userEmail="test@student.edu" />
-    );
+      <BentoSettings initialProfile={mockProfile} userEmail="maya@university.edu" />
+    ).replace(/<!--.*?-->/g, '');
 
-    // Header & Badge
-    expect(html).toContain('WORKSPACE PREFERENCES · MULTI-TENANT');
-    expect(html).toContain('Settings &amp; Personalization');
-
-    // Section 1: Student Profile (col-span-5)
+    expect(html).toContain('font-serif text-page-title');
+    expect(html).toContain('Settings');
     expect(html).toContain('id="sectionProfile"');
-    expect(html).toContain('Student Profile');
-    expect(html).toContain('AR'); // Initials for Aryan
-    expect(html).toContain('Sophomore · CS Major');
+    expect(html).toContain('MP');
+    expect(html).toContain('maya@university.edu');
+    expect(html).toContain('Asia/Kolkata');
 
-    // Section 2: Financial Baseline & Liquidity Engine (col-span-7)
     expect(html).toContain('id="sectionFinance"');
-    expect(html).toContain('Financial Baseline &amp; Liquidity Engine');
     expect(html).toContain('Calculated Safe Pace');
-    expect(html).toContain('166.67'); // 5000 / 30
+    expect(html).toContain('166.67');
+    expect(html).toContain('4h / day');
 
-    // Section 3: Workspace Atmosphere (5 Presets)
-    expect(html).toContain('id="sectionAtmosphere"');
-    expect(html).toContain('Workspace Atmosphere');
-    expect(html).toContain('Spatial Glassmorphism');
-    expect(html).toContain('Risograph Editorial');
-    expect(html).toContain('Nordic Ceramic &amp; Linen');
-    expect(html).toContain('TUI / Terminal');
-    expect(html).toContain('Tactile Functionalism');
+    expect(html).toContain('id="sectionAppearance"');
+    expect(html).toContain('data-purpose="theme-mode-selector"');
+    expect(html).toContain('Light');
+    expect(html).toContain('Dark');
+    expect(html).toContain('System');
 
-    // Section 4: Data Ownership & Vault (col-span-5)
     expect(html).toContain('id="sectionVault"');
-    expect(html).toContain('Data Ownership &amp; Vault');
-    expect(html).toContain('Obsidian Vault');
+    expect(html).toContain('Notes Markdown Archive');
     expect(html).toContain('Spreadsheet Tables');
-    expect(html).toContain('Full Schema Snapshot');
-
-    // Floating save bar
-    expect(html).toContain('Reset Defaults');
+    expect(html).toContain('Full Account Snapshot');
     expect(html).toContain('Save Changes');
+
+    // Mockup-only items must be strictly absent
+    expect(html).not.toContain('v2.4.0');
+    expect(html).not.toContain('Cloud Node #4');
+    expect(html).not.toContain('Kyoto Rain');
+    expect(html).not.toContain('Delete account');
+    expect(html).not.toContain('Sophomore · CS Major');
+    expect(html).not.toContain('italic');
   });
 
-  it('correctly calculates safe pace when given a different allowance target', () => {
+  it('recomputes safe daily pace when allowance target and currency change', () => {
     const customProfile: Profile = {
       ...mockProfile,
       monthly_allowance_target: 9000,
@@ -79,11 +76,9 @@ describe('BentoSettings Component Tests', () => {
     };
 
     const html = renderToString(
-      <BentoSettings initialProfile={customProfile} userEmail="test@student.edu" />
-    );
+      <BentoSettings initialProfile={customProfile} userEmail="maya@university.edu" />
+    ).replace(/<!--.*?-->/g, '');
 
-    // 9000 / 30 = 300.00
-    expect(html).toContain('300.00');
-    expect(html).toContain('$');
+    expect(html).toContain('$300.00 / day');
   });
 });

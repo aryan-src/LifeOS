@@ -551,7 +551,7 @@ describe('Global Focus UI — Visual Contract, Lining Numerals & Zero Italics', 
     expect(html).toContain('3:42 PM');
     expect(html).toContain('Take a 5 min break');
     expect(html).toContain('Start another');
-    expect(html).toContain('Couldn&#x27;t save yet, retrying');
+    expect(html).toContain('Couldn&#x27;t save yet. Check your connection and sign in, then press Retry.');
     expect(html).not.toContain('italic');
   });
 

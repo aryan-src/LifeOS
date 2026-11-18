@@ -1,8 +1,13 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { formatTimeInTimezone } from '@/lib/daily-loop/business-logic';
-import { formatSaveRetryNotice } from '@/lib/daily-loop/focus-timer-engine';
+import { getSaveNoticeContent } from '@/lib/daily-loop/focus-timer-engine';
+import type {
+  FocusSaveStatus,
+  FocusSessionErrorCode,
+} from '@/lib/daily-loop/types';
 
 const LINING_NUMS_STYLE: React.CSSProperties = {
   fontVariantNumeric: 'lining-nums tabular-nums',
@@ -16,6 +21,8 @@ export interface SessionDoneViewProps {
   userTimezone: string;
   hasUnsavedRetry: boolean;
   saveError?: string | null;
+  saveErrorCode?: FocusSessionErrorCode | null;
+  lastSaveStatus?: FocusSaveStatus;
   isSaving: boolean;
   onTakeBreak: () => void;
   onStartAnother: () => void;
@@ -31,6 +38,8 @@ export function SessionDoneView({
   userTimezone,
   hasUnsavedRetry,
   saveError = null,
+  saveErrorCode = null,
+  lastSaveStatus = 'idle',
   isSaving,
   onTakeBreak,
   onStartAnother,
@@ -41,6 +50,15 @@ export function SessionDoneView({
     endedWhileAway && finishedAtMs !== null
       ? formatTimeInTimezone(finishedAtMs, userTimezone)
       : null;
+
+  const showSavedConfirmation = !hasUnsavedRetry && !isSaving && lastSaveStatus === 'saved';
+  const showSaveBanner = hasUnsavedRetry || isSaving || showSavedConfirmation;
+  const notice = getSaveNoticeContent({
+    saveError,
+    saveErrorCode,
+    isSaving,
+    justSaved: showSavedConfirmation,
+  });
 
   return (
     <div
@@ -88,24 +106,37 @@ export function SessionDoneView({
         )}
       </div>
 
-      {/* Non-blocking Save Failure Retry Notice */}
-      {hasUnsavedRetry && (
+      {/* Non-blocking Save Status / Retry Notice */}
+      {showSaveBanner && (
         <div
-          className="w-full px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs font-sans flex items-center justify-between gap-2"
+          className={`w-full px-3 py-2 rounded-xl border text-xs font-sans flex items-center justify-between gap-2 ${
+            notice.tone === 'emerald'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/70 dark:border-emerald-800/60 text-[#006c49] dark:text-emerald-300'
+              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
+          }`}
           role="status"
+          data-purpose="focus-save-notice"
         >
-          <span className="text-left">
-            {isSaving ? 'Saving session...' : formatSaveRetryNotice(saveError)}
-          </span>
-          {!isSaving && (
-            <button
-              type="button"
-              onClick={onRetrySave}
-              className="font-semibold underline hover:opacity-80 cursor-pointer shrink-0"
-            >
-              Retry
-            </button>
-          )}
+          <span className="text-left break-words min-w-0">{notice.text}</span>
+          <div className="flex items-center gap-2 shrink-0">
+            {notice.showSignInLink && (
+              <Link
+                href="/login"
+                className="font-semibold underline hover:opacity-80"
+              >
+                Sign in
+              </Link>
+            )}
+            {notice.showRetryButton && (
+              <button
+                type="button"
+                onClick={onRetrySave}
+                className="font-semibold underline hover:opacity-80 cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
         </div>
       )}
 

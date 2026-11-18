@@ -43,6 +43,19 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
       return defaultProfile;
     }
 
+    const resolvedDisplayName: string =
+      (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim()) ||
+      (typeof user.user_metadata?.name === 'string' && user.user_metadata.name.trim()) ||
+      (typeof user.email === 'string' && user.email.includes('@')
+        ? user.email.split('@')[0]
+        : '') ||
+      (isDevBypass ? 'Aryan' : 'Student');
+
+    const resolvedAvatarUrl: string | null =
+      (typeof user.user_metadata?.avatar_url === 'string' && user.user_metadata.avatar_url.trim()) ||
+      (typeof user.user_metadata?.picture === 'string' && user.user_metadata.picture.trim()) ||
+      null;
+
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -62,16 +75,53 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
     if (profile) {
       return {
         ...profile,
+        display_name: profile.display_name || resolvedDisplayName,
+        avatar_url: profile.avatar_url ?? resolvedAvatarUrl,
         timezone: profile.timezone ?? null,
         daily_focus_goal_minutes: Number(profile.daily_focus_goal_minutes || 240),
         monthly_allowance_target: Number(profile.monthly_allowance_target || 15000),
       };
     }
 
+    // First-time OAuth user whose profile row wasn't created yet: best-effort idempotent seed
+    try {
+      const seedRes = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: user.id,
+            display_name: resolvedDisplayName,
+            avatar_url: resolvedAvatarUrl,
+            theme_preference: 'stone',
+            currency_symbol: '₹',
+            monthly_allowance_target: 15000.0,
+          },
+          { onConflict: 'id', ignoreDuplicates: true }
+        );
+
+      if (seedRes.error && seedRes.error.code === '42703') {
+        await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: user.id,
+              display_name: resolvedDisplayName,
+              theme_preference: 'stone',
+              currency_symbol: '₹',
+              monthly_allowance_target: 15000.0,
+            },
+            { onConflict: 'id', ignoreDuplicates: true }
+          );
+      }
+    } catch {
+      // Non-fatal: still return populated in-memory profile so first load never crashes
+    }
+
     return {
       ...defaultProfile,
       id: user.id,
-      display_name: user.user_metadata?.full_name || user.user_metadata?.name || (isDevBypass ? 'Aryan' : 'Student'),
+      display_name: resolvedDisplayName,
+      avatar_url: resolvedAvatarUrl,
     };
   } catch (err) {
     if (!isDevBypass) {

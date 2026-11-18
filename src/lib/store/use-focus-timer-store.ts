@@ -3,6 +3,7 @@ import type { FocusTimerState, PendingFocusSession } from '@/lib/daily-loop/type
 import {
   acknowledgeSessionDone,
   createInitialFocusTimerState,
+  DEFAULT_SAVE_RETRY_MESSAGE,
   discardPausedSession,
   markSessionSaved,
   markSessionSaveFailed,
@@ -305,14 +306,16 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
               commit(
                 markSessionSaveFailed(
                   get().timer,
-                  res.error || "Couldn't save yet, retrying"
+                  res.error || DEFAULT_SAVE_RETRY_MESSAGE
                 )
               );
             }
-          } catch {
-            commit(
-              markSessionSaveFailed(get().timer, "Couldn't save yet, retrying")
-            );
+          } catch (err) {
+            const errMessage =
+              err instanceof Error && err.message
+                ? err.message
+                : DEFAULT_SAVE_RETRY_MESSAGE;
+            commit(markSessionSaveFailed(get().timer, errMessage));
           } finally {
             inFlightSessionIds.delete(session.clientSessionId);
           }

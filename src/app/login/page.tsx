@@ -44,19 +44,30 @@ function sanitizeInternalNextPath(rawPath: string | null): string {
 
 function resolveInitialAuthError(
   errorCode: string | null,
-  errorDescription: string | null
+  errorDescription: string | null,
+  errorReason: string | null = null
 ): string | null {
   if (!errorCode) return null;
+
+  let friendlyMessage: string;
   if (errorCode === 'access_denied') {
-    return 'Google sign-in was cancelled. Please try again when ready.';
+    friendlyMessage = 'Google sign-in was cancelled. Please try again when ready.';
+  } else if (errorCode === 'auth_callback_failed' || errorCode === 'auth-failed') {
+    friendlyMessage = 'Authentication session expired or failed. Please try again.';
+  } else if (errorDescription) {
+    friendlyMessage = errorDescription;
+  } else {
+    friendlyMessage = 'Unable to authenticate. Please try again.';
   }
-  if (errorCode === 'auth_callback_failed' || errorCode === 'auth-failed') {
-    return 'Authentication session expired or failed. Please try again.';
+
+  if (process.env.NODE_ENV === 'development') {
+    const devCode = (errorReason && errorReason.trim()) || errorCode.trim();
+    if (devCode) {
+      return `${friendlyMessage} [${devCode}]`;
+    }
   }
-  if (errorDescription) {
-    return errorDescription;
-  }
-  return 'Unable to authenticate. Please try again.';
+
+  return friendlyMessage;
 }
 
 function LoginContent() {
@@ -65,7 +76,8 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(() =>
     resolveInitialAuthError(
       searchParams.get('error'),
-      searchParams.get('error_description')
+      searchParams.get('error_description'),
+      searchParams.get('reason')
     )
   );
 

@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import type { FocusTimerState, PendingFocusSession } from '@/lib/daily-loop/types';
+import type {
+  FocusSessionErrorCode,
+  FocusTimerState,
+  PendingFocusSession,
+} from '@/lib/daily-loop/types';
 import {
   acknowledgeSessionDone,
   createInitialFocusTimerState,
@@ -23,7 +27,12 @@ export const FOCUS_TIMER_STORAGE_KEY = 'lifeos_focus_timer_v1';
 
 export type PersistFocusSessionFn = (
   session: PendingFocusSession
-) => Promise<{ success: boolean; error?: string }>;
+) => Promise<{
+  success: boolean;
+  code?: 'ok' | FocusSessionErrorCode;
+  message?: string;
+  error?: string;
+}>;
 
 function generateClientSessionId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -75,7 +84,12 @@ const defaultPersistFn: PersistFocusSessionFn = async (session) => {
     taskId: session.taskId,
     projectId: session.projectId,
   });
-  return { success: res.success, error: res.error };
+  return {
+    success: res.success,
+    code: res.code,
+    message: res.message,
+    error: res.error,
+  };
 };
 
 const inFlightSessionIds = new Set<string>();
@@ -112,7 +126,11 @@ export interface FocusTimerStore {
   closeFullscreen: () => void;
   toggleSound: () => void;
   setNotificationsEnabled: (enabled: boolean) => void;
-  flushPendingSaves: (persistFn?: PersistFocusSessionFn) => Promise<{ savedCount: number }>;
+  flushPendingSaves: (persistFn?: PersistFocusSessionFn) => Promise<{
+    savedCount: number;
+    failedCode: FocusSessionErrorCode | null;
+    failedMessage: string | null;
+  }>;
   resetForTests: () => void;
 }
 
@@ -276,7 +294,9 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
     flushPendingSaves: async (persistFn = defaultPersistFn) => {
       const { timer, isDevMockActive } = get();
       const queue = [...timer.pendingUnsavedSessions];
-      if (queue.length === 0) return { savedCount: 0 };
+      if (queue.length === 0) {
+        return { savedCount: 0, failedCode: null, failedMessage: null };
+      }
 
       // Strictly never write fake rows into Supabase while Dev Mock is ON
       if (isDevMockActive && process.env.NODE_ENV !== 'production') {
@@ -285,11 +305,13 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
           updated = markSessionSaved(updated, item.clientSessionId);
         }
         commit(updated);
-        return { savedCount: queue.length };
+        return { savedCount: queue.length, failedCode: null, failedMessage: null };
       }
 
       set({ isSaving: true });
       let savedCount = 0;
+      let failedCode: FocusSessionErrorCode | null = null;
+      let failedMessage: string | null = null;
 
       try {
         for (const session of queue) {
@@ -303,19 +325,22 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
               savedCount += 1;
               commit(markSessionSaved(get().timer, session.clientSessionId));
             } else {
-              commit(
-                markSessionSaveFailed(
-                  get().timer,
-                  res.error || DEFAULT_SAVE_RETRY_MESSAGE
-                )
-              );
+              const errCode: FocusSessionErrorCode =
+                res.code && res.code !== 'ok' ? res.code : 'unknown';
+              const errMessage =
+                res.message || res.error || DEFAULT_SAVE_RETRY_MESSAGE;
+              failedCode = errCode;
+              failedMessage = errMessage;
+              commit(markSessionSaveFailed(get().timer, errMessage, errCode));
             }
           } catch (err) {
             const errMessage =
               err instanceof Error && err.message
                 ? err.message
                 : DEFAULT_SAVE_RETRY_MESSAGE;
-            commit(markSessionSaveFailed(get().timer, errMessage));
+            failedCode = 'unknown';
+            failedMessage = errMessage;
+            commit(markSessionSaveFailed(get().timer, errMessage, 'unknown'));
           } finally {
             inFlightSessionIds.delete(session.clientSessionId);
           }
@@ -324,7 +349,7 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
         set({ isSaving: false });
       }
 
-      return { savedCount };
+      return { savedCount, failedCode, failedMessage };
     },
 
     resetForTests: () => {

@@ -87,10 +87,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Authenticated users attempting to visit /login should be automatically redirected to /
+  // Authenticated users attempting to visit /login should be automatically redirected to /dashboard
   if (user && (pathname === '/login' || pathname.startsWith('/login/'))) {
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/dashboard';
     url.search = '';
     return NextResponse.redirect(url);
   }

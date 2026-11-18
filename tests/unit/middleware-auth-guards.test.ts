@@ -98,12 +98,12 @@ describe('Middleware Route Guards (updateSession)', () => {
       expect(res.headers.get('location')).toBeNull();
     });
 
-    it('redirects authenticated user from /login to /', async () => {
+    it('redirects authenticated user from /login immediately to /dashboard', async () => {
       const req = new NextRequest(new URL('http://localhost:3000/login'));
       const res = await updateSession(req);
 
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe('http://localhost:3000/');
+      expect(res.headers.get('location')).toBe('http://localhost:3000/dashboard');
     });
 
     for (const route of PROTECTED_ROUTES) {

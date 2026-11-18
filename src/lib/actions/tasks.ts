@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import type { Task, InsertTask, UpdateTask } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -34,11 +38,8 @@ export interface TaskWithProject extends Task {
 export async function getTasks(selectedDate?: string): Promise<TaskWithProject[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     const { data, error } = await supabase
       .from('tasks')
@@ -117,11 +118,10 @@ export async function createTask(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const newTask: InsertTask = {
       user_id: user.id,
@@ -187,11 +187,10 @@ export async function updateTaskStatus(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const updateData: UpdateTask = {};
     if (typeof parsed.data.is_completed === 'boolean') {
@@ -291,11 +290,10 @@ export async function updateTaskPriority(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { error } = await supabase
       .from('tasks')
@@ -327,11 +325,10 @@ export async function deleteTask(taskId: string): Promise<ActionResponse> {
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { error } = await supabase
       .from('tasks')

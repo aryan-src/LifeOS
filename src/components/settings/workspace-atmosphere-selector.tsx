@@ -76,7 +76,7 @@ export const WORKSPACE_THEMES: ThemeOption[] = [
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
-            <span className="font-serif italic text-[11px] font-semibold text-[#1E293B]">Vol. 04</span>
+            <span className="font-serif text-[11px] font-semibold text-[#1E293B]">Vol. 04</span>
           </div>
           <span className="text-[9px] font-mono uppercase tracking-widest text-[#E11D48] font-bold">RISO INK</span>
         </div>

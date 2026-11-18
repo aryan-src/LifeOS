@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import type { Note, InsertNote } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -27,11 +31,8 @@ export interface NoteWithProject extends Note {
 export async function getNotes(): Promise<NoteWithProject[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     const { data, error } = await supabase
       .from('notes')
@@ -81,11 +82,10 @@ export async function createNote(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   const newNote: InsertNote = {
     user_id: user.id,
@@ -126,11 +126,10 @@ export async function togglePinNote(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   const { error } = await supabase
     .from('notes')
@@ -157,11 +156,10 @@ export async function deleteNote(noteId: string): Promise<ActionResponse> {
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   const { error } = await supabase
     .from('notes')
@@ -206,11 +204,10 @@ export async function promoteNoteToProject(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   // 1. Fetch note to extract title, content and markdown checklist items
   const { data: note, error: fetchErr } = await supabase

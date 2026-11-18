@@ -256,6 +256,8 @@ export interface Database {
           currency_symbol: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target: number;
+          timezone?: string | null;
+          daily_focus_goal_minutes?: number;
           created_at: string;
           updated_at: string;
         };
@@ -267,6 +269,8 @@ export interface Database {
           currency_symbol?: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target?: number;
+          timezone?: string | null;
+          daily_focus_goal_minutes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -278,6 +282,8 @@ export interface Database {
           currency_symbol?: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target?: number;
+          timezone?: string | null;
+          daily_focus_goal_minutes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -379,6 +385,99 @@ export interface Database {
         };
         Relationships: [];
       };
+      focus_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          client_session_id: string;
+          task_id: string | null;
+          project_id: string | null;
+          duration_seconds: number;
+          started_at: string;
+          ended_at: string;
+          mode: 'pomodoro' | 'short-break' | 'long-break' | 'stopwatch' | 'deep-work';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          client_session_id: string;
+          task_id?: string | null;
+          project_id?: string | null;
+          duration_seconds: number;
+          started_at: string;
+          ended_at: string;
+          mode: 'pomodoro' | 'short-break' | 'long-break' | 'stopwatch' | 'deep-work';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          client_session_id?: string;
+          task_id?: string | null;
+          project_id?: string | null;
+          duration_seconds?: number;
+          started_at?: string;
+          ended_at?: string;
+          mode?: 'pomodoro' | 'short-break' | 'long-break' | 'stopwatch' | 'deep-work';
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      daily_check_ins: {
+        Row: {
+          id: string;
+          user_id: string;
+          check_in_date: string;
+          mood: 'exhausted' | 'tough' | 'neutral' | 'good' | 'great';
+          reflection_text: string | null;
+          finished_task_titles: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          check_in_date: string;
+          mood: 'exhausted' | 'tough' | 'neutral' | 'good' | 'great';
+          reflection_text?: string | null;
+          finished_task_titles?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          check_in_date?: string;
+          mood?: 'exhausted' | 'tough' | 'neutral' | 'good' | 'great';
+          reflection_text?: string | null;
+          finished_task_titles?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      streak_freeze_logs: {
+        Row: {
+          id: string;
+          user_id: string;
+          freeze_date: string;
+          used_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          freeze_date: string;
+          used_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          freeze_date?: string;
+          used_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -446,3 +545,15 @@ export type UpdateHabit = Database['public']['Tables']['habits']['Update'];
 export type HabitLog = Database['public']['Tables']['habit_logs']['Row'];
 export type InsertHabitLog = Database['public']['Tables']['habit_logs']['Insert'];
 export type UpdateHabitLog = Database['public']['Tables']['habit_logs']['Update'];
+
+export type FocusSessionRow = Database['public']['Tables']['focus_sessions']['Row'];
+export type InsertFocusSessionRow = Database['public']['Tables']['focus_sessions']['Insert'];
+export type UpdateFocusSessionRow = Database['public']['Tables']['focus_sessions']['Update'];
+
+export type DailyCheckInRow = Database['public']['Tables']['daily_check_ins']['Row'];
+export type InsertDailyCheckInRow = Database['public']['Tables']['daily_check_ins']['Insert'];
+export type UpdateDailyCheckInRow = Database['public']['Tables']['daily_check_ins']['Update'];
+
+export type StreakFreezeLogRow = Database['public']['Tables']['streak_freeze_logs']['Row'];
+export type InsertStreakFreezeLogRow = Database['public']['Tables']['streak_freeze_logs']['Insert'];
+export type UpdateStreakFreezeLogRow = Database['public']['Tables']['streak_freeze_logs']['Update'];

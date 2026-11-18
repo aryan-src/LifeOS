@@ -6,11 +6,13 @@ import { getNotes } from '@/lib/actions/notes';
 import { getAssignments } from '@/lib/actions/assignments';
 import { getFinancialAnalytics } from '@/lib/actions/finances';
 import { getTasks } from '@/lib/actions/tasks';
-import { getTodayDate } from '@/lib/utils/date';
+import { getDailyLoopDashboardData } from '@/lib/actions/daily-loop';
+import { getTodayCardMode, getUserLocalDate } from '@/lib/daily-loop/business-logic';
 import { Variant3DashboardView } from './variant3-dashboard-view';
 
-function getWeekNumber(d: Date): number {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+function getWeekNumberFromDateString(dateStr: string): number {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
   const dayNum = date.getUTCDay() || 7;
   date.setUTCDate(date.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
@@ -18,32 +20,46 @@ function getWeekNumber(d: Date): number {
 }
 
 export async function DashboardCommandCenter() {
-  const todayStr = getTodayDate();
+  const profile = await getUserProfile().catch(() => null);
+  const userTimezone = profile?.timezone || 'UTC';
+  const now = new Date();
+  const todayStr = getUserLocalDate(now, userTimezone);
 
-  const [profile, habitsRes, projects, notes, assignments, financialAnalytics, todayTasks] =
-    await Promise.all([
-      getUserProfile().catch(() => null),
-      getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
-      getProjectsWithMetrics().catch(() => []),
-      getNotes().catch(() => []),
-      getAssignments().catch(() => []),
-      getFinancialAnalytics().catch(() => null),
-      getTasks(todayStr).catch(() => []),
-    ]);
+  const [
+    habitsRes,
+    projects,
+    notes,
+    assignments,
+    financialAnalytics,
+    todayTasks,
+    dailyLoopData,
+  ] = await Promise.all([
+    getHabits().catch(() => ({ habits: [], error: null, isSchemaMissing: false })),
+    getProjectsWithMetrics().catch(() => []),
+    getNotes().catch(() => []),
+    getAssignments().catch(() => []),
+    getFinancialAnalytics().catch(() => null),
+    getTasks(todayStr).catch(() => []),
+    getDailyLoopDashboardData().catch(() => null),
+  ]);
 
   const displayName = profile?.display_name || 'Aryan';
 
-  const now = new Date();
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const dayName = dayNames[now.getDay()];
-  const dateFormatted = `${now.getDate()} ${months[now.getMonth()]}`;
-  const weekNumber = getWeekNumber(now);
+  const [y, m, d] = todayStr.split('-').map(Number);
+  const utcCalendarDate = new Date(Date.UTC(y, m - 1, d));
+  const dayName = dayNames[utcCalendarDate.getUTCDay()];
+  const dateFormatted = `${d} ${months[m - 1] || 'Nov'}`;
+  const weekNumber = getWeekNumberFromDateString(todayStr);
 
-  const hour = now.getHours();
-  let greetingTime = 'Good morning';
-  if (hour >= 12 && hour < 17) greetingTime = 'Good afternoon';
-  else if (hour >= 17) greetingTime = 'Good evening';
+  const mode = getTodayCardMode(now, userTimezone);
+  const greetingTime =
+    mode === 'morning'
+      ? 'Good morning'
+      : mode === 'daytime'
+      ? 'Good afternoon'
+      : 'Good evening';
 
   return (
     <Variant3DashboardView
@@ -58,6 +74,7 @@ export async function DashboardCommandCenter() {
       initialAssignments={assignments || []}
       financialAnalytics={financialAnalytics}
       todayTasks={todayTasks || []}
+      dailyLoopData={dailyLoopData}
     />
   );
 }

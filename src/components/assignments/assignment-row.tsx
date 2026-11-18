@@ -102,7 +102,7 @@ export function AssignmentRow({
             </span>
           </div>
         ) : (
-          <span className="text-xs text-stone-400 italic">No date</span>
+          <span className="text-xs text-stone-400">No date</span>
         )}
       </td>
 

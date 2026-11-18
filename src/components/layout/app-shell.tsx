@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
 import { FloatingDock } from '@/components/ui/floating-dock';
+import { GlobalFocusController } from '@/components/focus/global-focus-controller';
 import { useUIStore } from '@/lib/store/use-ui-store';
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
@@ -47,6 +48,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <QuickCaptureOmnibar />
+      <GlobalFocusController />
       <div className="min-h-screen w-full flex flex-col bg-[#FAF9F5] dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 selection:bg-secondary-container selection:text-on-secondary-container transition-colors duration-200">
         {children}
       </div>

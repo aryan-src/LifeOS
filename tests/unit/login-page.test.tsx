@@ -60,4 +60,30 @@ describe('Notion-Style Login Page', () => {
     expect(html).toContain('role="alert"');
     expect(html).toContain('Authentication session expired or failed. Please try again.');
   });
+
+  it('appends the error code only in development builds and keeps friendly text in production', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    try {
+      mockSearchParamsGet.mockImplementation((param: string) => {
+        if (param === 'error') return 'auth_callback_failed';
+        if (param === 'reason') return 'AuthRetryableFetchError';
+        return null;
+      });
+
+      (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
+      const devHtml = renderToString(<LoginPage />);
+      expect(devHtml).toContain(
+        'Authentication session expired or failed. Please try again. [AuthRetryableFetchError]'
+      );
+
+      (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+      const prodHtml = renderToString(<LoginPage />);
+      expect(prodHtml).toContain(
+        'Authentication session expired or failed. Please try again.'
+      );
+      expect(prodHtml).not.toContain('AuthRetryableFetchError');
+    } finally {
+      (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
+    }
+  });
 });

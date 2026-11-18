@@ -15,6 +15,9 @@ export function formatZodError(error: z.ZodError): string {
 // Common Primitives
 // -------------------------------------------------------------
 export const uuidSchema = z.string().uuid({ message: 'Invalid ID format.' });
+export function isValidUuid(value: unknown): value is string {
+  return typeof value === 'string' && uuidSchema.safeParse(value).success;
+}
 export const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: 'Date must be formatted strictly as YYYY-MM-DD.',
 });
@@ -342,4 +345,31 @@ export const updateProfileSchema = z.object({
     .finite({ message: 'Allowance target must be a finite number.' })
     .nonnegative({ message: 'Allowance target cannot be negative.' })
     .default(15000),
+  timezone: z.string().trim().optional(),
+  dailyFocusGoalMinutes: z.coerce.number().int().positive().optional(),
+});
+
+// -------------------------------------------------------------
+// Daily Loop Check-In Schemas
+// -------------------------------------------------------------
+export const dailyCheckInMoodEnum = z.enum([
+  'exhausted',
+  'tough',
+  'neutral',
+  'good',
+  'great',
+]);
+
+export const upsertDailyCheckInSchema = z.object({
+  mood: dailyCheckInMoodEnum,
+  reflectionText: z
+    .string()
+    .trim()
+    .max(1000, { message: 'Reflection cannot exceed 1000 characters.' })
+    .optional()
+    .nullable(),
+  finishedTaskTitles: z
+    .array(z.string().trim().min(1).max(240))
+    .max(50)
+    .default([]),
 });

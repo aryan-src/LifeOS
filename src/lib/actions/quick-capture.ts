@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import { parseQuickCapture } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
@@ -31,11 +35,10 @@ export async function dispatchQuickCapture(
   const trimmed = validation.data.rawInput;
   const parsed = parseQuickCapture(trimmed);
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   // 1. Resolve project_id via indexed slug lookup if present
   let resolvedProjectId: string | null = null;

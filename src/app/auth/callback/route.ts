@@ -42,6 +42,10 @@ export async function GET(request: NextRequest | Request) {
   const oauthError = searchParams.get('error');
   const oauthErrorDescription = searchParams.get('error_description');
   if (oauthError) {
+    console.error('[AuthCallback] OAuth provider error:', {
+      error: oauthError,
+      error_description: oauthErrorDescription,
+    });
     const loginUrl = new URL('/login', activeOrigin);
     loginUrl.searchParams.set('error', oauthError);
     if (oauthErrorDescription) {
@@ -118,8 +122,41 @@ export async function GET(request: NextRequest | Request) {
 
       return response;
     }
-    console.error('Error exchanging code for session:', error);
+
+    const errCode =
+      typeof (error as { code?: unknown }).code === 'string' &&
+      (error as { code: string }).code.trim()
+        ? (error as { code: string }).code.trim()
+        : null;
+    const errName =
+      typeof error.name === 'string' && error.name.trim() ? error.name.trim() : null;
+    const errReason = errCode || errName || 'exchange_failed';
+
+    console.error('[AuthCallback] exchangeCodeForSession failed:', {
+      code: errCode,
+      name: errName,
+      message: error.message ?? null,
+      error: oauthError,
+      error_description: oauthErrorDescription,
+    });
+
+    const failUrl = new URL('/login', activeOrigin);
+    failUrl.searchParams.set('error', 'auth_callback_failed');
+    if (process.env.NODE_ENV === 'development') {
+      failUrl.searchParams.set('reason', errReason);
+    }
+    return NextResponse.redirect(failUrl.toString());
   }
 
-  return NextResponse.redirect(`${activeOrigin}/login?error=auth_callback_failed`);
+  console.error('[AuthCallback] Missing OAuth code parameter:', {
+    error: oauthError,
+    error_description: oauthErrorDescription,
+  });
+
+  const missingUrl = new URL('/login', activeOrigin);
+  missingUrl.searchParams.set('error', 'auth_callback_failed');
+  if (process.env.NODE_ENV === 'development') {
+    missingUrl.searchParams.set('reason', 'missing_code');
+  }
+  return NextResponse.redirect(missingUrl.toString());
 }

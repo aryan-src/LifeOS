@@ -213,10 +213,10 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
       expect(html).not.toContain('INR (₹)');
       expect(html).not.toContain('INR');
 
-      // Verify retained elements
-      expect(html).toContain('LifeOS');
-      expect(html).toContain('Personal Vault');
-      expect(html).toContain('Ledger');
+      // Verify Stitch Expenses header elements
+      expect(html).toContain('font-serif text-page-title');
+      expect(html).toContain('Expenses');
+      expect(html).toContain('Add expense');
       expect(html).toContain('Hide Charts');
 
       // Verify main ledger table is rendered unconditionally

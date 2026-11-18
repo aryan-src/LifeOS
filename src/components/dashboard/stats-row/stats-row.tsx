@@ -81,6 +81,7 @@ export function buildDevMockDailyLoopData(
 interface StatsRowProps {
   data: DailyLoopDashboardData;
   onOpenQuickCapture?: (prefix: string) => void;
+  onOpenMilestones?: () => void;
   isDevMockActive?: boolean;
   onToggleDevMock?: () => void;
   devForcedTodayMode?: TodayMode | null;
@@ -97,6 +98,7 @@ const DEV_MODE_OPTIONS: Array<{ value: TodayMode | null; label: string }> = [
 export function StatsRow({
   data,
   onOpenQuickCapture,
+  onOpenMilestones,
   isDevMockActive: controlledDevMock,
   onToggleDevMock,
   devForcedTodayMode = null,
@@ -124,10 +126,10 @@ export function StatsRow({
     <section className="relative my-1 sm:my-2 shrink-0" data-purpose="wide-focus-ribbon">
       {/* Dev-only Visual Check Controls (strictly disabled in production) */}
       {isDev && (
-        <div className="flex flex-wrap items-center justify-end gap-1.5 mb-1">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 mb-2">
           {onChangeDevTodayMode && (
-            <div className="inline-flex items-center rounded border border-dashed border-stone-300 dark:border-zinc-700 p-0.5 text-[10px] font-mono">
-              <span className="px-1.5 text-stone-400 dark:text-zinc-500">Today:</span>
+            <div className="inline-flex items-center rounded-lg border border-dashed border-outline-variant p-0.5 text-[10px] font-mono">
+              <span className="px-1.5 text-outline">Today:</span>
               {DEV_MODE_OPTIONS.map((opt) => (
                 <button
                   key={opt.label}
@@ -135,8 +137,8 @@ export function StatsRow({
                   onClick={() => onChangeDevTodayMode(opt.value)}
                   className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
                     devForcedTodayMode === opt.value
-                      ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 font-semibold'
-                      : 'text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-zinc-200'
+                      ? 'bg-primary text-on-primary font-semibold'
+                      : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
                   {opt.label}
@@ -148,7 +150,7 @@ export function StatsRow({
           <button
             type="button"
             onClick={handleToggleDevMock}
-            className="text-[10px] font-mono px-2 py-0.5 rounded border border-dashed border-stone-300 dark:border-zinc-700 text-stone-500 hover:text-stone-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            className="text-[10px] font-mono px-2 py-0.5 rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
             title="Development-only visual check: toggle mock data numbers vs real database values"
           >
             Dev Mock: {isDevMockActive ? 'ON (72 Life / 12D / 2h10m)' : 'OFF (Real DB)'}
@@ -156,7 +158,7 @@ export function StatsRow({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Life Score */}
         <LifeScoreCard lifeScore={activeData.lifeScore} />
 
@@ -165,13 +167,17 @@ export function StatsRow({
           streakState={activeData.streakState}
           weekStrip={activeData.weekStrip}
           onOpenQuickCapture={onOpenQuickCapture}
+          onOpenMilestones={onOpenMilestones}
         />
 
         {/* Card 3: Time Focused */}
         <TimeFocusedCard timeFocused={activeData.timeFocused} />
 
         {/* Card 4: Pocket Ledger */}
-        <PocketLedgerCard pocketLedger={activeData.pocketLedger} />
+        <PocketLedgerCard
+          pocketLedger={activeData.pocketLedger}
+          todayDateStr={activeData.todayDateStr}
+        />
       </div>
     </section>
   );

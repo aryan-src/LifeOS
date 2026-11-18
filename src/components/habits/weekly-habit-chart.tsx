@@ -28,26 +28,22 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const item: WeeklyHabitStat = payload[0].payload;
     return (
-      <div className="rounded-xl border border-stone-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-3 shadow-lg font-mono text-xs text-stone-800 dark:text-zinc-200 min-w-[160px]">
-        <div className="flex items-center justify-between gap-2 border-b border-stone-100 dark:border-zinc-800 pb-1.5 mb-1.5">
-          <span className="font-semibold text-stone-900 dark:text-zinc-100">
+      <div className="min-w-[160px] rounded-xl border border-outline-variant/50 bg-surface-container-lowest/95 p-3 font-mono text-label-sm text-on-surface shadow-ambient backdrop-blur-md">
+        <div className="mb-1.5 flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-1.5">
+          <span className="font-semibold text-on-surface">
             {item.dayOfWeek} {item.isToday ? '(Today)' : ''}
           </span>
-          <span className="text-[11px] text-stone-500 dark:text-zinc-400">
-            {item.date}
-          </span>
+          <span className="text-[11px] text-on-surface-variant">{item.date}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-stone-500 dark:text-zinc-400">Completed:</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="text-on-surface-variant">Completed:</span>
+          <span className="font-semibold text-secondary">
             {item.completedCount} / {item.totalHabits}
           </span>
         </div>
-        <div className="flex items-center justify-between gap-2 mt-1">
-          <span className="text-stone-500 dark:text-zinc-400">Rate:</span>
-          <span className="font-semibold text-stone-900 dark:text-zinc-100">
-            {item.completionRate}%
-          </span>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <span className="text-on-surface-variant">Rate:</span>
+          <span className="font-semibold text-on-surface">{item.completionRate}%</span>
         </div>
       </div>
     );
@@ -58,7 +54,6 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 export function WeeklyHabitChart({ data, className = '' }: WeeklyHabitChartProps) {
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Prevent SSR hydration layout mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -68,17 +63,23 @@ export function WeeklyHabitChart({ data, className = '' }: WeeklyHabitChartProps
   if (!mounted) {
     return (
       <div
-        className={`w-full h-64 flex items-end gap-3 justify-between px-6 pb-6 pt-10 rounded-2xl bg-stone-100/50 dark:bg-zinc-900/30 animate-pulse ${className}`}
+        className={`flex h-64 w-full items-end justify-between gap-3 rounded-2xl bg-surface-container-low/70 px-6 pb-6 pt-10 ${className}`}
       >
         {data.map((d) => (
-          <div key={d.date} className="flex-1 flex flex-col items-center gap-2">
+          <div key={d.date} className="flex flex-1 flex-col items-center gap-2">
             <div
-              className="w-full max-w-[40px] rounded-t-md bg-stone-200/80 dark:bg-zinc-800/80"
+              className={`w-full max-w-[40px] rounded-t-md ${
+                d.isToday
+                  ? 'bg-secondary'
+                  : d.completedCount > 0
+                  ? 'bg-secondary/75'
+                  : 'bg-surface-container-highest'
+              }`}
               style={{
-                height: `${Math.max(15, (d.completedCount / maxHabits) * 160)}px`,
+                height: `${Math.max(12, (d.completedCount / maxHabits) * 160)}px`,
               }}
             />
-            <span className="font-mono text-[11px] text-stone-400 dark:text-zinc-500">
+            <span className="font-mono text-[11px] text-on-surface-variant">
               {d.dayOfWeek}
             </span>
           </div>
@@ -98,18 +99,17 @@ export function WeeklyHabitChart({ data, className = '' }: WeeklyHabitChartProps
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
-            className="stroke-stone-200/60 dark:stroke-zinc-800/60"
+            stroke="rgb(var(--color-outline-variant) / 0.4)"
           />
           <XAxis
             dataKey="dayOfWeek"
             tickLine={false}
-            axisLine={{ stroke: 'currentColor', className: 'text-stone-200 dark:text-zinc-800' }}
+            axisLine={{ stroke: 'rgb(var(--color-outline-variant) / 0.5)' }}
             tick={{
               fontSize: 12,
-              fill: 'currentColor',
-              fontFamily: 'monospace',
+              fill: 'rgb(var(--color-on-surface-variant))',
+              fontFamily: 'var(--font-mono)',
             }}
-            className="text-stone-500 dark:text-zinc-400"
           />
           <YAxis
             allowDecimals={false}
@@ -118,37 +118,24 @@ export function WeeklyHabitChart({ data, className = '' }: WeeklyHabitChartProps
             axisLine={false}
             tick={{
               fontSize: 11,
-              fill: 'currentColor',
-              fontFamily: 'monospace',
+              fill: 'rgb(var(--color-outline))',
+              fontFamily: 'var(--font-mono)',
             }}
-            className="text-stone-400 dark:text-zinc-500"
           />
           <Tooltip
             content={<CustomTooltip />}
-            cursor={{ fill: 'currentColor', className: 'text-stone-200/30 dark:text-zinc-800/30' }}
+            cursor={{ fill: 'rgb(var(--color-surface-container) / 0.5)' }}
           />
-          <Bar
-            dataKey="completedCount"
-            radius={[6, 6, 0, 0]}
-            maxBarSize={44}
-          >
+          <Bar dataKey="completedCount" radius={[6, 6, 0, 0]} maxBarSize={44}>
             {data.map((entry) => (
               <Cell
                 key={`cell-${entry.date}`}
-                // Soft sage green accent (#10B981) with subtle emphasis for today
                 fill={
                   entry.isToday
-                    ? '#10B981'
+                    ? 'rgb(var(--color-secondary))'
                     : entry.completedCount > 0
-                    ? '#059669'
-                    : '#D1D5DB'
-                }
-                className={
-                  entry.isToday
-                    ? 'fill-[#10B981] dark:fill-emerald-400'
-                    : entry.completedCount > 0
-                    ? 'fill-[#059669] dark:fill-emerald-500/80'
-                    : 'fill-stone-200 dark:fill-zinc-800'
+                    ? 'rgb(var(--color-secondary) / 0.72)'
+                    : 'rgb(var(--color-surface-container-highest))'
                 }
               />
             ))}

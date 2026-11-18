@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Check, ChevronDown, Lightbulb, Maximize2, Play, Plus } from 'lucide-react';
 import type { DailyMinimumChecklist, FocusInsight } from '@/lib/daily-loop/types';
 import type { TodayTaskItem } from './morning-state';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const DURATION_PRESETS = [
   { minutes: 15, label: '15m Sprint' },
@@ -70,17 +72,14 @@ export function DaytimeState({
 
   return (
     <div className="flex-1 flex flex-col justify-between gap-4">
-      <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-4">
         {/* Top Priority Focus Launch Panel */}
-        <div className="p-4 rounded-xl bg-stone-50/90 dark:bg-zinc-800/60 border border-stone-200/70 dark:border-zinc-700/70">
-          <span className="text-[10px] font-sans font-bold text-amber-700 dark:text-amber-400 tracking-wider uppercase block mb-1">
-            TOP PRIORITY
+        <div className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-4">
+          <span className="mb-1 block font-mono text-label-sm uppercase tracking-[0.08em] text-on-tertiary-container">
+            Top Priority
           </span>
 
-          <p
-            className="text-base font-semibold text-stone-900 dark:text-zinc-100 tracking-tight mb-3 leading-snug"
-            style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
-          >
+          <p className="mb-3 font-sans text-headline-sm font-semibold leading-snug tracking-tight text-on-surface">
             {isTimerLive && activeTimer.taskTitle
               ? activeTimer.taskTitle
               : topPriorityTask
@@ -93,26 +92,26 @@ export function DaytimeState({
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2 shrink-0">
                   {activeTimer.status === 'running' && (
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006c49] dark:bg-emerald-400 opacity-75" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
                   )}
                   <span
-                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                    className={`relative inline-flex h-2 w-2 rounded-full ${
                       activeTimer.status === 'paused'
-                        ? 'bg-amber-500'
+                        ? 'bg-on-tertiary-container'
                         : activeTimer.status === 'break'
-                        ? 'bg-[#6B8F78]'
-                        : 'bg-[#006c49] dark:bg-emerald-500'
+                        ? 'bg-secondary/60'
+                        : 'bg-secondary'
                     }`}
                   />
                 </span>
-                <span className="text-xs font-sans font-medium text-stone-600 dark:text-zinc-300">
+                <span className="font-sans text-body-sm text-on-surface-variant">
                   {activeTimer.status === 'paused'
                     ? 'Paused · '
                     : activeTimer.status === 'break'
                     ? 'Break · '
                     : 'Session in progress · '}
                   <strong
-                    className="font-mono font-semibold text-[#006c49] dark:text-emerald-400 tabular-nums lining-nums"
+                    className="font-mono font-semibold text-secondary"
                     style={LINING_NUMS_STYLE}
                   >
                     {activeTimer.remainingFormatted}
@@ -124,42 +123,36 @@ export function DaytimeState({
               <button
                 type="button"
                 onClick={onOpenFocusView}
-                className="h-8 px-3 rounded-lg border border-stone-300 dark:border-zinc-600 hover:bg-stone-100 dark:hover:bg-zinc-700/60 text-stone-800 dark:text-zinc-100 text-xs font-sans font-medium transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-3 font-sans text-body-sm font-medium text-on-surface transition-colors hover:bg-surface-container cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Open focus view</span>
               </button>
             </div>
           ) : (
-            <div className="relative inline-flex items-stretch rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs">
+            <div className="relative inline-flex items-stretch rounded-xl bg-primary text-on-primary shadow-xs">
               <button
                 type="button"
                 onClick={handleLaunchFocus}
-                className="h-9 px-3.5 rounded-l-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center gap-1.5 font-sans text-xs font-medium cursor-pointer tabular-nums lining-nums"
+                className="flex h-9 items-center gap-1.5 rounded-l-xl px-3.5 font-sans text-body-sm font-medium transition-opacity hover:opacity-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
                 style={LINING_NUMS_STYLE}
               >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                </svg>
+                <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                 <span>Start Focus ({selectedMinutes}m)</span>
               </button>
-              <div className="w-px bg-stone-700 dark:bg-zinc-300" />
+              <div className="w-px bg-on-primary/20" aria-hidden="true" />
               <button
                 type="button"
                 onClick={() => setIsDurationMenuOpen((prev) => !prev)}
                 aria-label="Select focus duration"
                 aria-expanded={isDurationMenuOpen}
-                className="px-2 rounded-r-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center justify-center cursor-pointer"
+                className="flex items-center justify-center rounded-r-xl px-2.5 transition-opacity hover:opacity-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
 
               {isDurationMenuOpen && (
-                <div className="absolute left-0 top-full mt-1.5 z-30 w-44 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 shadow-lg">
+                <div className="absolute left-0 top-full mt-1.5 z-30 w-44 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-1 shadow-ambient">
                   {DURATION_PRESETS.map((preset) => (
                     <button
                       key={preset.minutes}
@@ -168,10 +161,10 @@ export function DaytimeState({
                         setSelectedMinutes(preset.minutes);
                         setIsDurationMenuOpen(false);
                       }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-sans tabular-nums lining-nums transition-colors cursor-pointer ${
+                      className={`w-full rounded-lg px-2.5 py-1.5 text-left font-mono text-label-sm transition-colors cursor-pointer ${
                         selectedMinutes === preset.minutes
-                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-[#006c49] dark:text-emerald-400 font-semibold'
-                          : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800'
+                          ? 'bg-secondary/12 font-semibold text-secondary'
+                          : 'text-on-surface hover:bg-surface-container'
                       }`}
                       style={LINING_NUMS_STYLE}
                     >
@@ -186,108 +179,98 @@ export function DaytimeState({
 
         {/* Daily Minimum Checklist (2 of 3 required) */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
               Daily minimum
             </span>
             <span
-              className={`text-[11px] font-sans font-medium tabular-nums lining-nums ${
-                checklist.isQualified
-                  ? 'text-[#006c49] dark:text-emerald-400'
-                  : 'text-stone-500 dark:text-zinc-400'
+              className={`font-mono text-label-sm font-medium ${
+                checklist.isQualified ? 'text-secondary' : 'text-on-surface-variant'
               }`}
               style={LINING_NUMS_STYLE}
             >
               {checklist.isQualified
                 ? `${checklist.completedCount}/3 · streak safe`
-                : `${checklist.completedCount}/2 required for streak`}
+                : `${checklist.completedCount}/${checklist.totalRequired} required for streak`}
             </span>
           </div>
 
           <div className="space-y-1.5">
             {/* 1. Focus Session */}
             <div
-              className={`flex items-center justify-between p-2 rounded-lg border ${
+              className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${
                 checklist.hasFocusSession
-                  ? 'bg-stone-50/80 dark:bg-zinc-800/40 border-stone-200/50 dark:border-zinc-800'
-                  : 'bg-white dark:bg-zinc-900/40 border-dashed border-stone-200 dark:border-zinc-700/80'
+                  ? 'border-outline-variant/30 bg-surface-container-low/70'
+                  : 'border-dashed border-outline-variant/60 bg-surface-container-lowest'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
                     checklist.hasFocusSession
-                      ? 'bg-[#006c49]/15 text-[#006c49] dark:text-emerald-400'
-                      : 'border border-stone-300 dark:border-zinc-600'
+                      ? 'bg-secondary text-on-secondary'
+                      : 'border border-outline-variant'
                   }`}
                 >
                   {checklist.hasFocusSession && (
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Check className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden="true" />
                   )}
                 </span>
                 <span
-                  className={`text-xs font-sans ${
+                  className={`font-sans text-body-sm ${
                     checklist.hasFocusSession
-                      ? 'text-stone-500 dark:text-zinc-400 line-through'
-                      : 'text-stone-800 dark:text-zinc-200 font-medium'
+                      ? 'text-outline line-through'
+                      : 'font-medium text-on-surface'
                   }`}
                 >
                   1 focus session
                 </span>
               </div>
-              <span className="text-[11px] font-sans text-stone-400 dark:text-zinc-500">
+              <span
+                className={`font-mono text-label-sm ${
+                  checklist.hasFocusSession ? 'text-secondary' : 'text-outline'
+                }`}
+              >
                 {checklist.hasFocusSession ? 'Done' : 'Pending'}
               </span>
             </div>
 
             {/* 2. Habit Done */}
             <div
-              className={`flex items-center justify-between p-2 rounded-lg border ${
+              className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${
                 checklist.hasHabitCompleted
-                  ? 'bg-stone-50/80 dark:bg-zinc-800/40 border-stone-200/50 dark:border-zinc-800'
-                  : 'bg-white dark:bg-zinc-900/40 border-dashed border-stone-200 dark:border-zinc-700/80'
+                  ? 'border-outline-variant/30 bg-surface-container-low/70'
+                  : 'border-dashed border-outline-variant/60 bg-surface-container-lowest'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
                     checklist.hasHabitCompleted
-                      ? 'bg-[#006c49]/15 text-[#006c49] dark:text-emerald-400'
-                      : 'border border-stone-300 dark:border-zinc-600'
+                      ? 'bg-secondary text-on-secondary'
+                      : 'border border-outline-variant'
                   }`}
                 >
                   {checklist.hasHabitCompleted && (
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Check className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden="true" />
                   )}
                 </span>
                 <span
-                  className={`text-xs font-sans ${
+                  className={`font-sans text-body-sm ${
                     checklist.hasHabitCompleted
-                      ? 'text-stone-500 dark:text-zinc-400 line-through'
-                      : 'text-stone-800 dark:text-zinc-200 font-medium'
+                      ? 'text-outline line-through'
+                      : 'font-medium text-on-surface'
                   }`}
                 >
                   1 habit done
                 </span>
               </div>
               {checklist.hasHabitCompleted ? (
-                <span className="text-[11px] font-sans text-stone-400 dark:text-zinc-500">Done</span>
+                <span className="font-mono text-label-sm text-secondary">Done</span>
               ) : (
                 <Link
                   href="/habits"
-                  className="text-[11px] font-sans font-medium text-[#006c49] dark:text-emerald-400 hover:underline"
+                  className="font-mono text-label-sm font-medium text-secondary hover:underline"
                 >
                   Check off
                 </Link>
@@ -296,47 +279,41 @@ export function DaytimeState({
 
             {/* 3. Expense Logged */}
             <div
-              className={`flex items-center justify-between p-2 rounded-lg border ${
+              className={`flex items-center justify-between rounded-lg border px-2.5 py-2 ${
                 checklist.hasExpenseLogged
-                  ? 'bg-stone-50/80 dark:bg-zinc-800/40 border-stone-200/50 dark:border-zinc-800'
-                  : 'bg-white dark:bg-zinc-900/40 border-dashed border-stone-200 dark:border-zinc-700/80'
+                  ? 'border-outline-variant/30 bg-surface-container-low/70'
+                  : 'border-dashed border-outline-variant/60 bg-surface-container-lowest'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
                     checklist.hasExpenseLogged
-                      ? 'bg-[#006c49]/15 text-[#006c49] dark:text-emerald-400'
-                      : 'border border-stone-300 dark:border-zinc-600'
+                      ? 'bg-secondary text-on-secondary'
+                      : 'border border-outline-variant'
                   }`}
                 >
                   {checklist.hasExpenseLogged && (
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Check className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden="true" />
                   )}
                 </span>
                 <span
-                  className={`text-xs font-sans ${
+                  className={`font-sans text-body-sm ${
                     checklist.hasExpenseLogged
-                      ? 'text-stone-500 dark:text-zinc-400 line-through'
-                      : 'text-stone-800 dark:text-zinc-200 font-medium'
+                      ? 'text-outline line-through'
+                      : 'font-medium text-on-surface'
                   }`}
                 >
                   1 expense logged
                 </span>
               </div>
               {checklist.hasExpenseLogged ? (
-                <span className="text-[11px] font-sans text-stone-400 dark:text-zinc-500">Done</span>
+                <span className="font-mono text-label-sm text-secondary">Done</span>
               ) : (
                 <button
                   type="button"
                   onClick={() => onOpenQuickCapture?.('Expense: ')}
-                  className="text-[11px] font-sans font-medium text-[#006c49] dark:text-emerald-400 hover:underline cursor-pointer"
+                  className="font-mono text-label-sm font-medium text-secondary hover:underline cursor-pointer"
                 >
                   Log now
                 </button>
@@ -347,40 +324,35 @@ export function DaytimeState({
 
         {/* Focus Queue */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-sans font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
               Focus Queue
             </span>
             <button
               type="button"
               onClick={() => onOpenQuickCapture?.('Task: ')}
-              className="text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-100 transition-colors font-sans text-[11px] font-medium flex items-center gap-1 cursor-pointer"
+              className="flex items-center gap-1 font-mono text-label-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Add Task</span>
             </button>
           </div>
 
           {displayTasks.length === 0 ? (
-            <div className="p-3.5 rounded-xl bg-stone-50/70 dark:bg-zinc-800/40 border border-dashed border-stone-300 dark:border-zinc-700 text-center">
-              <p className="text-xs font-medium text-stone-600 dark:text-zinc-300 font-sans">
-                Your focus queue is clear.
-              </p>
-            </div>
+            <EmptyState compact={true} title="Your focus queue is clear." />
           ) : (
             <div className="space-y-1.5">
-              {displayTasks.map((task) => {
+              {displayTasks.map((task, idx) => {
                 const isSelected = topPriorityTask?.id === task.id;
+                const sequence = String(idx + 1).padStart(2, '0');
                 return (
                   <div
                     key={task.id}
                     onClick={() => onSelectTask(task.id)}
-                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                    className={`flex items-center justify-between gap-2.5 rounded-xl border p-2.5 transition-colors cursor-pointer ${
                       isSelected && !task.is_completed
-                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
-                        : 'bg-stone-50/60 dark:bg-zinc-800/40 border-stone-200/60 dark:border-zinc-700/60 hover:border-stone-300 dark:hover:border-zinc-600'
+                        ? 'border-secondary/35 bg-secondary/10'
+                        : 'border-outline-variant/40 bg-surface-container-low/70 hover:bg-surface-container-low'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -391,40 +363,40 @@ export function DaytimeState({
                           onToggleTask(task.id);
                         }}
                         aria-label={`Mark ${task.title} as ${task.is_completed ? 'incomplete' : 'complete'}`}
-                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
                           task.is_completed
-                            ? 'bg-[#006c49] text-white'
+                            ? 'bg-secondary text-on-secondary'
                             : isSelected
-                            ? 'bg-[#006c49]/15 text-[#006c49] dark:text-emerald-400'
-                            : 'border border-stone-300 dark:border-zinc-600 text-transparent hover:border-[#006c49]'
+                            ? 'bg-secondary/15 text-secondary'
+                            : 'border border-outline-variant text-transparent hover:border-secondary'
                         }`}
                       >
                         {task.is_completed ? (
-                          <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
                         ) : isSelected ? (
-                          <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                          </svg>
+                          <Play className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
                         ) : null}
                       </button>
                       <p
-                        className={`text-[13px] truncate font-sans ${
+                        className={`truncate font-sans text-body-sm ${
                           task.is_completed
-                            ? 'text-stone-400 dark:text-zinc-500 line-through'
+                            ? 'text-outline line-through'
                             : isSelected
-                            ? 'font-semibold text-stone-900 dark:text-zinc-100'
-                            : 'font-medium text-stone-800 dark:text-zinc-200'
+                            ? 'font-semibold text-on-surface'
+                            : 'font-medium text-on-surface'
                         }`}
                       >
                         {task.title}
                       </p>
                     </div>
+                    <span
+                      className={`font-mono text-label-sm shrink-0 ${
+                        isSelected && !task.is_completed ? 'text-secondary font-semibold' : 'text-outline'
+                      }`}
+                      style={LINING_NUMS_STYLE}
+                    >
+                      {sequence}
+                    </span>
                   </div>
                 );
               })}
@@ -433,23 +405,11 @@ export function DaytimeState({
         </div>
       </div>
 
-      {/* Insight Footer (only shown when >= 14 days of focus data exist) */}
+      {/* Insight Footer */}
       {focusInsight.hasEnoughData && focusInsight.insightText && (
-        <div className="pt-3 border-t border-stone-100 dark:border-zinc-800 flex items-center gap-2 text-stone-500 dark:text-zinc-400 shrink-0">
-          <svg
-            className="w-4 h-4 text-amber-500 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="text-xs font-sans">{focusInsight.insightText}</span>
+        <div className="flex shrink-0 items-center gap-2 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
+          <Lightbulb className="h-4 w-4 shrink-0 text-on-tertiary-container" aria-hidden="true" />
+          <span className="font-sans text-body-sm">{focusInsight.insightText}</span>
         </div>
       )}
     </div>

@@ -123,5 +123,21 @@ describe('Habits Module — Architecture & Consistency', () => {
       expect(html).toContain('Demo / Local Schema Mode');
       expect(html).toContain('supabase/migrations/20261015000000_habits_and_logs.sql');
     });
+
+    it('renders Stitch Playfair page title, summary row, calm empty state, and zero hardcoded hex accents', () => {
+      const html = renderToString(
+        <HabitTrackerClient
+          initialHabits={[]}
+          initialWeeklyStats={[]}
+        />
+      );
+
+      expect(html).toContain('font-serif text-page-title');
+      expect(html).toContain('data-purpose="habits-summary-row"');
+      expect(html).toContain('No habits configured yet.');
+      expect(html).not.toContain('#0F4C42');
+      expect(html).not.toContain('#F59E0B');
+      expect(html).not.toContain('italic');
+    });
   });
 });

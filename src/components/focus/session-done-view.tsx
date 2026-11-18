@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Coffee, Play, X } from 'lucide-react';
 import { formatTimeInTimezone } from '@/lib/daily-loop/business-logic';
 import { getSaveNoticeContent } from '@/lib/daily-loop/focus-timer-engine';
+import { Pill } from '@/components/ui/pill';
+import { getWrappedFocusIndex } from '@/components/ui/modal';
 import type {
   FocusSaveStatus,
   FocusSessionErrorCode,
@@ -12,6 +15,9 @@ import type {
 const LINING_NUMS_STYLE: React.CSSProperties = {
   fontVariantNumeric: 'lining-nums tabular-nums',
 };
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export interface SessionDoneViewProps {
   minutesAdded: number;
@@ -46,6 +52,34 @@ export function SessionDoneView({
   onDismiss,
   onRetrySave,
 }: SessionDoneViewProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Trap Tab focus within Session Complete modal
+  useEffect(() => {
+    const dialogEl = dialogRef.current;
+    if (!dialogEl) return;
+
+    const focusables = Array.from(dialogEl.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    if (focusables.length > 0) {
+      focusables[0].focus();
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const items = Array.from(dialogEl.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+      if (items.length === 0) return;
+      const activeIdx = items.indexOf(document.activeElement as HTMLElement);
+      const nextIdx = getWrappedFocusIndex(activeIdx, items.length, event.shiftKey);
+      if (nextIdx >= 0) {
+        event.preventDefault();
+        items[nextIdx].focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const formattedFinishTime =
     endedWhileAway && finishedAtMs !== null
       ? formatTimeInTimezone(finishedAtMs, userTimezone)
@@ -62,46 +96,53 @@ export function SessionDoneView({
 
   return (
     <div
-      className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800 shadow-[0_20px_60px_rgba(0,0,0,0.12)] text-center flex flex-col items-center gap-5"
+      ref={dialogRef}
+      className="relative mx-auto flex w-full max-w-[440px] flex-col items-center rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-7 text-center text-on-surface shadow-ambient sm:p-9"
       role="dialog"
+      aria-modal="true"
       aria-label="Session done"
       data-purpose="session-done-view"
     >
-      {/* Check Emblem */}
-      <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/70 dark:border-emerald-800/60 flex items-center justify-center text-[#006c49] dark:text-emerald-400">
-        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-          <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      {/* Top Eyebrow & Close */}
+      <div className="mb-6 flex w-full items-center justify-between border-b border-outline-variant/30 pb-4">
+        <span className="font-mono text-label-sm font-medium uppercase tracking-[0.12em] text-on-surface-variant">
+          Session Complete
+        </span>
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Close session summary"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
 
-      {/* Heading & Telemetry */}
-      <div className="space-y-1.5">
-        <h2
-          className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-900 dark:text-zinc-100"
-          style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
-        >
+      {/* Playfair Display Hero Heading (one of the two designated modal hero headings) */}
+      <div className="mb-6 flex flex-col items-center gap-3">
+        <h2 className="font-serif text-modal-hero font-normal tracking-tight text-on-surface">
           Session done
         </h2>
 
-        <p
-          className="text-sm font-sans font-medium text-[#006c49] dark:text-emerald-400 tabular-nums lining-nums"
-          style={LINING_NUMS_STYLE}
-        >
+        <Pill tone="secondary" dot={true} className="px-3.5 py-1 text-label-md font-semibold">
           +{minutesAdded} {minutesAdded === 1 ? 'min' : 'mins'} added to Time Focused
-        </p>
+        </Pill>
 
         {taskTitle && (
-          <p className="text-xs font-sans text-stone-500 dark:text-zinc-400 max-w-xs mx-auto truncate">
+          <p className="max-w-xs truncate font-sans text-body-sm font-medium text-on-surface-variant">
             {taskTitle}
           </p>
         )}
 
         {formattedFinishTime && (
-          <p
-            className="text-xs font-sans text-stone-500 dark:text-zinc-400 tabular-nums lining-nums pt-0.5"
-            style={LINING_NUMS_STYLE}
-          >
-            Finished at {formattedFinishTime}
+          <p className="font-sans text-body-sm text-on-surface-variant">
+            Finished at{' '}
+            <span
+              className="font-mono text-label-sm font-medium text-on-surface"
+              style={LINING_NUMS_STYLE}
+            >
+              {formattedFinishTime}
+            </span>
           </p>
         )}
       </div>
@@ -109,16 +150,16 @@ export function SessionDoneView({
       {/* Non-blocking Save Status / Retry Notice */}
       {showSaveBanner && (
         <div
-          className={`w-full px-3 py-2 rounded-xl border text-xs font-sans flex items-center justify-between gap-2 ${
+          className={`mb-5 flex w-full items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 font-sans text-body-sm ${
             notice.tone === 'emerald'
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/70 dark:border-emerald-800/60 text-[#006c49] dark:text-emerald-300'
-              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
+              ? 'border-secondary/25 bg-secondary/10 text-secondary'
+              : 'border-on-tertiary-container/30 bg-tertiary-fixed/50 text-on-tertiary-fixed'
           }`}
           role="status"
           data-purpose="focus-save-notice"
         >
-          <span className="text-left break-words min-w-0">{notice.text}</span>
-          <div className="flex items-center gap-2 shrink-0">
+          <span className="min-w-0 break-words text-left text-xs">{notice.text}</span>
+          <div className="flex shrink-0 items-center gap-2 text-xs">
             {notice.showSignInLink && (
               <Link
                 href="/login"
@@ -141,22 +182,24 @@ export function SessionDoneView({
       )}
 
       {/* Primary Actions */}
-      <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+      <div className="flex w-full flex-col gap-2.5">
         <button
           type="button"
           onClick={onTakeBreak}
-          className="flex-1 h-10 px-4 rounded-xl bg-[#E6ECE7] dark:bg-[#232F28] text-[#1F4032] dark:text-emerald-200 border border-[#C5D4C9] dark:border-emerald-800/50 hover:opacity-90 transition-opacity font-sans text-xs font-semibold cursor-pointer tabular-nums lining-nums"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-secondary font-sans text-body-sm font-medium text-on-secondary shadow-xs transition-opacity hover:opacity-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           style={LINING_NUMS_STYLE}
         >
-          Take a 5 min break
+          <Coffee className="h-4 w-4" aria-hidden="true" />
+          <span>Take a 5 min break</span>
         </button>
 
         <button
           type="button"
           onClick={onStartAnother}
-          className="flex-1 h-10 px-4 rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors font-sans text-xs font-semibold cursor-pointer"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-outline-variant/60 bg-surface-container-lowest font-sans text-body-sm font-medium text-on-surface transition-colors hover:bg-surface-container-low cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
         >
-          Start another
+          <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+          <span>Start another</span>
         </button>
       </div>
 
@@ -164,9 +207,9 @@ export function SessionDoneView({
       <button
         type="button"
         onClick={onDismiss}
-        className="text-xs font-sans text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+        className="mt-5 font-sans text-body-sm text-on-surface-variant transition-colors hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 rounded-md px-2 py-0.5"
       >
-        Done
+        Done <span className="font-mono text-label-sm text-outline">(Esc)</span>
       </button>
     </div>
   );

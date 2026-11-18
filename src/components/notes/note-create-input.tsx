@@ -252,9 +252,7 @@ export function NoteCreateInput({
         aria-label="Capture spark or note"
       >
         <div className="flex items-center gap-2.5 text-outline">
-          <span className="material-symbols-outlined text-[19px] text-[#2f5c3a] dark:text-emerald-400">
-            lightbulb
-          </span>
+          <Lightbulb className="h-[18px] w-[18px] text-secondary shrink-0" aria-hidden="true" />
           <span className="text-[13px] font-normal text-outline">
             Capture a fleeting spark, code snippet, or reading note...
           </span>
@@ -336,7 +334,7 @@ export function NoteCreateInput({
               )}
               aria-label={`Select tag. Current: #${selectedTag}`}
             >
-              <Hash size={13} className="text-[#2f5c3a] dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <Hash size={13} className="text-secondary group-hover:scale-110 transition-transform" />
               <span className="font-medium select-none">
                 <MorphingText text={`#${selectedTag}`} />
               </span>
@@ -388,7 +386,7 @@ export function NoteCreateInput({
                     >
                       <span>#{tag}</span>
                       {selectedTag === tag && (
-                        <span className="text-[11px] text-[#2f5c3a] dark:text-emerald-400">✓</span>
+                        <span className="text-[11px] text-secondary">✓</span>
                       )}
                     </button>
                   ))}
@@ -408,7 +406,7 @@ export function NoteCreateInput({
                 className={cn(
                   'px-2 py-0.5 rounded transition-colors cursor-pointer',
                   selectedTag === tag
-                    ? 'bg-[#2f5c3a] text-white dark:bg-emerald-500/20 dark:text-emerald-300 font-medium'
+                    ? 'bg-secondary text-on-secondary font-medium'
                     : 'text-outline hover:text-on-surface hover:bg-surface-container'
                 )}
               >
@@ -419,8 +417,8 @@ export function NoteCreateInput({
         </div>
 
         {/* Telemetry Indicator */}
-        <div className="hidden md:flex items-center gap-1.5 font-label-sm text-label-sm text-[#2f5c3a] dark:text-emerald-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#2f5c3a] dark:bg-emerald-400 animate-pulse" />
+        <div className="hidden md:flex items-center gap-1.5 font-label-sm text-label-sm text-secondary">
+          <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
           <span>Vault active</span>
         </div>
       </div>

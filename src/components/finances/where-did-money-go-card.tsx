@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
+import { Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/format';
+import { resolveSemanticCategoryColor } from '@/lib/finances/derived';
+import { Card } from '@/components/ui/card';
+import { Pill } from '@/components/ui/pill';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export interface CategoryOutflowItem {
   name: string;
@@ -19,160 +24,144 @@ export interface WhereDidMoneyGoCardProps {
   className?: string;
 }
 
-const DEFAULT_SEGMENTS = [
-  { name: 'Grocery', percentage: 56, color: '#059669', value: 2108.0 },
-  { name: 'Commute', percentage: 15, color: '#3b82f6', value: 577.0 },
-  { name: 'Juice', percentage: 12, color: '#f59e0b', value: 450.0 },
-  { name: 'Junk Food', percentage: 9, color: '#f05a28', value: 332.0 },
-  { name: 'Other', percentage: 5, color: '#34d399', value: 189.0 },
-  { name: 'Misc', percentage: 3, color: '#a855f7', value: 132.0 },
-];
+const LINING_NUMS_STYLE: React.CSSProperties = {
+  fontVariantNumeric: 'lining-nums tabular-nums',
+};
 
 export function WhereDidMoneyGoCard({
   currencySymbol = '₹',
   totalSpent,
   categoryBreakdown,
-  subtitle = 'October categorical outflow',
+  subtitle = 'Categorical outflow breakdown',
   className = '',
 }: WhereDidMoneyGoCardProps) {
-  const hasCustomData =
-    Boolean(categoryBreakdown && categoryBreakdown.length > 0 && categoryBreakdown.some((c) => c.value > 0));
+  const activeCategories: CategoryOutflowItem[] = (categoryBreakdown || []).filter(
+    (c) => c.value > 0
+  );
+  const hasData = activeCategories.length > 0;
 
+  const totalCalculated = activeCategories.reduce((sum, c) => sum + c.value, 0);
   const displayTotal =
-    typeof totalSpent === 'number' && (totalSpent > 0 || hasCustomData)
-      ? totalSpent
-      : 3788.0;
+    typeof totalSpent === 'number' && totalSpent > 0 ? totalSpent : totalCalculated;
 
-  const activeCategories: CategoryOutflowItem[] = hasCustomData && categoryBreakdown
-    ? categoryBreakdown.filter((c) => c.value > 0)
-    : DEFAULT_SEGMENTS;
-
-  const totalCalculated = activeCategories.reduce((sum, c) => sum + c.value, 0) || displayTotal;
-
-  // Normalize percentages
   const categoriesWithPercent = activeCategories.map((cat, idx) => {
     const rawPercent =
       cat.percentage ??
       (totalCalculated > 0 ? Math.round((cat.value / totalCalculated) * 100) : 0);
-    const color =
-      cat.color ||
-      DEFAULT_SEGMENTS[idx % DEFAULT_SEGMENTS.length]?.color ||
-      '#059669';
+    const safeColor = resolveSemanticCategoryColor(cat.color, idx);
+
     return {
       ...cat,
       percentage: rawPercent,
-      color,
+      color: safeColor,
     };
   });
 
-  const topListItems = categoriesWithPercent.slice(0, 4);
-  const activeCount = hasCustomData ? activeCategories.length : 7;
+  const topListItems = categoriesWithPercent.slice(0, 5);
+  const activeCount = activeCategories.length;
 
   return (
-    <article
+    <Card
+      as="article"
+      padding="md"
+      surface="lowest"
       data-purpose="category-breakdown-card"
-      className={`h-full flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-white/90 p-6 shadow-xs dark:bg-zinc-900/60 dark:border-zinc-800/80 transition-all duration-200 ${className}`}
+      className={`flex h-full flex-col justify-between ${className}`}
     >
-      {/* Inner Main Content Area: flex-1 flex flex-col justify-between */}
-      <div className="flex-1 flex flex-col justify-between">
-        {/* Top Header */}
-        <header className="flex items-start justify-between mb-4">
+      <div className="flex flex-1 flex-col justify-between gap-4">
+        <header className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold text-stone-900 dark:text-zinc-100 font-sans tracking-tight">
+            <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
               Where Did Money Go?
             </h2>
-            <p className="text-xs font-mono text-stone-400 dark:text-stone-400 mt-0.5">
+            <p className="mt-0.5 font-mono text-label-sm text-on-surface-variant">
               {subtitle}
             </p>
           </div>
-          {/* Header Telemetry Badge */}
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono text-stone-400 dark:text-stone-400 bg-stone-100/70 dark:bg-zinc-800/70 border border-stone-200/60 dark:border-zinc-700/60 font-medium">
-            100% Accounted
-          </span>
+          {hasData && <Pill tone="secondary">100% Accounted</Pill>}
         </header>
 
-        {/* Middle Section: Outflow Bar & Category List */}
-        <div className="flex-1 flex flex-col justify-center my-2">
-          {/* Category Outflow Stacked Horizontal Bar */}
-          <div className="mb-4" data-purpose="progress-segmented-bar">
-            <div className="w-full h-3 bg-stone-100 dark:bg-zinc-800 rounded-full flex overflow-hidden p-0.5 space-x-0.5">
-              {categoriesWithPercent.map((cat, idx) => {
-                const isFirst = idx === 0;
-                const isLast = idx === categoriesWithPercent.length - 1;
-                return (
-                  <div
-                    key={`seg-${idx}-${cat.name}`}
-                    className={`h-full transition-all ${isFirst ? 'rounded-l-full' : ''} ${isLast ? 'rounded-r-full' : ''}`}
-                    style={{
-                      width: `${cat.percentage}%`,
-                      backgroundColor: cat.color,
-                    }}
-                    title={`${cat.name}: ${cat.percentage}%`}
-                  />
-                );
-              })}
-            </div>
-            {/* Outflow Metadata Line */}
-            <div className="flex items-center justify-between text-xs font-mono text-stone-600 dark:text-stone-400 mt-2 px-0.5">
-              <span className="font-semibold text-stone-900 dark:text-zinc-200 tabular-nums font-mono">
-                {currencySymbol}
-                {formatCurrency(displayTotal)} spent
-              </span>
-              <span className="text-stone-400 dark:text-zinc-500 font-mono">
-                {activeCount} {activeCount === 1 ? 'Category' : 'Categories'} active
-              </span>
-            </div>
-          </div>
+        {!hasData ? (
+          <EmptyState
+            compact={true}
+            icon={<Wallet className="h-5 w-5" />}
+            title="No categorical outflows yet"
+            description="Recorded expenses will automatically group by category here."
+          />
+        ) : (
+          <div className="flex flex-1 flex-col justify-center gap-4">
+            {/* Segmented Horizontal Bar */}
+            <div data-purpose="progress-segmented-bar">
+              <div className="flex h-3 w-full space-x-0.5 overflow-hidden rounded-full bg-surface-container-high p-0.5">
+                {categoriesWithPercent.map((cat, idx) => {
+                  const isFirst = idx === 0;
+                  const isLast = idx === categoriesWithPercent.length - 1;
+                  return (
+                    <div
+                      key={`seg-${idx}-${cat.name}`}
+                      className={`h-full transition-all ${isFirst ? 'rounded-l-full' : ''} ${
+                        isLast ? 'rounded-r-full' : ''
+                      }`}
+                      style={{
+                        width: `${cat.percentage}%`,
+                        backgroundColor: cat.color,
+                      }}
+                      title={`${cat.name}: ${cat.percentage}%`}
+                    />
+                  );
+                })}
+              </div>
 
-          {/* Category Breakdown List */}
-          <ul
-            aria-label="Category Spending Breakdown"
-            className="flex flex-col gap-2.5 my-1"
-          >
-            {topListItems.map((cat, idx) => (
-              <li
-                key={`cat-${idx}-${cat.name}`}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-100/50 dark:border-amber-900/30 transition-colors hover:bg-amber-100/40 dark:hover:bg-amber-950/40"
+              <div
+                className="mt-2 flex items-center justify-between px-0.5 font-mono text-label-sm text-on-surface-variant"
+                style={LINING_NUMS_STYLE}
               >
-                <div className="flex items-center space-x-2.5 min-w-0">
-                  <span
-                    aria-hidden="true"
-                    className="w-2.5 h-2.5 rounded-[3px] shrink-0"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  <span className="text-sm font-medium text-stone-800 dark:text-zinc-200 truncate font-sans">
-                    {cat.name}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3 sm:space-x-4 font-mono text-sm shrink-0">
-                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-amber-100/70 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 font-medium">
-                    {cat.percentage}%
-                  </span>
-                  <span className="font-semibold text-stone-900 dark:text-zinc-100 tabular-nums font-mono">
-                    {currencySymbol}
-                    {formatCurrency(cat.value)}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <span className="font-semibold text-on-surface">
+                  {currencySymbol}
+                  {formatCurrency(displayTotal)} spent
+                </span>
+                <span className="text-outline">
+                  {activeCount} {activeCount === 1 ? 'Category' : 'Categories'} active
+                </span>
+              </div>
+            </div>
 
-        {/* Anchored Bottom Footer */}
-        <footer
-          className="mt-auto pt-4 border-t border-stone-100 dark:border-zinc-800/50 flex items-center justify-between text-xs font-mono"
-          data-purpose="right-card-footer"
-        >
-          <div className="text-stone-500 dark:text-zinc-400">
-            Zero emergency debits logged
+            {/* Category Breakdown List */}
+            <ul aria-label="Category Spending Breakdown" className="flex flex-col gap-2">
+              {topListItems.map((cat, idx) => (
+                <li
+                  key={`cat-${idx}-${cat.name}`}
+                  className="flex items-center justify-between rounded-xl border border-outline-variant/40 bg-surface-container-low/70 p-2.5 transition-colors hover:bg-surface-container"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <span className="truncate font-sans text-body-sm font-medium text-on-surface">
+                      {cat.name}
+                    </span>
+                  </div>
+                  <div
+                    className="flex shrink-0 items-center gap-3 font-mono text-label-sm"
+                    style={LINING_NUMS_STYLE}
+                  >
+                    <span className="rounded bg-surface-container-high px-1.5 py-0.5 text-on-surface-variant">
+                      {cat.percentage}%
+                    </span>
+                    <span className="font-semibold text-on-surface">
+                      {currencySymbol}
+                      {formatCurrency(cat.value)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold tracking-tight">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-            <span>Discipline Index: 98/100</span>
-          </div>
-        </footer>
+        )}
       </div>
-    </article>
+    </Card>
   );
 }
 

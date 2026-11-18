@@ -1,7 +1,29 @@
 import type { Metadata } from 'next';
+import { Geist, JetBrains_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { getValidSiteUrl } from '@/lib/utils/url';
+
+const geist = Geist({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-geist',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-playfair-display',
+  display: 'swap',
+});
 
 const siteUrlObject = getValidSiteUrl();
 const siteUrl = siteUrlObject.toString();
@@ -37,17 +59,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="font-sans">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geist.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable} font-sans`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme')||'nordic';if(t==='spatial-glass'){document.documentElement.setAttribute('data-theme','spatial-glass');}else if(t==='risograph'||t==='crimson-dark'||t==='crimson-cream'||t==='crimson-light'){document.documentElement.setAttribute('data-theme','risograph');if(t==='crimson-dark'||t==='crimson-cream'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}else if(t==='tui'||t==='dark'){document.documentElement.setAttribute('data-theme','tui');document.documentElement.classList.add('dark');}else if(t==='tactile'){document.documentElement.setAttribute('data-theme','tactile');document.documentElement.classList.remove('dark');}else{document.documentElement.setAttribute('data-theme','nordic');document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme')||'light';var d=document.documentElement;var isDark=t==='dark'||t==='tui'||t==='crimson-dark'||t==='crimson-cream'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){d.classList.add('dark');}else{d.classList.remove('dark');}d.setAttribute('data-theme',isDark?'dark':'light');}catch(e){}})();`,
           }}
         />
       </head>
       <body
         suppressHydrationWarning
-        className="font-sans antialiased selection:bg-secondary-container selection:text-on-secondary-container"
+        className="font-sans antialiased bg-surface text-on-surface selection:bg-secondary-container selection:text-on-secondary-container"
       >
         {children}
         <Analytics />

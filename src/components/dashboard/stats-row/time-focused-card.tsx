@@ -1,6 +1,10 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { computeFocusRemaining } from '@/lib/daily-loop/dashboard-derived';
 
 interface TimeFocusedCardProps {
   timeFocused: {
@@ -13,44 +17,61 @@ interface TimeFocusedCardProps {
 }
 
 export function TimeFocusedCard({ timeFocused }: TimeFocusedCardProps) {
+  const remaining = computeFocusRemaining(timeFocused.minutes, timeFocused.goalMinutes);
+
   return (
-    <div
-      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200 min-w-0"
-      data-purpose="time-focused-card"
+    <Link
+      href="/focus"
+      className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+      aria-label="Open Focus History"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-          Time Focused
-        </span>
-        <span className="w-2 h-2 rounded-full bg-[#006c49] dark:bg-emerald-500 animate-pulse" />
-      </div>
-
-      <div className="flex items-baseline gap-1.5 mb-3">
-        <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums"
-          style={{
-            fontFamily: '"Playfair Display", Georgia, serif',
-            fontVariantNumeric: 'lining-nums tabular-nums',
-          }}
-        >
-          {timeFocused.formattedTime} active
-        </span>
-        <span
-          className="text-xs text-stone-500 dark:text-zinc-400 font-sans tabular-nums lining-nums"
-          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
-        >
-          / {timeFocused.formattedGoal}
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-            style={{ width: `${Math.min(100, timeFocused.percent)}%` }}
-          />
+      <Card
+        padding="md"
+        surface="lowest"
+        interactive={true}
+        className="flex h-full flex-col justify-between gap-3 min-w-0"
+        data-purpose="time-focused-card"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
+            Time Focused
+          </span>
+          <span
+            className="font-mono text-label-sm font-semibold text-secondary"
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            {Math.min(100, Math.round(timeFocused.percent))}%
+          </span>
         </div>
-      </div>
-    </div>
+
+        <div className="flex items-baseline gap-1.5 min-w-0">
+          <span
+            className="font-mono text-numeric-timer font-semibold tracking-tight text-on-surface truncate"
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            {timeFocused.formattedTime}
+          </span>
+          <span
+            className="font-mono text-label-md text-outline shrink-0"
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            / {timeFocused.formattedGoal}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <ProgressBar
+            value={timeFocused.percent}
+            tone="secondary"
+            size="xs"
+            label="Daily focus goal progress"
+          />
+          <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant">
+            <span>{remaining.isGoalMet ? 'Daily goal met' : `${remaining.formattedRemaining} left`}</span>
+            <span className="text-secondary">History →</span>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }

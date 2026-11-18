@@ -19,7 +19,7 @@ import type { ProjectOption } from '@/lib/actions/projects-options';
 import {
   computeExpensesSummary,
   formatMonthHeading,
-  getSemanticCategoryColor,
+  resolveSemanticCategoryColor,
 } from '@/lib/finances/derived';
 import { Pill } from '@/components/ui/pill';
 import {
@@ -222,12 +222,7 @@ export function FinancesClientView({
         name,
         value: Number(data.value.toFixed(2)),
         count: data.count,
-        color:
-          data.color &&
-          data.color.toLowerCase() !== '#f59e0b' &&
-          data.color.toLowerCase() !== '#0f4c42'
-            ? data.color
-            : getSemanticCategoryColor(idx),
+        color: resolveSemanticCategoryColor(data.color, idx),
         percentage: totalSpent > 0 ? Math.round((data.value / totalSpent) * 100) : 0,
       }))
       .sort((a, b) => b.value - a.value);

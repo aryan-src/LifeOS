@@ -3,7 +3,7 @@
 import React from 'react';
 import { Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/format';
-import { getSemanticCategoryColor } from '@/lib/finances/derived';
+import { resolveSemanticCategoryColor } from '@/lib/finances/derived';
 import { Card } from '@/components/ui/card';
 import { Pill } from '@/components/ui/pill';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -48,12 +48,7 @@ export function WhereDidMoneyGoCard({
     const rawPercent =
       cat.percentage ??
       (totalCalculated > 0 ? Math.round((cat.value / totalCalculated) * 100) : 0);
-    const safeColor =
-      cat.color &&
-      cat.color.toLowerCase() !== '#f59e0b' &&
-      cat.color.toLowerCase() !== '#0f4c42'
-        ? cat.color
-        : getSemanticCategoryColor(idx);
+    const safeColor = resolveSemanticCategoryColor(cat.color, idx);
 
     return {
       ...cat,

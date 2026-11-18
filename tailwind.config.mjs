@@ -9,7 +9,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Legacy compatibility aliases backed by Stitch CSS variables (no hardcoded #0F4C42 or #F59E0B)
+        // Legacy compatibility aliases backed by Stitch CSS variables (semantic tokens only)
         'canvas': 'rgb(var(--color-surface) / <alpha-value>)',
         'paper': 'rgb(var(--color-surface) / <alpha-value>)',
         'ivory': 'rgb(var(--color-surface-container-lowest) / <alpha-value>)',

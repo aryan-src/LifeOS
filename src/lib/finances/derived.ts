@@ -33,6 +33,20 @@ export function getSemanticCategoryColor(index: number): string {
   return SEMANTIC_CATEGORY_COLORS[index % SEMANTIC_CATEGORY_COLORS.length];
 }
 
+/**
+ * Resolves a category swatch strictly onto the Stitch CSS-variable palette,
+ * avoiding raw hardcoded hex tokens.
+ */
+export function resolveSemanticCategoryColor(
+  rawColor: string | null | undefined,
+  index: number
+): string {
+  if (rawColor && rawColor.startsWith('rgb(var(--color-')) {
+    return rawColor;
+  }
+  return getSemanticCategoryColor(index);
+}
+
 export function computeExpensesSummary(params: {
   totalSpent: number;
   monthlyLimit: number;

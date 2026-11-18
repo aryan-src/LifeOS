@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import type { FocusTimerState } from '@/lib/daily-loop/types';
 import {
   computeActiveElapsedSeconds,
   formatCountdownMMSS,
+  getSaveNoticeContent,
   MIN_EARLY_EXIT_SECONDS,
 } from '@/lib/daily-loop/focus-timer-engine';
 import { SessionDoneView } from './session-done-view';
@@ -110,6 +112,9 @@ export function FocusSanctuaryOverlay({
           finishedAtMs={timer.finishedAtMs}
           userTimezone={userTimezone}
           hasUnsavedRetry={timer.pendingUnsavedSessions.length > 0 && Boolean(timer.saveError)}
+          saveError={timer.saveError}
+          saveErrorCode={timer.saveErrorCode ?? null}
+          lastSaveStatus={timer.lastSaveStatus ?? 'idle'}
           isSaving={isSaving}
           onTakeBreak={onTakeBreak}
           onStartAnother={onStartAnother}
@@ -215,6 +220,9 @@ export function FocusSanctuaryOverlay({
             finishedAtMs={timer.finishedAtMs}
             userTimezone={userTimezone}
             hasUnsavedRetry={timer.pendingUnsavedSessions.length > 0 && Boolean(timer.saveError)}
+            saveError={timer.saveError}
+            saveErrorCode={timer.saveErrorCode ?? null}
+            lastSaveStatus={timer.lastSaveStatus ?? 'idle'}
             isSaving={isSaving}
             onTakeBreak={onTakeBreak}
             onStartAnother={onStartAnother}
@@ -367,12 +375,33 @@ export function FocusSanctuaryOverlay({
       </main>
 
       {/* Quiet Footer Space */}
-      <footer className="w-full max-w-5xl mx-auto text-center z-10 h-5 flex items-center justify-center">
-        {timer.pendingUnsavedSessions.length > 0 && timer.saveError && !showSessionDone && (
-          <span className="text-[11px] font-sans text-amber-700 dark:text-amber-400">
-            Couldn&apos;t save previous session yet, retrying
-          </span>
-        )}
+      <footer className="w-full max-w-5xl mx-auto text-center z-10 min-h-5 flex items-center justify-center">
+        {timer.pendingUnsavedSessions.length > 0 && timer.saveError && !showSessionDone && (() => {
+          const footerNotice = getSaveNoticeContent({
+            saveError: timer.saveError,
+            saveErrorCode: timer.saveErrorCode ?? null,
+            isSaving,
+          });
+          return (
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 text-[11px] font-sans text-amber-700 dark:text-amber-400">
+              <span>{footerNotice.text}</span>
+              {footerNotice.showSignInLink && (
+                <Link href="/login" className="font-semibold underline hover:opacity-80">
+                  Sign in
+                </Link>
+              )}
+              {footerNotice.showRetryButton && (
+                <button
+                  type="button"
+                  onClick={onRetrySave}
+                  className="font-semibold underline hover:opacity-80 cursor-pointer"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </footer>
     </div>
   );

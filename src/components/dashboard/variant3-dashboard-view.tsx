@@ -12,6 +12,7 @@ import { toggleTask, type TaskWithProject } from '@/lib/actions/tasks';
 import type { DailyLoopDashboardData } from '@/lib/actions/daily-loop';
 import type { TodayMode } from '@/lib/daily-loop/types';
 import { StatsRow, buildDevMockDailyLoopData } from './stats-row/stats-row';
+import { StreakMilestonesModal } from './stats-row/streak-milestones-modal';
 import { TimezoneSync } from './timezone-sync';
 import { TodayCard } from './today-card/today-card';
 import type { TodayTaskItem } from './today-card/morning-state';
@@ -127,6 +128,7 @@ export function Variant3DashboardView({
   const isDev = process.env.NODE_ENV !== 'production';
   const [isDevMockActive, setIsDevMockActive] = useState(false);
   const [devForcedTodayMode, setDevForcedTodayMode] = useState<TodayMode | null>(null);
+  const [isMilestonesOpen, setIsMilestonesOpen] = useState(false);
 
   const effectiveDailyLoop = dailyLoopData || defaultDailyLoopData;
   const activeTodayLoopData =
@@ -330,7 +332,7 @@ export function Variant3DashboardView({
           <StatsRow
             data={effectiveDailyLoop}
             onOpenQuickCapture={openQuickCapture}
-            onOpenMilestones={onOpenMilestones}
+            onOpenMilestones={onOpenMilestones ?? (() => setIsMilestonesOpen(true))}
             isDevMockActive={isDevMockActive}
             onToggleDevMock={() => setIsDevMockActive((prev) => !prev)}
             devForcedTodayMode={devForcedTodayMode}
@@ -385,6 +387,12 @@ export function Variant3DashboardView({
           </section>
         </div>
       </div>
+
+      <StreakMilestonesModal
+        open={isMilestonesOpen}
+        onClose={() => setIsMilestonesOpen(false)}
+        streakState={activeTodayLoopData.streakState}
+      />
     </div>
   );
 }

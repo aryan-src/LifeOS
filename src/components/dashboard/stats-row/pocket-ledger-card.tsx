@@ -1,6 +1,11 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { Pill } from '@/components/ui/pill';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { computeBudgetUtilization } from '@/lib/daily-loop/dashboard-derived';
 
 interface PocketLedgerCardProps {
   pocketLedger: {
@@ -10,51 +15,72 @@ interface PocketLedgerCardProps {
     allowancePercent: number;
     currentMonth: string;
   };
+  todayDateStr?: string;
 }
 
-export function PocketLedgerCard({ pocketLedger }: PocketLedgerCardProps) {
-  const { remainingAllowance, monthlyAllowance, allowancePercent, currentMonth } = pocketLedger;
+export function PocketLedgerCard({
+  pocketLedger,
+  todayDateStr = '',
+}: PocketLedgerCardProps) {
+  const { spentAmount, remainingAllowance, monthlyAllowance, currentMonth } = pocketLedger;
+  const derived = computeBudgetUtilization(
+    spentAmount,
+    monthlyAllowance,
+    todayDateStr || new Date().toISOString().slice(0, 10)
+  );
 
   return (
-    <div
-      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-stone-200/70 dark:border-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-stone-300/80 dark:hover:border-zinc-700 transition-all duration-200 min-w-0"
-      data-purpose="pocket-ledger-card"
+    <Link
+      href="/finances"
+      className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+      aria-label="Open Expenses ledger"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 font-sans">
-          Pocket Ledger
-        </span>
-        <span className="text-[10px] font-mono text-stone-500 dark:text-zinc-400 bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-          {currentMonth}
-        </span>
-      </div>
-
-      <div className="flex items-baseline gap-2 mb-3">
-        <span
-          className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-zinc-100 tabular-nums lining-nums"
-          style={{
-            fontFamily: '"Playfair Display", Georgia, serif',
-            fontVariantNumeric: 'lining-nums tabular-nums',
-          }}
-        >
-          ₹{remainingAllowance.toLocaleString('en-IN')}
-        </span>
-        <span
-          className="text-xs text-stone-500 dark:text-zinc-400 font-sans tabular-nums lining-nums"
-          style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
-        >
-          left of ₹{monthlyAllowance.toLocaleString('en-IN')}
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        <div className="w-full h-1.5 bg-stone-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#006c49] dark:bg-emerald-500 transition-all duration-500 rounded-full"
-            style={{ width: `${Math.min(100, allowancePercent)}%` }}
-          />
+      <Card
+        padding="md"
+        surface="lowest"
+        interactive={true}
+        className="flex h-full flex-col justify-between gap-3 min-w-0"
+        data-purpose="pocket-ledger-card"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
+            Pocket Ledger
+          </span>
+          <Pill tone="neutral">{currentMonth}</Pill>
         </div>
-      </div>
-    </div>
+
+        <div className="flex items-baseline gap-1.5 min-w-0">
+          <span
+            className="font-mono text-numeric-timer font-semibold tracking-tight text-on-surface truncate"
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            ₹{Math.round(remainingAllowance).toLocaleString('en-IN')}
+          </span>
+          <span
+            className="font-sans text-body-sm text-on-surface-variant shrink-0"
+            style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}
+          >
+            left of ₹{Math.round(monthlyAllowance).toLocaleString('en-IN')}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <ProgressBar
+            value={derived.percentUtilized}
+            tone={derived.tone}
+            size="xs"
+            label="Monthly allowance utilization"
+          />
+          <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant">
+            <span style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
+              ₹{derived.safeDailyPace.toLocaleString('en-IN')}/day safe pace
+            </span>
+            <span style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
+              {derived.daysLeftInMonth}d left
+            </span>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }

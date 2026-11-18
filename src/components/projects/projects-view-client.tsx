@@ -13,7 +13,6 @@ import { ProjectsListView } from './views/projects-list-view';
 import { ProjectsTimelineView } from './views/projects-timeline-view';
 import { ProjectCreateModal } from './project-create-modal';
 import { ProjectEditModal } from './project-edit-modal';
-import { StatCard } from '@/components/ui/stat-card';
 import {
   Kanban,
   List,
@@ -172,37 +171,38 @@ export function ProjectsViewClient({
   }, [optimisticProjects]);
 
   return (
-    <div className="mx-auto w-full max-w-[1440px] space-y-6 px-4 py-6 md:px-8">
-      {/* Stitch Projects Header */}
-      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <div className="space-y-1">
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 space-y-6">
+      {/* TopBar Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
             Projects
           </h1>
-          <p className="font-sans text-body-sm text-on-surface-variant">
+          <p className="text-xs text-textMuted dark:text-zinc-400 mt-0.5">
             Milestones, roadmaps, task execution, and budget tracking.
           </p>
         </div>
 
         {/* View Switcher & Action CTA */}
         <div className="flex flex-wrap items-center gap-3">
+          {/* Segmented View Switcher */}
           <div
             role="tablist"
             aria-label="Projects view mode"
-            className="inline-flex items-center rounded-xl border border-outline-variant/50 bg-surface-container-low p-1 text-xs font-medium text-on-surface-variant"
+            className="inline-flex items-center p-1 bg-[#F5F3EC] dark:bg-zinc-900/90 border border-borderWarm dark:border-zinc-800 rounded-xl shadow-2xs text-xs font-semibold text-textMuted dark:text-zinc-400"
           >
             <button
               type="button"
               role="tab"
               aria-selected={activeView === 'board'}
               onClick={() => handleViewChange('board')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'board'
-                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
-                  : 'hover:text-on-surface'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
-              <Kanban className="h-3.5 w-3.5" aria-hidden="true" />
+              <Kanban className="w-3.5 h-3.5" />
               <span>Board View</span>
             </button>
 
@@ -211,13 +211,13 @@ export function ProjectsViewClient({
               role="tab"
               aria-selected={activeView === 'list'}
               onClick={() => handleViewChange('list')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'list'
-                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
-                  : 'hover:text-on-surface'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
-              <List className="h-3.5 w-3.5" aria-hidden="true" />
+              <List className="w-3.5 h-3.5" />
               <span>List View</span>
             </button>
 
@@ -226,63 +226,103 @@ export function ProjectsViewClient({
               role="tab"
               aria-selected={activeView === 'timeline'}
               onClick={() => handleViewChange('timeline')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 activeView === 'timeline'
-                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
-                  : 'hover:text-on-surface'
+                  ? 'bg-ivory dark:bg-zinc-800 shadow-xs text-textMain dark:text-zinc-100 font-medium'
+                  : 'hover:text-textMain dark:hover:text-zinc-200'
               }`}
             >
-              <CalendarRange className="h-3.5 w-3.5" aria-hidden="true" />
+              <CalendarRange className="w-3.5 h-3.5" />
               <span>Timeline</span>
             </button>
           </div>
 
+          {/* New Project Primary CTA */}
           <button
             type="button"
             onClick={() => {
               setCreateDefaultStatus('active');
               setIsCreateOpen(true);
             }}
-            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-secondary px-4 font-sans text-body-sm font-medium text-on-secondary shadow-xs transition-opacity hover:opacity-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 md:py-2 bg-textMain hover:bg-stone-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs md:text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
           >
-            <Plus className="h-4 w-4" aria-hidden="true" />
+            <Plus className="w-4 h-4" />
             <span>New Project</span>
           </button>
         </div>
       </header>
 
-      {/* Stitch Metrics Ribbon (KPIs) */}
+      {/* Metrics Ribbon (KPIs) */}
       <section
         aria-label="Project Key Performance Indicators"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"
       >
-        <StatCard
-          label="Active Workstreams"
-          value={activeCount}
-          badge={{ text: 'Across Domains', tone: 'secondary', dot: true }}
-        />
+        {/* Metric 1: Active Workstreams */}
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
+            <span>Active Workstreams</span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sage" />
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
+              {activeCount}
+            </span>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#E1EEE6] dark:bg-emerald-950/50 text-[#065F46] dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
+              Across Domains
+            </span>
+          </div>
+        </div>
 
-        <StatCard
-          label="Overall Velocity"
-          value={`${avgVelocity}%`}
-          icon={<TrendingUp className="h-4 w-4 text-secondary" />}
-          progress={{ value: avgVelocity, tone: 'secondary', label: 'Portfolio completion' }}
-          sublabel="Avg card pace"
-        />
+        {/* Metric 2: Overall Velocity */}
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
+            <span>Overall Velocity</span>
+            <TrendingUp className="w-4 h-4 text-textSubtle dark:text-zinc-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
+              {`${avgVelocity}%`}
+            </span>
+            <span className="text-xs text-textSubtle dark:text-zinc-500 font-mono">
+              Avg card pace
+            </span>
+          </div>
+        </div>
 
-        <StatCard
-          label="Completed"
-          value={completedCount}
-          badge={{ text: 'Achieved', tone: 'secondary' }}
-          icon={<CheckCircle2 className="h-4 w-4 text-secondary" />}
-        />
+        {/* Metric 3: Completed / Q4 */}
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
+            <span>Completed / Q4</span>
+            <CheckCircle2 className="w-4 h-4 text-sage" />
+          </div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
+              {completedCount}
+            </span>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#E1EEE6] dark:bg-emerald-950/50 text-[#065F46] dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 rounded-md">
+              Achieved
+            </span>
+          </div>
+        </div>
 
-        <StatCard
-          label="Stalled Items"
-          value={pausedCount}
-          badge={{ text: 'On hold', tone: 'neutral' }}
-          icon={<PauseCircle className="h-4 w-4 text-on-tertiary-container" />}
-        />
+        {/* Metric 4: Stalled Items */}
+        <div className="bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-26 relative">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium tracking-wider text-textMuted dark:text-zinc-400 uppercase">
+            <span>Stalled Items</span>
+            <PauseCircle className="w-4 h-4 text-amberWarm" />
+          </div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-3xl font-extrabold text-textMain dark:text-zinc-100 font-mono">
+              {pausedCount}
+            </span>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#FAF9F5] dark:bg-zinc-800 text-textMuted dark:text-zinc-400 border border-borderWarm dark:border-zinc-700/60 rounded-md">
+              On hold
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* Toolbar & Filter Bar */}
@@ -291,16 +331,17 @@ export function ProjectsViewClient({
         className="flex flex-wrap items-center justify-between gap-3 text-xs"
       >
         <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 flex items-center gap-1 font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
-            <Filter className="h-3 w-3" aria-hidden="true" />
+          <span className="font-mono uppercase text-[11px] text-textSubtle dark:text-zinc-500 tracking-wider font-semibold mr-1 flex items-center gap-1">
+            <Filter className="w-3 h-3" />
             Filter:
           </span>
 
+          {/* Status Filter */}
           <select
             aria-label="Filter by Status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | ProjectStatus)}
-            className="rounded-xl border border-outline-variant/50 bg-surface-container-lowest px-3 py-1.5 font-sans text-body-sm text-on-surface transition-colors focus:border-secondary focus:outline-none"
+            className="px-3 py-1.5 bg-ivory dark:bg-zinc-900 border border-borderWarm dark:border-zinc-800 rounded-lg text-textMain dark:text-zinc-200 font-medium hover:border-textSubtle dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-sage"
           >
             <option value="all">All Statuses</option>
             <option value="backlog">Backlog</option>

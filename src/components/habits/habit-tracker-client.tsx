@@ -9,6 +9,8 @@ import {
 } from '@/lib/actions/habits';
 import { WeeklyHabitChart } from './weekly-habit-chart';
 import { HabitSummaryCards } from './habit-summary-cards';
+import { ConsistencyMapCard } from './consistency-map-card';
+import { StreakRecordsCard } from './streak-records-card';
 import { computeHabitSummary } from '@/lib/habits/derived';
 import { Card } from '@/components/ui/card';
 import { Pill } from '@/components/ui/pill';
@@ -289,14 +291,20 @@ export function HabitTrackerClient({
       {/* 4-Card Summary Row */}
       <HabitSummaryCards summary={summary} />
 
-      {/* Today's Progress & Interactive Habit List */}
-      <Card padding="lg" surface="lowest" className="space-y-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <div className="flex items-center gap-2">
+      {/* Main Two-Column Layout (8 cols execution stream + 4 cols analytics & consistency) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Wide Habit Cards Stream (8 cols) */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+            <div>
               <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
-                Today&apos;s Progress
+                Today&apos;s Execution
               </h2>
+              <p className="font-sans text-body-sm text-on-surface-variant">
+                Check off protocols as they are executed throughout your circadian rhythm.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
               {summary.todayPercent === 100 && summary.activeCount > 0 && (
                 <Pill tone="secondary">
                   <span className="inline-flex items-center gap-1">
@@ -305,53 +313,33 @@ export function HabitTrackerClient({
                   </span>
                 </Pill>
               )}
+              <span
+                className="font-mono text-label-sm font-medium text-on-surface-variant"
+                style={LINING_NUMS_STYLE}
+              >
+                {summary.completedTodayCount}/{summary.activeCount}
+              </span>
             </div>
-            <p className="mt-1 font-sans text-body-sm text-on-surface-variant">
-              {summary.activeCount === 0
-                ? 'No habits configured yet. Add your first habit to begin tracking streaks.'
-                : summary.todayPercent === 100
-                ? 'Every daily habit is checked off for today.'
-                : `${summary.completedTodayCount} of ${summary.activeCount} habits completed today (${summary.todayPercent}%).`}
-            </p>
           </div>
 
-          <div
-            className="flex shrink-0 items-baseline gap-1.5 font-mono"
-            style={LINING_NUMS_STYLE}
-          >
-            <span className="text-numeric-timer font-semibold tracking-tight text-on-surface">
-              {summary.todayPercent}%
-            </span>
-            <span className="text-label-md text-outline">
-              ({summary.completedTodayCount}/{summary.activeCount})
-            </span>
-          </div>
-        </div>
-
-        <ProgressBar
-          value={summary.todayPercent}
-          tone="secondary"
-          size="md"
-          label="Today's habit completion progress"
-        />
-
-        <div className="divide-y divide-outline-variant/30 pt-2">
           {optimisticHabits.length === 0 ? (
-            <EmptyState
-              icon={<CheckCircle2 className="h-5 w-5" />}
-              title="No habits configured yet."
-              description="Build calm daily consistency for study blocks, reading, movement, or problem sets."
-              action={
-                <button
-                  type="button"
-                  onClick={() => setIsAddingOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-2 font-sans text-body-sm font-medium text-on-secondary transition-opacity hover:opacity-95 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  <span>Add your first habit</span>
-                </button>
-              }
-            />
+            <Card padding="lg" surface="lowest">
+              <EmptyState
+                icon={<CheckCircle2 className="h-5 w-5" />}
+                title="No habits configured yet."
+                description="Build calm daily consistency for study blocks, reading, movement, or problem sets."
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-2 font-sans text-body-sm font-medium text-on-secondary transition-opacity hover:opacity-95 cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    <span>Add your first habit</span>
+                  </button>
+                }
+              />
+            </Card>
           ) : (
             optimisticHabits.map((habit) => {
               const isDoneToday = habit.is_completed_today;
@@ -359,62 +347,78 @@ export function HabitTrackerClient({
               return (
                 <div
                   key={habit.id}
-                  className="group flex flex-col justify-between gap-4 py-4 transition-colors md:flex-row md:items-center"
+                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs transition-colors hover:border-outline-variant/70 space-y-4"
+                  data-purpose="habit-execution-card"
                 >
-                  {/* Left: Checkbox + Habit metadata */}
-                  <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleHabit(habit.id, todayStr)}
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
-                        isDoneToday
-                          ? 'border-secondary bg-secondary text-on-secondary shadow-xs'
-                          : 'border-outline-variant text-transparent hover:border-secondary hover:bg-secondary/10'
-                      }`}
-                      aria-label={`Toggle habit: ${habit.title}`}
-                      aria-pressed={isDoneToday}
-                      title={isDoneToday ? 'Mark as incomplete' : 'Mark as completed'}
-                    >
-                      <Check
-                        className={`h-4 w-4 stroke-[3] transition-transform ${
-                          isDoneToday ? 'scale-100' : 'scale-50'
-                        }`}
-                        aria-hidden="true"
-                      />
-                    </button>
-
-                    <div className="flex min-w-0 flex-col">
-                      <span
-                        className={`truncate font-sans text-body-md font-medium tracking-tight transition-colors ${
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHabit(habit.id, todayStr)}
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 mt-0.5 ${
                           isDoneToday
-                            ? 'text-outline line-through'
-                            : 'text-on-surface'
+                            ? 'border-secondary bg-secondary text-on-secondary shadow-xs'
+                            : 'border-outline-variant text-transparent hover:border-secondary hover:bg-secondary/10'
+                        }`}
+                        aria-label={`Toggle habit: ${habit.title}`}
+                        aria-pressed={isDoneToday}
+                        title={isDoneToday ? 'Mark as incomplete' : 'Mark as completed'}
+                      >
+                        <Check
+                          className={`h-4 w-4 stroke-[3] transition-transform ${
+                            isDoneToday ? 'scale-100' : 'scale-50'
+                          }`}
+                          aria-hidden="true"
+                        />
+                      </button>
+
+                      <div className="flex min-w-0 flex-col">
+                        <span
+                          className={`truncate font-sans text-body-md font-medium tracking-tight transition-colors ${
+                            isDoneToday
+                              ? 'text-outline line-through'
+                              : 'text-on-surface'
+                          }`}
+                        >
+                          {habit.title}
+                        </span>
+                        {habit.description && (
+                          <span className="truncate font-sans text-body-sm text-on-surface-variant">
+                            {habit.description}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      {habit.streak > 0 && (
+                        <Pill tone="tertiary">
+                          <span
+                            className="inline-flex items-center gap-1 font-semibold"
+                            style={LINING_NUMS_STYLE}
+                          >
+                            <Flame className="h-3 w-3 text-on-tertiary-container" aria-hidden="true" />
+                            <span>{`${habit.streak}d streak`}</span>
+                          </span>
+                        </Pill>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHabit(habit.id, todayStr)}
+                        className={`px-3 py-1.5 rounded-lg font-sans text-body-sm font-medium transition-all cursor-pointer ${
+                          isDoneToday
+                            ? 'bg-secondary/15 text-secondary border border-secondary/30 hover:bg-secondary/20'
+                            : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
                         }`}
                       >
-                        {habit.title}
-                      </span>
-                      {habit.description && (
-                        <span className="truncate font-sans text-body-sm text-on-surface-variant">
-                          {habit.description}
-                        </span>
-                      )}
+                        {isDoneToday ? 'Done today' : 'Log'}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Right: Streak Badge, 7-Day Matrix, Delete */}
-                  <div className="flex shrink-0 items-center justify-between gap-3 sm:gap-4 md:justify-end">
-                    {habit.streak > 0 && (
-                      <Pill tone="tertiary">
-                        <span
-                          className="inline-flex items-center gap-1 font-semibold"
-                          style={LINING_NUMS_STYLE}
-                        >
-                          <Flame className="h-3 w-3 text-on-tertiary-container" aria-hidden="true" />
-                          <span>{`${habit.streak}d`}</span>
-                        </span>
-                      </Pill>
-                    )}
-
+                  {/* M-S Day Dot Strip */}
+                  <div className="flex items-center justify-between border-t border-outline-variant/20 pt-3">
                     <div className="flex items-center gap-1.5" aria-label="7-day completion history">
                       {trailingDays.map((d) => {
                         const completed = habit.weekly_history?.[d.date] || false;
@@ -458,33 +462,13 @@ export function HabitTrackerClient({
             })
           )}
         </div>
-      </Card>
 
-      {/* Weekly Consistency Chart Card */}
-      <Card padding="lg" surface="lowest" className="space-y-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
-              Weekly Consistency
-            </span>
-            <h2 className="mt-0.5 font-sans text-headline-md font-semibold tracking-tight text-on-surface">
-              7-Day Habit Completion Pattern
-            </h2>
-            <p className="mt-1 font-sans text-body-sm text-on-surface-variant">
-              Daily completion rate across all active routines.
-            </p>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2 font-mono text-label-sm" style={LINING_NUMS_STYLE}>
-            <Pill tone="neutral">7D Avg: {summary.weeklyAvgPercent}%</Pill>
-            <Pill tone="secondary">
-              Today: {summary.completedTodayCount}/{summary.activeCount}
-            </Pill>
-          </div>
+        {/* Right Column: Analytics & Consistency (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          <ConsistencyMapCard habits={optimisticHabits} todayStr={todayStr} />
+          <StreakRecordsCard habits={optimisticHabits} />
         </div>
-
-        <WeeklyHabitChart data={derivedWeeklyStats} />
-      </Card>
+      </div>
 
       {/* Add Habit Modal (with focus trap & Escape close) */}
       <Modal

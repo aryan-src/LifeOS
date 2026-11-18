@@ -289,3 +289,61 @@ export async function getFocusBindingContext(): Promise<{
     return { tasks: [], projects: [] };
   }
 }
+
+export interface FocusSessionRow {
+  id: string;
+  client_session_id: string | null;
+  duration_seconds: number;
+  started_at: string;
+  ended_at: string;
+  mode: string;
+  task_id: string | null;
+  project_id: string | null;
+  task?: { id: string; title: string } | null;
+  project?: { id: string; title: string } | null;
+}
+
+/**
+ * Read-only server action for user-scoped focus_sessions (last 30 days, RLS respected).
+ * Permitted exception to rule 1 for Focus History Recent Sessions table.
+ */
+export async function getRecentFocusSessions(days = 30): Promise<FocusSessionRow[]> {
+  try {
+    const supabase = await createClient();
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return [];
+    }
+
+    const sinceIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from('focus_sessions')
+      .select(`
+        id,
+        client_session_id,
+        duration_seconds,
+        started_at,
+        ended_at,
+        mode,
+        task_id,
+        project_id,
+        task:tasks(id, title),
+        project:projects(id, title)
+      `)
+      .eq('user_id', user.id)
+      .gte('ended_at', sinceIso)
+      .order('ended_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('[FocusSession] getRecentFocusSessions failed:', error);
+      return [];
+    }
+
+    return (data as unknown as FocusSessionRow[]) || [];
+  } catch (err) {
+    console.error('[FocusSession] Unhandled getRecentFocusSessions error:', err);
+    return [];
+  }
+}

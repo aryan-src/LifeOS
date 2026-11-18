@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Geist:wght@100..900&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Outfit:wght@400;500;600&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,37 +12,158 @@
 
 @layer base {
   :root {
-    --font-sans: 'Geist', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --font-sans: var(--font-geist), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-serif: var(--font-playfair-display), Georgia, serif;
+
+    /* Stitch Light Palette (RGB channels for Tailwind opacity modifier support) */
+    --color-background: 250 249 245;                /* #FAF9F5 */
+    --color-surface: 250 249 245;                   /* #FAF9F5 */
+    --color-surface-bright: 250 249 245;            /* #FAF9F5 */
+    --color-surface-dim: 219 218 214;               /* #DBDAD6 */
+    --color-surface-container-lowest: 255 255 255;  /* #FFFFFF */
+    --color-surface-container-low: 244 244 240;     /* #F4F4F0 */
+    --color-surface-container: 239 238 234;         /* #EFEEEA */
+    --color-surface-container-high: 233 232 228;    /* #E9E8E4 */
+    --color-surface-container-highest: 227 226 223; /* #E3E2DF */
+    --color-surface-variant: 227 226 223;           /* #E3E2DF */
+    --color-surface-tint: 96 94 91;                 /* #605E5B */
+
+    --color-on-background: 27 28 26;                /* #1B1C1A */
+    --color-on-surface: 27 28 26;                   /* #1B1C1A */
+    --color-on-surface-variant: 73 71 64;           /* #494740 */
+    --color-inverse-surface: 47 49 46;              /* #2F312E */
+    --color-inverse-on-surface: 242 241 237;        /* #F2F1ED */
+
+    --color-outline: 122 119 111;                   /* #7A776F */
+    --color-outline-variant: 203 198 189;           /* #CBC6BD */
+
+    --color-primary: 27 28 26;                      /* #1B1C1A */
+    --color-primary-container: 28 27 25;            /* #1C1B19 */
+    --color-primary-fixed: 230 226 222;             /* #E6E2DE */
+    --color-primary-fixed-dim: 202 198 194;         /* #CAC6C2 */
+    --color-on-primary: 255 255 255;                /* #FFFFFF */
+    --color-on-primary-container: 134 131 128;      /* #868380 */
+    --color-on-primary-fixed: 28 27 25;             /* #1C1B19 */
+    --color-on-primary-fixed-variant: 72 70 68;     /* #484644 */
+    --color-inverse-primary: 202 198 194;           /* #CAC6C2 */
+
+    /* Secondary = single green accent token */
+    --color-secondary: 0 108 73;                    /* #006C49 */
+    --color-secondary-container: 225 238 230;       /* #E1EEE6 */
+    --color-secondary-fixed: 111 251 190;           /* #6FFBBE */
+    --color-secondary-fixed-dim: 78 222 163;        /* #4EDEA3 */
+    --color-on-secondary: 255 255 255;              /* #FFFFFF */
+    --color-on-secondary-container: 0 113 77;       /* #00714D */
+    --color-on-secondary-fixed: 0 33 19;            /* #002113 */
+    --color-on-secondary-fixed-variant: 0 82 54;    /* #005236 */
+
+    /* Tertiary = warm amber/ochre accent token */
+    --color-tertiary: 184 117 0;                    /* #B87500 */
+    --color-tertiary-container: 255 221 184;        /* #FFDDB8 */
+    --color-tertiary-fixed: 255 221 184;            /* #FFDDB8 */
+    --color-tertiary-fixed-dim: 255 185 95;         /* #FFB95F */
+    --color-on-tertiary: 255 255 255;               /* #FFFFFF */
+    --color-on-tertiary-container: 184 117 0;       /* #B87500 */
+    --color-on-tertiary-fixed: 42 23 0;             /* #2A1700 */
+    --color-on-tertiary-fixed-variant: 101 62 0;    /* #653E00 */
+
+    --color-error: 186 26 26;                       /* #BA1A1A */
+    --color-error-container: 255 218 214;           /* #FFDAD6 */
+    --color-on-error: 255 255 255;                  /* #FFFFFF */
+    --color-on-error-container: 147 0 10;           /* #93000A */
+
     --faint: #9a9184;
-    /* Overridden to match LifeOS Stone/Charcoal aesthetic */
-    --ruri: #282724; 
+    --ruri: #282724;
     --ruri-soft: #e2dfd8;
     --deep: #fdfcfb;
+    color-scheme: light;
   }
 
   .dark {
+    /* Stitch Dark Palette (RGB channels for Tailwind opacity modifier support) */
+    --color-background: 20 19 18;                   /* #141312 */
+    --color-surface: 20 19 18;                      /* #141312 */
+    --color-surface-bright: 58 57 56;               /* #3A3938 */
+    --color-surface-dim: 20 19 18;                  /* #141312 */
+    --color-surface-container-lowest: 15 14 13;     /* #0F0E0D */
+    --color-surface-container-low: 28 27 26;        /* #1C1B1A */
+    --color-surface-container: 33 31 30;            /* #211F1E */
+    --color-surface-container-high: 43 42 40;       /* #2B2A28 */
+    --color-surface-container-highest: 54 52 51;    /* #363433 */
+    --color-surface-variant: 54 52 51;              /* #363433 */
+    --color-surface-tint: 79 219 200;               /* #4FDBC8 */
+
+    --color-on-background: 230 225 223;             /* #E6E1DF */
+    --color-on-surface: 230 225 223;                /* #E6E1DF */
+    --color-on-surface-variant: 187 202 198;        /* #BBCAC6 */
+    --color-inverse-surface: 230 225 223;           /* #E6E1DF */
+    --color-inverse-on-surface: 50 48 47;           /* #32302F */
+
+    --color-outline: 133 148 144;                   /* #859490 */
+    --color-outline-variant: 60 73 71;              /* #3C4947 */
+
+    --color-primary: 230 225 223;                   /* #E6E1DF */
+    --color-primary-container: 43 42 40;            /* #2B2A28 */
+    --color-primary-fixed: 113 248 228;             /* #71F8E4 */
+    --color-primary-fixed-dim: 79 219 200;          /* #4FDBC8 */
+    --color-on-primary: 20 19 18;                   /* #141312 */
+    --color-on-primary-container: 230 225 223;      /* #E6E1DF */
+    --color-on-primary-fixed: 0 32 28;              /* #00201C */
+    --color-on-primary-fixed-variant: 0 80 72;      /* #005048 */
+    --color-inverse-primary: 0 107 95;              /* #006B5F */
+
+    /* Secondary = single green/mint accent token in dark mode */
+    --color-secondary: 79 219 200;                  /* #4FDBC8 */
+    --color-secondary-container: 0 66 59;           /* #00423B */
+    --color-secondary-fixed: 113 248 228;           /* #71F8E4 */
+    --color-secondary-fixed-dim: 79 219 200;        /* #4FDBC8 */
+    --color-on-secondary: 0 55 49;                  /* #003731 */
+    --color-on-secondary-container: 113 248 228;    /* #71F8E4 */
+    --color-on-secondary-fixed: 0 32 28;            /* #00201C */
+    --color-on-secondary-fixed-variant: 0 80 72;    /* #005048 */
+
+    /* Tertiary = warm amber accent token in dark mode */
+    --color-tertiary: 255 185 95;                   /* #FFB95F */
+    --color-tertiary-container: 91 56 0;            /* #5B3800 */
+    --color-tertiary-fixed: 255 221 184;            /* #FFDDB8 */
+    --color-tertiary-fixed-dim: 255 185 95;         /* #FFB95F */
+    --color-on-tertiary: 71 42 0;                   /* #472A00 */
+    --color-on-tertiary-container: 255 185 95;      /* #FFB95F */
+    --color-on-tertiary-fixed: 42 23 0;             /* #2A1700 */
+    --color-on-tertiary-fixed-variant: 101 62 0;    /* #653E00 */
+
+    --color-error: 255 180 171;                     /* #FFB4AB */
+    --color-error-container: 147 0 10;              /* #93000A */
+    --color-on-error: 105 0 5;                      /* #690005 */
+    --color-on-error-container: 255 218 214;        /* #FFDAD6 */
+
     --faint: #7e7869;
-    /* Overridden to match LifeOS Dark aesthetic */
     --ruri: #e9e5dc;
     --ruri-soft: #3d3b36;
     --deep: #0f0e0d;
+    color-scheme: dark;
   }
 
   html, body {
     margin: 0;
     padding: 0;
+    overflow-x: clip;
   }
   body {
     overscroll-behavior: none;
-    background-color: #FAF9F5;
-    color: #1F2937;
-    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-on-surface));
+    font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   html.dark body {
-    background-color: #090A0F;
-    color: #F4F4F5;
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-on-surface));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-secondary));
+    outline-offset: 2px;
   }
   main > :first-child { margin-top: 0 !important; }
   main > :last-child { margin-bottom: 0 !important; }

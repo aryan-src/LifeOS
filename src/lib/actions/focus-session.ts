@@ -1,40 +1,102 @@
 'use server';
 
+import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
+import { validateFocusSessionPayload } from '@/lib/daily-loop/focus-timer-engine';
+import type { PersistableFocusMode } from '@/lib/daily-loop/types';
 
 export interface LogFocusSessionParams {
-  durationMinutes: number;
+  /** Preferred exact duration in seconds (used by global focus timer) */
+  durationSeconds?: number;
+  /** Backwards-compatible duration in minutes */
+  durationMinutes?: number;
+  /** Optional planned session duration in seconds for ceiling validation */
+  plannedDurationSeconds?: number;
+  /** Client-generated UUID v4 used as UNIQUE idempotency key in public.focus_sessions */
+  clientSessionId?: string;
   taskId?: string | null;
   projectId?: string | null;
   mode?: string;
+  startedAt?: string;
+  endedAt?: string;
+  /** Backwards-compatible alias for endedAt */
   completedAt?: string;
 }
 
 export interface FocusSessionResult {
   recorded: boolean;
+  clientSessionId: string;
+  durationSeconds: number;
   durationMinutes: number;
+  mode: PersistableFocusMode;
   taskId?: string | null;
   projectId?: string | null;
   message: string;
 }
 
 /**
- * Server Action: Records completed focus session telemetry in Supabase.
- * Updates activity timestamps on linked tasks or projects and revalidates relevant paths.
+ * Server Action: Records a completed focus session in public.focus_sessions.
+ * - Sets user_id strictly from the authenticated Supabase session (never from client params).
+ * - Enforces strict server validation (rejects break modes, non-positive duration,
+ *   duration far above mode ceiling, and future ended_at).
+ * - Uses ON CONFLICT (client_session_id) DO NOTHING (ignoreDuplicates: true) so retries
+ *   and multi-tab races are idempotent and never create duplicates or error on conflict.
  */
 export async function logFocusSession(
   params: LogFocusSessionParams
 ): Promise<ActionResponse<FocusSessionResult>> {
   try {
-    // Gracefully reject partial sessions under 1 minute without database writes
-    if (!params.durationMinutes || params.durationMinutes < 1) {
+    const nowMs = Date.now();
+    const durationSeconds =
+      typeof params.durationSeconds === 'number'
+        ? Math.round(params.durationSeconds)
+        : typeof params.durationMinutes === 'number'
+        ? Math.round(params.durationMinutes * 60)
+        : 0;
+
+    if (durationSeconds < 60) {
       return {
         success: false,
         error: 'Session under 1m not logged',
       };
+    }
+
+    const rawMode = (params.mode || 'pomodoro').toLowerCase().trim();
+    const normalizedMode =
+      rawMode === 'focus' || rawMode === 'sprint' || rawMode === 'pomodoro'
+        ? 'pomodoro'
+        : rawMode === 'deep-work' || rawMode === 'deep_work' || rawMode === 'deep'
+        ? 'deep-work'
+        : rawMode;
+
+    const endedAt = params.endedAt || params.completedAt || new Date(nowMs).toISOString();
+    const endedMs = Date.parse(endedAt);
+    const startedAt =
+      params.startedAt ||
+      (Number.isFinite(endedMs)
+        ? new Date(endedMs - Math.max(0, durationSeconds) * 1000).toISOString()
+        : new Date(nowMs).toISOString());
+
+    const clientSessionId = params.clientSessionId || randomUUID();
+
+    // Strict server-side validation before touching auth/database
+    const validation = validateFocusSessionPayload(
+      {
+        clientSessionId,
+        mode: normalizedMode,
+        durationSeconds,
+        plannedDurationSeconds: params.plannedDurationSeconds,
+        startedAt,
+        endedAt,
+      },
+      nowMs
+    );
+
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
     }
 
     const supabase = await createClient();
@@ -47,22 +109,48 @@ export async function logFocusSession(
       return { success: false, error: 'Unauthorized' };
     }
 
-    const timestamp = params.completedAt || new Date().toISOString();
+    // Idempotent insert into public.focus_sessions (ON CONFLICT (client_session_id) DO NOTHING)
+    const { error: upsertError } = await supabase
+      .from('focus_sessions')
+      .upsert(
+        {
+          user_id: user.id, // Always derived from authenticated session
+          client_session_id: clientSessionId,
+          task_id: params.taskId ?? null,
+          project_id: params.projectId ?? null,
+          duration_seconds: durationSeconds,
+          started_at: startedAt,
+          ended_at: endedAt,
+          mode: validation.mode,
+        },
+        {
+          onConflict: 'client_session_id',
+          ignoreDuplicates: true,
+        }
+      );
 
-    // If a task context was bound, touch task updated_at
+    if (upsertError) {
+      if (upsertError.code === '42P01') {
+        console.warn('[FocusSession] Table focus_sessions does not exist (42P01).');
+        return { success: false, error: 'Focus sessions table is not initialized.' };
+      }
+      console.error('[FocusSession] Error persisting focus_sessions row:', upsertError);
+      return { success: false, error: formatErrorMessage(upsertError) };
+    }
+
+    // Touch linked task/project activity timestamps when bound
     if (params.taskId) {
       await supabase
         .from('tasks')
-        .update({ updated_at: timestamp })
+        .update({ updated_at: endedAt })
         .eq('id', params.taskId)
         .eq('user_id', user.id);
     }
 
-    // If a project context was bound, touch project updated_at
     if (params.projectId) {
       await supabase
         .from('projects')
-        .update({ updated_at: timestamp })
+        .update({ updated_at: endedAt })
         .eq('id', params.projectId)
         .eq('user_id', user.id);
     }
@@ -71,14 +159,19 @@ export async function logFocusSession(
     revalidatePath('/dashboard');
     revalidatePath('/');
 
+    const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
+
     return {
       success: true,
       data: {
         recorded: true,
-        durationMinutes: params.durationMinutes,
-        taskId: params.taskId,
-        projectId: params.projectId,
-        message: `Successfully logged ${params.durationMinutes}m focus session.`,
+        clientSessionId,
+        durationSeconds,
+        durationMinutes,
+        mode: validation.mode,
+        taskId: params.taskId ?? null,
+        projectId: params.projectId ?? null,
+        message: `Successfully logged ${durationMinutes}m focus session.`,
       },
     };
   } catch (err) {

@@ -140,8 +140,10 @@ describe('Projects Module Multi-View Suite', () => {
       expect(html).toContain('Overall Velocity');
       expect(html).toContain('38%');
 
-      // Completed / Q4: 1 (HTML Academy)
-      expect(html).toContain('Completed / Q4');
+      // Completed: 1 (HTML Academy) — no hardcoded Q4 quarter
+      expect(html).toContain('Completed');
+      expect(html).not.toContain('Completed / Q4');
+      expect(html).toContain('font-serif text-page-title');
       expect(html).toContain('Achieved');
 
       // Stalled Items: 1 (SnapGuide)

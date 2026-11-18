@@ -17,47 +17,44 @@ export type LifeOSTheme =
 
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
+export type StitchThemeMode = 'light' | 'dark' | 'system';
+
+const DARK_THEME_ALIASES = new Set(['dark', 'tui', 'crimson-dark', 'crimson-cream']);
+
+/**
+ * Pure helper resolving whether a stored theme string should activate Tailwind's `dark` class.
+ */
+export function resolveDarkMode(theme: string | null | undefined, systemPrefersDark: boolean): boolean {
+  if (!theme) return false;
+  if (theme === 'system') return systemPrefersDark;
+  return DARK_THEME_ALIASES.has(theme);
+}
+
+/**
+ * Normalizes legacy theme preferences into the clean Light / Dark / System mode.
+ */
+export function normalizeThemeMode(theme: string | null | undefined): StitchThemeMode {
+  if (!theme) return 'light';
+  if (theme === 'system') return 'system';
+  return DARK_THEME_ALIASES.has(theme) ? 'dark' : 'light';
+}
+
 export function applyThemeToDOM(theme: string) {
   if (typeof document === 'undefined') return;
 
   const root = document.documentElement;
+  const prefersDark =
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false;
+  const shouldBeDark = resolveDarkMode(theme, prefersDark);
 
-  if (theme === 'spatial-glass') {
-    root.setAttribute('data-theme', 'spatial-glass');
-  } else if (theme === 'risograph') {
-    root.setAttribute('data-theme', 'risograph');
-  } else if (theme === 'nordic' || theme === 'default' || theme === 'stone') {
-    root.setAttribute('data-theme', 'nordic');
-    root.classList.remove('dark');
-  } else if (theme === 'tui') {
-    root.setAttribute('data-theme', 'tui');
+  if (shouldBeDark) {
     root.classList.add('dark');
-  } else if (theme === 'tactile') {
-    root.setAttribute('data-theme', 'tactile');
-    root.classList.remove('dark');
-  } else if (theme === 'crimson-dark' || theme === 'crimson-cream') {
-    root.setAttribute('data-theme', 'risograph');
-    root.classList.add('dark');
-  } else if (theme === 'crimson-light') {
-    root.setAttribute('data-theme', 'risograph');
-    root.classList.remove('dark');
-  } else if (theme === 'system') {
-    root.setAttribute('data-theme', 'nordic');
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  } else if (theme === 'dark') {
-    root.setAttribute('data-theme', 'tui');
-    root.classList.add('dark');
-  } else if (theme === 'light') {
-    root.setAttribute('data-theme', 'nordic');
-    root.classList.remove('dark');
   } else {
-    root.setAttribute('data-theme', theme);
+    root.classList.remove('dark');
   }
+  root.setAttribute('data-theme', shouldBeDark ? 'dark' : 'light');
 }
 
 export function saveTheme(theme: string) {
@@ -97,12 +94,26 @@ export function useTheme() {
       syncThemeState();
     };
 
+    const mediaQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
+    const handleMediaChange = () => {
+      const saved = getSavedTheme();
+      if (saved === 'system') {
+        applyThemeToDOM('system');
+        syncThemeState();
+      }
+    };
+
     window.addEventListener('lifeos-theme-change', handleThemeChange);
     window.addEventListener('storage', handleThemeChange);
+    mediaQuery?.addEventListener?.('change', handleMediaChange);
 
     return () => {
       window.removeEventListener('lifeos-theme-change', handleThemeChange);
       window.removeEventListener('storage', handleThemeChange);
+      mediaQuery?.removeEventListener?.('change', handleMediaChange);
     };
   }, [syncThemeState]);
 

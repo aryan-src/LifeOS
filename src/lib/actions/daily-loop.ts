@@ -8,6 +8,7 @@ import { formatErrorMessage } from '@/lib/utils/errors';
 import { upsertDailyCheckInSchema, formatZodError } from '@/lib/validations';
 import {
   addDaysToDateString,
+  getFocusSessionDay,
   getUserLocalDate,
   getTodayCardMode,
   calculateStreak,
@@ -338,12 +339,12 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
       return r;
     };
 
-    // 1. Process Focus Sessions (focus modes only!)
+    // 1. Process Focus Sessions (focus modes only, attributed via single shared One-Day Rule helper)
     let todayFocusMinutes = 0;
     for (const session of focusSessions) {
       if (!isFocusMode(session.mode)) continue;
 
-      const sessionDate = getUserLocalDate(session.started_at, userTimezone);
+      const sessionDate = getFocusSessionDay(session, userTimezone);
       const rec = getOrCreateRecord(sessionDate);
       const mins = Math.round(session.duration_seconds / 60);
       rec.focusMinutes = (rec.focusMinutes ?? 0) + mins;

@@ -83,6 +83,46 @@ export function getUserLocalDate(
 }
 
 /**
+ * Single shared "One-Day Rule" helper for focus sessions:
+ * Attributes a focus session to its local calendar day (YYYY-MM-DD) strictly using
+ * `started_at` in the user's profile timezone. Used consistently across Time Focused,
+ * Daily Minimum, Daily Streak, Life Score, and Focus Insights.
+ */
+export function getFocusSessionDay(
+  sessionOrStartedAt: Pick<FocusSession, 'started_at'> | string | Date | number,
+  timezone?: string
+): string {
+  const startedAt =
+    typeof sessionOrStartedAt === 'object' &&
+    sessionOrStartedAt !== null &&
+    'started_at' in sessionOrStartedAt
+      ? sessionOrStartedAt.started_at
+      : sessionOrStartedAt;
+  return getUserLocalDate(startedAt, timezone);
+}
+
+/**
+ * Formats an epoch timestamp (ms) or Date as a localized 12-hour clock string
+ * (e.g. "3:42 PM") in the user's profile timezone — never server time.
+ */
+export function formatTimeInTimezone(
+  dateInput: Date | string | number,
+  timezone?: string
+): string {
+  const date =
+    typeof dateInput === 'string' || typeof dateInput === 'number'
+      ? new Date(dateInput)
+      : dateInput;
+  const validTimezone = timezone && isValidTimezone(timezone) ? timezone : 'UTC';
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: validTimezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+}
+
+/**
  * Returns the local hour (0-23) in the user's timezone.
  */
 export function getUserLocalHour(
@@ -510,7 +550,7 @@ export function calculateFocusInsights(
   for (const session of validFocusSessions) {
     totalSeconds += session.duration_seconds;
 
-    const sessionDate = getUserLocalDate(session.started_at, timezone);
+    const sessionDate = getFocusSessionDay(session, timezone);
     distinctDays.add(sessionDate);
 
     const hour = getUserLocalHour(session.started_at, timezone);

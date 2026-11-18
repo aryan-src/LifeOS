@@ -108,3 +108,46 @@ export interface FocusInsight {
   hasEnoughData: boolean; // requires >= 14 days
   insightText: string | null;
 }
+
+export type FocusTimerStatus = 'idle' | 'running' | 'paused' | 'finished' | 'break';
+
+export type PersistableFocusMode = 'pomodoro' | 'deep-work';
+
+export interface PendingFocusSession {
+  clientSessionId: string;
+  mode: PersistableFocusMode;
+  durationSeconds: number;
+  plannedDurationSeconds: number;
+  startedAt: string; // ISO 8601
+  endedAt: string;   // ISO 8601
+  taskId: string | null;
+  taskTitle: string | null;
+  projectId: string | null;
+}
+
+export interface FocusTimerState {
+  status: FocusTimerStatus;
+  clientSessionId: string | null;
+  mode: PersistableFocusMode | 'short-break';
+  plannedDurationSeconds: number;
+  startedAtMs: number | null;
+  endTimestampMs: number | null;
+  remainingSecondsWhenPaused: number | null;
+  pausedAtMs: number | null;
+  accumulatedPausedMs: number;
+  isStalePause: boolean;
+  taskId: string | null;
+  taskTitle: string | null;
+  projectId: string | null;
+  isFullscreenOpen: boolean;
+  isSaved: boolean;
+  isAcknowledged: boolean;
+  endedWhileAway: boolean;
+  finishedAtMs: number | null;
+  lastCompletedMinutes: number;
+  lastDurationMinutes: number;
+  pendingUnsavedSessions: PendingFocusSession[];
+  saveError: string | null;
+  soundEnabled: boolean;
+  notificationsEnabled: boolean;
+}

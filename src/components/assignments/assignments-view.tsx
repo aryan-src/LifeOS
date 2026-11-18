@@ -39,6 +39,7 @@ import {
   ArrowUpDown,
 } from 'lucide-react';
 import { getTodayDate } from '@/lib/utils/date';
+import { daysBetweenDateStrings } from '@/lib/daily-loop/business-logic';
 
 interface ProjectOption {
   id: string;
@@ -73,7 +74,7 @@ export function AssignmentsView({
   initialError,
   isSchemaMissing = false,
 }: AssignmentsViewProps) {
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [viewMode, setViewMode] = useState<'due_date' | 'by_course' | 'kanban' | 'list'>('due_date');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
@@ -404,6 +405,51 @@ export function AssignmentsView({
   );
   const letterGrade = getLetterGrade(derivedSummary.avgPercentage);
 
+  const overdueAssignments = useMemo(() => {
+    return filteredAssignments.filter((a) => {
+      if (a.status === 'submitted' || a.status === 'graded' || !a.due_date) return false;
+      const dueDay = a.due_date.slice(0, 10);
+      return dueDay < today;
+    });
+  }, [filteredAssignments, today]);
+
+  const thisWeekAssignments = useMemo(() => {
+    return filteredAssignments.filter((a) => {
+      if (!a.due_date) return false;
+      const dueDay = a.due_date.slice(0, 10);
+      if (dueDay < today) return false;
+      const diff = daysBetweenDateStrings(today, dueDay);
+      return diff >= 0 && diff <= 7;
+    });
+  }, [filteredAssignments, today]);
+
+  const upcomingLaterAssignments = useMemo(() => {
+    return filteredAssignments.filter((a) => {
+      if (!a.due_date) return true;
+      const dueDay = a.due_date.slice(0, 10);
+      if (dueDay < today) return false;
+      const diff = daysBetweenDateStrings(today, dueDay);
+      return diff > 7;
+    });
+  }, [filteredAssignments, today]);
+
+  const assignmentsByCourse = useMemo(() => {
+    const map = new Map<string, AssignmentWithProject[]>();
+    for (const a of filteredAssignments) {
+      const subject = a.subject?.trim() || 'General';
+      if (!map.has(subject)) map.set(subject, []);
+      map.get(subject)!.push(a);
+    }
+    return Array.from(map.entries());
+  }, [filteredAssignments]);
+
+  const nextAssignment = useMemo(() => {
+    const candidates = filteredAssignments
+      .filter((a) => a.status !== 'graded' && a.status !== 'submitted' && a.due_date)
+      .sort((a, b) => (a.due_date! > b.due_date! ? 1 : -1));
+    return candidates[0] || null;
+  }, [filteredAssignments]);
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
       {/* Stitch Assignments Page Header */}
@@ -426,11 +472,33 @@ export function AssignmentsView({
           <div className="flex items-center rounded-xl border border-outline-variant/50 bg-surface-container-low p-1 text-xs font-medium">
             <button
               type="button"
+              onClick={() => setViewMode('due_date')}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
+                viewMode === 'due_date'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <span>By Due Date</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('by_course')}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
+                viewMode === 'by_course'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              <span>By Course</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
                 viewMode === 'kanban'
-                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs cursor-default'
-                  : 'text-on-surface-variant hover:text-on-surface cursor-pointer'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               <Kanban size={13} aria-hidden="true" />
@@ -439,10 +507,10 @@ export function AssignmentsView({
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${
                 viewMode === 'list'
-                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs cursor-default'
-                  : 'text-on-surface-variant hover:text-on-surface cursor-pointer'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               <List size={13} aria-hidden="true" />
@@ -542,8 +610,10 @@ export function AssignmentsView({
 
       {/* Stitch KPI Summary Cards */}
       <AssignmentsSummaryCards
-        metrics={derivedSummary}
-        letterGrade={letterGrade}
+        overdueCount={overdueAssignments.length}
+        dueThisWeekCount={thisWeekAssignments.length}
+        completedThisWeekCount={thisWeekAssignments.filter(a => a.status === 'submitted' || a.status === 'graded').length}
+        nextAssignment={nextAssignment}
       />
 
       {/* Filter and Search Bar (Stitch Toolbar) */}
@@ -637,8 +707,156 @@ export function AssignmentsView({
         </div>
       </section>
 
-      {/* Main Content: Kanban 4-Column Board vs Table List View */}
-      {viewMode === 'kanban' ? (
+      {/* Main Content: By Due Date (Stitch default) vs By Course vs Kanban vs List */}
+      {viewMode === 'due_date' ? (
+        <div className="space-y-10 pb-8" data-purpose="assignments-due-date-view">
+          {/* Section 1: Overdue Deliverables */}
+          <section>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-sans text-headline-sm text-on-surface font-semibold">Overdue</h2>
+                <span className="font-mono text-label-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                  {overdueAssignments.length}
+                </span>
+              </div>
+            </div>
+
+            {overdueAssignments.length === 0 ? (
+              <div className="bg-surface-container-lowest rounded-xl p-6 shadow-xs border border-outline-variant/40 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-secondary/15 flex items-center justify-center shrink-0 text-secondary">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-sans text-body-md text-on-surface font-medium">No overdue assignments</p>
+                  <p className="font-sans text-body-sm text-on-surface-variant">You are fully caught up with all deadlines across enrolled disciplines.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
+                {overdueAssignments.map((assignment) => (
+                  <AssignmentRow
+                    key={assignment.id}
+                    assignment={assignment}
+                    onStatusChange={handleStatusChange}
+                    onGradeClick={(a) => setGradingAssignment(a)}
+                    onEditClick={(a) => {
+                      setEditingAssignment(a);
+                      setIsCreateOpen(true);
+                    }}
+                    onDeleteClick={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Section 2: This Week Deliverables */}
+          <section>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-sans text-headline-sm text-on-surface font-semibold">Due This Week</h2>
+                <span className="font-mono text-label-sm px-2 py-0.5 rounded bg-secondary/15 text-secondary font-semibold">
+                  {thisWeekAssignments.length} {thisWeekAssignments.length === 1 ? 'item' : 'items'}
+                </span>
+              </div>
+              <span className="font-mono text-label-sm text-on-surface-variant">Ending Sunday</span>
+            </div>
+
+            {thisWeekAssignments.length === 0 ? (
+              <div className="bg-surface-container-lowest rounded-xl p-6 shadow-xs border border-outline-variant/40 text-center">
+                <p className="font-sans text-body-sm text-on-surface-variant">No assignments due this week.</p>
+              </div>
+            ) : (
+              <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
+                {thisWeekAssignments.map((assignment) => (
+                  <AssignmentRow
+                    key={assignment.id}
+                    assignment={assignment}
+                    onStatusChange={handleStatusChange}
+                    onGradeClick={(a) => setGradingAssignment(a)}
+                    onEditClick={(a) => {
+                      setEditingAssignment(a);
+                      setIsCreateOpen(true);
+                    }}
+                    onDeleteClick={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Section 3: Later Submissions (Structured Grid) */}
+          <section>
+            <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-sans text-headline-sm text-on-surface font-semibold">Upcoming Later</h2>
+                <span className="font-mono text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                  {upcomingLaterAssignments.length} deliverables
+                </span>
+              </div>
+            </div>
+
+            {upcomingLaterAssignments.length === 0 ? (
+              <div className="bg-surface-container-lowest rounded-xl p-6 shadow-xs border border-outline-variant/40 text-center">
+                <p className="font-sans text-body-sm text-on-surface-variant">No upcoming later deliverables scheduled.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {upcomingLaterAssignments.map((assignment) => (
+                  <AssignmentCard
+                    key={assignment.id}
+                    assignment={assignment}
+                    onStatusChange={handleStatusChange}
+                    onGradeClick={(a) => setGradingAssignment(a)}
+                    onEditClick={(a) => {
+                      setEditingAssignment(a);
+                      setIsCreateOpen(true);
+                    }}
+                    onDeleteClick={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      ) : viewMode === 'by_course' ? (
+        /* By Course Mode */
+        <div className="space-y-8 pb-8" data-purpose="assignments-by-course-view">
+          {assignmentsByCourse.length === 0 ? (
+            <div className="bg-surface-container-lowest rounded-xl p-8 shadow-xs border border-outline-variant/40 text-center">
+              <p className="font-sans text-body-sm text-on-surface-variant">No assignments recorded.</p>
+            </div>
+          ) : (
+            assignmentsByCourse.map(([subject, items]) => (
+              <div key={subject} className="space-y-3">
+                <div className="flex items-center justify-between px-1 border-b border-outline-variant/30 pb-2">
+                  <span className="font-sans text-headline-sm font-semibold text-on-surface">
+                    {subject}
+                  </span>
+                  <span className="font-mono text-label-sm text-on-surface-variant">
+                    {items.length} {items.length === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+                <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
+                  {items.map((assignment) => (
+                    <AssignmentRow
+                      key={assignment.id}
+                      assignment={assignment}
+                      onStatusChange={handleStatusChange}
+                      onGradeClick={(a) => setGradingAssignment(a)}
+                      onEditClick={(a) => {
+                        setEditingAssignment(a);
+                        setIsCreateOpen(true);
+                      }}
+                      onDeleteClick={handleDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : viewMode === 'kanban' ? (
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start pb-8">
           {FOUR_COLUMNS.map((col) => {
             const columnItems = filteredAssignments.filter((a) =>

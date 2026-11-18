@@ -1,4 +1,5 @@
 import type {
+  FocusSessionErrorCode,
   FocusTimerState,
   PendingFocusSession,
   PersistableFocusMode,
@@ -48,6 +49,8 @@ export function createInitialFocusTimerState(): FocusTimerState {
     lastDurationMinutes: 25,
     pendingUnsavedSessions: [],
     saveError: null,
+    saveErrorCode: null,
+    lastSaveStatus: 'idle',
     soundEnabled: true,
     notificationsEnabled: false,
   };
@@ -152,6 +155,7 @@ export function startFocusSession(
     endedWhileAway: false,
     finishedAtMs: null,
     lastDurationMinutes: safeMinutes,
+    lastSaveStatus: 'idle',
   };
 }
 
@@ -490,15 +494,122 @@ export function markSessionSaved(
     (item) => item.clientSessionId !== clientSessionId
   );
   const matchesCurrent = state.clientSessionId === clientSessionId;
+  const allSaved = remainingQueue.length === 0;
   return {
     ...state,
     pendingUnsavedSessions: remainingQueue,
     isSaved: matchesCurrent ? true : state.isSaved,
-    saveError: remainingQueue.length === 0 ? null : state.saveError,
+    saveError: allSaved ? null : state.saveError,
+    saveErrorCode: allSaved ? null : (state.saveErrorCode ?? null),
+    lastSaveStatus: allSaved ? 'saved' : state.lastSaveStatus ?? 'error',
   };
 }
 
 export const DEFAULT_SAVE_RETRY_MESSAGE = "Couldn't save yet, retrying";
+export const PROD_SAVE_RETRY_MESSAGE =
+  "Couldn't save yet. Check your connection and sign in, then press Retry.";
+export const DEV_BYPASS_NOTICE_MESSAGE =
+  'Dev mode: sign in with a real account to save sessions';
+
+export interface SaveNoticeContent {
+  text: string;
+  showSignInLink: boolean;
+  showRetryButton: boolean;
+  tone: 'amber' | 'emerald';
+}
+
+/**
+ * Resolves the exact non-blocking save notice copy and actions for a focus session.
+ * - `isSaving`: shows `"Saving session..."`
+ * - `justSaved`: shows `"Saved"` confirmation
+ * - `dev_bypass`: shows `"Dev mode: sign in with a real account to save sessions"` (+ real code/message in dev) with Sign in & Retry
+ * - `not_authenticated`: shows real `[not_authenticated]` + message in dev, friendly production message in prod, with Sign in & Retry
+ * - `validation` / `db_error` / `unknown`: shows real `[code]: message` in dev, friendly production message in prod, with Retry
+ */
+export function getSaveNoticeContent(params: {
+  saveError?: string | null;
+  saveErrorCode?: FocusSessionErrorCode | null;
+  isSaving?: boolean;
+  justSaved?: boolean;
+}): SaveNoticeContent {
+  const {
+    saveError,
+    saveErrorCode = null,
+    isSaving = false,
+    justSaved = false,
+  } = params;
+
+  if (isSaving) {
+    return {
+      text: 'Saving session...',
+      showSignInLink: false,
+      showRetryButton: false,
+      tone: 'amber',
+    };
+  }
+
+  if (justSaved) {
+    return {
+      text: 'Saved',
+      showSignInLink: false,
+      showRetryButton: false,
+      tone: 'emerald',
+    };
+  }
+
+  const isDev = process.env.NODE_ENV === 'development';
+  const detail = typeof saveError === 'string' ? saveError.trim() : '';
+
+  if (saveErrorCode === 'dev_bypass') {
+    const devDetail =
+      isDev && detail
+        ? ` [dev_bypass: ${detail}]`
+        : isDev
+        ? ' [dev_bypass]'
+        : '';
+    return {
+      text: `${DEV_BYPASS_NOTICE_MESSAGE}${devDetail}`,
+      showSignInLink: true,
+      showRetryButton: true,
+      tone: 'amber',
+    };
+  }
+
+  if (saveErrorCode === 'not_authenticated') {
+    const text = isDev
+      ? `Couldn't save yet [not_authenticated]${detail ? `: ${detail}` : ''}`
+      : PROD_SAVE_RETRY_MESSAGE;
+    return {
+      text,
+      showSignInLink: true,
+      showRetryButton: true,
+      tone: 'amber',
+    };
+  }
+
+  if (isDev) {
+    const codeLabel = saveErrorCode ?? 'unknown';
+    const hasDetail =
+      Boolean(detail) &&
+      detail !== DEFAULT_SAVE_RETRY_MESSAGE &&
+      detail !== PROD_SAVE_RETRY_MESSAGE;
+    return {
+      text: hasDetail
+        ? `Couldn't save yet [${codeLabel}]: ${detail}`
+        : `Couldn't save yet [${codeLabel}]`,
+      showSignInLink: false,
+      showRetryButton: true,
+      tone: 'amber',
+    };
+  }
+
+  return {
+    text: PROD_SAVE_RETRY_MESSAGE,
+    showSignInLink: false,
+    showRetryButton: true,
+    tone: 'amber',
+  };
+}
 
 /**
  * Formats the non-blocking save-failure retry notice for focus sessions.
@@ -522,11 +633,14 @@ export function formatSaveRetryNotice(
 
 export function markSessionSaveFailed(
   state: FocusTimerState,
-  errorMessage: string
+  errorMessage: string,
+  errorCode: FocusSessionErrorCode = 'unknown'
 ): FocusTimerState {
   return {
     ...state,
     saveError: errorMessage,
+    saveErrorCode: errorCode,
+    lastSaveStatus: 'error',
   };
 }
 

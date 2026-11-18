@@ -1,8 +1,12 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import type { FocusTimerState } from '@/lib/daily-loop/types';
-import { formatCountdownMMSS } from '@/lib/daily-loop/focus-timer-engine';
+import {
+  formatCountdownMMSS,
+  getSaveNoticeContent,
+} from '@/lib/daily-loop/focus-timer-engine';
 
 const LINING_NUMS_STYLE: React.CSSProperties = {
   fontVariantNumeric: 'lining-nums tabular-nums',
@@ -50,22 +54,36 @@ export function FloatingTimerPill({
   const bottomOffsetClass = isDockHidden ? 'bottom-5' : 'bottom-16';
   const countdown = formatCountdownMMSS(remainingSeconds);
 
+  const saveNotice = getSaveNoticeContent({
+    saveError: timer.saveError,
+    saveErrorCode: timer.saveErrorCode ?? null,
+    isSaving,
+  });
+
   // Subtle non-blocking retry notice when idle with failed save queued
   if (showIdleRetryNotice) {
     return (
       <div
-        className={`fixed ${bottomOffsetClass} left-1/2 -translate-x-1/2 z-40 transition-all duration-200`}
+        className={`fixed ${bottomOffsetClass} left-1/2 -translate-x-1/2 z-40 transition-all duration-200 max-w-[92vw]`}
         data-purpose="floating-timer-pill"
         data-timer-status="retry"
       >
-        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-amber-50 dark:bg-amber-950/90 text-amber-900 dark:text-amber-200 border border-amber-300/70 dark:border-amber-700/70 shadow-lg backdrop-blur-md text-xs font-sans">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/90 text-amber-900 dark:text-amber-200 border border-amber-300/70 dark:border-amber-700/70 shadow-lg backdrop-blur-md text-xs font-sans">
           <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-          <span>{isSaving ? 'Saving focus session...' : "Couldn't save yet, retrying"}</span>
-          {!isSaving && (
+          <span>{saveNotice.text}</span>
+          {saveNotice.showSignInLink && (
+            <Link
+              href="/login"
+              className="font-semibold underline hover:opacity-80 shrink-0"
+            >
+              Sign in
+            </Link>
+          )}
+          {saveNotice.showRetryButton && (
             <button
               type="button"
               onClick={onRetrySave}
-              className="font-semibold underline hover:opacity-80 cursor-pointer"
+              className="font-semibold underline hover:opacity-80 cursor-pointer shrink-0"
             >
               Retry
             </button>
@@ -194,13 +212,23 @@ export function FloatingTimerPill({
       {/* Subtle retry line beneath pill if an earlier finished session is still retrying */}
       {hasPendingUnsaved && timer.saveError && (
         <div className="mt-1 text-center">
-          <button
-            type="button"
-            onClick={onRetrySave}
-            className="px-2.5 py-0.5 rounded-full bg-amber-100/95 dark:bg-amber-950/90 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 text-[10px] font-sans font-medium shadow-xs cursor-pointer"
-          >
-            {isSaving ? 'Saving previous session...' : "Couldn't save yet, retrying"}
-          </button>
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-100/95 dark:bg-amber-950/90 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 text-[10px] font-sans font-medium shadow-xs">
+            <span>{saveNotice.text}</span>
+            {saveNotice.showSignInLink && (
+              <Link href="/login" className="font-semibold underline hover:opacity-80">
+                Sign in
+              </Link>
+            )}
+            {saveNotice.showRetryButton && (
+              <button
+                type="button"
+                onClick={onRetrySave}
+                className="font-semibold underline hover:opacity-80 cursor-pointer"
+              >
+                Retry
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

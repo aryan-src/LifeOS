@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   Play,
   Pause,
@@ -16,6 +17,7 @@ import { useFocusTimerStore } from '@/lib/store/use-focus-timer-store';
 import {
   computeRemainingSeconds,
   formatCountdownMMSS,
+  getSaveNoticeContent,
 } from '@/lib/daily-loop/focus-timer-engine';
 import { isValidUuid } from '@/lib/validations';
 
@@ -438,26 +440,51 @@ export function TasksFocusTimer({
         </div>
       )}
 
-      {/* Non-blocking save retry notice */}
-      {hasUnsavedNotice && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-[11px] font-sans">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">
-              {isSaving ? 'Saving session...' : "Couldn't save yet, retrying"}
-            </span>
+      {/* Non-blocking save status / retry notice */}
+      {(hasUnsavedNotice || isSaving || (!hasUnsavedNotice && timer.lastSaveStatus === 'saved')) && (() => {
+        const justSaved = !hasUnsavedNotice && !isSaving && timer.lastSaveStatus === 'saved';
+        const notice = getSaveNoticeContent({
+          saveError: timer.saveError,
+          saveErrorCode: timer.saveErrorCode ?? null,
+          isSaving,
+          justSaved,
+        });
+        return (
+          <div
+            role="status"
+            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-[11px] font-sans ${
+              notice.tone === 'emerald'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/70 dark:border-emerald-800/60 text-[#006c49] dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
+            }`}
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              {notice.tone === 'emerald' ? (
+                <Check className="w-3.5 h-3.5 shrink-0" />
+              ) : (
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              )}
+              <span className="break-words min-w-0">{notice.text}</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {notice.showSignInLink && (
+                <Link href="/login" className="font-semibold underline hover:opacity-80">
+                  Sign in
+                </Link>
+              )}
+              {notice.showRetryButton && (
+                <button
+                  type="button"
+                  onClick={() => void flushPendingSaves()}
+                  className="font-semibold underline cursor-pointer"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
           </div>
-          {!isSaving && (
-            <button
-              type="button"
-              onClick={() => void flushPendingSaves()}
-              className="font-medium underline shrink-0 cursor-pointer"
-            >
-              Retry
-            </button>
-          )}
-        </div>
-      )}
+        );
+      })()}
     </section>
   );
 }

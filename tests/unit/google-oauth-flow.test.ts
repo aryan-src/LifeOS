@@ -88,7 +88,7 @@ describe('Google OAuth End-to-End Flow', () => {
     process.env.NEXT_PUBLIC_SITE_URL = 'https://lifeosstudents.vercel.app';
 
     const req = new NextRequest(
-      'http://localhost:3000/auth/callback?code=google-auth-code&next=%2Fdashboard'
+      'http://localhost:3000/auth/callback?code=google-auth-code'
     );
     const res = await authCallbackGet(req);
 
@@ -96,6 +96,19 @@ describe('Google OAuth End-to-End Flow', () => {
     expect(res.status).toBe(307);
     expect(res.headers.get('location')).toBe('http://localhost:3000/dashboard');
     expect(res.cookies.get('sb-test-auth-token')?.value).toBe('session-jwt-value');
+  });
+
+  it('honors and clears lifeos_oauth_next cookie when callback URL has no query params', async () => {
+    mockCookieGetAll.mockReturnValueOnce([
+      { name: 'lifeos_oauth_next', value: '%2Ftasks' },
+    ]);
+
+    const req = new NextRequest('http://localhost:3000/auth/callback?code=cookie-code');
+    const res = await authCallbackGet(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('http://localhost:3000/tasks');
+    expect(res.cookies.get('lifeos_oauth_next')?.value).toBe('');
   });
 
   it('redirects on Vercel active origin using x-forwarded-host and preserves validated next path', async () => {

@@ -498,6 +498,28 @@ export function markSessionSaved(
   };
 }
 
+export const DEFAULT_SAVE_RETRY_MESSAGE = "Couldn't save yet, retrying";
+
+/**
+ * Formats the non-blocking save-failure retry notice for focus sessions.
+ * - In development builds (`NODE_ENV === 'development'`), appends the actual
+ *   error message returned by `logFocusSession` (e.g. Supabase or validation reason).
+ * - In production builds (and all non-development environments), keeps the base text unchanged.
+ */
+export function formatSaveRetryNotice(
+  saveError: string | null | undefined,
+  baseMessage: string = DEFAULT_SAVE_RETRY_MESSAGE
+): string {
+  if (process.env.NODE_ENV !== 'development') {
+    return baseMessage;
+  }
+  const detail = typeof saveError === 'string' ? saveError.trim() : '';
+  if (!detail || detail === baseMessage || detail === DEFAULT_SAVE_RETRY_MESSAGE) {
+    return baseMessage;
+  }
+  return `${baseMessage} (${detail})`;
+}
+
 export function markSessionSaveFailed(
   state: FocusTimerState,
   errorMessage: string

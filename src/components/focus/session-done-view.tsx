@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { formatTimeInTimezone } from '@/lib/daily-loop/business-logic';
+import { formatSaveRetryNotice } from '@/lib/daily-loop/focus-timer-engine';
 
 const LINING_NUMS_STYLE: React.CSSProperties = {
   fontVariantNumeric: 'lining-nums tabular-nums',
@@ -14,6 +15,7 @@ export interface SessionDoneViewProps {
   finishedAtMs: number | null;
   userTimezone: string;
   hasUnsavedRetry: boolean;
+  saveError?: string | null;
   isSaving: boolean;
   onTakeBreak: () => void;
   onStartAnother: () => void;
@@ -28,6 +30,7 @@ export function SessionDoneView({
   finishedAtMs,
   userTimezone,
   hasUnsavedRetry,
+  saveError = null,
   isSaving,
   onTakeBreak,
   onStartAnother,
@@ -91,7 +94,9 @@ export function SessionDoneView({
           className="w-full px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs font-sans flex items-center justify-between gap-2"
           role="status"
         >
-          <span>{isSaving ? 'Saving session...' : "Couldn't save yet, retrying"}</span>
+          <span className="text-left">
+            {isSaving ? 'Saving session...' : formatSaveRetryNotice(saveError)}
+          </span>
           {!isSaving && (
             <button
               type="button"

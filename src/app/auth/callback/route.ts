@@ -51,9 +51,7 @@ export async function GET(request: NextRequest | Request) {
   }
 
   const code = searchParams.get('code');
-  const targetPath = sanitizeNextPath(
-    searchParams.get('next') ?? searchParams.get('redirectTo')
-  );
+  const queryNext = searchParams.get('next') ?? searchParams.get('redirectTo');
 
   if (code) {
     const rawSupabaseUrl =
@@ -68,6 +66,19 @@ export async function GET(request: NextRequest | Request) {
       DEFAULT_LOCAL_ANON_KEY;
 
     const cookieStore = await cookies();
+    const oauthNextCookie = cookieStore
+      .getAll()
+      .find((c) => c.name === 'lifeos_oauth_next')?.value;
+    let decodedCookieNext: string | null = null;
+    if (oauthNextCookie) {
+      try {
+        decodedCookieNext = decodeURIComponent(oauthNextCookie);
+      } catch {
+        decodedCookieNext = oauthNextCookie;
+      }
+    }
+    const targetPath = sanitizeNextPath(queryNext ?? decodedCookieNext);
+
     const cookiesToSetQueue: Array<{
       name: string;
       value: string;
@@ -100,6 +111,10 @@ export async function GET(request: NextRequest | Request) {
       cookiesToSetQueue.forEach(({ name, value, options }) => {
         response.cookies.set(name, value, options);
       });
+
+      if (oauthNextCookie) {
+        response.cookies.set('lifeos_oauth_next', '', { path: '/', maxAge: 0 });
+      }
 
       return response;
     }

@@ -483,7 +483,8 @@ describe('Global Focus UI — Visual Contract, Lining Numerals & Zero Italics', 
         onRetrySave={() => {}}
       />
     );
-    expect(runningHtml).toContain('bg-[#006c49]');
+    expect(runningHtml).toContain('bg-secondary');
+    expect(runningHtml).toContain('bottom-[108px]');
     expect(runningHtml).toContain('18:42');
     expect(runningHtml).toContain('font-variant-numeric:lining-nums tabular-nums');
     expect(runningHtml).not.toContain('italic');
@@ -502,7 +503,7 @@ describe('Global Focus UI — Visual Contract, Lining Numerals & Zero Italics', 
         onRetrySave={() => {}}
       />
     );
-    expect(pausedHtml).toContain('bg-amber-600');
+    expect(pausedHtml).toContain('bg-tertiary-fixed');
     expect(pausedHtml).toContain('Resume');
     expect(pausedHtml).toContain('Discard');
     expect(pausedHtml).not.toContain('italic');
@@ -521,7 +522,7 @@ describe('Global Focus UI — Visual Contract, Lining Numerals & Zero Italics', 
         onRetrySave={() => {}}
       />
     );
-    expect(breakHtml).toContain('bg-[#E6ECE7]');
+    expect(breakHtml).toContain('bg-secondary-fixed');
     expect(breakHtml).toContain('5m Break');
     expect(breakHtml).not.toContain('italic');
   });

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useFocusTimerStore } from '@/lib/store/use-focus-timer-store';
 import { toggleHabitLog, type HabitWithLog } from '@/lib/actions/habits';
 import type { ProjectWithMetrics } from '@/lib/actions/projects';
 import type { NoteWithProject } from '@/lib/actions/notes';
@@ -112,6 +113,17 @@ export function Variant3DashboardView({
     isDev && isDevMockActive
       ? buildDevMockDailyLoopData(effectiveDailyLoop)
       : effectiveDailyLoop;
+
+  const setTimerTimezone = useFocusTimerStore((s) => s.setUserTimezone);
+  const setTimerDevMock = useFocusTimerStore((s) => s.setDevMockActive);
+
+  useEffect(() => {
+    setTimerTimezone(effectiveDailyLoop.userTimezone);
+  }, [effectiveDailyLoop.userTimezone, setTimerTimezone]);
+
+  useEffect(() => {
+    setTimerDevMock(isDev && isDevMockActive);
+  }, [isDev, isDevMockActive, setTimerDevMock]);
 
   // Pocket Money & Financials
   const monthlyAllowance = financialAnalytics?.monthlyAllowance ?? 5000;

@@ -12,14 +12,22 @@ const DURATION_PRESETS = [
   { minutes: 90, label: '90m Deep Work' },
 ] as const;
 
+export interface ActiveTimerSnapshot {
+  status: 'idle' | 'running' | 'paused' | 'finished' | 'break';
+  remainingFormatted: string;
+  taskTitle: string | null;
+}
+
 export interface DaytimeStateProps {
   tasks: TodayTaskItem[];
   selectedTaskId: string | null;
   checklist: DailyMinimumChecklist;
   focusInsight: FocusInsight;
+  activeTimer?: ActiveTimerSnapshot | null;
   onSelectTask: (taskId: string) => void;
   onToggleTask: (taskId: string) => void;
-  onStartFocus?: (durationMinutes: number, taskId: string | null) => void;
+  onStartFocus?: (durationMinutes: number, taskId: string | null, taskTitle: string | null) => void;
+  onOpenFocusView?: () => void;
   onOpenQuickCapture?: (prefix: string) => void;
 }
 
@@ -32,14 +40,15 @@ export function DaytimeState({
   selectedTaskId,
   checklist,
   focusInsight,
+  activeTimer = null,
   onSelectTask,
   onToggleTask,
   onStartFocus,
+  onOpenFocusView,
   onOpenQuickCapture,
 }: DaytimeStateProps) {
   const [selectedMinutes, setSelectedMinutes] = useState<number>(25);
   const [isDurationMenuOpen, setIsDurationMenuOpen] = useState(false);
-  const [focusLaunchNotice, setFocusLaunchNotice] = useState<string | null>(null);
 
   const incompleteTasks = tasks.filter((t) => !t.is_completed);
   const topPriorityTask =
@@ -48,16 +57,15 @@ export function DaytimeState({
     null;
 
   const displayTasks = tasks.slice(0, 4);
+  const isTimerLive =
+    activeTimer !== null &&
+    (activeTimer.status === 'running' ||
+      activeTimer.status === 'paused' ||
+      activeTimer.status === 'break');
 
   const handleLaunchFocus = () => {
     setIsDurationMenuOpen(false);
-    if (onStartFocus) {
-      onStartFocus(selectedMinutes, topPriorityTask?.id ?? null);
-      return;
-    }
-    setFocusLaunchNotice(
-      `Ready for ${selectedMinutes}m focus${topPriorityTask ? ` on "${topPriorityTask.title}"` : ''}. Live timer launches in Phase 3.`
-    );
+    onStartFocus?.(selectedMinutes, topPriorityTask?.id ?? null, topPriorityTask?.title ?? null);
   };
 
   return (
@@ -73,63 +81,106 @@ export function DaytimeState({
             className="text-base font-semibold text-stone-900 dark:text-zinc-100 tracking-tight mb-3 leading-snug"
             style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
           >
-            {topPriorityTask ? topPriorityTask.title : 'Pick a focus task from your queue'}
+            {isTimerLive && activeTimer.taskTitle
+              ? activeTimer.taskTitle
+              : topPriorityTask
+              ? topPriorityTask.title
+              : 'Pick a focus task from your queue'}
           </p>
 
-          <div className="relative inline-flex items-stretch rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs">
-            <button
-              type="button"
-              onClick={handleLaunchFocus}
-              className="h-9 px-3.5 rounded-l-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center gap-1.5 font-sans text-xs font-medium cursor-pointer tabular-nums lining-nums"
-              style={LINING_NUMS_STYLE}
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-              <span>Start Focus ({selectedMinutes}m)</span>
-            </button>
-            <div className="w-px bg-stone-700 dark:bg-zinc-300" />
-            <button
-              type="button"
-              onClick={() => setIsDurationMenuOpen((prev) => !prev)}
-              aria-label="Select focus duration"
-              aria-expanded={isDurationMenuOpen}
-              className="px-2 rounded-r-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center justify-center cursor-pointer"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {isDurationMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 z-30 w-44 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 shadow-lg">
-                {DURATION_PRESETS.map((preset) => (
-                  <button
-                    key={preset.minutes}
-                    type="button"
-                    onClick={() => {
-                      setSelectedMinutes(preset.minutes);
-                      setIsDurationMenuOpen(false);
-                      setFocusLaunchNotice(null);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-sans tabular-nums lining-nums transition-colors cursor-pointer ${
-                      selectedMinutes === preset.minutes
-                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-[#006c49] dark:text-emerald-400 font-semibold'
-                        : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800'
+          {isTimerLive ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  {activeTimer.status === 'running' && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006c49] dark:bg-emerald-400 opacity-75" />
+                  )}
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      activeTimer.status === 'paused'
+                        ? 'bg-amber-500'
+                        : activeTimer.status === 'break'
+                        ? 'bg-[#6B8F78]'
+                        : 'bg-[#006c49] dark:bg-emerald-500'
                     }`}
+                  />
+                </span>
+                <span className="text-xs font-sans font-medium text-stone-600 dark:text-zinc-300">
+                  {activeTimer.status === 'paused'
+                    ? 'Paused · '
+                    : activeTimer.status === 'break'
+                    ? 'Break · '
+                    : 'Session in progress · '}
+                  <strong
+                    className="font-mono font-semibold text-[#006c49] dark:text-emerald-400 tabular-nums lining-nums"
                     style={LINING_NUMS_STYLE}
                   >
-                    {preset.label}
-                  </button>
-                ))}
+                    {activeTimer.remainingFormatted}
+                  </strong>{' '}
+                  left
+                </span>
               </div>
-            )}
-          </div>
 
-          {focusLaunchNotice && (
-            <p className="mt-2 text-[11px] font-sans text-stone-600 dark:text-zinc-400">
-              {focusLaunchNotice}
-            </p>
+              <button
+                type="button"
+                onClick={onOpenFocusView}
+                className="h-8 px-3 rounded-lg border border-stone-300 dark:border-zinc-600 hover:bg-stone-100 dark:hover:bg-zinc-700/60 text-stone-800 dark:text-zinc-100 text-xs font-sans font-medium transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Open focus view</span>
+              </button>
+            </div>
+          ) : (
+            <div className="relative inline-flex items-stretch rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs">
+              <button
+                type="button"
+                onClick={handleLaunchFocus}
+                className="h-9 px-3.5 rounded-l-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center gap-1.5 font-sans text-xs font-medium cursor-pointer tabular-nums lining-nums"
+                style={LINING_NUMS_STYLE}
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+                <span>Start Focus ({selectedMinutes}m)</span>
+              </button>
+              <div className="w-px bg-stone-700 dark:bg-zinc-300" />
+              <button
+                type="button"
+                onClick={() => setIsDurationMenuOpen((prev) => !prev)}
+                aria-label="Select focus duration"
+                aria-expanded={isDurationMenuOpen}
+                className="px-2 rounded-r-xl hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center justify-center cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {isDurationMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 z-30 w-44 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-700 shadow-lg">
+                  {DURATION_PRESETS.map((preset) => (
+                    <button
+                      key={preset.minutes}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMinutes(preset.minutes);
+                        setIsDurationMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-sans tabular-nums lining-nums transition-colors cursor-pointer ${
+                        selectedMinutes === preset.minutes
+                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-[#006c49] dark:text-emerald-400 font-semibold'
+                          : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800'
+                      }`}
+                      style={LINING_NUMS_STYLE}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
 

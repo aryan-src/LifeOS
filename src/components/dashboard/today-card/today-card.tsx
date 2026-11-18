@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { getTodayCardMode } from '@/lib/daily-loop/business-logic';
+import {
+  computeRemainingSeconds,
+  formatCountdownMMSS,
+} from '@/lib/daily-loop/focus-timer-engine';
+import { useFocusTimerStore } from '@/lib/store/use-focus-timer-store';
 import type {
   DailyCheckIn,
   FocusInsight,
@@ -9,7 +14,7 @@ import type {
   TodayMode,
 } from '@/lib/daily-loop/types';
 import { MorningState, type TodayTaskItem } from './morning-state';
-import { DaytimeState } from './daytime-state';
+import { DaytimeState, type ActiveTimerSnapshot } from './daytime-state';
 import { EveningState, type FinishedTodayItem } from './evening-state';
 
 export interface TodayCardProps {
@@ -26,7 +31,7 @@ export interface TodayCardProps {
   isDevMockActive?: boolean;
   onToggleTask: (taskId: string) => void;
   onOpenQuickCapture?: (prefix: string) => void;
-  onStartFocus?: (durationMinutes: number, taskId: string | null) => void;
+  onStartFocus?: (durationMinutes: number, taskId: string | null, taskTitle: string | null) => void;
 }
 
 const MODE_LABELS: Record<TodayMode, string> = {
@@ -53,9 +58,14 @@ export function TodayCard({
 }: TodayCardProps) {
   const [clockMode, setClockMode] = useState<TodayMode>(initialMode);
   const [hasStartedDay, setHasStartedDay] = useState(false);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(
     () => tasks.find((t) => !t.is_completed)?.id ?? null
   );
+
+  const timer = useFocusTimerStore((s) => s.timer);
+  const startFocusGlobal = useFocusTimerStore((s) => s.startFocus);
+  const openFullscreenGlobal = useFocusTimerStore((s) => s.openFullscreen);
 
   // Keep clock-driven mode aligned with user's profile timezone (never server time)
   useEffect(() => {
@@ -66,6 +76,40 @@ export function TodayCard({
     const interval = setInterval(syncMode, 60_000);
     return () => clearInterval(interval);
   }, [userTimezone]);
+
+  // Lightweight 1s display refresh for Today card inline countdown while timer is active
+  useEffect(() => {
+    if (timer.status !== 'running' && timer.status !== 'break') return;
+    setNowMs(Date.now());
+    const interval = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [timer.status]);
+
+  const activeTimerSnapshot: ActiveTimerSnapshot | null =
+    timer.status === 'running' || timer.status === 'paused' || timer.status === 'break'
+      ? {
+          status: timer.status,
+          remainingFormatted: formatCountdownMMSS(computeRemainingSeconds(timer, nowMs)),
+          taskTitle: timer.taskTitle,
+        }
+      : null;
+
+  const handleStartFocus = (
+    durationMinutes: number,
+    taskId: string | null,
+    taskTitle: string | null
+  ) => {
+    if (onStartFocus) {
+      onStartFocus(durationMinutes, taskId, taskTitle);
+      return;
+    }
+    startFocusGlobal({
+      durationMinutes,
+      taskId,
+      taskTitle,
+      openFullscreen: true,
+    });
+  };
 
   const effectiveMode: TodayMode = forcedMode
     ? forcedMode
@@ -113,9 +157,11 @@ export function TodayCard({
           deadlines48hCount={deadlines48hCount}
           pendingHabitsCount={pendingHabitsCount}
           focusInsight={focusInsight}
+          activeTimer={activeTimerSnapshot}
           onSelectTask={setSelectedTaskId}
           onToggleTask={onToggleTask}
           onStartDay={() => setHasStartedDay(true)}
+          onOpenFocusView={openFullscreenGlobal}
           onAddTask={() => onOpenQuickCapture?.('Task: ')}
         />
       )}
@@ -126,9 +172,11 @@ export function TodayCard({
           selectedTaskId={selectedTaskId}
           checklist={streakState.checklist}
           focusInsight={focusInsight}
+          activeTimer={activeTimerSnapshot}
           onSelectTask={setSelectedTaskId}
           onToggleTask={onToggleTask}
-          onStartFocus={onStartFocus}
+          onStartFocus={handleStartFocus}
+          onOpenFocusView={openFullscreenGlobal}
           onOpenQuickCapture={onOpenQuickCapture}
         />
       )}

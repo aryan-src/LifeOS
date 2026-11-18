@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { FocusInsight } from '@/lib/daily-loop/types';
+import type { ActiveTimerSnapshot } from './daytime-state';
 
 export interface TodayTaskItem {
   id: string;
@@ -15,9 +16,11 @@ export interface MorningStateProps {
   deadlines48hCount: number;
   pendingHabitsCount: number;
   focusInsight: FocusInsight;
+  activeTimer?: ActiveTimerSnapshot | null;
   onSelectTask: (taskId: string) => void;
   onToggleTask: (taskId: string) => void;
   onStartDay: () => void;
+  onOpenFocusView?: () => void;
   onAddTask: () => void;
 }
 
@@ -31,9 +34,11 @@ export function MorningState({
   deadlines48hCount,
   pendingHabitsCount,
   focusInsight,
+  activeTimer = null,
   onSelectTask,
   onToggleTask,
   onStartDay,
+  onOpenFocusView,
   onAddTask,
 }: MorningStateProps) {
   const incompleteTasks = tasks.filter((t) => !t.is_completed);
@@ -43,6 +48,11 @@ export function MorningState({
     null;
 
   const displayTasks = tasks.slice(0, 4);
+  const isTimerLive =
+    activeTimer !== null &&
+    (activeTimer.status === 'running' ||
+      activeTimer.status === 'paused' ||
+      activeTimer.status === 'break');
 
   return (
     <div className="flex-1 flex flex-col justify-between gap-4">
@@ -74,18 +84,64 @@ export function MorningState({
             </p>
           )}
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={topPriorityTask ? onStartDay : onAddTask}
-              className="h-9 px-4 rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center gap-1.5 font-sans text-xs font-medium shadow-xs cursor-pointer"
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-              <span>{topPriorityTask ? 'Start my day' : 'Add top priority'}</span>
-            </button>
-          </div>
+          {isTimerLive ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  {activeTimer.status === 'running' && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006c49] dark:bg-emerald-400 opacity-75" />
+                  )}
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${
+                      activeTimer.status === 'paused'
+                        ? 'bg-amber-500'
+                        : activeTimer.status === 'break'
+                        ? 'bg-[#6B8F78]'
+                        : 'bg-[#006c49] dark:bg-emerald-500'
+                    }`}
+                  />
+                </span>
+                <span className="text-xs font-sans font-medium text-stone-600 dark:text-zinc-300">
+                  {activeTimer.status === 'paused'
+                    ? 'Paused · '
+                    : activeTimer.status === 'break'
+                    ? 'Break · '
+                    : 'Session in progress · '}
+                  <strong
+                    className="font-mono font-semibold text-[#006c49] dark:text-emerald-400 tabular-nums lining-nums"
+                    style={LINING_NUMS_STYLE}
+                  >
+                    {activeTimer.remainingFormatted}
+                  </strong>{' '}
+                  left
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={onOpenFocusView}
+                className="h-8 px-3 rounded-lg border border-stone-300 dark:border-zinc-600 hover:bg-stone-100 dark:hover:bg-zinc-700/60 text-stone-800 dark:text-zinc-100 text-xs font-sans font-medium transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Open focus view</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={topPriorityTask ? onStartDay : onAddTask}
+                className="h-9 px-4 rounded-xl bg-stone-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-stone-800 dark:hover:bg-zinc-200 transition-colors flex items-center gap-1.5 font-sans text-xs font-medium shadow-xs cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+                <span>{topPriorityTask ? 'Start my day' : 'Add top priority'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Context Pills: Deadlines in 48h & Pending Habits */}

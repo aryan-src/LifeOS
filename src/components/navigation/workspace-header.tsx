@@ -3,27 +3,41 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Search, Calendar, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useUIStore } from '@/lib/store/use-ui-store';
 import { useTheme } from '@/lib/theme/use-theme';
 import { useRadialThemeTransition } from '@/hooks/use-radial-theme-transition';
 
-interface WorkspaceHeaderProps {
-  displayName?: string;
+export interface WorkspaceHeaderProps {
+  displayName?: string | null;
+  avatarUrl?: string | null;
   className?: string;
   isDockVisible?: boolean;
   onToggleDock?: () => void;
 }
 
+const ROUTE_LABELS: Array<{ prefix: string; label: string }> = [
+  { prefix: '/tasks', label: 'Tasks' },
+  { prefix: '/finances', label: 'Expenses' },
+  { prefix: '/notes', label: 'Notes' },
+  { prefix: '/habits', label: 'Habits' },
+  { prefix: '/projects', label: 'Projects' },
+  { prefix: '/assignments', label: 'Assignments' },
+  { prefix: '/focus', label: 'Focus History' },
+  { prefix: '/settings', label: 'Settings' },
+  { prefix: '/changelog', label: 'Changelog' },
+];
+
 export function WorkspaceHeader({
-  displayName = 'Aryan',
+  displayName,
+  avatarUrl,
   className = '',
   isDockVisible: isDockVisibleProp,
   onToggleDock: onToggleDockProp,
 }: WorkspaceHeaderProps) {
   const pathname = usePathname();
-  const [userName, setUserName] = useState(displayName);
+  const [userName, setUserName] = useState<string>(displayName?.trim() || '');
   const storeIsDockVisible = useUIStore((state) => state.isDockVisible);
   const storeToggleDock = useUIStore((state) => state.toggleDock);
 
@@ -34,11 +48,17 @@ export function WorkspaceHeader({
   const { triggerThemeTransition } = useRadialThemeTransition();
 
   useEffect(() => {
+    if (displayName && displayName.trim()) {
+      setUserName(displayName.trim());
+      return;
+    }
     try {
       const stored = localStorage.getItem('lifeos_display_name');
-      if (stored) setUserName(stored);
-    } catch {}
-  }, []);
+      if (stored && stored.trim()) setUserName(stored.trim());
+    } catch {
+      // ignore storage errors
+    }
+  }, [displayName]);
 
   // Keyboard shortcut: Cmd/Ctrl + B to toggle dock
   useEffect(() => {
@@ -63,7 +83,6 @@ export function WorkspaceHeader({
 
   const isLandingPage = useUIStore((state) => state.isLandingPage);
 
-  // Suppress on landing page and standalone auth/login routes
   if (isLandingPage || pathname?.startsWith('/login') || pathname?.startsWith('/auth')) {
     return null;
   }
@@ -72,41 +91,30 @@ export function WorkspaceHeader({
     window.dispatchEvent(new CustomEvent('open-quick-capture'));
   };
 
-  // Dynamic route label for clean editorial breadcrumb
-  const getRouteLabel = (path: string) => {
-    if (!path || path === '/' || path === '/dashboard') return null;
-    if (path.startsWith('/tasks')) return 'Tasks';
-    if (path.startsWith('/finances')) return 'Finances';
-    if (path.startsWith('/notes')) return 'Notes';
-    if (path.startsWith('/habits')) return 'Habits';
-    if (path.startsWith('/projects')) return 'Projects';
-    if (path.startsWith('/assignments')) return 'Assignments';
-    if (path.startsWith('/settings')) return 'Settings';
-    if (path.startsWith('/changelog')) return 'Changelog';
-    return null;
-  };
+  const currentRouteLabel =
+    pathname && pathname !== '/' && pathname !== '/dashboard'
+      ? ROUTE_LABELS.find((entry) => pathname.startsWith(entry.prefix))?.label ?? null
+      : null;
 
-  const currentRouteLabel = getRouteLabel(pathname || '');
-  const initial = (userName[0] || displayName[0] || 'A').toUpperCase();
+  const resolvedLabel = userName || 'Account';
+  const initial = (userName[0] || 'U').toUpperCase();
 
   return (
     <header
-      className={`sticky top-0 z-30 w-full bg-[#FAF9F5]/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-borderWarm dark:border-zinc-800/60 shrink-0 h-[48px] transition-colors ${className}`}
+      className={`sticky top-0 z-40 h-12 w-full shrink-0 border-b border-outline-variant/40 bg-surface/85 backdrop-blur-md transition-colors ${className}`}
       data-purpose="global-workspace-header"
     >
-      <div className="w-full max-w-none h-full px-2 flex items-center justify-between">
-        {/* Left: Burger Button, Brand Logo & Dynamic Route Breadcrumb */}
-        <div className="flex items-center space-x-2.5">
-          {/* Burger Button to Toggle Dock Visibility */}
+      <div className="flex h-full w-full items-center justify-between gap-3 px-4">
+        {/* Left: Dock toggle, LifeOS brand mark, subtle route crumb */}
+        <div className="flex items-center gap-2.5 min-w-0">
           <button
             type="button"
             onClick={toggleDock}
-            className="flex items-center justify-center p-1.5 -ml-1 rounded-lg text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
             aria-label={isDockVisible ? 'Hide dock navigation' : 'Show dock navigation'}
             title={isDockVisible ? 'Hide Dock (⌘B)' : 'Show Dock (⌘B)'}
           >
-            {/* 3-line animated hamburger / burger icon */}
-            <div className="w-4 h-3.5 flex flex-col justify-between items-center py-0.5" aria-hidden="true">
+            <div className="flex h-3.5 w-4 flex-col items-center justify-between py-0.5" aria-hidden="true">
               <span
                 className={`h-0.5 w-4 rounded-full bg-current transition-all duration-200 ${
                   !isDockVisible ? 'w-2.5 -translate-x-0.5 opacity-60' : ''
@@ -122,75 +130,90 @@ export function WorkspaceHeader({
           </button>
 
           <Link
-            href="/"
-            className="flex items-center text-textMain dark:text-zinc-100 font-medium tracking-tight whitespace-nowrap hover:opacity-85 transition-opacity"
+            href="/dashboard"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           >
-            <span className="text-xl font-bold font-serif tracking-tight text-textMain dark:text-zinc-50 whitespace-nowrap inline-flex items-center">
-              Life<span className="text-textSubtle dark:text-zinc-500 font-light">OS</span>
+            <span className="font-sans text-headline-md font-semibold tracking-tight text-on-surface">
+              LifeOS
             </span>
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full bg-secondary"
+              aria-hidden="true"
+            />
           </Link>
+
           {currentRouteLabel && (
-            <>
-              <span className="text-borderWarm dark:text-zinc-700 font-mono text-xs">/</span>
-              <span className="text-xs font-mono font-medium text-textMuted dark:text-zinc-400">
+            <div className="hidden sm:flex items-center gap-2 min-w-0">
+              <span className="font-mono text-label-sm text-outline">/</span>
+              <span className="truncate font-mono text-label-sm text-on-surface-variant">
                 {currentRouteLabel}
               </span>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Center: Quick Search Command Bar (Global Omnibar Trigger) */}
-        <div className="w-80 hidden md:block">
+        {/* Center: Global Search Omnibar Trigger */}
+        <div className="hidden md:flex flex-1 max-w-md mx-auto">
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="w-full text-left bg-ivory hover:bg-[#F5F3EC] dark:bg-zinc-900/60 dark:hover:bg-zinc-900 border border-borderWarm dark:border-zinc-800/60 px-3 py-1 rounded-lg flex items-center justify-between text-xs text-textSubtle dark:text-zinc-500 transition-colors cursor-pointer shadow-xs"
+            className="flex w-full items-center justify-between rounded-xl border border-outline-variant/40 bg-surface-container-low px-3 py-1.5 text-left text-body-sm text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           >
-            <span className="flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 text-textSubtle dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M21 21l-4.35-4.35M16.65 11a5.65 5.65 0 11-11.3 0 5.65 5.65 0 0111.3 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-              <span className="text-[11px]">Search workspace or commands...</span>
+            <span className="flex items-center gap-2 truncate">
+              <Search className="h-3.5 w-3.5 shrink-0 text-on-surface-variant" aria-hidden="true" />
+              <span className="truncate text-body-sm">Search workspace or commands...</span>
             </span>
-            <kbd className="font-mono text-[10px] bg-[#FAF9F5] dark:bg-zinc-800 border border-borderWarm dark:border-zinc-700/60 rounded px-1.5 py-0.2 text-textMuted dark:text-zinc-400">
+            <kbd className="ml-2 shrink-0 rounded-md border border-outline-variant/40 bg-surface-container px-1.5 py-0.5 font-mono text-label-sm text-on-surface-variant">
               ⌘K
             </kbd>
           </button>
         </div>
 
-        {/* Right: Utility Icons, Schedule & Profile */}
-        <div className="flex items-center space-x-2.5 sm:space-x-3 text-textMuted dark:text-zinc-400">
-          <Link
-            href="/tasks"
-            className={`p-1.5 rounded-md transition-colors ${
-              pathname?.startsWith('/tasks')
-                ? 'bg-[#F5F3EC] dark:bg-zinc-800 text-textMain dark:text-zinc-100'
-                : 'hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 text-textMuted dark:text-zinc-400'
-            }`}
-            title="Schedule & Tasks"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect height="18" rx="2" strokeWidth="1.8" width="18" x="3" y="4" />
-              <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeWidth="1.8" />
-            </svg>
-          </Link>
+        {/* Right: Utility Navigation, Theme Switcher & Account */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
-            className="p-1.5 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 rounded-md transition-colors text-textMuted dark:text-zinc-400 relative cursor-pointer"
-            title="Notifications"
+            onClick={handleOpenSearch}
+            aria-label="Open command search"
+            title="Search (⌘K)"
+            className="flex md:hidden h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-            </svg>
-            <span className="w-1.5 h-1.5 rounded-full bg-amberWarm absolute top-1 right-1" />
+            <Search className="h-4 w-4" aria-hidden="true" />
           </button>
+
+          <Link
+            href="/focus"
+            aria-label="Focus History"
+            title="Focus History"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
+              pathname?.startsWith('/focus')
+                ? 'bg-surface-container-high text-on-surface'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            <Clock className="h-4 w-4" aria-hidden="true" />
+          </Link>
+
+          <Link
+            href="/tasks"
+            aria-label="Schedule & Tasks"
+            title="Schedule & Tasks"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
+              pathname?.startsWith('/tasks')
+                ? 'bg-surface-container-high text-on-surface'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+          </Link>
+
           <button
             type="button"
             onClick={(e) => {
               const nextTheme = isDark ? 'light' : 'dark';
               triggerThemeTransition(e, nextTheme, setTheme);
             }}
-            className="h-8 w-8 rounded-lg border border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-center text-textMuted dark:text-zinc-400 hover:text-textMain dark:hover:text-zinc-100 hover:bg-[#F5F3EC] dark:hover:bg-zinc-800/60 transition-colors cursor-pointer relative overflow-hidden shrink-0"
+            className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant/40 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             suppressHydrationWarning
@@ -205,7 +228,7 @@ export function WorkspaceHeader({
                   transition={{ duration: 0.2 }}
                   className="flex items-center justify-center"
                 >
-                  <Moon className="w-4 h-4 text-zinc-300" strokeWidth={1.75} />
+                  <Moon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </motion.div>
               ) : (
                 <motion.div
@@ -216,29 +239,43 @@ export function WorkspaceHeader({
                   transition={{ duration: 0.2 }}
                   className="flex items-center justify-center"
                 >
-                  <Sun className="w-4 h-4 text-stone-700" strokeWidth={1.75} />
+                  <Sun className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </motion.div>
               )}
             </AnimatePresence>
           </button>
-          <div className="h-4 w-px bg-borderWarm dark:border-zinc-800/60 mx-1" />
+
+          <div className="mx-0.5 hidden h-4 w-px bg-outline-variant/50 sm:block" aria-hidden="true" />
+
           <Link
             href="/settings"
-            className="flex items-center space-x-2 pl-1 cursor-pointer group whitespace-nowrap"
-            title="Workspace Settings"
+            className="group flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-1.5 transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+            title="Settings & Account"
+            aria-label={`Account settings for ${resolvedLabel}`}
           >
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center font-medium text-xs tracking-wider transition-colors ${
-                pathname?.startsWith('/settings')
-                  ? 'bg-sage text-white dark:bg-emerald-600'
-                  : 'bg-textMain dark:bg-zinc-100 text-ivory dark:text-zinc-900 group-hover:bg-stone-800'
-              }`}
-            >
-              {initial}
-            </div>
-            <span className="text-xs font-medium text-textMain dark:text-zinc-300 group-hover:text-textMain dark:group-hover:text-zinc-100 transition-colors hidden sm:inline">
-              {userName}
-            </span>
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarUrl}
+                alt=""
+                className="h-7 w-7 rounded-full object-cover border border-outline-variant/40"
+              />
+            ) : (
+              <div
+                className={`flex h-7 w-7 items-center justify-center rounded-full font-mono text-label-sm font-medium transition-colors ${
+                  pathname?.startsWith('/settings')
+                    ? 'bg-secondary text-on-secondary'
+                    : 'bg-primary text-on-primary'
+                }`}
+              >
+                {initial}
+              </div>
+            )}
+            {userName && (
+              <span className="hidden md:inline-block max-w-[120px] truncate font-mono text-label-md text-on-surface">
+                {userName}
+              </span>
+            )}
           </Link>
         </div>
       </div>

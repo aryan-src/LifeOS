@@ -213,9 +213,8 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
           name: `notes/${(note.title || `note-${idx + 1}`).replace(/[^a-z0-9-_]+/gi, '-').toLowerCase()}.md`,
           content: formatNoteAsMarkdown(note),
         }));
-        const zipBytes = createZipArchive(files);
-        const blob = new Blob([new Uint8Array(zipBytes)], { type: 'application/zip' });
-        triggerBrowserDownload(blob, `lifeos-notes-${dateTag}.zip`);
+        const zipBlob = createZipArchive(files);
+        triggerBrowserDownload(zipBlob, `lifeos-notes-${dateTag}.zip`);
         showToast('Notes Markdown ZIP downloaded');
         return;
       }
@@ -227,9 +226,8 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
           { name: 'tasks.csv', content: formatTasksCsv(res.data.tasks) },
           { name: 'habits.csv', content: formatHabitsCsv(res.data.habits) },
         ];
-        const zipBytes = createZipArchive(files);
-        const blob = new Blob([new Uint8Array(zipBytes)], { type: 'application/zip' });
-        triggerBrowserDownload(blob, `lifeos-tables-${dateTag}.zip`);
+        const zipBlob = createZipArchive(files);
+        triggerBrowserDownload(zipBlob, `lifeos-tables-${dateTag}.zip`);
         showToast('CSV tables archive downloaded');
       }
     } catch {

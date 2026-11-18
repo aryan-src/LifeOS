@@ -197,8 +197,10 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
   const tagDistribution = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of notes) {
-      const tags = Array.isArray(note.tags) && note.tags.length > 0 ? note.tags : ['untagged'];
-      for (const t of tags) {
+      const rawTags = Array.isArray(note.tags) ? note.tags : [];
+      const tags = rawTags.filter((t): t is string => typeof t === 'string' && t.trim().length > 0);
+      const effectiveTags = tags.length > 0 ? tags : ['untagged'];
+      for (const t of effectiveTags) {
         counts.set(t, (counts.get(t) || 0) + 1);
       }
     }

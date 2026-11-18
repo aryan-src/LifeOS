@@ -18,6 +18,7 @@ export type LifeOSTheme =
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
 export type StitchThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = StitchThemeMode;
 
 const DARK_THEME_ALIASES = new Set(['dark', 'tui', 'crimson-dark', 'crimson-cream']);
 

@@ -33,6 +33,7 @@ describe('Stitch NotesGrid Screen', () => {
             content: 'Use stale-while-revalidate',
             tags: ['engineering'],
             is_pinned: true,
+            is_archived: false,
             project_id: null,
             created_at: '2026-11-18T00:00:00Z',
             updated_at: '2026-11-18T00:00:00Z',

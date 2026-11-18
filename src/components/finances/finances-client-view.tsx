@@ -209,7 +209,7 @@ export function FinancesClientView({
     for (const tx of filteredTransactions) {
       if (tx.type === 'income') continue;
       const catName = tx.category?.name || 'Personal & Misc';
-      const catColor = tx.category?.color;
+      const catColor = tx.category?.color ?? undefined;
       if (!catMap[catName]) {
         catMap[catName] = { value: 0, count: 0, color: catColor };
       }

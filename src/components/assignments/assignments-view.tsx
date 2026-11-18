@@ -14,6 +14,9 @@ import { AssignmentCard } from './assignment-card';
 import { AssignmentRow } from './assignment-row';
 import { AssignmentModal } from './assignment-modal';
 import { GradeModal } from './grade-modal';
+import { AssignmentsSummaryCards } from './assignments-summary-cards';
+import { computeAssignmentSummary } from '@/lib/assignments/derived';
+import { Pill } from '@/components/ui/pill';
 import {
   FOUR_COLUMNS,
   getAssignmentPriority,
@@ -395,60 +398,58 @@ export function AssignmentsView({
     setIsCreateOpen(true);
   };
 
-  const letterGrade = getLetterGrade(metrics.avgPercentage);
+  const derivedSummary = useMemo(
+    () => computeAssignmentSummary(optimisticAssignments, today),
+    [optimisticAssignments, today]
+  );
+  const letterGrade = getLetterGrade(derivedSummary.avgPercentage);
 
   return (
-    <div className="flex flex-col gap-6 pb-16">
-      {/* Top Header & Actions (Stitch Theme) */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-        <div>
-          {/* Category Badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FBF1D8] dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amberWarm animate-pulse" />
-            <span className="text-[11px] font-mono tracking-wider text-[#8F5B0F] dark:text-amber-300 uppercase font-semibold">
-              Academics
-            </span>
-          </div>
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
+      {/* Stitch Assignments Page Header */}
+      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 md:flex-row md:items-end">
+        <div className="space-y-1.5">
+          <Pill tone="tertiary" dot={true} uppercase={true}>
+            Academics
+          </Pill>
 
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
-            Assignment Tracker
+          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+            Assignments
           </h1>
-          <p className="mt-1 text-sm text-textMuted dark:text-zinc-400 max-w-2xl leading-relaxed">
-            Track coursework deadlines, prioritize pending submissions, and record assignment grades across all current modules.
+          <p className="max-w-2xl font-sans text-body-sm leading-relaxed text-on-surface-variant">
+            Track coursework deadlines, prioritize pending submissions, and record grades across your active modules.
           </p>
         </div>
 
         {/* View Mode & New Assignment Action Buttons */}
-        <div className="flex items-center flex-wrap gap-3">
-          {/* View Mode Switcher */}
-          <div className="flex items-center p-1 bg-[#F5F3EC] dark:bg-stone-800 rounded-xl border border-borderWarm dark:border-stone-700/60 text-xs font-medium">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center rounded-xl border border-outline-variant/50 bg-surface-container-low p-1 text-xs font-medium">
             <button
               type="button"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors ${
                 viewMode === 'kanban'
-                  ? 'bg-ivory dark:bg-stone-900 text-textMain dark:text-stone-100 shadow-xs border border-borderWarm dark:border-stone-700 font-semibold cursor-default'
-                  : 'text-textMuted dark:text-stone-400 hover:text-textMain dark:hover:text-stone-100 cursor-pointer'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs cursor-default'
+                  : 'text-on-surface-variant hover:text-on-surface cursor-pointer'
               }`}
             >
-              <Kanban size={13} />
+              <Kanban size={13} aria-hidden="true" />
               <span>Board</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-ivory dark:bg-stone-900 text-textMain dark:text-stone-100 shadow-xs border border-borderWarm dark:border-stone-700 font-semibold cursor-default'
-                  : 'text-textMuted dark:text-stone-400 hover:text-textMain dark:hover:text-stone-100 cursor-pointer'
+                  ? 'border border-outline-variant/40 bg-surface-container-lowest font-semibold text-on-surface shadow-xs cursor-default'
+                  : 'text-on-surface-variant hover:text-on-surface cursor-pointer'
               }`}
             >
-              <List size={13} />
+              <List size={13} aria-hidden="true" />
               <span>List</span>
             </button>
           </div>
 
-          {/* Primary New Assignment Button */}
           <button
             type="button"
             onClick={() => {
@@ -456,16 +457,16 @@ export function AssignmentsView({
               setCreateDefaultStatus('not_started');
               setIsCreateOpen(true);
             }}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-textMain dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] text-white dark:text-stone-900 text-xs font-semibold rounded-xl shadow-xs transition-all duration-150 cursor-pointer"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-secondary px-4 font-sans text-body-sm font-medium text-on-secondary shadow-xs transition-opacity hover:opacity-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           >
-            <Plus size={14} />
+            <Plus size={15} aria-hidden="true" />
             <span>New Assignment</span>
-            <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] bg-stone-700 dark:bg-stone-300 text-stone-200 dark:text-stone-800 rounded font-mono font-normal">
+            <kbd className="ml-1 hidden rounded bg-on-secondary/15 px-1.5 py-0.5 font-mono text-[10px] font-normal text-on-secondary sm:inline-block">
               ⌘N
             </kbd>
           </button>
         </div>
-      </section>
+      </header>
 
       {/* Schema Missing Setup Banner */}
       {(isSchemaMissing ||
@@ -539,122 +540,28 @@ export function AssignmentsView({
           </div>
         )}
 
-      {/* Upper KPI Summary Cards (Stitch Design) */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Tracked */}
-        <div className="bg-ivory dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-textSubtle transition-all">
-          <div className="flex items-center justify-between text-textMuted dark:text-stone-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Total Tracked
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#FAF9F5] dark:bg-stone-800 flex items-center justify-center text-textMain dark:text-stone-300">
-              <BookOpen size={16} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 font-mono">
-              {metrics.total}
-            </div>
-            <div className="text-xs text-textMuted dark:text-stone-400 mt-1">
-              Across {metrics.moduleCount} academic{' '}
-              {metrics.moduleCount === 1 ? 'module' : 'modules'}
-            </div>
-          </div>
-        </div>
+      {/* Stitch KPI Summary Cards */}
+      <AssignmentsSummaryCards
+        metrics={derivedSummary}
+        letterGrade={letterGrade}
+      />
 
-        {/* Card 2: Submission Pending (Highlighted Amber) */}
-        <div className="bg-ivory dark:bg-amber-950/20 rounded-2xl p-4 sm:p-5 border-2 border-amber-300 dark:border-amber-700/60 shadow-xs flex flex-col justify-between group hover:border-amber-400 transition-all">
-          <div className="flex items-center justify-between text-amber-800 dark:text-amber-300">
-            <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amberWarm animate-pulse" />
-              Submission Pending
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#FBF1D8] dark:bg-amber-900/40 flex items-center justify-center text-[#8F5B0F] dark:text-amber-300">
-              <Clock size={16} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 flex items-baseline gap-2 font-mono">
-              <span>{metrics.pendingSubmission}</span>
-              {metrics.urgentPendingCount > 0 && (
-                <span className="text-xs font-normal text-amber-700 dark:text-amber-300 font-mono">
-                  {metrics.urgentPendingCount} Due Soon
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-amber-700 dark:text-amber-300/90 mt-1 font-medium">
-              Work complete • Final upload required
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Submitted & Done (Soft Emerald) */}
-        <div className="bg-ivory dark:bg-emerald-950/20 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-emerald-800/60 shadow-xs flex flex-col justify-between group hover:border-sage transition-all">
-          <div className="flex items-center justify-between text-[#065F46] dark:text-emerald-300">
-            <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-sage" />
-              Submitted &amp; Done
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#E1EEE6] dark:bg-emerald-900/40 flex items-center justify-center text-sage dark:text-emerald-300">
-              <CheckCircle2 size={16} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 font-mono">
-              {metrics.completed}
-            </div>
-            <div className="text-xs text-[#065F46] dark:text-emerald-300/90 mt-1 font-medium">
-              Turned in or officially evaluated
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Graded Average */}
-        <div className="bg-ivory dark:bg-stone-900 rounded-2xl p-4 sm:p-5 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col justify-between group hover:border-textSubtle transition-all">
-          <div className="flex items-center justify-between text-textMuted dark:text-stone-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Graded Average
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#FAF9F5] dark:bg-stone-800 flex items-center justify-center text-textMain dark:text-stone-300">
-              <Award size={16} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-bold tracking-tight text-textMain dark:text-stone-100 flex items-baseline gap-2 font-mono">
-              <span>
-                {metrics.avgPercentage !== null ? `${metrics.avgPercentage}%` : '—'}
-              </span>
-              {letterGrade && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#FAF9F5] dark:bg-stone-800 text-textMain dark:text-stone-300 font-mono font-medium">
-                  {letterGrade}
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-textMuted dark:text-stone-400 mt-1">
-              {metrics.gradedCount > 0
-                ? `Based on ${metrics.gradedCount} evaluated ${
-                    metrics.gradedCount === 1 ? 'assessment' : 'assessments'
-                  }`
-                : 'No graded items yet'}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Filter and Search Bar (Warm Cream/Charcoal Stitch Toolbar) */}
-      <section className="bg-ivory dark:bg-stone-900 rounded-2xl p-2.5 sm:p-3 border border-borderWarm dark:border-stone-800 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      {/* Filter and Search Bar (Stitch Toolbar) */}
+      <section className="flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-3 shadow-xs lg:flex-row lg:items-center">
         {/* Search Input Box */}
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textSubtle dark:text-stone-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant"
+            aria-hidden="true"
           />
           <input
             type="text"
+            aria-label="Search assignments"
             placeholder="Search assignments by title, course code, or tag..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-[#FAF9F5] dark:bg-stone-800/60 border border-transparent rounded-xl text-textMain dark:text-stone-100 placeholder-textSubtle dark:placeholder-stone-400 focus:bg-ivory dark:focus:bg-stone-900 focus:border-borderWarm dark:focus:border-stone-700 focus:outline-none transition-colors"
+            className="w-full rounded-xl border border-outline-variant/40 bg-surface-container-low py-2 pl-10 pr-4 font-sans text-body-sm text-on-surface placeholder:text-outline transition-colors focus:border-secondary focus:bg-surface-container-lowest focus:outline-none"
           />
         </div>
 

@@ -151,17 +151,45 @@ describe('Google OAuth End-to-End Flow', () => {
     );
   });
 
-  it('redirects to /login?error=auth_callback_failed when code exchange fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    mockExchangeCodeForSession.mockResolvedValueOnce({
-      error: new Error('Invalid code verifier'),
+  it('logs safe error metadata on exchange failure without leaking code or keys, and appends reason only in dev', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const authErr = Object.assign(new Error('fetch failed'), {
+      name: 'AuthRetryableFetchError',
+      code: 'bad_oauth_state',
     });
+    mockExchangeCodeForSession.mockResolvedValueOnce({ error: authErr });
 
-    const req = new NextRequest('http://localhost:3000/auth/callback?code=expired-code');
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
+    const req = new NextRequest(
+      'http://localhost:3000/auth/callback?code=secret-oauth-code-xyz'
+    );
     const res = await authCallbackGet(req);
 
     expect(res.status).toBe(307);
     expect(res.headers.get('location')).toBe(
+      'http://localhost:3000/login?error=auth_callback_failed&reason=bad_oauth_state'
+    );
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[AuthCallback] exchangeCodeForSession failed:',
+      expect.objectContaining({
+        code: 'bad_oauth_state',
+        name: 'AuthRetryableFetchError',
+        message: 'fetch failed',
+        error: null,
+        error_description: null,
+      })
+    );
+    const serializedLog = JSON.stringify(errorSpy.mock.calls);
+    expect(serializedLog).not.toContain('secret-oauth-code-xyz');
+    expect(serializedLog).not.toContain('anon-key-placeholder');
+
+    // Production omits reason from redirect URL
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+    mockExchangeCodeForSession.mockResolvedValueOnce({ error: authErr });
+    const prodRes = await authCallbackGet(
+      new NextRequest('http://localhost:3000/auth/callback?code=secret-oauth-code-2')
+    );
+    expect(prodRes.headers.get('location')).toBe(
       'http://localhost:3000/login?error=auth_callback_failed'
     );
   });

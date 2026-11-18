@@ -357,7 +357,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             content={deskPadContent}
             onChange={handleDeskPadChange}
             onAppendToVault={handleAppendDeskPadToVault}
-            isPending={isAppendingDeskPad}
+            isAppending={isAppendingDeskPad}
           />
         </div>
       )}
@@ -493,7 +493,10 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                 {pinnedNotes.map((note) => {
                   const isSelected = selectedNoteId === note.id;
                   const wordCount = countWords(note.content);
-                  const firstTag = Array.isArray(note.tags) && note.tags[0] ? note.tags[0] : 'general';
+                  const firstTag =
+                    Array.isArray(note.tags) && note.tags[0]
+                      ? String(note.tags[0])
+                      : 'general';
 
                   return (
                     <article
@@ -547,7 +550,10 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
               {streamNotes.map((note) => {
                 const isSelected = selectedNoteId === note.id;
                 const wordCount = countWords(note.content);
-                const firstTag = Array.isArray(note.tags) && note.tags[0] ? note.tags[0] : 'general';
+                const firstTag =
+                  Array.isArray(note.tags) && note.tags[0]
+                    ? String(note.tags[0])
+                    : 'general';
 
                 return (
                   <article
@@ -686,7 +692,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                             key={idx}
                             className="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-medium"
                           >
-                            #{t}
+                            #{String(t)}
                           </span>
                         ))}
                     </div>
@@ -745,7 +751,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       {/* New Note Modal */}
       {showCreateModal && (
         <Modal
-          isOpen={showCreateModal}
+          open={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           title="Create New Note"
           description="Capture a new idea, reference, or academic insight."
@@ -824,7 +830,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       {/* Promotion Modal */}
       {selectedNoteForPromotion && (
         <Modal
-          isOpen={Boolean(selectedNoteForPromotion)}
+          open={Boolean(selectedNoteForPromotion)}
           onClose={() => {
             setSelectedNoteForPromotion(null);
             setPromotionResult(null);

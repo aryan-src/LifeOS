@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { getUserProfile } from '@/lib/actions/profile';
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { cache } from 'react';
@@ -119,11 +123,8 @@ import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
 export async function getCategories(): Promise<Category[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     let { data, error } = await supabase
       .from('categories')
@@ -195,11 +196,8 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTransactions(): Promise<TransactionWithRelations[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     const { data, error } = await supabase
       .from('transactions')
@@ -296,11 +294,8 @@ const getCachedFinancialAnalytics = (userId: string, accessToken: string) => {
 export const getFinancialAnalytics = cache(async (): Promise<FinancialAnalytics> => {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) return getFallbackFinancialAnalytics();
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return getFallbackFinancialAnalytics();
 
     // Check for session access token to run through edge-cached compute
     const {
@@ -355,11 +350,10 @@ export async function createTransaction(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   // Expenses stored with signed negative amounts or positive based on type
   const parsedAmount = parsed.data.amount;
@@ -407,11 +401,10 @@ export async function deleteTransaction(transactionId: string): Promise<ActionRe
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   const { error } = await supabase
     .from('transactions')
@@ -460,11 +453,10 @@ export async function updateTransaction(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   // Preserve PostgreSQL numeric(12, 2) precision using safe float parsing
   const preciseAmount = parseFloat(parsed.data.amount.toFixed(2));

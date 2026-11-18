@@ -16,10 +16,11 @@ import {
   GlassCalendar,
   type CalendarProjectItem,
 } from '@/components/ui/glass-calendar';
-import { FocusTimer } from './focus-timer';
+import { TasksFocusTimer } from './tasks-focus-timer';
 import { WeeklyVelocityCard } from './weekly-velocity-card';
 import { LinkedProjectsCard } from './linked-projects-card';
 import { HourlyTimeblocks } from './hourly-timeblocks';
+import { isValidUuid } from '@/lib/validations';
 import { AlertTriangle, CheckCircle2, Target, ChevronDown } from 'lucide-react';
 
 interface TaskChecklistProps {
@@ -136,8 +137,9 @@ export function TaskChecklist({
     });
   };
 
-  // Toggle in-progress state
+  // Toggle in-progress state (strictly guarded to valid UUID task IDs)
   const handleToggleInProgress = (taskId: string, targetState: boolean) => {
+    if (!isValidUuid(taskId)) return;
     setErrorMessage(null);
 
     startTransition(async () => {
@@ -524,16 +526,11 @@ export function TaskChecklist({
 
       {/* Right Column: Focus Companion & Context Workspace (4 Cols) */}
       <div className="lg:col-span-4 flex flex-col gap-space-lg">
-        {/* Fully Functional Pomodoro Focus Timer with Dynamic Task Status Binding */}
-        <FocusTimer
+        {/* Global Focus Timer synced with Today card & Full-Screen Focus Mode */}
+        <TasksFocusTimer
           tasks={optimisticTasks
             .filter((t) => !t.is_completed)
             .map((t) => ({ id: t.id, title: t.title }))}
-          projects={projects.map((p) => ({
-            id: p.id,
-            title: p.title,
-            slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          }))}
           boundTaskId={boundTaskId}
           onBindTask={(task) => {
             setBoundTaskId(task ? task.id : null);

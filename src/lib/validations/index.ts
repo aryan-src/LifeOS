@@ -15,6 +15,9 @@ export function formatZodError(error: z.ZodError): string {
 // Common Primitives
 // -------------------------------------------------------------
 export const uuidSchema = z.string().uuid({ message: 'Invalid ID format.' });
+export function isValidUuid(value: unknown): value is string {
+  return typeof value === 'string' && uuidSchema.safeParse(value).success;
+}
 export const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: 'Date must be formatted strictly as YYYY-MM-DD.',
 });

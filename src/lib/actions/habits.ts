@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import type { Habit, HabitLog } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -104,11 +108,10 @@ export async function getHabits(): Promise<GetHabitsResult> {
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { habits: [], error: null, isSchemaMissing: false };
+    }
 
     // 1. Fetch habits
     const { data: habitsData, error: habitsError } = await supabase
@@ -263,11 +266,10 @@ export async function toggleHabitLog(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     // Check for existing log entry
     const { data: existingLog, error: fetchError } = await supabase
@@ -397,11 +399,10 @@ export async function createHabit(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { data, error } = await supabase
       .from('habits')
@@ -439,11 +440,10 @@ export async function deleteHabit(habitId: string): Promise<ActionResponse> {
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { error } = await supabase
       .from('habits')

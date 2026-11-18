@@ -16,6 +16,7 @@ import {
   type ReconcileResult,
 } from '@/lib/daily-loop/focus-timer-engine';
 import { logFocusSession } from '@/lib/actions/focus-session';
+import { isValidUuid } from '@/lib/validations';
 
 export const FOCUS_TIMER_STORAGE_KEY = 'lifeos_focus_timer_v1';
 
@@ -182,9 +183,9 @@ export const useFocusTimerStore = create<FocusTimerStore>((set, get) => {
     startFocus: ({ durationMinutes, taskId, taskTitle, projectId, openFullscreen = true }) => {
       const next = startFocusSession(get().timer, {
         durationMinutes,
-        taskId: taskId ?? null,
+        taskId: isValidUuid(taskId) ? taskId : null,
         taskTitle: taskTitle ?? null,
-        projectId: projectId ?? null,
+        projectId: isValidUuid(projectId) ? projectId : null,
         clientSessionId: generateClientSessionId(),
         nowMs: Date.now(),
         openFullscreen,

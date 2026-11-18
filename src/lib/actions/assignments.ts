@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import type { Assignment, AssignmentStatus } from '@/types/database.types';
 import type { ActionResponse } from '@/types/action.types';
@@ -58,11 +62,8 @@ export interface GetAssignmentsResult {
 export async function getAssignments(): Promise<AssignmentWithProject[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     const { data, error } = await supabase
       .from('assignments')
@@ -92,11 +93,10 @@ export async function getAssignments(): Promise<AssignmentWithProject[]> {
 export async function getAssignmentsWithStatus(): Promise<GetAssignmentsResult> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { assignments: [], error: null, isSchemaMissing: false };
+    }
 
     const { data, error } = await supabase
       .from('assignments')
@@ -167,11 +167,10 @@ export async function createAssignment(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { data: assignment, error: insertError } = await supabase
       .from('assignments')
@@ -221,11 +220,10 @@ export async function updateAssignmentStatus(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { data, error } = await supabase
       .from('assignments')
@@ -274,11 +272,10 @@ export async function gradeAssignment(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { data, error } = await supabase
       .from('assignments')
@@ -326,11 +323,10 @@ export async function updateAssignment(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const updatePayload: import('@/types/database.types').UpdateAssignment = {
       updated_at: new Date().toISOString(),
@@ -382,11 +378,10 @@ export async function deleteAssignment(id: string): Promise<ActionResponse<void>
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { error } = await supabase
       .from('assignments')

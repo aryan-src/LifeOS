@@ -1,6 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+  isDevAuthBypassEnabled,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Profile, UpdateProfile } from '@/types/database.types';
@@ -14,8 +19,7 @@ import { cache } from 'react';
  * Deduplicates across RSC passes to eliminate redundant database calls.
  */
 export const getUserProfile = cache(async (): Promise<Profile> => {
-  const isDevBypass =
-    process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true';
+  const isDevBypass = isDevAuthBypassEnabled();
 
   const defaultProfile: Profile = {
     id: isDevBypass ? 'dev-local-user' : 'unauthenticated',
@@ -103,26 +107,20 @@ export async function updateProfile(
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
-      return {
-        success: true,
-        data: {
-          id: 'dev-local-user',
-          display_name: parsed.data.displayName || 'Aryan',
-          currency_symbol: parsed.data.currencySymbol || '₹',
-          theme_preference: parsed.data.themePreference || 'nordic',
-          monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      };
-    }
-    throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return {
+      success: true,
+      data: {
+        id: 'dev-local-user',
+        display_name: parsed.data.displayName || 'Aryan',
+        currency_symbol: parsed.data.currencySymbol || '₹',
+        theme_preference: parsed.data.themePreference || 'nordic',
+        monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    };
   }
 
   const displayName = parsed.data.displayName;
@@ -221,13 +219,9 @@ export async function updateUserTimezone(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: 'Unauthorized' };
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
     }
 
     const { error } = await supabase

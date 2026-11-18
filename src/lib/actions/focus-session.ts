@@ -2,6 +2,10 @@
 
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
@@ -100,13 +104,9 @@ export async function logFocusSession(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: 'Unauthorized' };
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
     }
 
     // Idempotent insert into public.focus_sessions (ON CONFLICT (client_session_id) DO NOTHING)
@@ -192,12 +192,8 @@ export async function getFocusBindingContext(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
       return { tasks: [], projects: [] };
     }
 

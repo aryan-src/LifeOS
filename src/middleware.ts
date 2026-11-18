@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { isDevAuthBypassEnabled } from '@/lib/supabase/dev-auth';
 
 export async function middleware(request: NextRequest) {
-  if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
+  if (isDevAuthBypassEnabled()) {
     return NextResponse.next();
   }
   return await updateSession(request);

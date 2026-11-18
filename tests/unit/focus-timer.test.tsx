@@ -58,11 +58,18 @@ describe('Scandinavian Minimal Zen Focus Timer Component', () => {
     expect(html).toContain('0m elapsed');
   });
 
+  it('renders No task selected when rendered with no tasks', () => {
+    const html = renderToString(<FocusTimer />);
+    expect(html).toContain('No task selected');
+    expect(html).not.toContain('Q3 Product Architecture');
+  });
+
   it('renders bound task title when tasks and boundTaskId are provided', () => {
+    const validUuid = '11111111-1111-4111-8111-111111111111';
     const html = renderToString(
       <FocusTimer
-        tasks={[{ id: 't-100', title: 'Scandinavian Minimal Architecture Spec' }]}
-        boundTaskId="t-100"
+        tasks={[{ id: validUuid, title: 'Scandinavian Minimal Architecture Spec' }]}
+        boundTaskId={validUuid}
       />
     );
     expect(html).toContain('Scandinavian Minimal Architecture Spec');

@@ -15,6 +15,7 @@ import {
 import { logFocusSession, getFocusBindingContext } from '@/lib/actions/focus-session';
 import { updateTaskStatus } from '@/lib/actions/tasks';
 import { getTodayDate } from '@/lib/utils/date';
+import { isValidUuid } from '@/lib/validations';
 
 export type TimerMode = 'focus' | 'break' | 'rest';
 
@@ -148,21 +149,15 @@ export function FocusTimer({
   const [isTaskDropdownOpen, setIsTaskDropdownOpen] = useState<boolean>(false);
   const [taskSearchQuery, setTaskSearchQuery] = useState<string>('');
   const [availableTasks, setAvailableTasks] = useState<Array<{ id: string; title: string }>>(
-    propTasks || [
-      { id: 't-1', title: 'Q3 Product Architecture Spec & Flow Design' },
-      { id: 't-2', title: 'Deep Work: Zen Interface Polish & Design Tokens' },
-      { id: 't-3', title: 'Reading: Scandinavian Minimal Systems' },
-    ]
+    propTasks || []
   );
 
   const initialBoundTask =
     propBoundTaskId && propTasks
       ? propTasks.find((t) => t.id === propBoundTaskId) || null
-      : propBoundTaskId
-      ? { id: propBoundTaskId, title: 'Bound Task' }
       : propTasks && propTasks.length > 0
       ? propTasks[0]
-      : { id: 't-1', title: 'Q3 Product Architecture Spec & Flow Design' };
+      : null;
 
   const [boundTask, setBoundTask] = useState<{ id: string; title: string } | null>(initialBoundTask);
 
@@ -261,9 +256,10 @@ export function FocusTimer({
   const strokeDashoffset = CIRCUMFERENCE - progressFraction * CIRCUMFERENCE;
   const percentCompleted = Math.round(progressFraction * 100);
 
-  // Auto-sync task status to in_progress
+  // Auto-sync task status to in_progress (strictly guarded to valid UUIDs only)
   const handleTaskStart = useCallback(
     (taskId: string) => {
+      if (!isValidUuid(taskId)) return;
       if (onTaskStatusChange) {
         onTaskStatusChange(taskId, true);
       } else {
@@ -330,7 +326,7 @@ export function FocusTimer({
           startTransition(async () => {
             const res = await logFocusSession({
               durationMinutes: completedMinutes,
-              taskId: boundTask?.id || null,
+              taskId: boundTask && isValidUuid(boundTask.id) ? boundTask.id : null,
               mode: 'focus',
             });
             if (res.success) {
@@ -418,7 +414,7 @@ export function FocusTimer({
       startTransition(async () => {
         const res = await logFocusSession({
           durationMinutes: elapsedMins,
-          taskId: boundTask?.id || null,
+          taskId: boundTask && isValidUuid(boundTask.id) ? boundTask.id : null,
           mode: currentMode,
         });
 
@@ -824,7 +820,7 @@ export function FocusTimer({
                 className="text-xs font-medium text-stone-800 dark:text-zinc-200 truncate"
                 id="selected-task-text"
               >
-                {boundTask ? boundTask.title : 'Q3 Product Architecture Spec & Flow Design'}
+                {boundTask ? boundTask.title : 'No task selected'}
               </p>
             </div>
           </div>

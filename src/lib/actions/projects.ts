@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { cache } from 'react';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
@@ -90,16 +94,8 @@ const getCachedProjectsWithMetrics = (userId: string, accessToken: string) => {
 export const getProjectsWithMetrics = cache(async (): Promise<ProjectWithMetrics[]> => {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
-        return [];
-      }
-      throw new Error('Unauthorized');
-    }
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) return [];
 
     const {
       data: { session },
@@ -169,11 +165,10 @@ export async function updateProjectStatus(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const { data, error } = await supabase
       .from('projects')
@@ -243,11 +238,10 @@ export async function createProject(
     }
 
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     // Base slug from title
     const slugBase = parsed.data.title
@@ -321,11 +315,10 @@ export async function deleteProject(projectId: string): Promise<ActionResponse> 
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Unauthorized');
+  const { user, isBypass } = await getAuthenticatedUser(supabase);
+  if (isBypass || !user) {
+    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+  }
 
   const { error } = await supabase
     .from('projects')
@@ -367,11 +360,10 @@ export async function updateProject(
 ): Promise<ActionResponse<Project>> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
 
     const updatePayload: Partial<InsertProject> = {};
     if (updates.title !== undefined) updatePayload.title = updates.title.trim();

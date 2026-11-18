@@ -2,6 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import {
+  DEV_BYPASS_MUTATION_ERROR,
+  getAuthenticatedUser,
+} from '@/lib/supabase/dev-auth';
 import { getUserProfile } from '@/lib/actions/profile';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
@@ -189,12 +193,8 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
       return fallbackData;
     }
 
@@ -481,13 +481,9 @@ export async function upsertDailyCheckIn(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: 'Unauthorized' };
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
     }
 
     const profile = await getUserProfile();

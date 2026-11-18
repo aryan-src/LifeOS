@@ -1,9 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/types/database.types';
+import { isDevAuthBypassEnabled } from '@/lib/supabase/dev-auth';
 
 export async function updateSession(request: NextRequest) {
-  if (process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true') {
+  if (isDevAuthBypassEnabled()) {
     return NextResponse.next({
       request,
     });

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient as createBrowserSupabaseClient } from '@/lib/supabase/client';
 import {
   FOCUS_TIMER_STORAGE_KEY,
   useFocusTimerStore,
@@ -153,6 +154,28 @@ export function GlobalFocusController() {
       window.removeEventListener('storage', handleStorage);
     };
   }, [runReconcileAndFlush, flushAndRefresh, syncFromStorageEvent]);
+
+  // 4. Retry any queued unsaved sessions immediately after user signs in or session refreshes
+  useEffect(() => {
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (useFocusTimerStore.getState().timer.pendingUnsavedSessions.length > 0) {
+            void flushAndRefresh();
+          }
+        }
+      });
+      subscription = data.subscription;
+    } catch {
+      // Ignore auth listener errors in restricted/test environments
+    }
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [flushAndRefresh]);
 
   const handleStopEarly = () => {
     const res = stopEarly();

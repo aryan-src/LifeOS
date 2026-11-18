@@ -275,11 +275,13 @@ describe('Dev Auth Bypass Helper & Server Action Guards', () => {
         captureRes,
         tzRes,
       ]) {
-        expect(res).toEqual({
+        expect(res).toMatchObject({
           success: false,
           error: DEV_BYPASS_MUTATION_ERROR,
         });
       }
+      expect(focusRes.code).toBe('dev_bypass');
+      expect(focusRes.message).toBe(DEV_BYPASS_MUTATION_ERROR);
 
       expect(mockFrom).not.toHaveBeenCalled();
     });
@@ -298,7 +300,12 @@ describe('Dev Auth Bypass Helper & Server Action Guards', () => {
         durationSeconds: 1500,
         mode: 'pomodoro',
       });
-      expect(focusRes).toEqual({ success: false, error: 'Unauthorized' });
+      expect(focusRes).toEqual({
+        success: false,
+        code: 'not_authenticated',
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      });
     });
   });
 });

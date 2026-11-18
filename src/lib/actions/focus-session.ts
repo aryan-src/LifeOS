@@ -10,7 +10,11 @@ import { revalidatePath } from 'next/cache';
 import type { ActionResponse } from '@/types/action.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { validateFocusSessionPayload } from '@/lib/daily-loop/focus-timer-engine';
-import type { PersistableFocusMode } from '@/lib/daily-loop/types';
+import { isValidUuid } from '@/lib/validations';
+import type {
+  FocusSessionErrorCode,
+  PersistableFocusMode,
+} from '@/lib/daily-loop/types';
 
 export interface LogFocusSessionParams {
   /** Preferred exact duration in seconds (used by global focus timer) */
@@ -41,17 +45,24 @@ export interface FocusSessionResult {
   message: string;
 }
 
+export interface LogFocusSessionResponse extends ActionResponse<FocusSessionResult> {
+  success: boolean;
+  code: 'ok' | FocusSessionErrorCode;
+  message: string;
+}
+
 /**
  * Server Action: Records a completed focus session in public.focus_sessions.
  * - Sets user_id strictly from the authenticated Supabase session (never from client params).
  * - Enforces strict server validation (rejects break modes, non-positive duration,
- *   duration far above mode ceiling, and future ended_at).
+ *   duration far above mode ceiling, future ended_at, and invalid task/project UUIDs).
  * - Uses ON CONFLICT (client_session_id) DO NOTHING (ignoreDuplicates: true) so retries
  *   and multi-tab races are idempotent and never create duplicates or error on conflict.
+ * - Returns structured `{ success, code, message }` with distinct error codes and never swallows errors.
  */
 export async function logFocusSession(
   params: LogFocusSessionParams
-): Promise<ActionResponse<FocusSessionResult>> {
+): Promise<LogFocusSessionResponse> {
   try {
     const nowMs = Date.now();
     const durationSeconds =
@@ -62,9 +73,32 @@ export async function logFocusSession(
         : 0;
 
     if (durationSeconds < 60) {
+      const msg = 'Session under 1m not logged';
       return {
         success: false,
-        error: 'Session under 1m not logged',
+        code: 'validation',
+        message: msg,
+        error: msg,
+      };
+    }
+
+    if (params.taskId != null && !isValidUuid(params.taskId)) {
+      const msg = 'Invalid task_id UUID.';
+      return {
+        success: false,
+        code: 'validation',
+        message: msg,
+        error: msg,
+      };
+    }
+
+    if (params.projectId != null && !isValidUuid(params.projectId)) {
+      const msg = 'Invalid project_id UUID.';
+      return {
+        success: false,
+        code: 'validation',
+        message: msg,
+        error: msg,
       };
     }
 
@@ -100,13 +134,38 @@ export async function logFocusSession(
     );
 
     if (!validation.valid) {
-      return { success: false, error: validation.error };
+      return {
+        success: false,
+        code: 'validation',
+        message: validation.error,
+        error: validation.error,
+      };
     }
 
     const supabase = await createClient();
-    const { user, isBypass } = await getAuthenticatedUser(supabase);
-    if (isBypass || !user) {
-      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    let user: { id: string } | null = null;
+    try {
+      const auth = await getAuthenticatedUser(supabase);
+      if (auth.isBypass || !auth.user) {
+        return {
+          success: false,
+          code: 'dev_bypass',
+          message: DEV_BYPASS_MUTATION_ERROR,
+          error: DEV_BYPASS_MUTATION_ERROR,
+        };
+      }
+      user = auth.user;
+    } catch (authErr) {
+      const msg =
+        authErr instanceof Error && authErr.message
+          ? authErr.message
+          : 'Unauthorized';
+      return {
+        success: false,
+        code: 'not_authenticated',
+        message: msg,
+        error: msg,
+      };
     }
 
     // Idempotent insert into public.focus_sessions (ON CONFLICT (client_session_id) DO NOTHING)
@@ -130,12 +189,15 @@ export async function logFocusSession(
       );
 
     if (upsertError) {
-      if (upsertError.code === '42P01') {
-        console.warn('[FocusSession] Table focus_sessions does not exist (42P01).');
-        return { success: false, error: 'Focus sessions table is not initialized.' };
-      }
+      const pgCode = upsertError.code || 'UNKNOWN';
+      const dbMessage = `Supabase error (${pgCode}): ${upsertError.message}`;
       console.error('[FocusSession] Error persisting focus_sessions row:', upsertError);
-      return { success: false, error: formatErrorMessage(upsertError) };
+      return {
+        success: false,
+        code: 'db_error',
+        message: dbMessage,
+        error: dbMessage,
+      };
     }
 
     // Touch linked task/project activity timestamps when bound
@@ -160,9 +222,12 @@ export async function logFocusSession(
     revalidatePath('/');
 
     const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
+    const successMessage = `Successfully logged ${durationMinutes}m focus session.`;
 
     return {
       success: true,
+      code: 'ok',
+      message: successMessage,
       data: {
         recorded: true,
         clientSessionId,
@@ -171,14 +236,17 @@ export async function logFocusSession(
         mode: validation.mode,
         taskId: params.taskId ?? null,
         projectId: params.projectId ?? null,
-        message: `Successfully logged ${durationMinutes}m focus session.`,
+        message: successMessage,
       },
     };
   } catch (err) {
     console.error('Unhandled error in logFocusSession:', err);
+    const msg = formatErrorMessage(err);
     return {
       success: false,
-      error: formatErrorMessage(err),
+      code: 'unknown',
+      message: msg,
+      error: msg,
     };
   }
 }

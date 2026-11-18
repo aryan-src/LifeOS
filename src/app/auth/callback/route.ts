@@ -7,16 +7,53 @@ import {
   DEFAULT_LOCAL_ANON_KEY,
 } from '@/lib/supabase/constants';
 
+function sanitizeNextPath(rawNext: string | null): string {
+  if (!rawNext) return '/dashboard';
+  const trimmed = rawNext.trim();
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.includes('\\') ||
+    trimmed === '/'
+  ) {
+    return '/dashboard';
+  }
+  return trimmed;
+}
+
+function resolveActiveOrigin(request: NextRequest | Request, fallbackOrigin: string): string {
+  const forwardedHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();
+  if (forwardedHost) {
+    const rawProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+    const isLocalHost =
+      forwardedHost.startsWith('localhost') || forwardedHost.startsWith('127.0.0.1');
+    const proto = rawProto || (isLocalHost ? 'http' : 'https');
+    return `${proto}://${forwardedHost}`.replace(/\/+$/, '');
+  }
+  return fallbackOrigin.replace(/\/+$/, '');
+}
+
 export async function GET(request: NextRequest | Request) {
   const fallbackSiteUrl = getValidSiteUrl().toString();
   const urlObj = safeUrl(request.url, fallbackSiteUrl);
   const searchParams = urlObj.searchParams;
-  const origin = urlObj.origin || fallbackSiteUrl;
+  const activeOrigin = resolveActiveOrigin(request, urlObj.origin || fallbackSiteUrl);
+
+  const oauthError = searchParams.get('error');
+  const oauthErrorDescription = searchParams.get('error_description');
+  if (oauthError) {
+    const loginUrl = new URL('/login', activeOrigin);
+    loginUrl.searchParams.set('error', oauthError);
+    if (oauthErrorDescription) {
+      loginUrl.searchParams.set('error_description', oauthErrorDescription);
+    }
+    return NextResponse.redirect(loginUrl.toString());
+  }
 
   const code = searchParams.get('code');
-  const rawNext = searchParams.get('next') ?? searchParams.get('redirectTo');
-  // Ensure default destination is internal workspace dashboard
-  const next = !rawNext || rawNext === '/' ? '/dashboard' : rawNext;
+  const targetPath = sanitizeNextPath(
+    searchParams.get('next') ?? searchParams.get('redirectTo')
+  );
 
   if (code) {
     const rawSupabaseUrl =
@@ -57,11 +94,9 @@ export async function GET(request: NextRequest | Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || origin).replace(/\/+$/, '');
-      const targetPath = next.startsWith('/') ? next : `/${next}`;
-      const response = NextResponse.redirect(`${siteUrl}${targetPath}`);
+      const response = NextResponse.redirect(`${activeOrigin}${targetPath}`);
 
-      // Forward session cookies to response headers so redirect retains session across custom domains
+      // Forward session cookies to response headers on the active origin so SSR session is immediate
       cookiesToSetQueue.forEach(({ name, value, options }) => {
         response.cookies.set(name, value, options);
       });
@@ -71,5 +106,5 @@ export async function GET(request: NextRequest | Request) {
     console.error('Error exchanging code for session:', error);
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth-failed`);
+  return NextResponse.redirect(`${activeOrigin}/login?error=auth_callback_failed`);
 }

@@ -10,10 +10,15 @@ const LINING_NUMS_STYLE: React.CSSProperties = {
 };
 
 export function AttentionalDistributionCard({ summary }: AttentionalDistributionCardProps) {
-  const goalMinutes = summary.goalMinutes || 240;
-  const goalBottomPct = Math.min(92, Math.max(20, Math.round((goalMinutes / 300) * 100)));
+  const goalMinutes = Math.max(1, summary.goalMinutes || 240);
+  const tallestDayMinutes = Math.max(
+    0,
+    ...summary.weeklyBars.map((b) => (b.minutes !== null ? b.minutes : b.isQualified ? goalMinutes * 0.6 : 0))
+  );
+  const maxScale = Math.ceil(Math.max(goalMinutes * 1.25, tallestDayMinutes));
+  const goalBottomPct = Math.min(95, Math.max(5, Math.round((goalMinutes / maxScale) * 100)));
   const midGoalMinutes = Math.round(goalMinutes / 2);
-  const midBottomPct = Math.round(goalBottomPct / 2);
+  const midBottomPct = Math.round((midGoalMinutes / maxScale) * 100);
 
   return (
     <div
@@ -63,11 +68,22 @@ export function AttentionalDistributionCard({ summary }: AttentionalDistribution
         {/* Bars Container: 7 Columns */}
         <div className="grid grid-cols-7 h-full items-end gap-2 sm:gap-6 z-20">
           {summary.weeklyBars.map((bar) => {
-            const barHeight = Math.max(3, bar.percentOfGoal > 0 ? (bar.percentOfGoal * 0.8) : 2);
-            const isGoalMet = bar.percentOfGoal >= 100;
+            const effectiveMinutes =
+              bar.minutes !== null
+                ? bar.minutes
+                : bar.isQualified
+                ? goalMinutes * 0.6
+                : 0;
+            const barHeight =
+              effectiveMinutes > 0
+                ? Math.min(100, Math.max(3, Math.round((effectiveMinutes / maxScale) * 100)))
+                : 2;
+            const isGoalMet =
+              (bar.minutes !== null && bar.minutes >= goalMinutes) ||
+              bar.percentOfGoal >= 100;
             const barClass = bar.isToday
               ? 'bg-secondary ring-2 ring-secondary/25'
-              : bar.isQualified || bar.percentOfGoal > 0
+              : bar.isQualified || (bar.minutes !== null && bar.minutes > 0)
               ? 'bg-secondary/85 hover:bg-secondary'
               : bar.isFuture
               ? 'bg-surface-container'

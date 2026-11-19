@@ -83,7 +83,7 @@ export function ConsistencyMapCard({ habits, todayStr }: ConsistencyMapCardProps
       data-purpose="consistency-map-card"
     >
       <div className="flex items-center justify-between">
-        <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+        <h2 className="font-serif text-headline-sm font-semibold tracking-tight text-on-surface">
           Activity
         </h2>
         <span

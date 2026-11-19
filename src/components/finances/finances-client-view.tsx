@@ -250,11 +250,18 @@ export function FinancesClientView({
         className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end"
         data-purpose="workspace-header"
       >
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Expenses
-        </h1>
+        <div className="space-y-1">
+          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+            Expenses
+          </h1>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <div className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-on-surface shadow-xs">
+            <Calendar className="h-4 w-4 text-on-surface-variant" aria-hidden="true" />
+            <span className="font-sans text-body-sm font-medium">{monthHeading}</span>
+          </div>
+
           <button
             type="button"
             id="toggle-charts-btn"

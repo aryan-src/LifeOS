@@ -33,7 +33,7 @@ export function StreakRecordsCard({ habits }: StreakRecordsCardProps) {
       <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-secondary" aria-hidden="true" />
-          <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+          <h2 className="font-serif text-headline-sm font-semibold tracking-tight text-on-surface">
             Streaks
           </h2>
         </div>

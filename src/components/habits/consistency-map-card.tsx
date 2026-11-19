@@ -83,19 +83,14 @@ export function ConsistencyMapCard({ habits, todayStr }: ConsistencyMapCardProps
       data-purpose="consistency-map-card"
     >
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
-            Consistency Map
-          </h2>
-          <p className="font-sans text-body-sm text-on-surface-variant">
-            {activeMonthName} · All Protocols
-          </p>
-        </div>
+        <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+          Activity
+        </h2>
         <span
           className="rounded-md border border-outline-variant/40 bg-surface-container px-2 py-0.5 font-mono text-label-sm text-on-surface-variant"
           style={LINING_NUMS_STYLE}
         >
-          35 Days
+          35 days
         </span>
       </div>
 

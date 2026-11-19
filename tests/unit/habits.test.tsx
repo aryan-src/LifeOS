@@ -95,10 +95,10 @@ describe('Habits Module — Architecture & Consistency', () => {
         />
       );
 
-      // Section titles matching Stitch rebuild
-      expect(html).toContain("Today&#x27;s Execution");
-      expect(html).toContain('Consistency Map');
-      expect(html).toContain('Streak Records');
+      // Section titles matching Stitch rebuild with plain wording
+      expect(html).toContain('Today');
+      expect(html).toContain('Activity');
+      expect(html).toContain('Streaks');
 
       // Habit titles
       expect(html).toContain('Morning Sunlight &amp; Hydration');

@@ -263,20 +263,11 @@ export function HabitTrackerClient({
         </div>
       )}
 
-      {/* Stitch Page Header */}
+      {/* Habits Page Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
-            <Calendar className="h-3.5 w-3.5 text-secondary" aria-hidden="true" />
-            <span>{formatCalendarDate(todayStr, 'header')}</span>
-          </div>
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Habits
-          </h1>
-          <p className="font-sans text-body-sm text-on-surface-variant">
-            Daily routines, streaks, and 7-day consistency tracking.
-          </p>
-        </div>
+        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+          Habits
+        </h1>
 
         <button
           type="button"
@@ -296,14 +287,9 @@ export function HabitTrackerClient({
         {/* Left Column: Wide Habit Cards Stream (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-            <div>
-              <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
-                Today&apos;s Execution
-              </h2>
-              <p className="font-sans text-body-sm text-on-surface-variant">
-                Check off protocols as they are executed throughout your circadian rhythm.
-              </p>
-            </div>
+            <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+              Today
+            </h2>
             <div className="flex items-center gap-2">
               {summary.todayPercent === 100 && summary.activeCount > 0 && (
                 <Pill tone="secondary">

@@ -34,7 +34,7 @@ export function StreakRecordsCard({ habits }: StreakRecordsCardProps) {
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-secondary" aria-hidden="true" />
           <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
-            Streak Records
+            Streaks
           </h2>
         </div>
         <span
@@ -48,7 +48,7 @@ export function StreakRecordsCard({ habits }: StreakRecordsCardProps) {
       {ranked.length === 0 ? (
         <div className="py-6 text-center">
           <p className="font-sans text-body-sm text-on-surface-variant">
-            No active streaks recorded yet. Complete protocols daily to unlock streaks.
+            No active streaks yet. Complete habits daily to build streaks.
           </p>
         </div>
       ) : (

@@ -16,19 +16,19 @@ export function HabitSummaryCards({ summary }: HabitSummaryCardsProps) {
       data-purpose="habits-summary-row"
     >
       <StatCard
-        label="Active Protocols"
+        label="Active habits"
         value={summary.activeCount}
         unit={summary.activeCount === 1 ? 'habit' : 'habits'}
         icon={<ListChecks className="h-4 w-4" />}
         sublabel={
           summary.activeCount === 0
             ? 'Add your first daily habit'
-            : 'Tracked across daily check-ins'
+            : 'Tracked daily'
         }
       />
 
       <StatCard
-        label="Today's Status"
+        label="Today"
         value={`${summary.completedTodayCount}/${summary.activeCount}`}
         badge={
           summary.activeCount > 0
@@ -46,15 +46,15 @@ export function HabitSummaryCards({ summary }: HabitSummaryCardsProps) {
         icon={<CheckCircle2 className="h-4 w-4 text-secondary" />}
         sublabel={
           summary.activeCount === 0
-            ? 'No check-ins scheduled yet'
+            ? 'No check-ins scheduled'
             : summary.todayPercent === 100
-            ? 'All daily habits completed'
-            : `${summary.activeCount - summary.completedTodayCount} remaining today`
+            ? 'All completed'
+            : `${summary.activeCount - summary.completedTodayCount} remaining`
         }
       />
 
       <StatCard
-        label="Best Current Streak"
+        label="Best streak"
         value={`${summary.bestStreak}D`}
         icon={<Flame className="h-4 w-4 text-on-tertiary-container" />}
         sublabel={
@@ -67,13 +67,13 @@ export function HabitSummaryCards({ summary }: HabitSummaryCardsProps) {
       />
 
       <StatCard
-        label="7-Day Consistency"
+        label="Weekly pace"
         value={`${summary.weeklyAvgPercent}%`}
         icon={<TrendingUp className="h-4 w-4 text-secondary" />}
         sublabel={
           summary.totalWeeklyOpportunities > 0
             ? `${summary.totalWeeklyCompletions} of ${summary.totalWeeklyOpportunities} check-ins`
-            : 'No weekly data recorded yet'
+            : 'No data yet'
         }
       />
     </div>

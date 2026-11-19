@@ -15,7 +15,7 @@ function makeMockSummary(goalMinutes: number, todayMinutes: number | null = 60):
     totalSessions: 5,
     averageSessionMinutes: 60,
     qualifiedDaysThisWeek: 3,
-    calibration: { daysTracked: 10, targetDays: 14, percent: 71, isCalibrated: false },
+    calibration: { daysTracked: 10, targetDays: 14, percent: 71, isCalibrated: false, label: '10 of 14 days completed' },
     peakWindowText: 'Peak focus window around 10:00 AM',
     weekLabel: 'Week 47 · 2026',
     weeklyBars: [

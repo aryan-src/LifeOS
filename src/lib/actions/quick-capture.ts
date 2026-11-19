@@ -24,6 +24,7 @@ import type { ActionResponse } from '@/types/action.types';
 import type { Category } from '@/types/database.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { quickCaptureSchema, formatZodError } from '@/lib/validations';
+import { revalidatePath } from 'next/cache';
 
 export interface DispatchResult {
   target: 'transaction' | 'task' | 'note' | 'assignment' | 'habit';
@@ -75,6 +76,20 @@ export async function getQuickCaptureContext(): Promise<QuickCaptureContext> {
   }
 }
 
+function revalidateAffectedPages(target: string) {
+  try {
+    revalidatePath('/dashboard');
+    revalidatePath('/');
+    if (target === 'habit') revalidatePath('/habits');
+    else if (target === 'task') revalidatePath('/tasks');
+    else if (target === 'transaction' || target === 'expense') revalidatePath('/finances');
+    else if (target === 'assignment') revalidatePath('/assignments');
+    else if (target === 'note') revalidatePath('/notes');
+  } catch (_err) {
+    // Graceful in isolated test environments without Next cache context
+  }
+}
+
 /**
  * Route Dispatcher for Quick Capture Omnibar.
  * Saves ONLY through existing server actions (createTask, createTransaction,
@@ -115,6 +130,8 @@ export async function dispatchQuickCapture(
     if (!res.success || !res.data) {
       return { success: false, error: res.error || 'Failed to create task.' };
     }
+
+    revalidateAffectedPages('task');
 
     return {
       success: true,
@@ -163,6 +180,8 @@ export async function dispatchQuickCapture(
       return { success: false, error: res.error || 'Failed to create transaction.' };
     }
 
+    revalidateAffectedPages('transaction');
+
     return {
       success: true,
       data: {
@@ -192,6 +211,8 @@ export async function dispatchQuickCapture(
     if (!res.success || !res.data) {
       return { success: false, error: res.error || 'Failed to create assignment.' };
     }
+
+    revalidateAffectedPages('assignment');
 
     return {
       success: true,
@@ -232,6 +253,8 @@ export async function dispatchQuickCapture(
       return { success: false, error: res.error || 'Failed to check in habit.' };
     }
 
+    revalidateAffectedPages('habit');
+
     return {
       success: true,
       data: {
@@ -260,6 +283,8 @@ export async function dispatchQuickCapture(
   if (!res.success || !res.data) {
     return { success: false, error: res.error || 'Failed to save note.' };
   }
+
+  revalidateAffectedPages('note');
 
   return {
     success: true,
@@ -290,18 +315,22 @@ export async function undoQuickCapture(
     switch (target) {
       case 'task': {
         const res = await deleteTask(entityId);
+        if (res.success) revalidateAffectedPages('task');
         return { success: res.success, error: res.error, data: { undone: true } };
       }
       case 'transaction': {
         const res = await deleteTransaction(entityId);
+        if (res.success) revalidateAffectedPages('transaction');
         return { success: res.success, error: res.error, data: { undone: true } };
       }
       case 'note': {
         const res = await deleteNote(entityId);
+        if (res.success) revalidateAffectedPages('note');
         return { success: res.success, error: res.error, data: { undone: true } };
       }
       case 'assignment': {
         const res = await deleteAssignment(entityId);
+        if (res.success) revalidateAffectedPages('assignment');
         return { success: res.success, error: res.error, data: { undone: true } };
       }
       case 'habit': {
@@ -310,6 +339,7 @@ export async function undoQuickCapture(
           return { success: true, data: { undone: false } };
         }
         const res = await toggleHabitLog(entityId, extra.habitDate);
+        if (res.success) revalidateAffectedPages('habit');
         return { success: res.success, error: res.error, data: { undone: true } };
       }
       default:

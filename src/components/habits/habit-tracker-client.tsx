@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useOptimistic, useTransition, useMemo } from 'react';
+import React, { useState, useEffect, useOptimistic, useTransition, useMemo } from 'react';
 import type { HabitWithLog, WeeklyHabitStat } from '@/lib/actions/habits';
 import {
   toggleHabitLog,
@@ -55,6 +55,10 @@ export function HabitTrackerClient({
   const trailingDays = useMemo(() => getTrailingDays(7), []);
 
   const [habitsState, setHabitsState] = useState<HabitWithLog[]>(initialHabits);
+
+  useEffect(() => {
+    setHabitsState(initialHabits);
+  }, [initialHabits]);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isAddingOpen, setIsAddingOpen] = useState(false);

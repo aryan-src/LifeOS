@@ -32,7 +32,7 @@ export function AssignmentsSummaryCards({
       <div className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs relative overflow-hidden flex flex-col justify-between">
         <div className="flex items-start justify-between">
           <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">
-            Overdue Queue
+            Overdue
           </span>
           <span
             className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-label-sm font-semibold ${
@@ -73,7 +73,7 @@ export function AssignmentsSummaryCards({
             {dueThisWeekCount}
           </span>
           <span className="font-sans text-body-sm text-on-surface font-medium">
-            deliverables
+            assignments
           </span>
           <span className="font-mono text-label-sm text-on-surface-variant ml-auto">
             {completedThisWeekCount} completed

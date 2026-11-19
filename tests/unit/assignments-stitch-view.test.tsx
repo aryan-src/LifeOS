@@ -46,15 +46,15 @@ describe('Assignments Stitch Rebuild Suite', () => {
     expect(html).toContain('Assignments');
 
     // Switcher tabs
-    expect(html).toContain('By Due Date');
-    expect(html).toContain('By Course');
+    expect(html).toContain('Due date');
+    expect(html).toContain('Course');
     expect(html).toContain('Board');
     expect(html).toContain('List');
 
-    // Section headings in default By Due Date mode
+    // Section headings in default Due Date mode
     expect(html).toContain('Overdue');
     expect(html).toContain('Due This Week');
-    expect(html).toContain('Upcoming Later');
+    expect(html).toContain('Later');
 
     // Calm empty state when overdue is 0
     expect(html).toContain('No overdue assignments');

@@ -452,20 +452,11 @@ export function AssignmentsView({
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
-      {/* Stitch Assignments Page Header */}
+      {/* Assignments Page Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 md:flex-row md:items-end">
-        <div className="space-y-1.5">
-          <Pill tone="tertiary" dot={true} uppercase={true}>
-            Academics
-          </Pill>
-
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Assignments
-          </h1>
-          <p className="max-w-2xl font-sans text-body-sm leading-relaxed text-on-surface-variant">
-            Track coursework deadlines, prioritize pending submissions, and record grades across your active modules.
-          </p>
-        </div>
+        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+          Assignments
+        </h1>
 
         {/* View Mode & New Assignment Action Buttons */}
         <div className="flex flex-wrap items-center gap-3">
@@ -479,7 +470,7 @@ export function AssignmentsView({
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              <span>By Due Date</span>
+              <span>Due date</span>
             </button>
             <button
               type="button"
@@ -490,7 +481,7 @@ export function AssignmentsView({
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              <span>By Course</span>
+              <span>Course</span>
             </button>
             <button
               type="button"
@@ -528,10 +519,7 @@ export function AssignmentsView({
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-secondary px-4 font-sans text-body-sm font-medium text-on-secondary shadow-xs transition-opacity hover:opacity-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
           >
             <Plus size={15} aria-hidden="true" />
-            <span>New Assignment</span>
-            <kbd className="ml-1 hidden rounded bg-on-secondary/15 px-1.5 py-0.5 font-mono text-[10px] font-normal text-on-secondary sm:inline-block">
-              ⌘N
-            </kbd>
+            <span>New assignment</span>
           </button>
         </div>
       </header>
@@ -789,16 +777,16 @@ export function AssignmentsView({
           <section>
             <div className="flex items-center justify-between mb-4 px-1">
               <div className="flex items-center gap-2">
-                <h2 className="font-sans text-headline-sm text-on-surface font-semibold">Upcoming Later</h2>
+                <h2 className="font-sans text-headline-sm text-on-surface font-semibold">Later</h2>
                 <span className="font-mono text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
-                  {upcomingLaterAssignments.length} deliverables
+                  {upcomingLaterAssignments.length} {upcomingLaterAssignments.length === 1 ? 'assignment' : 'assignments'}
                 </span>
               </div>
             </div>
 
             {upcomingLaterAssignments.length === 0 ? (
               <div className="bg-surface-container-lowest rounded-xl p-6 shadow-xs border border-outline-variant/40 text-center">
-                <p className="font-sans text-body-sm text-on-surface-variant">No upcoming later deliverables scheduled.</p>
+                <p className="font-sans text-body-sm text-on-surface-variant">No later assignments scheduled.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

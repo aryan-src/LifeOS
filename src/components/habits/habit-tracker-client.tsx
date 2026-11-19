@@ -461,7 +461,7 @@ export function HabitTrackerClient({
         open={isAddingOpen}
         onClose={() => setIsAddingOpen(false)}
         title="Add New Habit"
-        description="Define a calm daily protocol you can check off in one tap."
+        description="Add a daily habit you can check off in one tap."
       >
         <form onSubmit={handleCreateHabit} className="space-y-4">
           <div className="space-y-1.5">

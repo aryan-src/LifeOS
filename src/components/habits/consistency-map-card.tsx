@@ -135,7 +135,7 @@ export function ConsistencyMapCard({ habits, todayStr }: ConsistencyMapCardProps
               tabIndex={0}
               className={`aspect-square rounded-[4px] transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 cursor-default ${bgClass} ${ringClass}`}
               title={`${d.label}: ${d.completedCount}/${d.totalCount} completed`}
-              aria-label={`${d.label}: ${d.completedCount} of ${d.totalCount} protocols completed`}
+              aria-label={`${d.label}: ${d.completedCount} of ${d.totalCount} habits completed`}
             />
           );
         })}

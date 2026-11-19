@@ -416,11 +416,6 @@ export function NoteCreateInput({
           </div>
         </div>
 
-        {/* Telemetry Indicator */}
-        <div className="hidden md:flex items-center gap-1.5 font-label-sm text-label-sm text-secondary">
-          <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-          <span>Vault active</span>
-        </div>
       </div>
 
       {/* Circular Action Button at Bottom-Right */}
@@ -432,7 +427,7 @@ export function NoteCreateInput({
         }}
         onClick={handleSubmit}
         disabled={!hasValue || isSubmitting}
-        aria-label="Deposit Spark"
+        aria-label="Save note"
         style={{ borderRadius: 9999 }}
         className={cn(
           'absolute right-2.5 bottom-2 z-[10] flex size-8 items-center justify-center transition-all duration-300 outline-none cursor-pointer',

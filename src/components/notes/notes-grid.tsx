@@ -136,7 +136,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           // ignore
         }
       } else {
-        setErrorMessage(res.error || 'Failed to save to vault.');
+        setErrorMessage(res.error || 'Failed to save note.');
       }
     } finally {
       setIsAppendingDeskPad(false);
@@ -427,7 +427,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
         {tagDistribution.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-label-sm text-on-surface-variant">
             <span className="uppercase tracking-wider text-[11px] font-medium text-outline">
-              Topic Allocation:
+              Topics:
             </span>
             {tagDistribution.map((item) => (
               <span
@@ -448,7 +448,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
           <EmptyState
             icon={<StickyNote className="h-6 w-6" />}
             title="No ideas captured yet."
-            description="Use the + New note button or Desk Jotter above to capture fleeting thoughts, references, and project concepts."
+            description="Use the + New note button or Quick notes above to write down thoughts and ideas."
             action={
               <button
                 type="button"
@@ -698,7 +698,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                     <div className="flex items-center justify-between w-full p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
                       <div className="space-y-0.5">
                         <div className="font-sans text-body-sm font-medium text-on-surface">
-                          Ready to execute on this note?
+                          Ready to start on this note?
                         </div>
                         <div className="font-sans text-body-sm text-on-surface-variant">
                           Promote this idea directly to an active Project with auto-extracted tasks.

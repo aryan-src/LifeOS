@@ -145,11 +145,17 @@ export async function updateProfile(
       ? prevStateOrFormData
       : new FormData();
 
+  const rawGoal =
+    formData.get('dailyFocusGoalMinutes') ||
+    formData.get('daily_focus_goal_minutes') ||
+    formData.get('focusGoalMinutes');
+
   const parsed = updateProfileSchema.safeParse({
     displayName: formData.get('displayName'),
     currencySymbol: formData.get('currencySymbol'),
     themePreference: formData.get('themePreference'),
     monthlyAllowanceTarget: formData.get('monthlyAllowanceTarget'),
+    dailyFocusGoalMinutes: rawGoal ? Number(rawGoal) : undefined,
   });
 
   if (!parsed.success) {
@@ -167,6 +173,7 @@ export async function updateProfile(
         currency_symbol: parsed.data.currencySymbol || '₹',
         theme_preference: parsed.data.themePreference || 'nordic',
         monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
+        daily_focus_goal_minutes: Number(parsed.data.dailyFocusGoalMinutes || 240),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -183,6 +190,9 @@ export async function updateProfile(
     currency_symbol: currencySymbol,
     theme_preference: themePreference,
     monthly_allowance_target: monthlyAllowanceTarget,
+    ...(parsed.data.dailyFocusGoalMinutes
+      ? { daily_focus_goal_minutes: parsed.data.dailyFocusGoalMinutes }
+      : {}),
   };
 
   let { data, error } = await supabase
@@ -193,6 +203,22 @@ export async function updateProfile(
     })
     .select()
     .maybeSingle();
+
+  if (error && (error as { code?: string }).code === '42703' && payload.daily_focus_goal_minutes) {
+    const { daily_focus_goal_minutes: _omitted, ...safePayload } = payload;
+    const retryRes = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        ...safePayload,
+      })
+      .select()
+      .maybeSingle();
+    if (!retryRes.error && retryRes.data) {
+      error = null;
+      data = { ...retryRes.data, daily_focus_goal_minutes: payload.daily_focus_goal_minutes };
+    }
+  }
 
   if (
     error &&

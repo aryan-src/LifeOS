@@ -17,6 +17,7 @@ import { Pill } from '@/components/ui/pill';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Modal } from '@/components/ui/modal';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   Check,
   Plus,
@@ -269,9 +270,7 @@ export function HabitTrackerClient({
 
       {/* Habits Page Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Habits
-        </h1>
+        <PageTitle>Habits</PageTitle>
 
         <button
           type="button"

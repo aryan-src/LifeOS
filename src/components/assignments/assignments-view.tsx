@@ -17,6 +17,7 @@ import { GradeModal } from './grade-modal';
 import { AssignmentsSummaryCards } from './assignments-summary-cards';
 import { computeAssignmentSummary } from '@/lib/assignments/derived';
 import { Pill } from '@/components/ui/pill';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   FOUR_COLUMNS,
   getAssignmentPriority,
@@ -453,10 +454,8 @@ export function AssignmentsView({
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
       {/* Assignments Page Header */}
-      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 md:flex-row md:items-end">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Assignments
-        </h1>
+      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 mb-2 md:flex-row md:items-end">
+        <PageTitle>Assignments</PageTitle>
 
         {/* View Mode & New Assignment Action Buttons */}
         <div className="flex flex-wrap items-center gap-3">

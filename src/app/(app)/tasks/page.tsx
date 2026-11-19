@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { TaskChecklist } from '@/components/tasks/task-checklist';
+import { PageTitle } from '@/components/ui/page-title';
 import { getTasks } from '@/lib/actions/tasks';
 import { getProjectOptions } from '@/lib/actions/projects-options';
 import { getProjectsWithMetrics } from '@/lib/actions/projects';
@@ -67,11 +68,10 @@ export default async function TasksPage(props: {
           </div>
         </div>
 
-        {/* Editorial Title & Quiet Subtext */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+        {/* Editorial Title & Quick Meter */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md border-b border-outline-variant/40 pb-5 mb-8">
           <div>
-            <h1 className="font-serif text-3xl text-textMain dark:text-zinc-100 font-semibold tracking-tight">Daily Tasks</h1>
-            <p className="text-xs text-textMuted dark:text-zinc-400 mt-1">Action items, priorities, and project-linked deliverables.</p>
+            <PageTitle>Daily Tasks</PageTitle>
           </div>
 
           {/* Quick Productivity Meter (Micro-visual inline SVG) */}

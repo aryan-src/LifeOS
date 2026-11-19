@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/card';
 import { Pill } from '@/components/ui/pill';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Modal } from '@/components/ui/modal';
+import { PageTitle } from '@/components/ui/page-title';
 import { DeskJotter } from './desk-jotter';
 import {
   togglePinNote,
@@ -315,10 +316,8 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
       )}
 
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/30">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Notes
-        </h1>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-outline-variant/40">
+        <PageTitle>Notes</PageTitle>
 
         <div className="flex items-center gap-2.5">
           <button
@@ -343,7 +342,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             <span>New note</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Desk Jotter Scratchpad Drawer */}
       {showJotter && (

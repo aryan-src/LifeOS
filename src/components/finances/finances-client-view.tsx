@@ -22,6 +22,7 @@ import {
   resolveSemanticCategoryColor,
 } from '@/lib/finances/derived';
 import { Pill } from '@/components/ui/pill';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -247,14 +248,10 @@ export function FinancesClientView({
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6 pb-8">
       {/* Expenses Page Header */}
       <header
-        className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end"
+        className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 mb-2 sm:flex-row sm:items-end"
         data-purpose="workspace-header"
       >
-        <div className="space-y-1">
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Expenses
-          </h1>
-        </div>
+        <PageTitle>Expenses</PageTitle>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest px-3 py-2 text-on-surface shadow-xs">

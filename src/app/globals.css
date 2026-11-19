@@ -1322,4 +1322,26 @@ html[data-transition-dir="to-light"]::view-transition-new(root) {
   filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
 }
 
+/* ==========================================================================
+   Shared Page Title Typography System
+   ========================================================================== */
+.text-page-title {
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: rgb(var(--color-on-surface));
+}
+
+.text-dashboard-greeting {
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(1.875rem, 1.25rem + 2.25vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: rgb(var(--color-on-surface));
+}
+
+
 

@@ -112,10 +112,10 @@ export function AssignmentsSummaryCards({
           ) : (
             <>
               <div className="font-sans text-headline-sm text-on-surface font-semibold">
-                Clear Horizon
+                No upcoming deadlines
               </div>
               <div className="font-sans text-body-sm text-on-surface-variant mt-0.5">
-                No pending deadlines scheduled
+                All caught up with coursework
               </div>
             </>
           )}

@@ -716,7 +716,7 @@ export function AssignmentsView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-sans text-body-md text-on-surface font-medium">No overdue assignments</p>
-                  <p className="font-sans text-body-sm text-on-surface-variant">You are fully caught up with all deadlines across enrolled disciplines.</p>
+                  <p className="font-sans text-body-sm text-on-surface-variant">You are fully caught up with all coursework and assignments.</p>
                 </div>
               </div>
             ) : (

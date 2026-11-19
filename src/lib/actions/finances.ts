@@ -371,7 +371,11 @@ export async function createTransaction(
     payee_or_source: parsed.data.payeeOrSource || null,
   };
 
-  const { error } = await supabase.from('transactions').insert(newTx);
+  const { data: insertedTx, error } = await supabase
+    .from('transactions')
+    .insert(newTx)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     console.error('Error creating transaction:', error);
@@ -388,7 +392,7 @@ export async function createTransaction(
     } catch {
       // Invariant: outside Next.js request context (e.g. tests)
     }
-  return { success: true };
+  return { success: true, data: { id: insertedTx?.id } };
 }
 
 /**

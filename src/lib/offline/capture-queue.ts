@@ -1,12 +1,13 @@
 /**
  * Offline Quick-Capture Queue Manager
  * Persists queued captures in localStorage when offline or network drops,
- * and flushes them in FIFO order upon network reconnection.
+ * and flushes them in FIFO order upon network reconnection without duplicates.
  */
 
 import type { ActionResponse } from '@/types/action.types';
 
 export const QUEUE_STORAGE_KEY = 'lifeos_offline_capture_queue';
+export const SYNCED_STORAGE_KEY = 'lifeos_synced_capture_ids';
 
 export interface QueuedCaptureItem {
   id: string;
@@ -22,6 +23,14 @@ export function isBrowserOffline(): boolean {
     return false;
   }
   return !navigator.onLine;
+}
+
+/**
+ * Format count as plain text: "N waiting to sync"
+ */
+export function formatWaitingToSync(count: number): string {
+  if (count <= 0) return '';
+  return `${count} waiting to sync`;
 }
 
 /**
@@ -41,11 +50,46 @@ export function getQueuedCaptures(): QueuedCaptureItem[] {
 }
 
 /**
- * Appends a new rawInput to the offline queue.
+ * Retrieves set of IDs that have already been saved to prevent duplicates on replay.
  */
-export function queueCapture(rawInput: string): QueuedCaptureItem {
+export function getSyncedCaptureIds(): Set<string> {
+  if (typeof localStorage === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(SYNCED_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Marks a capture ID as synced.
+ */
+export function markCaptureAsSynced(id: string): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    const set = getSyncedCaptureIds();
+    set.add(id);
+    localStorage.setItem(SYNCED_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Appends a new rawInput to the offline queue with a client-generated ID.
+ */
+export function queueCapture(rawInput: string, customId?: string): QueuedCaptureItem {
+  const generatedId =
+    customId ||
+    (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `queue-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+
   const item: QueuedCaptureItem = {
-    id: `queue-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: generatedId,
     rawInput: rawInput.trim(),
     createdAt: new Date().toISOString(),
   };
@@ -78,12 +122,13 @@ export function removeQueuedCapture(id: string): void {
 }
 
 /**
- * Clears the entire offline queue.
+ * Clears the entire offline queue and synced ids set.
  */
 export function clearQueuedCaptures(): void {
   if (typeof localStorage === 'undefined') return;
   try {
     localStorage.removeItem(QUEUE_STORAGE_KEY);
+    localStorage.removeItem(SYNCED_STORAGE_KEY);
   } catch (err) {
     console.error('Failed to clear offline capture queue:', err);
   }
@@ -91,6 +136,7 @@ export function clearQueuedCaptures(): void {
 
 /**
  * Flushes all queued items in FIFO order using the provided server action dispatcher.
+ * Never creates duplicates: skips any item ID that was already marked as synced.
  * Returns the count of successfully synced and failed items.
  */
 export async function flushQueuedCaptures(
@@ -103,11 +149,20 @@ export async function flushQueuedCaptures(
 
   let synced = 0;
   let failed = 0;
+  const syncedIds = getSyncedCaptureIds();
 
   for (const item of queue) {
+    if (syncedIds.has(item.id)) {
+      // Already saved on server: skip re-dispatching to prevent duplicate record
+      removeQueuedCapture(item.id);
+      synced++;
+      continue;
+    }
+
     try {
       const res = await dispatcher(item.rawInput);
       if (res.success) {
+        markCaptureAsSynced(item.id);
         removeQueuedCapture(item.id);
         synced++;
       } else {

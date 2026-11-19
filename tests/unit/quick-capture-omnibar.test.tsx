@@ -124,6 +124,22 @@ describe('QuickCaptureOmnibar Component', () => {
     expect(html).toContain('value="Meditate 10 mins"');
   });
 
+  it('disables submit button and renders zero toasts for empty or whitespace input', () => {
+    // Empty input
+    useUIStore.setState({ isQuickCaptureOpen: true, quickCaptureInitialValue: '' });
+    const htmlEmpty = renderToString(<QuickCaptureOmnibar />);
+    expect(htmlEmpty).toContain('disabled=""');
+    expect(htmlEmpty).not.toContain('data-testid="undo-toast"');
+    expect(htmlEmpty).not.toContain('data-testid="feedback-toast"');
+
+    // Whitespace-only input
+    useUIStore.setState({ isQuickCaptureOpen: true, quickCaptureInitialValue: '   ' });
+    const htmlSpace = renderToString(<QuickCaptureOmnibar />);
+    expect(htmlSpace).toContain('disabled=""');
+    expect(htmlSpace).not.toContain('data-testid="undo-toast"');
+    expect(htmlSpace).not.toContain('data-testid="feedback-toast"');
+  });
+
   it('contains zero fancy words across all rendered UI elements', () => {
     useUIStore.setState({
       isQuickCaptureOpen: true,

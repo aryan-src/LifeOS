@@ -431,25 +431,21 @@ export function parseQuickCapture(
     .trim();
 
   // 8. Currency / Transaction Detection
-  // Matches:
-  // a) Symbol with possible signs: ([+-]?)\s*([$€£¥₹]|(?:rs\.?|inr))\s*([+-]?)\s*(\d+(?:\.\d{1,2})?)
-  // b) Trailing code: ([+-]?)\s*(\d+(?:\.\d{1,2})?)\s*(USD|EUR|GBP|INR)
-  // c) Leading plain number followed by words (e.g. "450 coffee", "120 book")
-  // d) Trailing plain number preceded by words (e.g. "coffee 450", "metro 60")
+  // Strictly requires currency indicator (₹, $, €, £, ¥, "rs", "inr", "USD", etc.)
+  // OR explicit "e " prefix. Bare numbers alone (e.g. "Finish chapter 5", "2 apples")
+  // MUST NOT become expenses.
   let isExpense = explicitTarget === 'transaction';
   let isIncome = false;
   let parsedAmount: number | null = null;
   let remainingExpenseText = workingText;
 
+  // Leading currency symbol or prefix "rs" / "inr" (e.g. "₹450 coffee", "rs 350 lunch", "$25 domain")
   const symbolRegex = /([+-]?)\s*([$€£¥₹]|(?:rs\.?|inr))\s*([+-]?)\s*(\d+(?:\.\d{1,2})?)/i;
-  const trailingCodeRegex = /([+-]?)\s*(\d+(?:\.\d{1,2})?)\s+(USD|EUR|GBP|INR)\b/i;
-  const leadingNumRegex = /^(\d+(?:\.\d{1,2})?)\s+([a-zA-Z].*)$/;
-  const trailingNumRegex = /^(.*?[a-zA-Z].*?)\s+(\d+(?:\.\d{1,2})?)$/;
+  // Trailing currency symbol or code (e.g. "coffee 450 rs", "50 USD dinner", "coffee 450rs")
+  const trailingCodeRegex = /([+-]?)\s*(\d+(?:\.\d{1,2})?)\s*(?:([$€£¥₹])|(?:rs\.?|inr)|(?:usd|eur|gbp))\b/i;
 
   const symbolMatch = workingText.match(symbolRegex);
   const trailingCodeMatch = workingText.match(trailingCodeRegex);
-  const leadingNumMatch = workingText.match(leadingNumRegex);
-  const trailingNumMatch = workingText.match(trailingNumRegex);
 
   if (symbolMatch) {
     isExpense = true;
@@ -463,15 +459,8 @@ export function parseQuickCapture(
     isIncome = trailingCodeMatch[1] === '+';
     parsedAmount = parseFloat(trailingCodeMatch[2]);
     remainingExpenseText = workingText.replace(trailingCodeMatch[0], ' ').replace(/\s+/g, ' ').trim();
-  } else if (leadingNumMatch && !explicitTarget) {
-    isExpense = true;
-    parsedAmount = parseFloat(leadingNumMatch[1]);
-    remainingExpenseText = leadingNumMatch[2].trim();
-  } else if (trailingNumMatch && !explicitTarget) {
-    isExpense = true;
-    parsedAmount = parseFloat(trailingNumMatch[2]);
-    remainingExpenseText = trailingNumMatch[1].trim();
   } else if (isExpense) {
+    // Input starts with "e " shortcut: any number counts as money
     const anyNumMatch = workingText.match(/(\d+(?:\.\d{1,2})?)/);
     if (anyNumMatch) {
       parsedAmount = parseFloat(anyNumMatch[1]);

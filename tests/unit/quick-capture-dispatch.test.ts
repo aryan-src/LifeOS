@@ -82,7 +82,7 @@ describe('Quick Capture Server Action Dispatch & 5-Second Undo', () => {
     expect(deleteTask).toHaveBeenCalledWith('task-uuid-123');
   });
 
-  it('dispatches expense creation strictly via createTransaction with returned ID', async () => {
+  it('dispatches expense creation strictly via createTransaction with exact positive amount and expense type', async () => {
     vi.mocked(createTransaction).mockResolvedValueOnce({
       success: true,
       data: { id: 'tx-uuid-456' },
@@ -93,6 +93,15 @@ describe('Quick Capture Server Action Dispatch & 5-Second Undo', () => {
     expect(res.data?.target).toBe('transaction');
     expect(res.data?.entityId).toBe('tx-uuid-456');
     expect(createTransaction).toHaveBeenCalledTimes(1);
+
+    // Exact argument verification: createTransaction receives (null, FormData)
+    const passedPrevState = vi.mocked(createTransaction).mock.calls[0][0];
+    const passedFormData = vi.mocked(createTransaction).mock.calls[0][1] as FormData;
+    expect(passedPrevState).toBeNull();
+    // Confirmed: positive amount '450' with type 'expense', matching add-expense form
+    expect(passedFormData.get('amount')).toBe('450');
+    expect(passedFormData.get('type')).toBe('expense');
+    expect(passedFormData.get('description')).toBe('cold brew coffee');
 
     // Verify Undo uses exact returned ID
     vi.mocked(deleteTransaction).mockResolvedValueOnce({ success: true });
@@ -197,10 +206,37 @@ describe('Quick Capture Server Action Dispatch & 5-Second Undo', () => {
     expect(res.success).toBe(true);
     expect(res.data?.target).toBe('habit');
     expect(res.data?.message).toBe('Already done');
+    expect(res.data?.extra?.habitChanged).toBe(false);
     expect(toggleHabitLog).not.toHaveBeenCalled();
 
     // Undo should do nothing because nothing changed
     const undoRes = await undoQuickCapture('habit', 'h-read', res.data?.extra);
+    expect(undoRes.success).toBe(true);
+    expect(undoRes.data?.undone).toBe(false);
+    expect(toggleHabitLog).not.toHaveBeenCalled();
+  });
+
+  it('rejects empty or whitespace-only input at server-action level without calling any mutation', async () => {
+    const resEmpty = await dispatchQuickCapture('');
+    expect(resEmpty.success).toBe(false);
+    expect(resEmpty.error).toContain('cannot be empty');
+
+    const resWhitespace = await dispatchQuickCapture('    ');
+    expect(resWhitespace.success).toBe(false);
+    expect(resWhitespace.error).toContain('cannot be empty');
+
+    expect(createTask).not.toHaveBeenCalled();
+    expect(createTransaction).not.toHaveBeenCalled();
+    expect(createNote).not.toHaveBeenCalled();
+    expect(createAssignment).not.toHaveBeenCalled();
+    expect(toggleHabitLog).not.toHaveBeenCalled();
+  });
+
+  it('strictly verifies undo does nothing when habit was Already done (habitChanged is false)', async () => {
+    const undoRes = await undoQuickCapture('habit', 'h-already-done', {
+      habitDate: '2026-11-19',
+      habitChanged: false,
+    });
     expect(undoRes.success).toBe(true);
     expect(undoRes.data?.undone).toBe(false);
     expect(toggleHabitLog).not.toHaveBeenCalled();

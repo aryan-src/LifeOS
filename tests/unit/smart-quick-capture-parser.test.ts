@@ -53,54 +53,83 @@ describe('Smart Quick Capture Pure Parser Module', () => {
     expect(res.payload.content!.length).toBe(500);
   });
 
-  // 3. Leading & Trailing Amounts (Expenses)
-  it('parses leading rupee symbol as expense with correct amount', () => {
-    const res = parseQuickCapture('₹450 cold brew coffee', mockContext);
-    expect(res.target).toBe('transaction');
-    expect(res.chips.type).toBe('expense');
-    expect(Math.abs(res.payload.amount!)).toBe(450);
-    expect(res.payload.title).toContain('cold brew coffee');
-    expect(res.chips.amount).toBe(450);
-  });
+  // 3. Bare Numbers vs Valid Currency Numbers
+  describe('Bare Numbers vs Valid Currency Numbers (Rule 2)', () => {
+    it('does NOT treat "Finish chapter 5" as an expense (bare number)', () => {
+      const res = parseQuickCapture('Finish chapter 5', mockContext);
+      expect(res.target).not.toBe('transaction');
+      expect(res.chips.type).not.toBe('expense');
+      expect(res.target).toBe('note');
+    });
 
-  it('parses trailing plain amount as expense', () => {
-    const res = parseQuickCapture('dinner with team 850', mockContext);
-    expect(res.target).toBe('transaction');
-    expect(res.chips.type).toBe('expense');
-    expect(Math.abs(res.payload.amount!)).toBe(850);
-    expect(res.chips.amount).toBe(850);
-    expect(res.payload.title).toBe('dinner with team');
-  });
+    it('does NOT treat "2 apples" as an expense (bare leading number)', () => {
+      const res = parseQuickCapture('2 apples', mockContext);
+      expect(res.target).not.toBe('transaction');
+      expect(res.chips.type).not.toBe('expense');
+      expect(res.target).toBe('note');
+    });
 
-  it('parses leading plain number followed by words as expense', () => {
-    const res = parseQuickCapture('120 subway ticket', mockContext);
-    expect(res.target).toBe('transaction');
-    expect(res.chips.type).toBe('expense');
-    expect(Math.abs(res.payload.amount!)).toBe(120);
-    expect(res.chips.amount).toBe(120);
-    expect(res.payload.title).toBe('subway ticket');
-  });
+    it('does NOT treat "Read 20 pages" as an expense', () => {
+      // With mockContext, "Read 20 pages" matches habit
+      const res = parseQuickCapture('Read 20 pages', mockContext);
+      expect(res.target).toBe('habit');
+      expect(res.chips.type).not.toBe('expense');
+    });
 
-  it('parses "rs" and "rs." prefix as expense', () => {
-    const res1 = parseQuickCapture('rs 350 lunch', mockContext);
-    expect(res1.target).toBe('transaction');
-    expect(res1.chips.type).toBe('expense');
-    expect(Math.abs(res1.payload.amount!)).toBe(350);
-    expect(res1.chips.amount).toBe(350);
+    it('does NOT treat "todo: Finish chapter 5" as an expense', () => {
+      const res = parseQuickCapture('todo: Finish chapter 5', mockContext);
+      expect(res.target).toBe('task');
+      expect(res.chips.type).not.toBe('expense');
+    });
 
-    const res2 = parseQuickCapture('rs. 99 coffee', mockContext);
-    expect(res2.target).toBe('transaction');
-    expect(res2.chips.type).toBe('expense');
-    expect(Math.abs(res2.payload.amount!)).toBe(99);
-    expect(res2.chips.amount).toBe(99);
-  });
+    it('does NOT treat trailing bare number "dinner with team 850" as an expense', () => {
+      const res = parseQuickCapture('dinner with team 850', mockContext);
+      expect(res.target).not.toBe('transaction');
+      expect(res.chips.type).not.toBe('expense');
+    });
 
-  it('parses dollar and euro currency symbols', () => {
-    const res = parseQuickCapture('$25 domain renewal', mockContext);
-    expect(res.target).toBe('transaction');
-    expect(res.chips.type).toBe('expense');
-    expect(Math.abs(res.payload.amount!)).toBe(25);
-    expect(res.chips.amount).toBe(25);
+    it('parses "₹450 coffee" as expense with valid rupee currency symbol', () => {
+      const res = parseQuickCapture('₹450 coffee', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(450);
+      expect(Math.abs(res.payload.amount!)).toBe(450);
+      expect(res.chips.title).toBe('coffee');
+    });
+
+    it('parses "coffee 450 rs" as expense with trailing rs', () => {
+      const res = parseQuickCapture('coffee 450 rs', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(450);
+      expect(Math.abs(res.payload.amount!)).toBe(450);
+      expect(res.chips.title).toBe('coffee');
+    });
+
+    it('parses "e 450 coffee" as expense via "e " prefix shortcut', () => {
+      const res = parseQuickCapture('e 450 coffee', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(450);
+      expect(Math.abs(res.payload.amount!)).toBe(450);
+      expect(res.chips.title).toBe('coffee');
+    });
+
+    it('parses "rs 350 lunch" as expense with prefix rs', () => {
+      const res = parseQuickCapture('rs 350 lunch', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(350);
+      expect(Math.abs(res.payload.amount!)).toBe(350);
+    });
+
+    it('parses "$25 domain renewal" as expense with dollar sign', () => {
+      const res = parseQuickCapture('$25 domain renewal', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(25);
+      expect(Math.abs(res.payload.amount!)).toBe(25);
+    });
   });
 
   // 4. Category Guessing
@@ -111,7 +140,7 @@ describe('Smart Quick Capture Pure Parser Module', () => {
   });
 
   it('guesses category for transit (metro / bus)', () => {
-    const res = parseQuickCapture('metro card recharge 200', mockContext);
+    const res = parseQuickCapture('₹200 metro card recharge', mockContext);
     expect(res.chips.category).toBe('Transit');
     expect(res.chips.categoryId).toBe('cat-transit');
   });

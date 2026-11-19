@@ -476,7 +476,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
           </Card>
 
           {/* Card 4: Your data */}
-          <Card as="section" id="sectionVault" padding="lg" surface="lowest" className="space-y-4">
+          <Card as="section" id="sectionData" padding="lg" surface="lowest" className="space-y-4">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-secondary">
                 <Download className="h-4 w-4" aria-hidden="true" />

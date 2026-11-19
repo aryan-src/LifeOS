@@ -54,7 +54,7 @@ describe('Stitch Settings Screen (BentoSettings)', () => {
     expect(html).toContain('Dark');
     expect(html).toContain('System');
 
-    expect(html).toContain('id="sectionVault"');
+    expect(html).toContain('id="sectionData"');
     expect(html).toContain('Notes Markdown Archive');
     expect(html).toContain('Spreadsheet Tables');
     expect(html).toContain('Full Account Snapshot');

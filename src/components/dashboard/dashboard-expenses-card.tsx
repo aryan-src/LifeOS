@@ -197,13 +197,13 @@ export function DashboardExpensesCard({
 
       <div className="flex items-center justify-between border-t border-outline-variant/30 pt-3">
         <span className="font-mono text-label-sm text-outline">
-          {categoryTotal === 0 ? 'No outflows recorded this cycle' : 'Category distribution'}
+          {categoryTotal === 0 ? 'No expenses recorded this month' : 'Category distribution'}
         </span>
         <Link
           href="/finances"
           className="font-mono text-label-sm font-medium text-secondary hover:underline"
         >
-          Open Ledger →
+          Expenses →
         </Link>
       </div>
     </Card>

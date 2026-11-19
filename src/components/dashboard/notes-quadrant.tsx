@@ -35,7 +35,7 @@ export async function NotesQuadrant() {
         {/* Notes Stream */}
         <div className="flex flex-col gap-2.5">
           {recentNotes.length === 0 ? (
-            <p className="text-body-sm text-outline dark:text-zinc-500 py-8 text-center font-normal">No ideas recorded in the vault yet.</p>
+            <p className="text-body-sm text-outline dark:text-zinc-500 py-8 text-center font-normal">No notes created yet.</p>
           ) : (
             recentNotes.map((note) => {
               const tags: string[] = Array.isArray(note.tags) ? (note.tags as string[]) : [];

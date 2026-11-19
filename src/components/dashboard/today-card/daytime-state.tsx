@@ -8,7 +8,7 @@ import type { TodayTaskItem } from './morning-state';
 import { EmptyState } from '@/components/ui/empty-state';
 
 const DURATION_PRESETS = [
-  { minutes: 15, label: '15m Sprint' },
+  { minutes: 15, label: '15m Focus' },
   { minutes: 25, label: '25m Pomodoro' },
   { minutes: 50, label: '50m Deep Block' },
   { minutes: 90, label: '90m Deep Work' },
@@ -84,7 +84,7 @@ export function DaytimeState({
               ? activeTimer.taskTitle
               : topPriorityTask
               ? topPriorityTask.title
-              : 'Pick a focus task from your queue'}
+              : 'Pick a task to focus on'}
           </p>
 
           {isTimerLive ? (

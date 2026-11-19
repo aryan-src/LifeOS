@@ -247,7 +247,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Life Score');
     expect(html).toContain('Daily Streak');
     expect(html).toContain('Time Focused');
-    expect(html).toContain('Pocket Ledger');
+    expect(html).toContain('Pocket money');
     expect(html).toContain('data-purpose="today-card"');
     expect(html).toContain('Today');
     expect(html).not.toContain('Today Card Slot');

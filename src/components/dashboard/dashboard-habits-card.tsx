@@ -55,7 +55,7 @@ export function DashboardHabitsCard({
           compact={true}
           icon={<CheckCircle2 className="h-5 w-5" />}
           title="No habits tracked yet."
-          description="Create daily protocols to build recurring momentum."
+          description="Create habits to build momentum."
           action={
             <Link
               href="/habits"

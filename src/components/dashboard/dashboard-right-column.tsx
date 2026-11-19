@@ -70,7 +70,7 @@ export function DashboardRightColumn({
           <EmptyState
             compact={true}
             title="No pending submissions"
-            description="All academic deliverables and coursework are up to date."
+            description="All coursework and assignments are up to date."
           />
         ) : (
           <div className="space-y-2">

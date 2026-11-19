@@ -198,7 +198,7 @@ export function DashboardRightColumn({
           {recentIdeas.length === 0 ? (
             <EmptyState
               compact={true}
-              title="No ideas recorded yet."
+              title="No ideas yet."
               description="Jot a quick thought and it routes directly to your Notes stream."
             />
           ) : (

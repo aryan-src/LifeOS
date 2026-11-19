@@ -6,7 +6,7 @@ import { getProjectOptions } from '@/lib/actions/projects-options';
 
 export const metadata: Metadata = {
   title: 'Finances',
-  description: 'Pocket money tracker and allowance-aware ledger for students and builders.',
+  description: 'Pocket money and expense tracker for students and builders.',
 };
 
 export const dynamic = 'force-dynamic';

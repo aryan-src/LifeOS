@@ -162,14 +162,14 @@ export function AllowanceHeroCard({
       : activeTab === 'this_week'
       ? displayPercent <= 65
         ? 'Under expected weekly runway'
-        : 'Approaching weekly runway ceiling'
+        : 'Approaching weekly limit'
       : activeTab === 'all'
       ? displayPercent <= 65
         ? 'Within all-time target limits'
-        : 'Approaching all-time budget ceiling'
+        : 'Approaching budget limit'
       : displayPercent <= 65
       ? 'Under expected daily runway'
-      : 'Approaching monthly runway ceiling';
+      : 'Approaching monthly limit';
 
   const limitSubtitle =
     activeTab === 'today'
@@ -179,28 +179,28 @@ export function AllowanceHeroCard({
       : activeTab === 'this_week'
       ? `Safe to spend: ~${currencySymbol}${formatNumber(Math.round(Math.max(0, displayRemaining / Math.max(1, daysLeftInWeek))))} / day`
       : activeTab === 'all'
-      ? `Recorded across ${displayCyclesCount} ${displayCyclesCount === 1 ? 'cycle' : 'cycles'}`
+      ? `Recorded across ${displayCyclesCount} ${displayCyclesCount === 1 ? 'month' : 'months'}`
       : `Safe to spend: ~${currencySymbol}${formatNumber(Math.round(safeDailyBudget > 0 ? safeDailyBudget : daysLeftInMonth > 0 ? Math.max(0, displayRemaining / daysLeftInMonth) : 0))} / day`;
 
   const cycleCountdownLabel =
     activeTab === 'today'
-      ? 'Current 24h cycle'
+      ? 'Today'
       : activeTab === 'this_week'
       ? `${daysLeftInWeek} days left this week`
       : activeTab === 'all'
       ? `${displayCyclesCount} recorded ${
-          displayCyclesCount === 1 ? 'cycle' : 'cycles'
+          displayCyclesCount === 1 ? 'month' : 'months'
         }`
-      : `${daysLeftInMonth} days left this cycle`;
+      : `${daysLeftInMonth} days left this month`;
 
   const outflowSubtitle =
     activeTab === 'today'
-      ? "Today's categorical outflow"
+      ? "Today's category spending"
       : activeTab === 'this_week'
-      ? "This week's categorical outflow"
+      ? "This week's category spending"
       : activeTab === 'all'
-      ? 'All-time categorical outflow'
-      : `${currentMonthName} categorical outflow`;
+      ? 'All-time category spending'
+      : `${currentMonthName} category spending`;
 
   const hasExpensesInPeriod = activeCategories.length > 0;
 
@@ -498,7 +498,7 @@ export function AllowanceHeroCard({
           currencySymbol={currencySymbol}
           safeDailyBudget={safeDailyBudget > 0 ? safeDailyBudget : 110.18}
           headerTitle="7-Day Spending Pattern"
-          headerSubtitle="Daily disbursements vs safe ceiling"
+          headerSubtitle="Daily spending vs safe limit"
           legendLabel="Recorded Expense"
           barColor="#c25e43"
           showBenchmarkBanner={true}

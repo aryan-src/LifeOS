@@ -125,7 +125,7 @@ export function PocketMoneyWidget({
             </div>
             <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-zinc-400 font-medium pt-0.5 truncate">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-zinc-600 shrink-0" />
-              <span className="truncate">{todaySpent === 0 ? 'No outflows today' : 'Recorded today'}</span>
+              <span className="truncate">{todaySpent === 0 ? 'No spending today' : 'Recorded today'}</span>
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export function PocketMoneyWidget({
             href="/finances"
             className="text-stone-400 hover:text-stone-800 dark:hover:text-zinc-200 transition-colors font-medium text-[11px]"
           >
-            Ledger →
+            Expenses →
           </Link>
           <Link
             href="/finances"

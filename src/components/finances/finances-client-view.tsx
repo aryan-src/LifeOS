@@ -113,7 +113,7 @@ export function FinancesClientView({
       setErrorMessage(res.error || 'Failed to delete transaction.');
       setTransactions(initialTransactions);
     } else {
-      showToast('Transaction removed from ledger', 'success');
+      showToast('Expense removed', 'success');
     }
     return res;
   };
@@ -365,7 +365,7 @@ export function FinancesClientView({
               className="flex items-center gap-1.5 font-mono text-label-sm text-on-surface-variant transition-colors hover:text-on-surface cursor-pointer"
             >
               <TableIcon className="h-4 w-4" aria-hidden="true" />
-              <span>Switch to Ledger Table</span>
+              <span>Table view</span>
             </button>
           </div>
           <StudentExpenseFeed
@@ -386,7 +386,7 @@ export function FinancesClientView({
         categories={categories}
         projects={projects}
         onSuccess={() => {
-          showToast('Expense recorded to ledger', 'success');
+          showToast('Expense recorded', 'success');
         }}
         onOptimisticCreate={handleOptimisticCreate}
         currencySymbol={currencySymbol}

@@ -334,7 +334,7 @@ export const getFinancialAnalytics = cache(async (): Promise<FinancialAnalytics>
 export async function createTransaction(
   prevState: unknown,
   formData: FormData
-): Promise<ActionResponse> {
+): Promise<ActionResponse<{ id?: string }>> {
   const parsed = createTransactionSchema.safeParse({
     description: formData.get('description'),
     amount: formData.get('amount'),

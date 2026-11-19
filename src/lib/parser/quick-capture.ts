@@ -7,6 +7,7 @@
  */
 
 export type CaptureTarget = 'transaction' | 'task' | 'note' | 'assignment' | 'habit';
+export type ChipType = 'transaction' | 'expense' | 'task' | 'note' | 'assignment' | 'habit';
 
 export interface QuickCaptureCategory {
   id: string;
@@ -34,7 +35,7 @@ export interface QuickCaptureContext {
 }
 
 export interface ParsedChips {
-  type: CaptureTarget;
+  type: ChipType;
   title: string;
   date?: string | null;
   priority?: 1 | 2 | 3 | 4;
@@ -74,6 +75,34 @@ export interface ParsedCapture {
   chips: ParsedChips;
 }
 
+const FORMATTER_CACHE = new Map<
+  string,
+  { dateFormatter: Intl.DateTimeFormat; weekdayFormatter: Intl.DateTimeFormat }
+>();
+
+function getFormattersForTimezone(timezone: string) {
+  let cached = FORMATTER_CACHE.get(timezone);
+  if (!cached) {
+    cached = {
+      dateFormatter: new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }),
+      weekdayFormatter: new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        weekday: 'short',
+      }),
+    };
+    FORMATTER_CACHE.set(timezone, cached);
+  }
+  return cached;
+}
+
+// Pre-warm default timezone formatter
+getFormattersForTimezone('Asia/Kolkata');
+
 /**
  * Returns date components (year, month, day, dateString YYYY-MM-DD, weekday 0-6)
  * evaluated in the target IANA timezone (defaults to Asia/Kolkata).
@@ -82,22 +111,13 @@ export function getDateInTimezone(
   date: Date = new Date(),
   timezone: string = 'Asia/Kolkata'
 ): { year: number; month: number; day: number; dateString: string; weekday: number } {
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  const dateString = formatter.format(date);
+  const { dateFormatter, weekdayFormatter } = getFormattersForTimezone(timezone);
+  const dateString = dateFormatter.format(date);
   const [yStr, mStr, dStr] = dateString.split('-');
   const year = parseInt(yStr, 10);
   const month = parseInt(mStr, 10);
   const day = parseInt(dStr, 10);
 
-  const weekdayFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    weekday: 'short',
-  });
   const shortWeekday = weekdayFormatter.format(date).toLowerCase();
   const weekdayMap: Record<string, number> = {
     sun: 0,

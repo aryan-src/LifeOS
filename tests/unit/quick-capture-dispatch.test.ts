@@ -58,6 +58,7 @@ describe('Quick Capture Server Action Dispatch & 5-Second Undo', () => {
         title: 'Submit report',
         due_date: '2026-11-20',
         priority: 3,
+        sort_order: 0,
         user_id: 'user-1',
         is_completed: false,
         created_at: new Date().toISOString(),

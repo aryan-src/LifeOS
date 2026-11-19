@@ -49,7 +49,8 @@ describe('Smart Quick Capture Pure Parser Module', () => {
     const longText = 'A'.repeat(500);
     const res = parseQuickCapture(longText, mockContext);
     expect(res.target).toBe('note');
-    expect(res.payload.content.length).toBe(500);
+    expect(res.payload.content).toBeDefined();
+    expect(res.payload.content!.length).toBe(500);
   });
 
   // 3. Leading & Trailing Amounts (Expenses)

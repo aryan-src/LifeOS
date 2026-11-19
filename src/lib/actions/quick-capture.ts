@@ -12,14 +12,16 @@ import {
   deleteAssignment,
 } from '@/lib/actions/assignments';
 import { toggleHabitLog, getHabits } from '@/lib/actions/habits';
-import { getProjectOptions } from '@/lib/actions/projects-options';
-import { getProfile } from '@/lib/actions/profile';
+import { getProjectOptions, type ProjectOption } from '@/lib/actions/projects-options';
+import { getUserProfile } from '@/lib/actions/profile';
 import {
   parseQuickCapture,
   type ParsedChips,
   type QuickCaptureContext,
+  type ChipType,
 } from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
+import type { Category } from '@/types/database.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
 import { quickCaptureSchema, formatZodError } from '@/lib/validations';
 
@@ -41,10 +43,10 @@ export interface DispatchResult {
 export async function getQuickCaptureContext(): Promise<QuickCaptureContext> {
   try {
     const [categories, projects, habitsRes, profileRes] = await Promise.all([
-      getCategories().catch(() => []),
-      getProjectOptions().catch(() => []),
+      getCategories().catch(() => [] as Category[]),
+      getProjectOptions().catch(() => [] as ProjectOption[]),
       getHabits().catch(() => ({ habits: [] })),
-      getProfile().catch(() => null),
+      getUserProfile().catch(() => null),
     ]);
 
     const timezone =
@@ -54,8 +56,8 @@ export async function getQuickCaptureContext(): Promise<QuickCaptureContext> {
 
     return {
       timezone,
-      categories: (categories || []).map((c) => ({ id: c.id, name: c.name })),
-      projects: (projects || []).map((p) => ({ id: p.id, title: p.title, slug: p.slug })),
+      categories: (categories || []).map((c: Category) => ({ id: c.id, name: c.name })),
+      projects: (projects || []).map((p: ProjectOption) => ({ id: p.id, title: p.title, slug: p.slug })),
       habits: (habitsRes.habits || []).map((h) => ({
         id: h.id,
         title: h.title,
@@ -92,7 +94,7 @@ export async function dispatchQuickCapture(
   const trimmed = validation.data.rawInput;
   const parsed = parseQuickCapture(trimmed, context || {});
   const effectiveChips: ParsedChips = customChips || parsed.chips;
-  const target = effectiveChips.type || parsed.target;
+  const target: ChipType = effectiveChips.type || parsed.target || 'note';
 
   // 1. Task Dispatch
   if (target === 'task') {

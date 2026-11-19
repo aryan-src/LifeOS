@@ -41,7 +41,7 @@ export function CalibrationHorizonCard({
       <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 border border-outline-variant/20">
         <div className="flex items-center justify-between">
           <span className="font-sans text-label-sm text-on-surface-variant font-medium">
-            Baseline ({daysTracked} / {calibration.targetDays} days)
+            Progress ({daysTracked} / {calibration.targetDays} days)
           </span>
           <span className="font-mono text-label-md text-on-surface font-semibold tabular-nums">
             {calibration.percent}%
@@ -56,7 +56,7 @@ export function CalibrationHorizonCard({
           aria-valuenow={calibration.percent}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="14-day focus baseline"
+          aria-label="14-day focus progress"
         >
           {Array.from({ length: 14 }).map((_, i) => (
             <div

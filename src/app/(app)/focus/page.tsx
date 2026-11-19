@@ -6,7 +6,7 @@ import { FocusHistoryView } from '@/components/focus/focus-history/focus-history
 
 export const metadata: Metadata = {
   title: 'Focus History',
-  description: 'Weekly cognitive telemetry and deep work sessions',
+  description: 'Weekly focus time and deep work sessions',
 };
 
 export const dynamic = 'force-dynamic';

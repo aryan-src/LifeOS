@@ -13,8 +13,8 @@ describe('WhereDidMoneyGoCard Component', () => {
     );
     const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
 
-    expect(cleanHtml).toContain('Where Did Money Go?');
-    expect(cleanHtml).toContain('No categorical outflows yet');
+    expect(cleanHtml).toContain('Categories');
+    expect(cleanHtml).toContain('No expenses yet');
     expect(cleanHtml).not.toContain('3,788.00');
     expect(cleanHtml).not.toContain('Discipline Index');
     expect(cleanHtml).not.toContain('#f59e0b');
@@ -36,9 +36,9 @@ describe('WhereDidMoneyGoCard Component', () => {
     );
     const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
 
-    expect(cleanHtml).toContain('100% Accounted');
+    expect(cleanHtml).toContain('Categories');
     expect(cleanHtml).toContain('₹2,000.00 spent');
-    expect(cleanHtml).toContain('2 Categories active');
+    expect(cleanHtml).toContain('2 categories');
     expect(cleanHtml).toContain('Books &amp; Supplies');
     expect(cleanHtml).toContain('60%');
     expect(cleanHtml).toContain('₹1,200.00');

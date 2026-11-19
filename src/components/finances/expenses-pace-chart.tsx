@@ -38,14 +38,9 @@ export function ExpensesPaceChart({
       data-purpose="expenses-pace-chart"
     >
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-            7-Day Spending Pattern
-          </h2>
-          <p className="mt-0.5 font-sans text-body-sm text-on-surface-variant">
-            Daily outflows benchmarked against safe daily pace
-          </p>
-        </div>
+        <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
+          Daily spending
+        </h2>
 
         <Pill tone="secondary" dot={true}>
           {paceStatusText}

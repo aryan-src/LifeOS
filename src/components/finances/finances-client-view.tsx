@@ -245,27 +245,14 @@ export function FinancesClientView({
 
   return (
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6 pb-8">
-      {/* Stitch Expenses Header */}
+      {/* Expenses Page Header */}
       <header
         className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end"
         data-purpose="workspace-header"
       >
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <Pill tone="neutral" dot={true}>
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar className="h-3 w-3 text-secondary" aria-hidden="true" />
-                {monthHeading}
-              </span>
-            </Pill>
-          </div>
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Expenses
-          </h1>
-          <p className="font-sans text-body-sm text-on-surface-variant">
-            Allowance-aware ledger, daily safe pace, and category distribution.
-          </p>
-        </div>
+        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+          Expenses
+        </h1>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <button
@@ -279,7 +266,7 @@ export function FinancesClientView({
             }`}
           >
             <BarChart2 className="h-4 w-4" aria-hidden="true" />
-            <span>{isChartsVisible ? 'Hide Charts' : 'Show Charts'}</span>
+            <span>{isChartsVisible ? 'Hide charts' : 'Show charts'}</span>
           </button>
 
           <button

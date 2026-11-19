@@ -23,18 +23,18 @@ describe('Stitch Expenses Summary & Pace Chart', () => {
     weeklyDays,
   });
 
-  it('renders ExpensesSummaryRow with utilization %, remaining balance, safe daily pace, and 75% cap notch', () => {
+  it('renders ExpensesSummaryRow with utilization %, remaining balance, safe daily pace, and 75% limit notch', () => {
     const html = renderToString(
       <ExpensesSummaryRow summary={summary} currencySymbol="₹" />
     );
 
-    expect(html).toContain('Total Spent');
+    expect(html).toContain('Spent');
     expect(html).toContain('73.6% utilized');
-    expect(html).toContain('Remaining Balance');
+    expect(html).toContain('Left');
     expect(html).toContain('14 days left');
-    expect(html).toContain('Safe Daily Pace');
+    expect(html).toContain('Safe pace');
     expect(html).toContain('47');
-    expect(html).toContain('75% Cap');
+    expect(html).toContain('75% Limit');
     expect(html).not.toContain('#f59e0b');
     expect(html).not.toContain('italic');
   });
@@ -49,7 +49,7 @@ describe('Stitch Expenses Summary & Pace Chart', () => {
       />
     ).replace(/<!--.*?-->/g, '');
 
-    expect(html).toContain('7-Day Spending Pattern');
+    expect(html).toContain('Daily spending');
     expect(html).toContain('6 of 7 days below pace');
     expect(html).toContain('47 safe pace');
     expect(html).toContain('Today');

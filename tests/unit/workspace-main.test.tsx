@@ -14,14 +14,14 @@ describe('WorkspaceMain dynamic footer clearance', () => {
     });
   });
 
-  it('renders with pb-24 clearance when footer dock is visible', () => {
+  it('renders with pb-32 sm:pb-36 clearance when footer dock is visible', () => {
     const html = renderToString(
       <WorkspaceMain>
         <div>Dashboard Content</div>
       </WorkspaceMain>
     );
 
-    expect(html).toContain('pb-24');
+    expect(html).toContain('pb-32 sm:pb-36');
     expect(html).toContain('transition-[padding-bottom] duration-300 ease-out');
     expect(html).not.toContain('pb-6 md:pb-8');
   });
@@ -36,7 +36,7 @@ describe('WorkspaceMain dynamic footer clearance', () => {
     );
 
     expect(html).toContain('pb-6 md:pb-8');
-    expect(html).not.toContain('pb-24');
+    expect(html).not.toContain('pb-32');
     expect(html).toContain('transition-[padding-bottom] duration-300 ease-out');
   });
 
@@ -50,6 +50,6 @@ describe('WorkspaceMain dynamic footer clearance', () => {
     );
 
     expect(html).toContain('pb-6 md:pb-8');
-    expect(html).not.toContain('pb-24');
+    expect(html).not.toContain('pb-32');
   });
 });

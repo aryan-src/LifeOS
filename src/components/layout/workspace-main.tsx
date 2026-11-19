@@ -35,7 +35,7 @@ export function WorkspaceMain({
   return (
     <main
       className={`w-full max-w-none flex-1 flex flex-col transition-[padding-bottom] duration-300 ease-out ${
-        isDockHidden ? 'pb-6 md:pb-8' : 'pb-24'
+        isDockHidden ? 'pb-6 md:pb-8' : 'pb-32 sm:pb-36'
       } ${className}`}
     >
       {children}

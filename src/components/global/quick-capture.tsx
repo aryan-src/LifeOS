@@ -20,6 +20,7 @@ import {
   isBrowserOffline,
   flushQueuedCaptures,
   getQueuedCaptures,
+  QUEUE_STORAGE_KEY,
 } from '@/lib/offline/capture-queue';
 import {
   Command,
@@ -146,14 +147,22 @@ export function QuickCaptureOmnibar({
       setQueuedCount(getQueuedCaptures().length);
     };
 
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === QUEUE_STORAGE_KEY || e.key === null) {
+        setQueuedCount(getQueuedCaptures().length);
+      }
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('storage', handleStorage);
 
     syncOfflineQueue();
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('storage', handleStorage);
     };
   }, [syncOfflineQueue]);
 

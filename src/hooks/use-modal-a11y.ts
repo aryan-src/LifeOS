@@ -66,6 +66,12 @@ export function useModalA11y(
         const firstElement = focusable[0];
         const lastElement = focusable[focusable.length - 1];
 
+        if (!modalRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          firstElement.focus();
+          return;
+        }
+
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             e.preventDefault();

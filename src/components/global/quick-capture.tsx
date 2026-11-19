@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/lib/store/use-ui-store';
+import { useModalA11y } from '@/hooks/use-modal-a11y';
 import {
   parseQuickCapture,
   type ParsedChips,
@@ -32,7 +33,7 @@ import {
   Calendar,
   Tag,
   Folder,
-  DollarSign,
+  IndianRupee,
   Flag,
 } from 'lucide-react';
 
@@ -49,6 +50,7 @@ export function QuickCaptureOmnibar({
   const [isOffline, setIsOffline] = useState(false);
   const [queuedCount, setQueuedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   // Context: Categories, Projects, Habits, Profile Timezone
   const [context, setContext] = useState<QuickCaptureContext>(() => ({
@@ -93,6 +95,22 @@ export function QuickCaptureOmnibar({
   useEffect(() => {
     return () => clearUndoTimer();
   }, [clearUndoTimer]);
+
+  // Modal close handler: resets state, clears timers, and triggers router.refresh if items were saved
+  const handleClose = useCallback(() => {
+    clearUndoTimer();
+    setInput('');
+    setChipOverrides({});
+    setFeedback(null);
+    if (undoState) {
+      router.refresh();
+    }
+    setUndoState(null);
+    closeQuickCapture();
+  }, [clearUndoTimer, closeQuickCapture, undoState, router]);
+
+  // Accessible modal focus trapping, Escape handling, and focus restoration
+  useModalA11y(isQuickCaptureOpen, handleClose, dialogRef);
 
   // Monitor network online/offline status & queue size
   const syncOfflineQueue = useCallback(async () => {
@@ -139,32 +157,23 @@ export function QuickCaptureOmnibar({
     };
   }, [syncOfflineQueue]);
 
-  // Global Keyboard Shortcuts (Cmd+K / Ctrl+K and Escape)
+  // Global Keyboard Shortcuts (Cmd+K / Ctrl+K to toggle; Escape is handled by useModalA11y)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         const store = useUIStore.getState();
         if (store.isQuickCaptureOpen) {
-          clearUndoTimer();
-          store.closeQuickCapture();
+          handleClose();
         } else {
           store.openQuickCapture();
         }
-      } else if (e.key === 'Escape' && isQuickCaptureOpen) {
-        e.preventDefault();
-        clearUndoTimer();
-        setInput('');
-        setChipOverrides({});
-        setFeedback(null);
-        setUndoState(null);
-        closeQuickCapture();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isQuickCaptureOpen, closeQuickCapture, clearUndoTimer]);
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [handleClose]);
 
   // Focus Management when opened
   useEffect(() => {
@@ -249,6 +258,7 @@ export function QuickCaptureOmnibar({
           setFeedback({ type: 'success', message: 'Already done' });
           setTimeout(() => {
             closeQuickCapture();
+            router.refresh();
             setFeedback(null);
           }, 1500);
           return;
@@ -269,6 +279,7 @@ export function QuickCaptureOmnibar({
               clearUndoTimer();
               setUndoState(null);
               closeQuickCapture();
+              router.refresh();
               return 0;
             }
             return prev - 1;
@@ -324,8 +335,8 @@ export function QuickCaptureOmnibar({
         setUndoState(null);
         router.refresh();
         setTimeout(() => {
-          closeQuickCapture();
-          setFeedback(null);
+          handleClose();
+          router.refresh();
         }, 1200);
       } else {
         setFeedback({ type: 'error', message: res.error || 'Failed to undo.' });
@@ -344,12 +355,17 @@ export function QuickCaptureOmnibar({
       className="fixed inset-0 z-[100] flex items-start justify-center pt-20 sm:pt-28 bg-on-surface/25 dark:bg-black/60 backdrop-blur-xs px-4 transition-opacity animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          clearUndoTimer();
-          closeQuickCapture();
+          handleClose();
         }
       }}
     >
-      <div className="w-full max-w-2xl rounded-2xl border border-outline-variant/40 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 transition-colors duration-200">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Quick Capture"
+        className="w-full max-w-2xl rounded-2xl border border-outline-variant/40 dark:border-zinc-800/80 bg-surface-container-lowest dark:bg-zinc-900 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5 transition-colors duration-200"
+      >
         <form onSubmit={handleSubmit} className="relative">
           {/* Main Input Row */}
           <div className="flex items-center px-4 py-3.5 border-b border-outline-variant/20 dark:border-zinc-800/60">
@@ -487,7 +503,7 @@ export function QuickCaptureOmnibar({
               {/* Amount Chip (for expenses) */}
               {(effectiveChips.type === 'transaction' || effectiveChips.type === 'expense') && (
                 <div className="inline-flex items-center gap-1 bg-surface-container dark:bg-zinc-800 rounded-md border border-outline-variant/30 dark:border-zinc-700/60 px-2 py-0.5 text-xs text-on-surface dark:text-zinc-200 focus-within:ring-1 focus-within:ring-primary w-24">
-                  <DollarSign size={12} className="text-outline dark:text-zinc-400 shrink-0" />
+                  <IndianRupee size={12} className="text-outline dark:text-zinc-400 shrink-0" />
                   <input
                     data-testid="chip-amount"
                     type="number"

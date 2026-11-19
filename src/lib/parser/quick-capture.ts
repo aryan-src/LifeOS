@@ -439,10 +439,36 @@ export function parseQuickCapture(
   let parsedAmount: number | null = null;
   let remainingExpenseText = workingText;
 
-  // Leading currency symbol or prefix "rs" / "inr" (e.g. "₹450 coffee", "rs 350 lunch", "$25 domain")
-  const symbolRegex = /([+-]?)\s*([$€£¥₹]|(?:rs\.?|inr))\s*([+-]?)\s*(\d+(?:\.\d{1,2})?)/i;
-  // Trailing currency symbol or code (e.g. "coffee 450 rs", "50 USD dinner", "coffee 450rs")
-  const trailingCodeRegex = /([+-]?)\s*(\d+(?:\.\d{1,2})?)\s*(?:([$€£¥₹])|(?:rs\.?|inr)|(?:usd|eur|gbp))\b/i;
+  // Valid money number pattern:
+  // 1. Indian numbering grouping: e.g. 1,20,000 or 12,34,567
+  // 2. Standard thousands grouping: e.g. 1,200 or 12,000 or 1,200,000
+  // 3. Plain decimal or integer: e.g. 450.50 or 450
+  // Note: Invalid groupings like "1,5" or "1,20" do NOT match as grouped numbers.
+  const MONEY_NUMBER_PATTERN =
+    '(?:\\d{1,2}(?:,\\d{2})+,\\d{3}|\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?';
+
+  const parseMoneyAmount = (raw: string): number => {
+    return parseFloat(raw.replace(/,/g, ''));
+  };
+
+  const cleanExpenseTitle = (text: string): string => {
+    return text
+      .replace(/^[\s,.:;/-]+/, '')
+      .replace(/[\s,.:;/-]+$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  // Leading currency symbol or prefix "rs" / "inr" (e.g. "₹450 coffee", "rs 350 lunch", "$25 domain", "₹1,200 rent")
+  const symbolRegex = new RegExp(
+    `([+-]?)\\s*([$€£¥₹]|(?:rs\\.?|inr))\\s*([+-]?)\\s*(${MONEY_NUMBER_PATTERN})`,
+    'i'
+  );
+  // Trailing currency symbol or code (e.g. "coffee 450 rs", "50 USD dinner", "coffee 450rs", "rent 1,200 rs")
+  const trailingCodeRegex = new RegExp(
+    `([+-]?)\\s*(${MONEY_NUMBER_PATTERN})\\s*(?:([$€£¥₹])|(?:rs\\.?|inr)|(?:usd|eur|gbp))\\b`,
+    'i'
+  );
 
   const symbolMatch = workingText.match(symbolRegex);
   const trailingCodeMatch = workingText.match(trailingCodeRegex);
@@ -452,19 +478,19 @@ export function parseQuickCapture(
     const hasMinus = symbolMatch[1] === '-' || symbolMatch[3] === '-';
     const hasPlus = symbolMatch[1] === '+' || symbolMatch[3] === '+';
     isIncome = hasPlus && !hasMinus;
-    parsedAmount = parseFloat(symbolMatch[4]);
-    remainingExpenseText = workingText.replace(symbolMatch[0], ' ').replace(/\s+/g, ' ').trim();
+    parsedAmount = parseMoneyAmount(symbolMatch[4]);
+    remainingExpenseText = cleanExpenseTitle(workingText.replace(symbolMatch[0], ' '));
   } else if (trailingCodeMatch) {
     isExpense = true;
     isIncome = trailingCodeMatch[1] === '+';
-    parsedAmount = parseFloat(trailingCodeMatch[2]);
-    remainingExpenseText = workingText.replace(trailingCodeMatch[0], ' ').replace(/\s+/g, ' ').trim();
+    parsedAmount = parseMoneyAmount(trailingCodeMatch[2]);
+    remainingExpenseText = cleanExpenseTitle(workingText.replace(trailingCodeMatch[0], ' '));
   } else if (isExpense) {
     // Input starts with "e " shortcut: any number counts as money
-    const anyNumMatch = workingText.match(/(\d+(?:\.\d{1,2})?)/);
+    const anyNumMatch = workingText.match(new RegExp(`(${MONEY_NUMBER_PATTERN})`));
     if (anyNumMatch) {
-      parsedAmount = parseFloat(anyNumMatch[1]);
-      remainingExpenseText = workingText.replace(anyNumMatch[0], ' ').replace(/\s+/g, ' ').trim();
+      parsedAmount = parseMoneyAmount(anyNumMatch[1]);
+      remainingExpenseText = cleanExpenseTitle(workingText.replace(anyNumMatch[0], ' '));
     }
   }
 
@@ -557,7 +583,7 @@ export function parseQuickCapture(
   if (isExpense && parsedAmount !== null) {
     const description = remainingExpenseText || 'Quick Capture Transaction';
     const signedAmount = isIncome ? parsedAmount : -parsedAmount;
-    const summaryPill = `Transaction: ${isIncome ? '+' : '-'}$${parsedAmount.toFixed(2)} (${description})${
+    const summaryPill = `Transaction: ${isIncome ? '+' : '-'}₹${parsedAmount.toFixed(2)} (${description})${
       projectSlug ? ` | #${projectSlug}` : ''
     }`;
 

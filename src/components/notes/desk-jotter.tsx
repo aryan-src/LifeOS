@@ -255,9 +255,6 @@ export function DeskJotter({
 
         {/* Right Action: Deposit into Vault Button */}
         <div className="flex items-center gap-2">
-          <span className="hidden sm:inline-block text-[10px] font-mono text-outline">
-            ⌘↵ deposit
-          </span>
           <button
             type="button"
             onMouseDown={(e) => {

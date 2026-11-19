@@ -316,14 +316,9 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
 
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/30">
-        <div className="flex items-baseline gap-3">
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Notes
-          </h1>
-          <span className="font-mono text-label-sm text-on-surface-variant font-medium">
-            {totalCount} {totalCount === 1 ? 'entry' : 'entries'} archival index
-          </span>
-        </div>
+        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+          Notes
+        </h1>
 
         <div className="flex items-center gap-2.5">
           <button
@@ -336,7 +331,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             }`}
           >
             <PenSquare className="h-4 w-4" aria-hidden="true" />
-            <span>{showJotter ? 'Hide Jotter' : 'Desk Jotter'}</span>
+            <span>{showJotter ? 'Hide quick notes' : 'Quick notes'}</span>
           </button>
 
           <button
@@ -345,7 +340,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-on-secondary hover:bg-secondary/90 transition-all font-sans text-body-sm font-medium shadow-xs active:scale-95 cursor-pointer"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
-            <span>+ New note</span>
+            <span>New note</span>
           </button>
         </div>
       </div>
@@ -535,9 +530,6 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                             {formatNoteDate(note.updated_at || note.created_at)}
                           </span>
                         </div>
-                        <span className="font-mono text-label-sm text-on-surface-variant tabular-nums">
-                          {wordCount} words
-                        </span>
                       </div>
                     </article>
                   );
@@ -549,7 +541,6 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
             <div className="flex flex-col gap-2.5">
               {streamNotes.map((note) => {
                 const isSelected = selectedNoteId === note.id;
-                const wordCount = countWords(note.content);
                 const firstTag =
                   Array.isArray(note.tags) && note.tags[0]
                     ? String(note.tags[0])
@@ -589,9 +580,6 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                           {formatNoteDate(note.updated_at || note.created_at)}
                         </span>
                       </div>
-                      <span className="font-mono text-label-sm text-on-surface-variant tabular-nums">
-                        {wordCount} words
-                      </span>
                     </div>
                   </article>
                 );
@@ -679,12 +667,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-on-surface-variant font-mono text-label-sm">
-                    <span className="text-on-surface font-medium">Aryan</span>
-                    <span className="w-1 h-1 rounded-full bg-outline-variant" />
                     <span>{formatNoteDate(selectedNote.updated_at || selectedNote.created_at)}</span>
-                    <span className="w-1 h-1 rounded-full bg-outline-variant" />
-                    <span className="tabular-nums">{countWords(selectedNote.content)} words</span>
-                    <span className="w-1 h-1 rounded-full bg-outline-variant" />
                     <div className="flex items-center gap-1.5">
                       {Array.isArray(selectedNote.tags) &&
                         selectedNote.tags.map((t, idx) => (

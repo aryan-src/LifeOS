@@ -61,7 +61,6 @@ describe('Notes Two-Pane Master-Detail View', () => {
 
     // Right pane detail inspector
     expect(html).toContain('Formal axioms regarding acyclic connected subgraphs');
-    expect(html).toContain('words');
     expect(html).toContain('Ready to execute on this note?');
   });
 

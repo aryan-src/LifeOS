@@ -22,39 +22,25 @@ export function FocusHistoryView({ data, recentSessions = [] }: FocusHistoryView
       className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:px-8 py-8 pb-32"
       data-purpose="focus-history-page"
     >
-      {/* Top Breadcrumb & Page Identification */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-on-surface-variant font-mono text-label-sm uppercase tracking-wider">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1 hover:text-on-surface cursor-pointer transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-outline-variant/50 bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            aria-label="Back to dashboard"
           >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Dashboard</span>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           </Link>
-          <span>/</span>
-          <span className="text-on-surface font-semibold">Focus History</span>
+          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+            Focus History
+          </h1>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-              Focus History
-            </h1>
-            <p className="font-sans text-body-md text-on-surface-variant mt-1">
-              Weekly cognitive telemetry and deep work sessions
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start md:self-auto font-mono text-label-sm">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-surface-container text-on-surface-variant">
-              <span className="w-2 h-2 rounded-full bg-secondary" aria-hidden="true" />
-              <span>{summary.totalSessions > 0 ? 'Telemetry Synced' : 'Ready to track'}</span>
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-lg bg-surface-container text-on-surface-variant tabular-nums">
-              {summary.weekLabel}
-            </span>
-          </div>
+        <div className="flex items-center gap-2 font-mono text-label-sm">
+          <span className="inline-flex items-center px-3 py-1 rounded-lg bg-surface-container text-on-surface-variant tabular-nums">
+            {summary.weekLabel}
+          </span>
         </div>
       </div>
 

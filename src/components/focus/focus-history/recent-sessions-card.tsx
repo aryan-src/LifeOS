@@ -70,16 +70,11 @@ export function RecentSessionsCard({ sessions }: RecentSessionsCardProps) {
       data-purpose="recent-sessions-card"
     >
       <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
-        <div>
-          <h2 className="text-xl font-normal font-serif text-on-surface">
-            Recent Sessions
-          </h2>
-          <p className="font-sans text-body-sm text-on-surface-variant mt-0.5">
-            Chronological audit of logged focus allocations
-          </p>
-        </div>
+        <h2 className="text-xl font-normal font-serif text-on-surface">
+          Recent Sessions
+        </h2>
         <span className="font-mono text-label-sm text-on-surface-variant tabular-nums px-2.5 py-1 bg-surface-container rounded-lg">
-          {`${sessions.length} ${sessions.length === 1 ? 'Entry' : 'Entries'}`}
+          {`${sessions.length} ${sessions.length === 1 ? 'session' : 'sessions'}`}
         </span>
       </div>
 

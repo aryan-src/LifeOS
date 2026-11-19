@@ -100,14 +100,14 @@ describe('Focus History Recent Sessions Table', () => {
     ).replace(/<!--.*?-->/g, '');
 
     expect(html).toContain('Recent Sessions');
-    expect(html).toContain('2 Entries');
+    expect(html).toContain('2 sessions');
     expect(html).toContain('Systems Architecture Review');
     expect(html).toContain('CS 201 Binary Trees Lab');
     expect(html).toContain('50m');
     expect(html).toContain('25m');
     expect(html).toContain('Deep work');
     expect(html).toContain('Pomodoro');
-    expect(html).toContain('Calibration Horizon');
+    expect(html).toContain('Insights');
     expect(html).toContain('10 of 14 days completed');
   });
 
@@ -117,7 +117,7 @@ describe('Focus History Recent Sessions Table', () => {
     ).replace(/<!--.*?-->/g, '');
 
     expect(html).toContain('Recent Sessions');
-    expect(html).toContain('0 Entries');
+    expect(html).toContain('0 sessions');
     expect(html).toContain('No focus sessions recorded yet');
     expect(html).toContain('Start a focus session');
   });

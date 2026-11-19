@@ -26,14 +26,14 @@ export function CalibrationHorizonCard({
         </div>
         <div>
           <h3 className="text-lg font-normal font-serif text-on-surface">
-            Calibration Horizon
+            Insights
           </h3>
           <span
             className={`font-mono text-label-sm uppercase tracking-wide font-medium ${
               isCalibrated ? 'text-secondary' : 'text-on-tertiary-container'
             }`}
           >
-            {isCalibrated ? 'Calibrated' : 'Accumulating'}
+            {isCalibrated ? 'Active' : 'In progress'}
           </span>
         </div>
       </div>
@@ -41,7 +41,7 @@ export function CalibrationHorizonCard({
       <div className="bg-surface-container-low rounded-xl p-4 flex flex-col gap-3 border border-outline-variant/20">
         <div className="flex items-center justify-between">
           <span className="font-sans text-label-sm text-on-surface-variant font-medium">
-            Data Calibration Baseline ({daysTracked} / {calibration.targetDays} days)
+            Baseline ({daysTracked} / {calibration.targetDays} days)
           </span>
           <span className="font-mono text-label-md text-on-surface font-semibold tabular-nums">
             {calibration.percent}%
@@ -56,7 +56,7 @@ export function CalibrationHorizonCard({
           aria-valuenow={calibration.percent}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="14-day focus calibration baseline"
+          aria-label="14-day focus baseline"
         >
           {Array.from({ length: 14 }).map((_, i) => (
             <div
@@ -71,18 +71,18 @@ export function CalibrationHorizonCard({
         <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant">
           <span>{daysTracked} of 14 days completed</span>
           <span className="tabular-nums">
-            {remainingDays > 0 ? `${remainingDays} remaining` : 'Optimal baseline reached'}
+            {remainingDays > 0 ? `${remainingDays} left` : 'Goal reached'}
           </span>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <p className="font-sans text-body-md text-on-surface font-medium">
-          {isCalibrated ? 'Insights active' : 'Insights unlock after 14 days of focus data'}
+          {isCalibrated ? 'Peak focus window' : 'Insights unlock after 14 days'}
         </p>
         <p className="font-sans text-body-sm text-on-surface-variant leading-relaxed">
           {peakWindowText ||
-            'Pattern analysis algorithms and focus window velocity trends are compiling from continuous session intervals. The analytical pipeline locks until sufficient statistical significance is established.'}
+            'Log 14 days of focus sessions to discover your peak focus hours and daily patterns.'}
         </p>
       </div>
 
@@ -90,12 +90,12 @@ export function CalibrationHorizonCard({
         {isCalibrated ? (
           <>
             <CheckCircle2 className="h-4 w-4 text-secondary" aria-hidden="true" />
-            <span className="text-secondary font-medium">Adaptive models active</span>
+            <span className="text-secondary font-medium">Personal insights ready</span>
           </>
         ) : (
           <>
             <Lock className="h-4 w-4" aria-hidden="true" />
-            <span>Adaptive models dormant until Day 14</span>
+            <span>Unlocks after 14 days</span>
           </>
         )}
       </div>

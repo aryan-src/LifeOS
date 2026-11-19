@@ -10,47 +10,53 @@ const LINING_NUMS_STYLE: React.CSSProperties = {
 };
 
 export function AttentionalDistributionCard({ summary }: AttentionalDistributionCardProps) {
+  const goalMinutes = summary.goalMinutes || 240;
+  const goalBottomPct = Math.min(92, Math.max(20, Math.round((goalMinutes / 300) * 100)));
+  const midGoalMinutes = Math.round(goalMinutes / 2);
+  const midBottomPct = Math.round(goalBottomPct / 2);
+
   return (
     <div
       className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-xs flex flex-col gap-6"
       data-purpose="focus-weekly-bars"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-outline-variant/20">
-        <div>
-          <h2 className="text-xl font-normal font-serif text-on-surface">
-            Attentional Distribution
-          </h2>
-          <p className="font-sans text-body-sm text-on-surface-variant mt-0.5">
-            Daily duration vs 4-hour systemic threshold
-          </p>
-        </div>
+        <h2 className="text-xl font-normal font-serif text-on-surface">
+          Focus this week
+        </h2>
         <div className="flex items-center gap-4 text-xs font-mono text-label-sm text-on-surface-variant">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-xs bg-secondary" aria-hidden="true" />
-            <span>Focus Active</span>
+            <span>Focused</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-4 h-0.5 border-b border-dashed border-outline" aria-hidden="true" />
-            <span>Daily Goal (240m)</span>
+            <span>Daily goal ({goalMinutes}m)</span>
           </div>
         </div>
       </div>
 
       {/* Vector / CSS Hybrid Bar Chart Area */}
       <div className="relative w-full h-64 pt-6 flex flex-col justify-end">
-        {/* Goal Guideline Line at 240m (80% from bottom on 300m max scale) */}
-        <div className="absolute inset-x-0 bottom-[80%] flex items-center pointer-events-none z-10">
+        {/* Goal Guideline Line dynamically placed based on daily focus goal */}
+        <div
+          className="absolute inset-x-0 flex items-center pointer-events-none z-10"
+          style={{ bottom: `${goalBottomPct}%` }}
+        >
           <div className="w-full border-b border-dashed border-outline/40" />
           <span className="absolute right-0 -top-4 font-mono text-label-sm text-on-surface-variant bg-surface-container-lowest px-1.5 tabular-nums">
-            Goal: 240m
+            Goal: {goalMinutes}m
           </span>
         </div>
 
-        {/* 120m mid-marker line (40% from bottom) */}
-        <div className="absolute inset-x-0 bottom-[40%] flex items-center pointer-events-none opacity-40">
+        {/* Mid-marker line dynamically placed */}
+        <div
+          className="absolute inset-x-0 flex items-center pointer-events-none opacity-40"
+          style={{ bottom: `${midBottomPct}%` }}
+        >
           <div className="w-full border-b border-dashed border-outline-variant/40" />
           <span className="absolute right-0 -top-4 font-mono text-label-sm text-on-surface-variant/70 bg-surface-container-lowest px-1.5 tabular-nums">
-            120m
+            {midGoalMinutes}m
           </span>
         </div>
 

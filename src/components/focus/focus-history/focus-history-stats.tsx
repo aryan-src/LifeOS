@@ -61,9 +61,9 @@ export function FocusHistoryStats({ summary }: FocusHistoryStatsProps) {
           </div>
         </div>
         <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
-          <span>Telemetry cumulative</span>
+          <span>Total sessions</span>
           <span className="text-on-surface tabular-nums font-medium">
-            {summary.totalSessions} {summary.totalSessions === 1 ? 'block' : 'blocks'}
+            {summary.totalSessions} {summary.totalSessions === 1 ? 'session' : 'sessions'}
           </span>
         </div>
       </div>
@@ -81,11 +81,11 @@ export function FocusHistoryStats({ summary }: FocusHistoryStatsProps) {
             {summary.averageSessionMinutes > 0 ? `${summary.averageSessionMinutes} min` : '0 min'}
           </div>
           <div className="font-sans text-body-sm text-on-surface-variant mt-1">
-            Sustained attentional unit
+            Average block duration
           </div>
         </div>
         <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
-          <span>{summary.totalSessions} aggregate blocks</span>
+          <span>{summary.totalSessions} sessions logged</span>
           <span className="font-mono text-label-sm text-secondary font-medium">
             {summary.averageSessionMinutes >= 25 ? 'Optimal' : 'Active'}
           </span>

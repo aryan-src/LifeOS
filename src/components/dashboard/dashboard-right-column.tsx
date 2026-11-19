@@ -41,7 +41,7 @@ export function DashboardRightColumn({
   const recentIdeas = notes.slice(0, 2);
 
   return (
-    <div className="lg:col-span-4 flex flex-col gap-3 sm:gap-4 min-w-0">
+    <div className="lg:col-span-3 space-y-6 min-w-0">
       {/* Assignments Card */}
       <Card
         as="article"
@@ -70,7 +70,7 @@ export function DashboardRightColumn({
           <EmptyState
             compact={true}
             title="No pending submissions"
-            description="All academic deliverables and coursework are up to date."
+            description="All coursework and assignments are up to date."
           />
         ) : (
           <div className="space-y-2">
@@ -198,7 +198,7 @@ export function DashboardRightColumn({
           {recentIdeas.length === 0 ? (
             <EmptyState
               compact={true}
-              title="No ideas recorded yet."
+              title="No ideas yet."
               description="Jot a quick thought and it routes directly to your Notes stream."
             />
           ) : (

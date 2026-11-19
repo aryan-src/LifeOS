@@ -117,7 +117,7 @@ export function FocusWeeklyChart({ summary }: FocusWeeklyChartProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
-              Peak-Hour Calibration
+              Peak hours
             </span>
             <Pill tone={summary.calibration.isCalibrated ? 'secondary' : 'neutral'}>
               {summary.calibration.isCalibrated ? 'Ready' : 'Calibrating'}
@@ -125,7 +125,7 @@ export function FocusWeeklyChart({ summary }: FocusWeeklyChartProps) {
           </div>
 
           <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-            14-Day Focus Baseline
+            14-Day focus progress
           </h2>
           <p className="font-sans text-body-sm text-on-surface-variant leading-relaxed">
             {summary.peakWindowText}
@@ -153,7 +153,7 @@ export function FocusWeeklyChart({ summary }: FocusWeeklyChartProps) {
             value={summary.calibration.percent}
             tone="secondary"
             size="sm"
-            label="14-day focus calibration baseline"
+            label="14-day focus progress"
           />
 
           <div className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface-variant">

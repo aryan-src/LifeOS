@@ -1,7 +1,6 @@
 import React from 'react';
-import { Timer, Clock, Activity } from 'lucide-react';
+import { Timer, Award, Clock } from 'lucide-react';
 import type { FocusHistorySummary } from '@/lib/daily-loop/focus-history-derived';
-import { StatCard } from '@/components/ui/stat-card';
 
 interface FocusHistoryStatsProps {
   summary: FocusHistorySummary;
@@ -13,44 +12,85 @@ export function FocusHistoryStats({ summary }: FocusHistoryStatsProps) {
       className="grid grid-cols-1 md:grid-cols-3 gap-4"
       data-purpose="focus-history-stats"
     >
-      <StatCard
-        label="Focused Today"
-        value={summary.todayFormatted}
-        badge={{
-          text: `${summary.todayPercent}%`,
-          tone: summary.todayPercent >= 100 ? 'secondary' : 'neutral',
-        }}
-        progress={{
-          value: summary.todayPercent,
-          tone: 'secondary',
-          label: 'Daily focus goal',
-        }}
-        icon={<Timer className="h-4 w-4 text-secondary" />}
-        sublabel={`Daily target: ${summary.todayGoalFormatted}`}
-      />
+      {/* Stat 1: Total / Focused Today */}
+      <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">
+            Focused Today
+          </span>
+          <Timer className="h-5 w-5 text-secondary" aria-hidden="true" />
+        </div>
+        <div className="my-4">
+          <div className="text-3xl font-semibold text-on-surface font-mono tracking-tight tabular-nums font-numeric-timer">
+            {summary.todayFormatted}
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
+              <div
+                className="h-full bg-secondary rounded-full transition-all"
+                style={{ width: `${Math.min(100, summary.todayPercent)}%` }}
+              />
+            </div>
+            <span className="font-mono text-label-sm text-on-surface-variant font-medium tabular-nums">
+              {summary.todayPercent}%
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
+          <span>Target: {summary.todayGoalFormatted}</span>
+          <span className={summary.todayPercent >= 100 ? 'text-secondary font-medium' : 'text-on-surface-variant'}>
+            {summary.todayPercent >= 100 ? 'Goal met' : 'In progress'}
+          </span>
+        </div>
+      </div>
 
-      <StatCard
-        label="Total Logged"
-        value={summary.totalFormatted}
-        badge={{
-          text: `${summary.totalSessions} ${summary.totalSessions === 1 ? 'session' : 'sessions'}`,
-          tone: 'neutral',
-        }}
-        icon={<Clock className="h-4 w-4 text-on-tertiary-container" />}
-        sublabel={`${summary.qualifiedDaysThisWeek} of 7 qualified days this week`}
-      />
+      {/* Stat 2: Total Logged */}
+      <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">
+            Total Logged
+          </span>
+          <Award className="h-5 w-5 text-on-tertiary-container" aria-hidden="true" />
+        </div>
+        <div className="my-4">
+          <div className="text-3xl font-semibold text-on-surface font-mono tracking-tight tabular-nums font-numeric-timer">
+            {summary.totalFormatted}
+          </div>
+          <div className="font-sans text-body-md text-on-surface font-medium mt-1">
+            {summary.qualifiedDaysThisWeek} of 7 qualified days
+          </div>
+        </div>
+        <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
+          <span>Total sessions</span>
+          <span className="text-on-surface tabular-nums font-medium">
+            {summary.totalSessions} {summary.totalSessions === 1 ? 'session' : 'sessions'}
+          </span>
+        </div>
+      </div>
 
-      <StatCard
-        label="Average Session"
-        value={summary.averageSessionMinutes > 0 ? `${summary.averageSessionMinutes}` : '0'}
-        unit="min"
-        icon={<Activity className="h-4 w-4 text-on-surface-variant" />}
-        sublabel={
-          summary.totalSessions > 0
-            ? 'Mean duration across logged focus blocks'
-            : 'Complete a focus block to compute average'
-        }
-      />
+      {/* Stat 3: Average Session */}
+      <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs flex flex-col justify-between">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">
+            Average Session
+          </span>
+          <Clock className="h-5 w-5 text-on-surface-variant" aria-hidden="true" />
+        </div>
+        <div className="my-4">
+          <div className="text-3xl font-semibold text-on-surface font-mono tracking-tight tabular-nums font-numeric-timer">
+            {summary.averageSessionMinutes > 0 ? `${summary.averageSessionMinutes} min` : '0 min'}
+          </div>
+          <div className="font-sans text-body-sm text-on-surface-variant mt-1">
+            Average block duration
+          </div>
+        </div>
+        <div className="flex items-center justify-between font-mono text-label-sm text-on-surface-variant pt-2 border-t border-outline-variant/20">
+          <span>{summary.totalSessions} sessions logged</span>
+          <span className="font-mono text-label-sm text-secondary font-medium">
+            {summary.averageSessionMinutes >= 25 ? 'Optimal' : 'Active'}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

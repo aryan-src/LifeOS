@@ -255,9 +255,6 @@ export function DeskJotter({
 
         {/* Right Action: Deposit into Vault Button */}
         <div className="flex items-center gap-2">
-          <span className="hidden sm:inline-block text-[10px] font-mono text-outline">
-            ⌘↵ deposit
-          </span>
           <button
             type="button"
             onMouseDown={(e) => {
@@ -266,7 +263,7 @@ export function DeskJotter({
             }}
             onClick={onAppendToVault}
             disabled={!hasValue || isAppending}
-            aria-label="Deposit into Vault"
+            aria-label="Save to notes"
             style={{ borderRadius: 9999 }}
             className={cn(
               'flex size-8 items-center justify-center transition-all duration-300 outline-none cursor-pointer shrink-0',

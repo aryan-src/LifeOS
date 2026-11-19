@@ -69,23 +69,25 @@ export function WhereDidMoneyGoCard({
       className={`flex h-full flex-col justify-between ${className}`}
     >
       <div className="flex flex-1 flex-col justify-between gap-4">
-        <header className="flex items-start justify-between gap-2">
-          <div>
-            <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
-              Where Did Money Go?
-            </h2>
-            <p className="mt-0.5 font-mono text-label-sm text-on-surface-variant">
-              {subtitle}
-            </p>
-          </div>
-          {hasData && <Pill tone="secondary">100% Accounted</Pill>}
+        <header className="flex items-center justify-between gap-2">
+          <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+            Categories
+          </h2>
+          {hasData && (
+            <span
+              className="font-mono text-label-sm text-on-surface-variant"
+              style={LINING_NUMS_STYLE}
+            >
+              {activeCount} {activeCount === 1 ? 'category' : 'categories'}
+            </span>
+          )}
         </header>
 
         {!hasData ? (
           <EmptyState
             compact={true}
             icon={<Wallet className="h-5 w-5" />}
-            title="No categorical outflows yet"
+            title="No expenses yet"
             description="Recorded expenses will automatically group by category here."
           />
         ) : (

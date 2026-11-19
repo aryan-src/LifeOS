@@ -272,8 +272,8 @@ export function WorkspaceHeader({
               </div>
             )}
             {userName && (
-              <span className="hidden md:inline-block max-w-[120px] truncate font-mono text-label-md text-on-surface">
-                {userName}
+              <span className="hidden md:inline-block max-w-[120px] truncate font-sans text-label-md font-medium text-on-surface">
+                {userName.split(' ')[0]}
               </span>
             )}
           </Link>

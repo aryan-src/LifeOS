@@ -33,7 +33,7 @@ export function PocketLedgerCard({
     <Link
       href="/finances"
       className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
-      aria-label="Open Expenses ledger"
+      aria-label="Open Expenses"
     >
       <Card
         padding="md"
@@ -44,7 +44,7 @@ export function PocketLedgerCard({
       >
         <div className="flex items-start justify-between gap-2">
           <span className="font-mono text-label-sm uppercase tracking-[0.08em] text-on-surface-variant">
-            Pocket Ledger
+            Pocket money
           </span>
           <Pill tone="neutral">{currentMonth}</Pill>
         </div>

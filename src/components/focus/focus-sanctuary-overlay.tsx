@@ -167,7 +167,7 @@ export function FocusSanctuaryOverlay({
           </span>
           <span className="text-stone-300 dark:text-zinc-700">/</span>
           <span className="text-xs font-sans tracking-wider uppercase text-stone-400 dark:text-zinc-500">
-            Focus Sanctuary
+            Focus mode
           </span>
         </div>
 

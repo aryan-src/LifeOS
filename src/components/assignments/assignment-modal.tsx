@@ -119,7 +119,7 @@ export function AssignmentModal({
                 {isEditing ? 'Edit Assignment' : 'New Assignment'}
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                Track deliverables, academic deadlines, and scores.
+                Track assignments, due dates, and scores.
               </p>
             </div>
           </div>

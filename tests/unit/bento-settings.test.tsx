@@ -45,6 +45,7 @@ describe('Stitch Settings Screen (BentoSettings)', () => {
     expect(html).toContain('id="sectionFinance"');
     expect(html).toContain('Calculated Safe Pace');
     expect(html).toContain('166.67');
+    expect(html).toContain('Daily focus goal');
     expect(html).toContain('4h / day');
 
     expect(html).toContain('id="sectionAppearance"');
@@ -53,7 +54,7 @@ describe('Stitch Settings Screen (BentoSettings)', () => {
     expect(html).toContain('Dark');
     expect(html).toContain('System');
 
-    expect(html).toContain('id="sectionVault"');
+    expect(html).toContain('id="sectionData"');
     expect(html).toContain('Notes Markdown Archive');
     expect(html).toContain('Spreadsheet Tables');
     expect(html).toContain('Full Account Snapshot');

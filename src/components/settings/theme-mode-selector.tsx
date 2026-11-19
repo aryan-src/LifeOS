@@ -24,7 +24,7 @@ const THEME_OPTIONS: Array<{
   {
     id: 'dark',
     label: 'Dark',
-    description: 'Calm charcoal surface with crisp mint telemetry',
+    description: 'Calm charcoal surface with crisp mint accents',
     icon: <Moon className="h-4 w-4" aria-hidden="true" />,
   },
   {

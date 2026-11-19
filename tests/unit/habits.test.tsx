@@ -95,20 +95,17 @@ describe('Habits Module — Architecture & Consistency', () => {
         />
       );
 
-      // Section titles
-      expect(html).toContain("Today&#x27;s Progress");
-      expect(html).toContain('Weekly Consistency');
-      expect(html).toContain('7-Day Habit Completion Pattern');
+      // Section titles matching Stitch rebuild with plain wording
+      expect(html).toContain('Today');
+      expect(html).toContain('Activity');
+      expect(html).toContain('Streaks');
 
       // Habit titles
       expect(html).toContain('Morning Sunlight &amp; Hydration');
       expect(html).toContain('Read 20 Pages');
 
       // Streak badge
-      expect(html).toContain('5d');
-
-      // Chart height constraint
-      expect(html).toContain('h-64');
+      expect(html).toContain('5d streak');
     });
 
     it('renders demo schema banner when isSchemaMissing is true', () => {

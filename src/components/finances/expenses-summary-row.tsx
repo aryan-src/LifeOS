@@ -29,10 +29,10 @@ export function ExpensesSummaryRow({
 
   return (
     <div className="space-y-4" data-purpose="expenses-summary-section">
-      {/* 3 Stitch Metric Cards */}
+      {/* 3 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
-          label="Total Spent"
+          label="Spent"
           value={`${currencySymbol}${formatCurrency(summary.totalSpent)}`}
           badge={{
             text: `${summary.percentUtilized}% utilized`,
@@ -41,25 +41,25 @@ export function ExpensesSummaryRow({
           icon={<Wallet className="h-4 w-4" />}
           sublabel={
             <span className="font-mono text-label-sm" style={LINING_NUMS_STYLE}>
-              Cap: {currencySymbol}
+              Limit: {currencySymbol}
               {formatCurrency(summary.monthlyLimit)}
             </span>
           }
         />
 
         <StatCard
-          label="Remaining Balance"
+          label="Left"
           value={`${currencySymbol}${formatCurrency(summary.remainingBalance)}`}
           badge={{
             text: `${summary.daysLeft} ${summary.daysLeft === 1 ? 'day' : 'days'} left`,
             tone: 'secondary',
           }}
           icon={<PiggyBank className="h-4 w-4 text-secondary" />}
-          sublabel="Available allowance headroom"
+          sublabel="Remaining this month"
         />
 
         <StatCard
-          label="Safe Daily Pace"
+          label="Safe pace"
           value={`${currencySymbol}${summary.safeDailyPace.toLocaleString('en-IN')}`}
           unit="/day"
           icon={<Gauge className="h-4 w-4 text-on-tertiary-container" />}
@@ -72,12 +72,12 @@ export function ExpensesSummaryRow({
         />
       </div>
 
-      {/* Monthly Allocation Ceiling Progress Card with 75% Advisory Notch */}
+      {/* Monthly Limit Progress Card with 75% Advisory Notch */}
       <Card padding="md" surface="lowest" className="space-y-4">
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
             <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-              Monthly Allocation Ceiling
+              Monthly limit
             </h2>
             <span
               className="font-mono text-label-sm text-on-surface-variant"
@@ -102,7 +102,7 @@ export function ExpensesSummaryRow({
                 className="h-2.5 w-2.5 rounded-full bg-surface-container-highest"
                 aria-hidden="true"
               />
-              Available ({currencySymbol}
+              Left ({currencySymbol}
               {formatCurrency(summary.remainingBalance)})
             </span>
           </div>
@@ -127,7 +127,7 @@ export function ExpensesSummaryRow({
               title="75% advisory threshold"
             >
               <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] font-semibold uppercase tracking-wider text-on-tertiary-container">
-                75% Cap
+                75% Limit
               </span>
             </div>
           </div>

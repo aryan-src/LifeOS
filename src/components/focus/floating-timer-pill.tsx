@@ -142,7 +142,7 @@ export function FloatingTimerPill({
           )}
 
           <span
-            className="font-mono text-body-sm font-semibold tracking-tight leading-none"
+            className="font-numeric-timer text-headline-sm font-mono tracking-tight tabular-nums leading-none"
             style={LINING_NUMS_STYLE}
           >
             {countdown}

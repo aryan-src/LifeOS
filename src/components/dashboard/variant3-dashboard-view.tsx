@@ -298,6 +298,8 @@ export function Variant3DashboardView({
             : []),
         ];
 
+  const firstName = displayName.split(' ')[0] || 'Student';
+
   return (
     <div
       className="mx-auto flex min-h-[100dvh] w-full max-w-[1440px] flex-col justify-start font-sans antialiased"
@@ -308,20 +310,16 @@ export function Variant3DashboardView({
         data-purpose="dashboard-viewport-container"
       >
         <div
-          className="flex flex-1 flex-col gap-5 sm:gap-6 min-w-0 pb-0"
+          className="flex flex-1 flex-col gap-6 min-w-0 pb-0"
           data-purpose="dashboard-workspace"
         >
           {/* 1. Greeting & Real Date Header */}
-          <header className="flex w-full shrink-0 flex-col justify-between gap-3 border-b border-outline-variant/40 pb-4 sm:flex-row sm:items-end">
-            <div className="flex min-w-0 flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Pill tone="neutral" dot={true}>
-                  {resolvedDayName}, {resolvedDateFormatted} · Week {resolvedWeekNumber}
-                </Pill>
-              </div>
-              <h1 className="truncate font-serif text-page-title font-normal tracking-tight text-on-surface">
-                {greetingTime}, {displayName}
-              </h1>
+          <header className="flex w-full shrink-0 flex-col justify-between gap-2 border-b border-surface-container-high/60 pb-3 sm:flex-row sm:items-end">
+            <h1 className="truncate font-serif text-page-title font-normal tracking-tight text-on-surface">
+              {greetingTime}, {firstName}
+            </h1>
+            <div className="font-mono text-label-sm text-on-surface-variant">
+              {resolvedDayName}, {resolvedDateFormatted}
             </div>
           </header>
 
@@ -339,13 +337,13 @@ export function Variant3DashboardView({
             onChangeDevTodayMode={setDevForcedTodayMode}
           />
 
-          {/* 3. Three-Column Editorial Workspace */}
+          {/* 3. Three-Column Editorial Workspace (4 / 5 / 3 grid distribution) */}
           <section
-            className="grid grid-cols-1 lg:grid-cols-12 items-stretch gap-3 min-h-0"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-h-0"
             data-purpose="2x2-bento-matrix"
           >
-            {/* Left Column: Expenses & Habits */}
-            <div className="lg:col-span-4 flex flex-col gap-3 sm:gap-4 min-w-0">
+            {/* Left Column: Expenses & Habits (4 cols) */}
+            <div className="lg:col-span-4 space-y-6 min-w-0">
               <DashboardExpensesCard
                 financialAnalytics={financialAnalytics}
                 currentMonth={currentMonth}
@@ -358,8 +356,8 @@ export function Variant3DashboardView({
               />
             </div>
 
-            {/* Center Column: Time-Aware Today Card */}
-            <div className="lg:col-span-4 flex flex-col min-w-0">
+            {/* Center Column: Time-Aware Today Card (5 cols) */}
+            <div className="lg:col-span-5 space-y-6 min-w-0">
               <TodayCard
                 initialMode={activeTodayLoopData.todayMode}
                 userTimezone={activeTodayLoopData.userTimezone}
@@ -377,7 +375,7 @@ export function Variant3DashboardView({
               />
             </div>
 
-            {/* Right Column: Assignments, Projects & Ideas */}
+            {/* Right Column: Assignments, Projects & Ideas (3 cols) */}
             <DashboardRightColumn
               assignments={initialAssignments}
               projects={initialProjects}

@@ -6,7 +6,7 @@ import { BentoSettings } from '@/components/settings/bento-settings';
 export const metadata: Metadata = {
   title: 'Settings — LifeOS',
   description:
-    'Account preferences, allowance baseline, Light and Dark appearance, and account data exports.',
+    'Account preferences, monthly allowance, Light and Dark appearance, and account data exports.',
 };
 
 export const dynamic = 'force-dynamic';

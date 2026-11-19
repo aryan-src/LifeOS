@@ -104,6 +104,9 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const [currencySymbol, setCurrencySymbol] = useState<string>(() =>
     resolveCurrencySymbol(initialProfile.currency_symbol || '₹')
   );
+  const [focusGoalMinutes, setFocusGoalMinutes] = useState<number>(() =>
+    initialProfile.daily_focus_goal_minutes || 240
+  );
   const [themeMode, setThemeMode] = useState<ThemeMode>(() =>
     normalizeThemeMode(initialProfile.theme_preference)
   );
@@ -167,6 +170,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     formData.set('currencySymbol', currencySymbol);
     formData.set('themePreference', themeMode);
     formData.set('monthlyAllowanceTarget', String(parsedAllowance));
+    formData.set('dailyFocusGoalMinutes', String(focusGoalMinutes));
 
     startTransition(async () => {
       const res = await updateProfile(null, formData);
@@ -241,19 +245,11 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 space-y-6 sm:space-y-8">
-      {/* Stitch Settings Header */}
+      {/* Settings Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <div className="space-y-1.5">
-          <Pill tone="neutral" dot={true} uppercase={true}>
-            Account &amp; Workspace
-          </Pill>
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Settings
-          </h1>
-          <p className="font-sans text-body-sm text-on-surface-variant">
-            Profile identity, allowance targets, Light and Dark appearance, and account exports.
-          </p>
-        </div>
+        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
+          Settings
+        </h1>
 
         <button
           type="button"
@@ -279,20 +275,15 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (7 Cols) */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Card 1: Profile & Identity */}
+          {/* Card 1: Profile */}
           <Card as="section" id="sectionProfile" padding="lg" surface="lowest" className="space-y-5">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-on-surface">
                 <User className="h-4 w-4" aria-hidden="true" />
               </div>
-              <div>
-                <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-                  Profile &amp; Identity
-                </h2>
-                <p className="font-sans text-body-sm text-on-surface-variant">
-                  How your name appears across the workspace
-                </p>
-              </div>
+              <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
+                Profile
+              </h2>
             </div>
 
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -350,20 +341,15 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
             </div>
           </Card>
 
-          {/* Card 2: Financial Baseline & Daily Focus Goal */}
+          {/* Card 2: Goals */}
           <Card as="section" id="sectionFinance" padding="lg" surface="lowest" className="space-y-5">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-secondary">
                 <Wallet className="h-4 w-4" aria-hidden="true" />
               </div>
-              <div>
-                <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-                  Budget &amp; Focus Baseline
-                </h2>
-                <p className="font-sans text-body-sm text-on-surface-variant">
-                  Monthly allowance ceiling used for safe daily pace calculations
-                </p>
-              </div>
+              <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
+                Goals
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -413,6 +399,37 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
               </div>
             </div>
 
+            {/* Editable Daily Focus Goal */}
+            <div className="space-y-2">
+              <label className="block font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
+                Daily focus goal
+              </label>
+              <div className="grid grid-cols-4 gap-2.5">
+                {[
+                  { label: '2h', minutes: 120 },
+                  { label: '3h', minutes: 180 },
+                  { label: '4h', minutes: 240 },
+                  { label: '6h', minutes: 360 },
+                ].map((opt) => {
+                  const isSelected = focusGoalMinutes === opt.minutes;
+                  return (
+                    <button
+                      key={opt.minutes}
+                      type="button"
+                      onClick={() => setFocusGoalMinutes(opt.minutes)}
+                      className={`rounded-xl py-2 px-3 font-mono text-label-md font-medium transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-secondary text-on-secondary shadow-xs font-semibold'
+                          : 'bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant/30'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-xl border border-outline-variant/40 bg-surface-container-low p-4">
               <div>
                 <span className="font-mono text-label-sm uppercase tracking-wider text-on-surface-variant">
@@ -435,7 +452,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
                   className="mt-1 font-mono text-stat-lg font-semibold text-on-surface"
                   style={LINING_NUMS_STYLE}
                 >
-                  {focusGoalHours}h / day
+                  {Math.round(focusGoalMinutes / 60)}h / day
                 </div>
               </div>
             </div>
@@ -444,39 +461,29 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
 
         {/* Right Column (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* Card 3: Theme Appearance */}
+          {/* Card 3: Appearance */}
           <Card as="section" id="sectionAppearance" padding="lg" surface="lowest" className="space-y-5">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-on-surface">
                 <Palette className="h-4 w-4" aria-hidden="true" />
               </div>
-              <div>
-                <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-                  Appearance
-                </h2>
-                <p className="font-sans text-body-sm text-on-surface-variant">
-                  Instant Light and Dark switching with zero reload flash
-                </p>
-              </div>
+              <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
+                Appearance
+              </h2>
             </div>
 
             <ThemeModeSelector value={themeMode} onChange={handleSelectTheme} />
           </Card>
 
-          {/* Card 4: Real Data Export & Sign Out */}
-          <Card as="section" id="sectionVault" padding="lg" surface="lowest" className="space-y-4">
+          {/* Card 4: Your data */}
+          <Card as="section" id="sectionData" padding="lg" surface="lowest" className="space-y-4">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-secondary">
                 <Download className="h-4 w-4" aria-hidden="true" />
               </div>
-              <div>
-                <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
-                  Data Ownership
-                </h2>
-                <p className="font-sans text-body-sm text-on-surface-variant">
-                  Download a real export of your LifeOS data anytime
-                </p>
-              </div>
+              <h2 className="font-sans text-headline-sm font-semibold text-on-surface">
+                Your data
+              </h2>
             </div>
 
             <div className="space-y-2.5">

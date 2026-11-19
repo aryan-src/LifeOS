@@ -1,31 +1,90 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createTask, deleteTask } from '@/lib/actions/tasks';
 import {
-  DEV_BYPASS_MUTATION_ERROR,
-  getAuthenticatedUser,
-} from '@/lib/supabase/dev-auth';
-import { revalidatePath } from 'next/cache';
-import { parseQuickCapture } from '@/lib/parser/quick-capture';
+  createTransaction,
+  deleteTransaction,
+  getCategories,
+} from '@/lib/actions/finances';
+import { createNote, deleteNote } from '@/lib/actions/notes';
+import {
+  createAssignment,
+  deleteAssignment,
+} from '@/lib/actions/assignments';
+import { toggleHabitLog, getHabits } from '@/lib/actions/habits';
+import { getProjectOptions, type ProjectOption } from '@/lib/actions/projects-options';
+import { getUserProfile } from '@/lib/actions/profile';
+import {
+  parseQuickCapture,
+  type ParsedChips,
+  type QuickCaptureContext,
+  type ChipType,
+} from '@/lib/parser/quick-capture';
 import type { ActionResponse } from '@/types/action.types';
+import type { Category } from '@/types/database.types';
 import { formatErrorMessage } from '@/lib/utils/errors';
-import { getTodayDate } from '@/lib/utils/date';
 import { quickCaptureSchema, formatZodError } from '@/lib/validations';
 
 export interface DispatchResult {
-  target: 'transaction' | 'task' | 'note' | 'assignment';
+  target: 'transaction' | 'task' | 'note' | 'assignment' | 'habit';
   message: string;
   projectId?: string | null;
   entityId: string;
+  extra?: {
+    habitDate?: string;
+    habitChanged?: boolean;
+  };
+}
+
+/**
+ * Retrieves the contextual data (categories, projects, habits, profile timezone)
+ * required by the deterministic parser to intelligently guess categories and link entities.
+ */
+export async function getQuickCaptureContext(): Promise<QuickCaptureContext> {
+  try {
+    const [categories, projects, habitsRes, profileRes] = await Promise.all([
+      getCategories().catch(() => [] as Category[]),
+      getProjectOptions().catch(() => [] as ProjectOption[]),
+      getHabits().catch(() => ({ habits: [] })),
+      getUserProfile().catch(() => null),
+    ]);
+
+    const timezone =
+      profileRes?.timezone ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone ||
+      'Asia/Kolkata';
+
+    return {
+      timezone,
+      categories: (categories || []).map((c: Category) => ({ id: c.id, name: c.name })),
+      projects: (projects || []).map((p: ProjectOption) => ({ id: p.id, title: p.title, slug: p.slug })),
+      habits: (habitsRes.habits || []).map((h) => ({
+        id: h.id,
+        title: h.title,
+        is_completed_today: h.is_completed_today,
+      })),
+    };
+  } catch (err) {
+    console.error('Error fetching quick capture context:', err);
+    return {
+      timezone: 'Asia/Kolkata',
+      categories: [],
+      projects: [],
+      habits: [],
+    };
+  }
 }
 
 /**
  * Route Dispatcher for Quick Capture Omnibar.
- * Parses input and routes dynamically to projects, tasks, finances, or notes.
- * Uses idx_projects_slug index for instantaneous foreign key resolution.
+ * Saves ONLY through existing server actions (createTask, createTransaction,
+ * createNote, createAssignment, toggleHabitLog).
+ * Zero direct Supabase table inserts from this module.
  */
 export async function dispatchQuickCapture(
-  rawInput: string
+  rawInput: string,
+  customChips?: ParsedChips,
+  context?: QuickCaptureContext
 ): Promise<ActionResponse<DispatchResult>> {
   const validation = quickCaptureSchema.safeParse({ rawInput });
   if (!validation.success) {
@@ -33,184 +92,230 @@ export async function dispatchQuickCapture(
   }
 
   const trimmed = validation.data.rawInput;
-  const parsed = parseQuickCapture(trimmed);
-  const supabase = await createClient();
-  const { user, isBypass } = await getAuthenticatedUser(supabase);
-  if (isBypass || !user) {
-    return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
-  }
+  const parsed = parseQuickCapture(trimmed, context || {});
+  const effectiveChips: ParsedChips = customChips || parsed.chips;
+  const target: ChipType = effectiveChips.type || parsed.target || 'note';
 
-  // 1. Resolve project_id via indexed slug lookup if present
-  let resolvedProjectId: string | null = null;
-  let resolvedProjectTitle: string | null = null;
-
-  if (parsed.projectSlug) {
-    const { data: project } = await supabase
-      .from('projects')
-      .select('id, title, slug')
-      .eq('user_id', user.id)
-      .eq('slug', parsed.projectSlug)
-      .maybeSingle();
-
-    if (project) {
-      resolvedProjectId = project.id;
-      resolvedProjectTitle = project.title;
+  // 1. Task Dispatch
+  if (target === 'task') {
+    const title = effectiveChips.title || parsed.payload.title || 'Untitled task';
+    const fd = new FormData();
+    fd.append('title', title);
+    if (effectiveChips.date || parsed.payload.dueDate) {
+      fd.append('dueDate', (effectiveChips.date || parsed.payload.dueDate)!);
     }
-  }
-
-  // 2. Dispatch to Target Module
-  if (parsed.target === 'transaction') {
-    const amount = parsed.payload.amount || 0;
-    const type = parsed.payload.type || 'expense';
-    const description = parsed.payload.description || 'Quick Capture Transaction';
-    const date = parsed.payload.dueDate || getTodayDate();
-
-    const { data: tx, error: txErr } = await supabase
-      .from('transactions')
-      .insert({
-        user_id: user.id,
-        amount,
-        type,
-        description,
-        date,
-        project_id: resolvedProjectId,
-      })
-      .select('id')
-      .maybeSingle();
-
-    if (txErr || !tx) {
-      console.error('Quick capture transaction error:', txErr);
-      return { success: false, error: formatErrorMessage(txErr || 'Failed to record transaction.') };
+    const prio = effectiveChips.priority || parsed.payload.priority || 2;
+    fd.append('priority', String(prio));
+    const projId = effectiveChips.projectId || parsed.payload.projectId;
+    if (projId) {
+      fd.append('projectId', projId);
     }
 
-    revalidatePath('/finances');
-    revalidatePath('/projects');
-    revalidatePath('/');
-
-    const sign = amount >= 0 ? '+' : '-';
-    const projectInfo = resolvedProjectTitle ? ` tied to #${parsed.projectSlug}` : '';
-    return {
-      success: true,
-      data: {
-        target: 'transaction',
-        entityId: tx.id,
-        projectId: resolvedProjectId,
-        message: `Logged ${sign}$${Math.abs(amount).toFixed(2)} (${description})${projectInfo}`,
-      },
-    };
-  }
-
-  if (parsed.target === 'task') {
-    const title = parsed.payload.title || 'Untitled task';
-    const dueDate = parsed.payload.dueDate || null;
-    const priority = parsed.payload.priority || 2;
-
-    const { data: task, error: taskErr } = await supabase
-      .from('tasks')
-      .insert({
-        user_id: user.id,
-        title,
-        due_date: dueDate,
-        priority,
-        project_id: resolvedProjectId,
-        is_completed: false,
-      })
-      .select('id')
-      .maybeSingle();
-
-    if (taskErr || !task) {
-      console.error('Quick capture task error:', taskErr);
-      return { success: false, error: formatErrorMessage(taskErr || 'Failed to create task.') };
+    const res = await createTask(null, fd);
+    if (!res.success || !res.data) {
+      return { success: false, error: res.error || 'Failed to create task.' };
     }
 
-    revalidatePath('/tasks');
-    revalidatePath('/projects');
-    revalidatePath('/');
-
-    const projectInfo = resolvedProjectTitle ? ` under #${parsed.projectSlug}` : '';
-    const dueInfo = dueDate ? ` due ${dueDate}` : '';
     return {
       success: true,
       data: {
         target: 'task',
-        entityId: task.id,
-        projectId: resolvedProjectId,
-        message: `Created task "${title}"${dueInfo}${projectInfo}`,
+        entityId: res.data.id,
+        projectId: projId || null,
+        message: `Created task "${res.data.title}"`,
       },
     };
   }
 
-  if (parsed.target === 'assignment') {
-    const title = parsed.payload.title || 'Untitled Assignment';
-    const subject = parsed.payload.subject || 'General';
-    const dueDate = parsed.payload.dueDate || null;
+  // 2. Transaction / Expense Dispatch
+  if (target === 'transaction' || target === 'expense') {
+    const rawAmt =
+      effectiveChips.amount !== undefined && effectiveChips.amount !== null
+        ? effectiveChips.amount
+        : parsed.payload.amount !== undefined
+        ? Math.abs(parsed.payload.amount)
+        : 0;
+    const amountVal = Math.abs(rawAmt);
+    const description =
+      effectiveChips.title ||
+      parsed.payload.description ||
+      parsed.payload.title ||
+      'Quick Capture Transaction';
 
-    const { data: assignment, error: assignmentErr } = await supabase
-      .from('assignments')
-      .insert({
-        user_id: user.id,
-        title,
-        subject,
-        due_date: dueDate,
-        status: 'not_started',
-        project_id: resolvedProjectId,
-      })
-      .select('id')
-      .maybeSingle();
-
-    if (assignmentErr || !assignment) {
-      console.error('Quick capture assignment error:', assignmentErr);
-      return { success: false, error: formatErrorMessage(assignmentErr || 'Failed to create assignment.') };
+    const fd = new FormData();
+    fd.append('amount', String(amountVal));
+    fd.append('type', 'expense');
+    fd.append('description', description);
+    if (effectiveChips.date || parsed.payload.date) {
+      fd.append('date', (effectiveChips.date || parsed.payload.date)!);
+    }
+    const catId = effectiveChips.categoryId || parsed.payload.categoryId;
+    if (catId) {
+      fd.append('categoryId', catId);
+    }
+    const projId = effectiveChips.projectId || parsed.payload.projectId;
+    if (projId) {
+      fd.append('projectId', projId);
     }
 
-    revalidatePath('/assignments');
-    revalidatePath('/projects');
-    revalidatePath('/');
+    const res = await createTransaction(null, fd);
+    if (!res.success || !res.data?.id) {
+      return { success: false, error: res.error || 'Failed to create transaction.' };
+    }
 
-    const projectInfo = resolvedProjectTitle ? ` under #${parsed.projectSlug}` : '';
-    const dueInfo = dueDate ? ` due ${dueDate}` : '';
+    return {
+      success: true,
+      data: {
+        target: 'transaction',
+        entityId: res.data.id,
+        projectId: projId || null,
+        message: `Logged expense ₹${amountVal} (${description})`,
+      },
+    };
+  }
+
+  // 3. Assignment Dispatch
+  if (target === 'assignment') {
+    const title = effectiveChips.title || parsed.payload.title || 'Untitled Assignment';
+    const subject = parsed.payload.subject || 'General';
+    const projId = effectiveChips.projectId || parsed.payload.projectId || null;
+    const dueDate = effectiveChips.date || parsed.payload.dueDate || null;
+
+    const res = await createAssignment({
+      title,
+      subject,
+      due_date: dueDate,
+      project_id: projId,
+      status: 'not_started',
+    });
+
+    if (!res.success || !res.data) {
+      return { success: false, error: res.error || 'Failed to create assignment.' };
+    }
+
     return {
       success: true,
       data: {
         target: 'assignment',
-        entityId: assignment.id,
-        projectId: resolvedProjectId,
-        message: `Created assignment "${title}" (${subject})${dueInfo}${projectInfo}`,
+        entityId: res.data.id,
+        projectId: projId,
+        message: `Created assignment "${res.data.title}" (${subject})`,
       },
     };
   }
 
-  // Fallback: Note / Idea
-  const noteTitle = parsed.payload.title || 'Quick Captured Idea';
-  const content = parsed.payload.content || trimmed;
+  // 4. Habit Check-in Dispatch
+  if (target === 'habit') {
+    const habitId = parsed.payload.habitId;
+    if (!habitId) {
+      return { success: false, error: 'No matching habit found.' };
+    }
 
-  const { data: note, error: noteErr } = await supabase
-    .from('notes')
-    .insert({
-      user_id: user.id,
-      title: noteTitle,
-      content,
-      tags: parsed.projectSlug ? [parsed.projectSlug] : [],
-      project_id: resolvedProjectId,
-    })
-    .select('id')
-    .maybeSingle();
+    // Rule 4: If habit is already completed today, show "Already done" and do nothing
+    if (parsed.payload.isAlreadyCompletedToday || effectiveChips.statusNote === 'Already done') {
+      return {
+        success: true,
+        data: {
+          target: 'habit',
+          entityId: habitId,
+          message: 'Already done',
+          extra: {
+            habitDate: parsed.payload.date || undefined,
+            habitChanged: false,
+          },
+        },
+      };
+    }
 
-  if (noteErr || !note) {
-    console.error('Quick capture note error:', noteErr);
-    return { success: false, error: formatErrorMessage(noteErr || 'Failed to save note.') };
+    const res = await toggleHabitLog(habitId, parsed.payload.date || undefined);
+    if (!res.success) {
+      return { success: false, error: res.error || 'Failed to check in habit.' };
+    }
+
+    return {
+      success: true,
+      data: {
+        target: 'habit',
+        entityId: habitId,
+        message: `Checked in "${effectiveChips.title || parsed.payload.habitTitle || 'habit'}"`,
+        extra: {
+          habitDate: parsed.payload.date || undefined,
+          habitChanged: true,
+        },
+      },
+    };
   }
 
-  revalidatePath('/notes');
-  revalidatePath('/');
+  // 5. Fallback Note / Idea Dispatch (Nothing Lost)
+  const noteTitle = effectiveChips.title || parsed.payload.title || 'Quick Captured Idea';
+  const content = parsed.payload.content || trimmed;
+  const fd = new FormData();
+  fd.append('title', noteTitle);
+  fd.append('content', content);
+  if (parsed.projectSlug) {
+    fd.append('tags', parsed.projectSlug);
+  }
+
+  const res = await createNote(null, fd);
+  if (!res.success || !res.data) {
+    return { success: false, error: res.error || 'Failed to save note.' };
+  }
 
   return {
     success: true,
     data: {
       target: 'note',
-      entityId: note.id,
-      projectId: resolvedProjectId,
-      message: `Saved idea to scratchpad${resolvedProjectTitle ? ` tagged to #${parsed.projectSlug}` : ''}`,
+      entityId: res.data.id,
+      projectId: effectiveChips.projectId || parsed.payload.projectId || null,
+      message: `Saved idea "${res.data.title}"`,
     },
   };
+}
+
+/**
+ * 5-Second Undo Handler for Quick Capture.
+ * Strictly uses the exact entity ID returned by the creation action.
+ * Never performs "find latest" queries.
+ */
+export async function undoQuickCapture(
+  target: 'transaction' | 'task' | 'note' | 'assignment' | 'habit',
+  entityId: string,
+  extra?: { habitDate?: string; habitChanged?: boolean }
+): Promise<ActionResponse<{ undone: boolean }>> {
+  if (!entityId && target !== 'habit') {
+    return { success: false, error: 'Cannot undo without an entity ID.' };
+  }
+
+  try {
+    switch (target) {
+      case 'task': {
+        const res = await deleteTask(entityId);
+        return { success: res.success, error: res.error, data: { undone: true } };
+      }
+      case 'transaction': {
+        const res = await deleteTransaction(entityId);
+        return { success: res.success, error: res.error, data: { undone: true } };
+      }
+      case 'note': {
+        const res = await deleteNote(entityId);
+        return { success: res.success, error: res.error, data: { undone: true } };
+      }
+      case 'assignment': {
+        const res = await deleteAssignment(entityId);
+        return { success: res.success, error: res.error, data: { undone: true } };
+      }
+      case 'habit': {
+        // Only undo if this capture actually changed the habit
+        if (!extra?.habitChanged) {
+          return { success: true, data: { undone: false } };
+        }
+        const res = await toggleHabitLog(entityId, extra.habitDate);
+        return { success: res.success, error: res.error, data: { undone: true } };
+      }
+      default:
+        return { success: false, error: 'Unknown target type' };
+    }
+  } catch (err) {
+    return { success: false, error: formatErrorMessage(err) };
+  }
 }

@@ -209,7 +209,7 @@ export function SessionDoneView({
         onClick={onDismiss}
         className="mt-5 font-sans text-body-sm text-on-surface-variant transition-colors hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 rounded-md px-2 py-0.5"
       >
-        Done <span className="font-mono text-label-sm text-outline">(Esc)</span>
+        Done
       </button>
     </div>
   );

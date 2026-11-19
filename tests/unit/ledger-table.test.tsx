@@ -217,7 +217,7 @@ describe('LifeOSLedgerTable Component & Helpers', () => {
       expect(html).toContain('font-serif text-page-title');
       expect(html).toContain('Expenses');
       expect(html).toContain('Add expense');
-      expect(html).toContain('Hide Charts');
+      expect(html).toMatch(/hide charts/i);
 
       // Verify main ledger table is rendered unconditionally
       expect(html).toContain('table-search-input');

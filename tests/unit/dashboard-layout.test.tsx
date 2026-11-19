@@ -45,7 +45,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
 
     // Spent Today & Remaining Balance metrics
     expect(html).toContain('Spent Today');
-    expect(html).toContain('No outflows today');
+    expect(html).toContain('No spending today');
     expect(html).toContain('Remaining Balance');
     expect(html).toContain('10d left');
     expect(html).toContain('/5000');
@@ -61,7 +61,7 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     expect(html).toContain('Sat');
 
     // Card footer action buttons
-    expect(html).toContain('Ledger →');
+    expect(html).toContain('Expenses →');
     expect(html).toContain('+ Log expense');
   });
 
@@ -241,13 +241,13 @@ describe('Dashboard Layout & Element Visibility Verification', () => {
     // 3. Wide focus ribbon & 2x2 bento matrix
     expect(html).toContain('data-purpose="wide-focus-ribbon"');
     expect(html).toContain('data-purpose="2x2-bento-matrix"');
-    expect(html).toContain('gap-3 min-h-0');
+    expect(html).toContain('gap-6 items-start min-h-0');
 
     // 4. Daily Loop Stats Row and Today Card (placeholder removed)
     expect(html).toContain('Life Score');
     expect(html).toContain('Daily Streak');
     expect(html).toContain('Time Focused');
-    expect(html).toContain('Pocket Ledger');
+    expect(html).toContain('Pocket money');
     expect(html).toContain('data-purpose="today-card"');
     expect(html).toContain('Today');
     expect(html).not.toContain('Today Card Slot');

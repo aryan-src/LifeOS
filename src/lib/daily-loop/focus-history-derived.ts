@@ -17,6 +17,7 @@ export interface FocusHistoryBar {
 }
 
 export interface FocusHistorySummary {
+  goalMinutes: number;
   todayFormatted: string;
   todayGoalFormatted: string;
   todayPercent: number;
@@ -75,6 +76,7 @@ export function deriveFocusHistorySummary(
         } of focus sessions to unlock your peak-hour window.`;
 
   return {
+    goalMinutes,
     todayFormatted: timeFocused.formattedTime,
     todayGoalFormatted: timeFocused.formattedGoal,
     todayPercent: Math.min(100, Math.round(timeFocused.percent)),

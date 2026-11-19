@@ -43,7 +43,7 @@ describe('Stitch StreakMilestonesModal', () => {
     expect(html).toContain('30-Day Shield');
     expect(html).toContain('100-Day Century');
     expect(html).toContain('2 / 2 freeze shields held');
-    expect(html).toContain('Share keepsake');
+    expect(html).toContain('Share badge');
     expect(html).not.toContain('italic');
   });
 

@@ -208,12 +208,12 @@ export function StreakMilestonesModal({
             {copied ? (
               <>
                 <Check className="h-4 w-4" aria-hidden="true" />
-                <span>Keepsake copied</span>
+                <span>Badge copied</span>
               </>
             ) : (
               <>
                 <Share2 className="h-4 w-4" aria-hidden="true" />
-                <span>Share keepsake</span>
+                <span>Share badge</span>
               </>
             )}
           </button>

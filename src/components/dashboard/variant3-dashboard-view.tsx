@@ -314,23 +314,12 @@ export function Variant3DashboardView({
           data-purpose="dashboard-workspace"
         >
           {/* 1. Greeting & Real Date Header */}
-          <header className="flex w-full shrink-0 flex-col justify-between gap-4 border-b border-surface-container-high/60 pb-3 sm:flex-row sm:items-end">
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-mono text-label-sm uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary" aria-hidden="true" />
-                  {resolvedDayName}, {resolvedDateFormatted} · Week {resolvedWeekNumber}
-                </span>
-              </div>
-              <h1 className="truncate font-serif text-page-title font-normal tracking-tight text-on-surface">
-                {greetingTime}, {firstName}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="flex items-center gap-2 bg-surface-container-lowest px-3 py-1.5 rounded-xl shadow-xs border border-outline-variant/40">
-                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
-                <span className="font-sans text-label-md text-on-surface font-medium">Session Sync Active</span>
-              </div>
+          <header className="flex w-full shrink-0 flex-col justify-between gap-2 border-b border-surface-container-high/60 pb-3 sm:flex-row sm:items-end">
+            <h1 className="truncate font-serif text-page-title font-normal tracking-tight text-on-surface">
+              {greetingTime}, {firstName}
+            </h1>
+            <div className="font-mono text-label-sm text-on-surface-variant">
+              {resolvedDayName}, {resolvedDateFormatted}
             </div>
           </header>
 

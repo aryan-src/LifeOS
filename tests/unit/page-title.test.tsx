@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { PageTitle, PageHeader } from '@/components/ui/page-title';
@@ -9,6 +9,19 @@ import { FinancesClientView } from '@/components/finances/finances-client-view';
 import { AssignmentsView } from '@/components/assignments/assignments-view';
 import { NotesGrid } from '@/components/notes/notes-grid';
 import { BentoSettings } from '@/components/settings/bento-settings';
+import { ProjectsViewClient } from '@/components/projects/projects-view-client';
+
+// Mock next/navigation for client components
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  useSearchParams: () => ({
+    get: () => null,
+  }),
+}));
 
 /**
  * Page Title & Responsive Typography Test Suite
@@ -242,5 +255,16 @@ describe('Page Title adoption across all views', () => {
     expect(html).toContain('font-serif text-page-title');
     expect(html).toContain('font-semibold');
     expect(html).toContain('Settings');
+  });
+
+  it('Projects renders shared PageTitle with font-serif semibold and no subtitle', () => {
+    const html = renderToString(
+      <ProjectsViewClient initialProjects={[]} initialView="board" />
+    );
+
+    expect(html).toContain('font-serif text-page-title');
+    expect(html).toContain('font-semibold');
+    expect(html).toContain('Projects');
+    expect(html).not.toContain('Milestones, roadmaps, task execution, and budget tracking.');
   });
 });

@@ -12,12 +12,14 @@ export type LifeOSTheme =
   | 'dark'
   | 'crimson-dark'
   | 'crimson-light'
+  | 'monsoon-garden'
+  | 'monsoon'
   | 'default'
   | 'system';
 
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
-export type StitchThemeMode = 'light' | 'dark' | 'system';
+export type StitchThemeMode = 'light' | 'dark' | 'system' | 'monsoon-garden';
 export type ThemeMode = StitchThemeMode;
 
 const DARK_THEME_ALIASES = new Set(['dark', 'tui', 'crimson-dark', 'crimson-cream']);
@@ -37,6 +39,7 @@ export function resolveDarkMode(theme: string | null | undefined, systemPrefersD
 export function normalizeThemeMode(theme: string | null | undefined): StitchThemeMode {
   if (!theme) return 'light';
   if (theme === 'system') return 'system';
+  if (theme === 'monsoon-garden' || theme === 'monsoon') return 'monsoon-garden';
   return DARK_THEME_ALIASES.has(theme) ? 'dark' : 'light';
 }
 
@@ -55,7 +58,12 @@ export function applyThemeToDOM(theme: string) {
   } else {
     root.classList.remove('dark');
   }
-  root.setAttribute('data-theme', shouldBeDark ? 'dark' : 'light');
+
+  if (theme === 'monsoon-garden' || theme === 'monsoon') {
+    root.setAttribute('data-theme', 'monsoon-garden');
+  } else {
+    root.setAttribute('data-theme', shouldBeDark ? 'dark' : 'light');
+  }
 }
 
 export function saveTheme(theme: string) {

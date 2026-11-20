@@ -462,6 +462,30 @@ describe('Life Score & Daily Delta Calculation', () => {
     expect(score.total).toBe(100);
     expect(score.deltaVsYesterday).toBeGreaterThan(0);
   });
+
+  it('returns clean zero Life Score (0/100) on a fresh day with zero records and no configured habits', () => {
+    const freshRecord: DailyRecord = {
+      date: '2026-11-20',
+      focusSessionsCompleted: 0,
+      habitsCompleted: 0,
+      expensesLogged: 0,
+      habitsTotal: 0,
+      tasksCompleted: 0,
+      focusMinutes: 0,
+      focusGoalMinutes: 240,
+      dailyExpenseAmount: 0,
+      dailyAllowanceBudget: 500,
+    };
+
+    const score = calculateLifeScore(freshRecord, null);
+
+    expect(score.habitsScore).toBe(0);
+    expect(score.focusScore).toBe(0);
+    expect(score.tasksScore).toBe(0);
+    expect(score.financeScore).toBe(0);
+    expect(score.total).toBe(0);
+    expect(score.deltaVsYesterday).toBe(0);
+  });
 });
 
 describe('Focus Insights & Break Filtering', () => {

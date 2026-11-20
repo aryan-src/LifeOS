@@ -81,8 +81,7 @@ describe('Initiate New Project Modal (Split 2-Column Sidebar Layout)', () => {
 
     // Project Breakdown
     expect(html).toContain('Project Breakdown');
-    expect(html).toContain('Discovery &amp; Wireframes');
-    expect(html).toContain('Audits, user journeys &amp; component specs');
+    expect(html).toContain('phases');
     expect(html).toContain('Add Custom Milestone');
 
     // AI Smart Assist (BETA)

@@ -63,7 +63,19 @@ function AppShellContent({
     <ThemeProvider initialTheme={initialTheme}>
       <QuickCaptureOmnibar />
       <GlobalFocusController />
-      <div className="min-h-screen w-full flex flex-col bg-surface text-on-surface selection:bg-secondary/20 selection:text-on-surface transition-colors duration-200 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]">
+      <div
+        data-purpose="app-shell-root"
+        style={
+          {
+            '--footer-nav-height': '52px',
+            '--footer-nav-offset': '20px',
+            '--footer-nav-gap': '16px',
+            '--footer-content-padding':
+              'calc(var(--footer-nav-height) + var(--footer-nav-offset) + var(--footer-nav-gap) + env(safe-area-inset-bottom, 0px))',
+          } as React.CSSProperties
+        }
+        className="min-h-screen w-full flex flex-col bg-surface text-on-surface selection:bg-secondary/20 selection:text-on-surface transition-colors duration-200"
+      >
         {children}
       </div>
 
@@ -76,7 +88,7 @@ function AppShellContent({
             opacity: isDockHidden ? 0 : 1,
           }}
           transition={{ duration: 0.22, ease: 'easeInOut' }}
-          className="fixed bottom-5 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
+          className="fixed bottom-5 inset-x-0 z-50 flex justify-center pointer-events-none px-4 bg-transparent border-0 border-none shadow-none backdrop-blur-none"
           aria-hidden={isDockHidden}
           data-purpose="floating-dock-shell"
         >

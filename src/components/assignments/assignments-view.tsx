@@ -452,7 +452,7 @@ export function AssignmentsView({
   }, [filteredAssignments]);
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-6">
       {/* Assignments Page Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 mb-2 md:flex-row md:items-end">
         <PageTitle>Assignments</PageTitle>

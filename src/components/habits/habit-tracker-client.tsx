@@ -239,7 +239,7 @@ export function HabitTrackerClient({
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 pb-12">
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 pb-6">
       {/* Schema Missing Alert Banner */}
       {isSchemaMissing && (
         <div className="flex items-start gap-3 rounded-2xl border border-on-tertiary-container/30 bg-tertiary-fixed/50 p-4 font-mono text-label-sm text-on-tertiary-fixed">

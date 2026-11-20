@@ -295,7 +295,7 @@ export function NotesGrid({ initialNotes }: NotesGridProps) {
 
   return (
     <div
-      className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32"
+      className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6"
       data-purpose="notes-two-pane-view"
     >
       {/* Error Banner */}

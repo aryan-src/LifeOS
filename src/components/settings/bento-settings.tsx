@@ -263,7 +263,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const initials = getInitials(displayName);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 space-y-6 sm:space-y-8">
+    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Settings Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
         <PageTitle>Settings</PageTitle>

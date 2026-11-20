@@ -54,6 +54,9 @@ const NAVBAR_STYLES = `
   gap: 2px;
   padding: 6px;
   border-radius: 999px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   isolation: isolate;
   font-family: inherit;
   -webkit-font-smoothing: antialiased;

@@ -49,7 +49,7 @@ export default async function TasksPage(props: {
   const velocityPercent = totalCount > 0 ? Math.round((completedTodayCount / totalCount) * 100) : 0;
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 font-sans">
+    <div className="flex flex-col w-full text-textMain dark:text-zinc-100 font-sans">
       {/* Minimal Ambient Header Accent */}
       <div className="w-full px-space-lg lg:px-margin pt-space-lg pb-space-md">
         {/* Top Meta Breadcrumb & Status Ribbon */}

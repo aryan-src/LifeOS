@@ -34,9 +34,18 @@ export function WorkspaceMain({
 
   return (
     <main
+      data-purpose="workspace-main"
       className={`w-full max-w-none flex-1 flex flex-col transition-[padding-bottom] duration-300 ease-out ${
-        isDockHidden ? 'pb-6 md:pb-8' : 'pb-32 sm:pb-36'
+        isDockHidden ? 'pb-6 md:pb-8' : ''
       } ${className}`}
+      style={
+        !isDockHidden
+          ? {
+              paddingBottom:
+                'var(--footer-content-padding, calc(var(--footer-nav-height, 52px) + 20px + 16px + env(safe-area-inset-bottom, 0px)))',
+            }
+          : undefined
+      }
     >
       {children}
     </main>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 font-sans antialiased selection:bg-sage selection:text-white transition-colors py-12 px-6 sm:px-8">
+    <div className="w-full text-textMain dark:text-zinc-100 font-sans antialiased selection:bg-sage selection:text-white transition-colors py-12 px-6 sm:px-8">
       <div className="max-w-3xl mx-auto space-y-10">
         {/* Navigation */}
         <div className="flex items-center justify-between border-b border-borderWarm dark:border-zinc-800 pb-4">

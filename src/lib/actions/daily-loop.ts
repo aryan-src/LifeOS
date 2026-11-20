@@ -145,7 +145,7 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
       habitsScore: 0,
       focusScore: 0,
       tasksScore: 0,
-      financeScore: 15,
+      financeScore: 0,
       deltaVsYesterday: 0,
     },
     streakState: {

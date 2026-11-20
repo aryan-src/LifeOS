@@ -47,7 +47,7 @@ export function computeFinancialAnalytics(
     if (!t) continue;
     const rawAmt = typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount));
     const amt = Math.abs(isNaN(rawAmt) ? 0 : rawAmt);
-    const isIncome = t.type === 'income' || (typeof t.amount === 'number' && t.amount > 0);
+    const isIncome = t.type === 'income';
     const txDate = getLocalDateString(t.date) || (typeof t.date === 'string' ? t.date.split('T')[0] : todayStr);
     const isCurrentMonth = txDate.startsWith(currentYearMonth);
 
@@ -96,10 +96,6 @@ export function computeFinancialAnalytics(
     } else {
       monthlyAllowance = 15000.00;
     }
-  }
-
-  if (monthlySpent === 0 && totalOutflow > 0) {
-    monthlySpent = totalOutflow;
   }
 
   const remainingAllowance = Number((monthlyAllowance - monthlySpent).toFixed(2));

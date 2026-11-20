@@ -11,29 +11,7 @@ interface RoutineCheckpoint {
   is_completed: boolean;
 }
 
-const DEFAULT_CHECKPOINTS: RoutineCheckpoint[] = [
-  {
-    id: 'c1',
-    title: 'Morning Standup',
-    time: '09:00 AM',
-    status: 'done',
-    is_completed: true,
-  },
-  {
-    id: 'c2',
-    title: 'Code Review',
-    time: '11:30 AM',
-    status: 'done',
-    is_completed: true,
-  },
-  {
-    id: 'c3',
-    title: 'Backlog Review',
-    time: '05:30 PM',
-    status: 'next',
-    is_completed: false,
-  },
-];
+const DEFAULT_CHECKPOINTS: RoutineCheckpoint[] = [];
 
 export function WeeklyVelocityCard() {
   const [checkpoints, setCheckpoints] = useState<RoutineCheckpoint[]>(DEFAULT_CHECKPOINTS);
@@ -63,7 +41,7 @@ export function WeeklyVelocityCard() {
           </h2>
         </div>
         <span className="font-mono text-xs text-stone-400 dark:text-zinc-500">
-          Sprint W41
+          Sprint
         </span>
       </div>
 
@@ -75,10 +53,10 @@ export function WeeklyVelocityCard() {
             Sprint Pts
           </span>
           <span className="text-base font-semibold text-stone-900 dark:text-stone-100 mt-0.5 font-mono">
-            18 <span className="text-stone-400 dark:text-zinc-500 text-xs font-normal">/ 24</span>
+            0 <span className="text-stone-400 dark:text-zinc-500 text-xs font-normal">/ 0</span>
           </span>
           <div className="w-full h-1 bg-stone-200 dark:bg-zinc-700 rounded-full overflow-hidden mt-2">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: '75%' }} />
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: '0%' }} />
           </div>
         </div>
 
@@ -88,13 +66,13 @@ export function WeeklyVelocityCard() {
             Active Streak
           </span>
           <div className="flex items-center gap-1 mt-0.5">
-            <Flame className="w-4 h-4 text-emerald-600 dark:text-emerald-400 fill-current" />
+            <Flame className="w-4 h-4 text-stone-400 dark:text-zinc-500" />
             <span className="text-base font-semibold text-stone-900 dark:text-stone-100 font-mono">
-              6 Days
+              0 Days
             </span>
           </div>
           <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500 mt-1.5">
-            Personal best
+            Starting today
           </span>
         </div>
 
@@ -104,10 +82,10 @@ export function WeeklyVelocityCard() {
             Avg Focus
           </span>
           <span className="text-base font-semibold text-stone-900 dark:text-stone-100 mt-0.5 font-mono">
-            3.2h <span className="text-stone-400 dark:text-zinc-500 text-xs font-normal">/ day</span>
+            0.0h <span className="text-stone-400 dark:text-zinc-500 text-xs font-normal">/ day</span>
           </span>
-          <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 mt-1.5 flex items-center gap-0.5">
-            <TrendingUp className="w-3 h-3" /> +18% vs last wk
+          <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500 mt-1.5 flex items-center gap-0.5">
+            0h this week
           </span>
         </div>
       </div>
@@ -117,39 +95,45 @@ export function WeeklyVelocityCard() {
         <span className="font-mono text-[11px] text-stone-400 dark:text-zinc-500 uppercase tracking-wider">
           Daily Execution Checkpoints
         </span>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {checkpoints.map((cp) => (
-            <div
-              key={cp.id}
-              onClick={() => toggleCheckpoint(cp.id)}
-              className={`flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer border ${
-                cp.is_completed
-                  ? 'bg-stone-50 dark:bg-zinc-800/50 hover:bg-stone-100/80 dark:hover:bg-zinc-800 border-stone-200/50 dark:border-zinc-800/60'
-                  : 'bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800/30 border-dashed border-stone-300 dark:border-zinc-700'
-              }`}
-            >
-              {cp.is_completed ? (
-                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              ) : (
-                <Circle className="w-4 h-4 text-stone-300 dark:text-zinc-600 shrink-0" />
-              )}
-              <div className="flex flex-col min-w-0">
-                <span
-                  className={`text-xs font-medium truncate ${
-                    cp.is_completed
-                      ? 'text-stone-800 dark:text-zinc-200'
-                      : 'text-stone-500 dark:text-zinc-400'
-                  }`}
-                >
-                  {cp.title}
-                </span>
-                <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500">
-                  {cp.time} · {cp.is_completed ? 'Done' : 'Next'}
-                </span>
+        {checkpoints.length === 0 ? (
+          <div className="py-4 text-center text-stone-400 dark:text-zinc-500 text-xs font-mono">
+            No checkpoints scheduled
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {checkpoints.map((cp) => (
+              <div
+                key={cp.id}
+                onClick={() => toggleCheckpoint(cp.id)}
+                className={`flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer border ${
+                  cp.is_completed
+                    ? 'bg-stone-50 dark:bg-zinc-800/50 hover:bg-stone-100/80 dark:hover:bg-zinc-800 border-stone-200/50 dark:border-zinc-800/60'
+                    : 'bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800/30 border-dashed border-stone-300 dark:border-zinc-700'
+                }`}
+              >
+                {cp.is_completed ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ) : (
+                  <Circle className="w-4 h-4 text-stone-300 dark:text-zinc-600 shrink-0" />
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span
+                    className={`text-xs font-medium truncate ${
+                      cp.is_completed
+                        ? 'text-stone-800 dark:text-zinc-200'
+                        : 'text-stone-500 dark:text-zinc-400'
+                    }`}
+                  >
+                    {cp.title}
+                  </span>
+                  <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500">
+                    {cp.time} · {cp.is_completed ? 'Done' : 'Next'}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

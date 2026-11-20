@@ -45,54 +45,6 @@ export interface GetHabitsResult {
   isSchemaMissing: boolean;
 }
 
-// Sample starter habits for local development or prior to Supabase migration
-const DEFAULT_STARTER_HABITS: HabitWithLog[] = [
-  {
-    id: 'starter-1',
-    user_id: '',
-    title: 'Morning Sunlight & Hydration',
-    description: '10 mins sunlight + 500ml water right after waking up',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    is_completed_today: true,
-    streak: 5,
-    weekly_history: {},
-  },
-  {
-    id: 'starter-2',
-    user_id: '',
-    title: 'Deep Work Sprint (Pomodoro 25m)',
-    description: 'Zero notification focus block on core project',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    is_completed_today: false,
-    streak: 3,
-    weekly_history: {},
-  },
-  {
-    id: 'starter-3',
-    user_id: '',
-    title: 'Read 20 Pages',
-    description: 'Non-fiction reading or technical documentation',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    is_completed_today: false,
-    streak: 7,
-    weekly_history: {},
-  },
-  {
-    id: 'starter-4',
-    user_id: '',
-    title: 'Evening Review & Next-Day Plan',
-    description: 'Review completed tasks and select top 3 tomorrow priorities',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    is_completed_today: false,
-    streak: 2,
-    weekly_history: {},
-  },
-];
-
 /**
  * Fetches all habits for the authenticated user, paired with completion logs.
  * Uses the user's profile timezone for day boundaries and computes streaks without
@@ -128,26 +80,8 @@ export async function getHabits(): Promise<GetHabitsResult> {
         habitsError.message?.includes('relation "public.habits"');
 
       if (isSchemaMissing) {
-        // Return starter habits populated with realistic sample history
-        const populatedStarter = DEFAULT_STARTER_HABITS.map((habit, idx) => {
-          const hist: Record<string, boolean> = {};
-          const completedDates: string[] = [];
-          trailingDates.forEach((dStr, dayIdx) => {
-            const done = dStr === todayStr
-              ? habit.is_completed_today
-              : (dayIdx + idx) % 2 === 0;
-            hist[dStr] = done;
-            if (done) completedDates.push(dStr);
-          });
-          return {
-            ...habit,
-            weekly_history: hist,
-            streak: calculateHabitStreakFromDates(completedDates, todayStr),
-          };
-        });
-
         return {
-          habits: populatedStarter,
+          habits: [],
           error: null,
           isSchemaMissing: true,
         };
@@ -240,7 +174,7 @@ export async function getHabits(): Promise<GetHabitsResult> {
   } catch (err) {
     console.error('Unhandled error in getHabits:', err);
     return {
-      habits: DEFAULT_STARTER_HABITS,
+      habits: [],
       error: formatErrorMessage(err),
       isSchemaMissing: true,
     };

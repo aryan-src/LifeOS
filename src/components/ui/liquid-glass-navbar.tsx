@@ -22,10 +22,13 @@ export interface LiquidNavItem {
   fx?: 'pop' | 'plane' | 'drop' | 'spin' | 'glow' | 'wave' | 'none';
 }
 
+export type LiquidNavbarItem = LiquidNavItem;
+
 export interface LiquidNavbarProps {
   items?: LiquidNavItem[];
   defaultActive?: number;
   active?: number;
+  activeIndex?: number;
   onChange?: (index: number, item: LiquidNavItem) => void;
   tone?: 'light' | 'dark';
   compact?: boolean;
@@ -504,6 +507,7 @@ export function LiquidNavbar({
   items = [],
   defaultActive = 0,
   active,
+  activeIndex: activeIndexProp,
   onChange,
   tone = 'light',
   compact,
@@ -515,7 +519,7 @@ export function LiquidNavbar({
   linkComponent = 'a',
 }: LiquidNavbarProps) {
   const [internalActive, setInternalActive] = useState<number>(defaultActive);
-  const activeIndex = active ?? internalActive;
+  const activeIndex = activeIndexProp ?? active ?? internalActive;
 
   const navRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -67,7 +67,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme')||'light';var d=document.documentElement;var isDark=t==='dark'||t==='tui'||t==='crimson-dark'||t==='crimson-cream'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){d.classList.add('dark');}else{d.classList.remove('dark');}d.setAttribute('data-theme',t==='monsoon-garden'||t==='monsoon'?'monsoon-garden':(isDark?'dark':'light'));}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('lifeos_theme')||localStorage.getItem('theme')||'monsoon-garden';var d=document.documentElement;var isDark=t==='dark'||t==='tui'||t==='crimson-dark'||t==='crimson-cream'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){d.classList.add('dark');}else{d.classList.remove('dark');}d.setAttribute('data-theme',t==='monsoon-garden'||t==='monsoon'?'monsoon-garden':(isDark?'dark':'light'));}catch(e){}})();`,
           }}
         />
       </head>

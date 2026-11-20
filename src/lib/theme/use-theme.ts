@@ -35,9 +35,10 @@ export function resolveDarkMode(theme: string | null | undefined, systemPrefersD
 
 /**
  * Normalizes legacy theme preferences into the clean Light / Dark / System mode.
+ * Defaults to 'monsoon-garden' when no preference is saved.
  */
 export function normalizeThemeMode(theme: string | null | undefined): StitchThemeMode {
-  if (!theme) return 'light';
+  if (!theme) return 'monsoon-garden';
   if (theme === 'system') return 'system';
   if (theme === 'monsoon-garden' || theme === 'monsoon') return 'monsoon-garden';
   return DARK_THEME_ALIASES.has(theme) ? 'dark' : 'light';
@@ -81,7 +82,7 @@ export function getSavedTheme(): string | null {
 }
 
 export function useTheme() {
-  const [currentTheme, setCurrentTheme] = useState<string>('default');
+  const [currentTheme, setCurrentTheme] = useState<string>('monsoon-garden');
   const [isDark, setIsDark] = useState<boolean>(false);
 
   const syncThemeState = useCallback(() => {
@@ -92,7 +93,7 @@ export function useTheme() {
     if (saved) {
       setCurrentTheme(saved);
     } else {
-      setCurrentTheme(isDocDark ? 'dark' : 'light');
+      setCurrentTheme(isDocDark ? 'dark' : 'monsoon-garden');
     }
   }, []);
 
@@ -133,7 +134,7 @@ export function useTheme() {
 
   const toggleLightDark = () => {
     const isDocDark = document.documentElement.classList.contains('dark');
-    const newTheme = isDocDark ? 'light' : 'dark';
+    const newTheme = isDocDark ? 'monsoon-garden' : 'dark';
     setTheme(newTheme);
   };
 

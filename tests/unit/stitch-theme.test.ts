@@ -29,6 +29,7 @@ describe('Stitch Theme Resolution & Normalization', () => {
     expect(normalizeThemeMode('system')).toBe('system');
     expect(normalizeThemeMode('monsoon-garden')).toBe('monsoon-garden');
     expect(normalizeThemeMode('monsoon')).toBe('monsoon-garden');
-    expect(normalizeThemeMode(undefined)).toBe('light');
+    expect(normalizeThemeMode(undefined)).toBe('monsoon-garden');
+    expect(normalizeThemeMode(null)).toBe('monsoon-garden');
   });
 });

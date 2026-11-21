@@ -3,12 +3,14 @@
 import React from 'react';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import { Calendar, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { dueDateToCalendarDate, formatCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 
 interface AssignmentsSummaryCardsProps {
   overdueCount: number;
   dueThisWeekCount: number;
   completedThisWeekCount: number;
   nextAssignment: AssignmentWithProject | null;
+  timeZone?: string;
 }
 
 const LINING_NUMS_STYLE: React.CSSProperties = {
@@ -20,8 +22,10 @@ export function AssignmentsSummaryCards({
   dueThisWeekCount,
   completedThisWeekCount,
   nextAssignment,
+  timeZone,
 }: AssignmentsSummaryCardsProps) {
   const isAllCaughtUp = overdueCount === 0;
+  const tz = timeZone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : APP_TIMEZONE) || APP_TIMEZONE;
 
   return (
     <div
@@ -98,11 +102,10 @@ export function AssignmentsSummaryCards({
             <>
               <div className="font-sans text-headline-sm text-on-surface font-semibold truncate">
                 {nextAssignment.due_date
-                  ? new Date(nextAssignment.due_date).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                    })
+                  ? formatCalendarDate(
+                      dueDateToCalendarDate(nextAssignment.due_date, tz),
+                      'weekday'
+                    )
                   : 'No set date'}
               </div>
               <div className="font-sans text-body-sm text-on-surface-variant truncate mt-0.5">
@@ -112,7 +115,7 @@ export function AssignmentsSummaryCards({
           ) : (
             <>
               <div className="font-sans text-headline-sm text-on-surface font-semibold">
-                No upcoming deadlines
+                Nothing coming up
               </div>
               <div className="font-sans text-body-sm text-on-surface-variant mt-0.5">
                 All caught up with coursework

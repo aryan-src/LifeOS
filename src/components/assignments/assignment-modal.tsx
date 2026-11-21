@@ -6,6 +6,7 @@ import type { AssignmentWithProject, CreateAssignmentInput } from '@/lib/actions
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import type { AssignmentStatus } from '@/types/database.types';
 import { useModalA11y } from '@/hooks/use-modal-a11y';
+import { dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 
 interface AssignmentModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AssignmentModalProps {
   initialAssignment?: AssignmentWithProject | null;
   defaultStatus?: AssignmentStatus;
   projects: ProjectOption[];
+  timeZone?: string;
 }
 
 export function AssignmentModal({
@@ -23,14 +25,18 @@ export function AssignmentModal({
   initialAssignment,
   defaultStatus,
   projects,
+  timeZone,
 }: AssignmentModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   useModalA11y(isOpen, onClose, modalRef);
   const isEditing = Boolean(initialAssignment);
+  const tz = timeZone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : APP_TIMEZONE) || APP_TIMEZONE;
 
   const [subject, setSubject] = useState(initialAssignment?.subject || '');
   const [title, setTitle] = useState(initialAssignment?.title || '');
-  const [dueDate, setDueDate] = useState(initialAssignment?.due_date || '');
+  const [dueDate, setDueDate] = useState(
+    initialAssignment?.due_date ? dueDateToCalendarDate(initialAssignment.due_date, tz) : ''
+  );
   const [status, setStatus] = useState<AssignmentStatus>(
     initialAssignment?.status || defaultStatus || 'not_started'
   );
@@ -48,7 +54,9 @@ export function AssignmentModal({
     if (isOpen) {
       setSubject(initialAssignment?.subject || '');
       setTitle(initialAssignment?.title || '');
-      setDueDate(initialAssignment?.due_date || '');
+      setDueDate(
+        initialAssignment?.due_date ? dueDateToCalendarDate(initialAssignment.due_date, tz) : ''
+      );
       setStatus(initialAssignment?.status || defaultStatus || 'not_started');
       setProjectId(initialAssignment?.project_id || '');
       setTotalMarks(initialAssignment?.total_marks ? String(initialAssignment.total_marks) : '');

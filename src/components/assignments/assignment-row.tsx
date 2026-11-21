@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
+import { formatCalendarDate, dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import type { AssignmentStatus } from '@/types/database.types';
 import {
@@ -22,6 +22,7 @@ interface AssignmentRowProps {
   onGradeClick: (assignment: AssignmentWithProject) => void;
   onEditClick: (assignment: AssignmentWithProject) => void;
   onDeleteClick: (id: string) => void;
+  timeZone?: string;
 }
 
 export function AssignmentRow({
@@ -30,15 +31,19 @@ export function AssignmentRow({
   onGradeClick,
   onEditClick,
   onDeleteClick,
+  timeZone,
 }: AssignmentRowProps) {
-  const today = getTodayDate();
+  const tz = timeZone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : APP_TIMEZONE) || APP_TIMEZONE;
+  const today = dueDateToCalendarDate(new Date().toISOString(), tz);
+  const calendarDueDate = assignment.due_date ? dueDateToCalendarDate(assignment.due_date, tz) : null;
+
   const isOverdue =
-    assignment.due_date &&
-    assignment.due_date < today &&
+    calendarDueDate !== null &&
+    calendarDueDate < today &&
     assignment.status !== 'submitted' &&
     assignment.status !== 'graded';
 
-  const isDueToday = assignment.due_date === today;
+  const isDueToday = calendarDueDate === today;
   const isPendingSubmission = assignment.status === 'submission_pending';
 
   const percentage =
@@ -77,7 +82,7 @@ export function AssignmentRow({
 
       {/* Due Date */}
       <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-        {assignment.due_date ? (
+        {calendarDueDate ? (
           <div className="flex items-center gap-1.5 text-xs">
             {isOverdue ? (
               <AlertTriangle size={13} className="text-rose-500 shrink-0" />
@@ -96,7 +101,7 @@ export function AssignmentRow({
                   : 'text-stone-600 dark:text-stone-400'
               }`}
             >
-              {formatCalendarDate(assignment.due_date, 'short')}
+              {formatCalendarDate(calendarDueDate, 'short')}
               {isOverdue && ' (Overdue)'}
               {isDueToday && ' (Today)'}
             </span>

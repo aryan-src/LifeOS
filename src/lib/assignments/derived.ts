@@ -1,5 +1,6 @@
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import { daysBetweenDateStrings } from '@/lib/daily-loop/business-logic';
+import { dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 
 export interface AssignmentSummaryMetrics {
   total: number;
@@ -13,7 +14,8 @@ export interface AssignmentSummaryMetrics {
 
 export function computeAssignmentSummary(
   assignments: AssignmentWithProject[],
-  todayDateStr: string
+  todayDateStr: string,
+  timeZone: string = APP_TIMEZONE
 ): AssignmentSummaryMetrics {
   const modules = new Set<string>();
   let pendingSubmission = 0;
@@ -34,7 +36,7 @@ export function computeAssignmentSummary(
     } else {
       pendingSubmission += 1;
       if (item.due_date) {
-        const dueDay = item.due_date.slice(0, 10);
+        const dueDay = dueDateToCalendarDate(item.due_date, timeZone);
         if (/^\d{4}-\d{2}-\d{2}$/.test(dueDay)) {
           const diff = daysBetweenDateStrings(todayDateStr, dueDay);
           if (diff >= 0 && diff <= 2) {

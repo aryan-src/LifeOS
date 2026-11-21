@@ -1,6 +1,7 @@
 import type { AssignmentStatus } from '@/types/database.types';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
-import { getTodayDate } from '@/lib/utils/date';
+import { getTodayDate, dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
+import { daysBetweenDateStrings } from '@/lib/daily-loop/business-logic';
 
 export type PriorityLevel = 'HIGH' | 'MED' | 'LOW';
 
@@ -100,17 +101,20 @@ export function getSubjectBadgeStyle(subject: string): string {
  */
 export function getAssignmentPriority(
   assignment: Pick<AssignmentWithProject, 'due_date' | 'status'>,
-  todayStr: string = getTodayDate()
+  todayStr: string = getTodayDate(),
+  timeZone: string = APP_TIMEZONE
 ): PriorityLevel {
   // Submission pending is always High Priority action item
   if (assignment.status === 'submission_pending') {
     return 'HIGH';
   }
 
+  const calDueDate = assignment.due_date ? dueDateToCalendarDate(assignment.due_date, timeZone) : null;
+
   // Overdue items that are not completed
   if (
-    assignment.due_date &&
-    assignment.due_date < todayStr &&
+    calDueDate &&
+    calDueDate < todayStr &&
     assignment.status !== 'submitted' &&
     assignment.status !== 'graded'
   ) {
@@ -118,10 +122,8 @@ export function getAssignmentPriority(
   }
 
   // Calculate days difference
-  if (assignment.due_date) {
-    const todayMs = new Date(todayStr).getTime();
-    const dueMs = new Date(assignment.due_date).getTime();
-    const diffDays = Math.ceil((dueMs - todayMs) / (1000 * 60 * 60 * 24));
+  if (calDueDate) {
+    const diffDays = daysBetweenDateStrings(todayStr, calDueDate);
 
     if (diffDays <= 2 && assignment.status !== 'submitted' && assignment.status !== 'graded') {
       return 'HIGH';

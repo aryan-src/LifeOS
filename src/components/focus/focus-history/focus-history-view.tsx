@@ -8,6 +8,7 @@ import { FocusHistoryStats } from './focus-history-stats';
 import { AttentionalDistributionCard } from './attentional-distribution-card';
 import { RecentSessionsCard } from './recent-sessions-card';
 import { CalibrationHorizonCard } from './calibration-horizon-card';
+import { PageTitle } from '@/components/ui/page-title';
 
 interface FocusHistoryViewProps {
   data: DailyLoopDashboardData;
@@ -19,11 +20,11 @@ export function FocusHistoryView({ data, recentSessions = [] }: FocusHistoryView
 
   return (
     <div
-      className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:px-8 py-8 pb-32"
+      className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:px-8 py-8"
       data-purpose="focus-history-page"
     >
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/40 pb-5">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -32,9 +33,7 @@ export function FocusHistoryView({ data, recentSessions = [] }: FocusHistoryView
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           </Link>
-          <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-            Focus History
-          </h1>
+          <PageTitle>Focus History</PageTitle>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-label-sm">
@@ -42,7 +41,7 @@ export function FocusHistoryView({ data, recentSessions = [] }: FocusHistoryView
             {summary.weekLabel}
           </span>
         </div>
-      </div>
+      </header>
 
       {/* Stat Row: 3 Cards */}
       <FocusHistoryStats summary={summary} />

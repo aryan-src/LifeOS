@@ -1,5 +1,6 @@
 import { getAssignmentsWithStatus } from '@/lib/actions/assignments';
 import { getProjectOptions } from '@/lib/actions/projects-options';
+import { getUserProfile } from '@/lib/actions/profile';
 import { AssignmentsView } from '@/components/assignments/assignments-view';
 
 export const dynamic = 'force-dynamic';
@@ -10,9 +11,10 @@ export const metadata = {
 };
 
 export default async function AssignmentsPage() {
-  const [{ assignments, error, isSchemaMissing }, projects] = await Promise.all([
+  const [{ assignments, error, isSchemaMissing }, projects, profile] = await Promise.all([
     getAssignmentsWithStatus(),
     getProjectOptions(),
+    getUserProfile().catch(() => null),
   ]);
 
   return (
@@ -22,6 +24,7 @@ export default async function AssignmentsPage() {
         projects={projects}
         initialError={error}
         isSchemaMissing={isSchemaMissing}
+        userTimezone={profile?.timezone ?? undefined}
       />
     </main>
   );

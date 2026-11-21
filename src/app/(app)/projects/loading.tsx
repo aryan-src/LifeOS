@@ -6,10 +6,7 @@ export default function ProjectsLoading() {
       <div className="w-full animate-pulse flex flex-col gap-6">
         {/* Header & Tabs Skeleton */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-space-lg pt-space-lg">
-          <div className="flex flex-col gap-2">
-            <div className="h-8 w-56 bg-surface-container-high rounded-lg" />
-            <div className="h-4 w-72 bg-surface-container-high rounded" />
-          </div>
+          <div className="h-10 w-48 bg-surface-container-high rounded-lg" />
           <div className="flex items-center gap-3">
             <div className="h-9 w-48 bg-surface-container-low rounded-lg" />
             <div className="h-9 w-28 bg-surface-container-high rounded-lg" />

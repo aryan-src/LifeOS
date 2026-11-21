@@ -4,7 +4,7 @@ import React, { Suspense, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { QuickCaptureOmnibar } from '@/components/global/quick-capture';
-import { FloatingDock } from '@/components/ui/floating-dock';
+import { LiquidFooterNav } from '@/components/navigation/liquid-footer-nav';
 import { GlobalFocusController } from '@/components/focus/global-focus-controller';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { useUIStore } from '@/lib/store/use-ui-store';
@@ -41,6 +41,13 @@ function AppShellContent({
     pathname?.startsWith('/login') ||
     pathname?.startsWith('/auth');
 
+  const isPublicOrExcludedPage =
+    pathname === '/' ||
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/auth') ||
+    pathname?.startsWith('/privacy') ||
+    pathname?.startsWith('/license');
+
   if (isAuthPage) {
     return (
       <ThemeProvider initialTheme={initialTheme}>
@@ -56,24 +63,40 @@ function AppShellContent({
     <ThemeProvider initialTheme={initialTheme}>
       <QuickCaptureOmnibar />
       <GlobalFocusController />
-      <div className="min-h-screen w-full flex flex-col bg-surface text-on-surface selection:bg-secondary/20 selection:text-on-surface transition-colors duration-200">
+      <div
+        data-purpose="app-shell-root"
+        style={
+          {
+            '--footer-nav-height': '52px',
+            '--footer-nav-offset': '20px',
+            '--footer-nav-gap': '16px',
+            '--footer-content-padding':
+              'calc(var(--footer-nav-height) + var(--footer-nav-offset) + var(--footer-nav-gap) + env(safe-area-inset-bottom, 0px))',
+          } as React.CSSProperties
+        }
+        className="min-h-screen w-full flex flex-col bg-surface text-on-surface selection:bg-secondary/20 selection:text-on-surface transition-colors duration-200"
+      >
         {children}
       </div>
 
-      {/* Stitch floating 7-icon pill dock */}
-      <motion.aside
-        initial={false}
-        animate={{
-          y: isDockHidden ? 96 : 0,
-          opacity: isDockHidden ? 0 : 1,
-        }}
-        transition={{ duration: 0.22, ease: 'easeInOut' }}
-        className="fixed bottom-5 inset-x-0 z-50 flex justify-center pointer-events-none px-4"
-        aria-hidden={isDockHidden}
-        data-purpose="floating-dock-shell"
-      >
-        <FloatingDock className={isDockHidden ? 'pointer-events-none' : 'pointer-events-auto'} />
-      </motion.aside>
+      {/* Liquid Navbar bottom dock in signed-in app shell */}
+      {!isPublicOrExcludedPage && (
+        <motion.footer
+          initial={false}
+          animate={{
+            y: isDockHidden ? 96 : 0,
+            opacity: isDockHidden ? 0 : 1,
+          }}
+          transition={{ duration: 0.22, ease: 'easeInOut' }}
+          className="fixed bottom-5 inset-x-0 z-50 flex justify-center pointer-events-none px-4 bg-transparent border-0 border-none shadow-none backdrop-blur-none"
+          aria-hidden={isDockHidden}
+          data-purpose="floating-dock-shell"
+        >
+          <div className={isDockHidden ? 'pointer-events-none' : 'pointer-events-auto'}>
+            <LiquidFooterNav />
+          </div>
+        </motion.footer>
+      )}
     </ThemeProvider>
   );
 }

@@ -121,6 +121,9 @@ describe('Projects Module Multi-View Suite', () => {
       );
 
       expect(html).toContain('Projects');
+      expect(html).toContain('font-serif text-page-title');
+      expect(html).toContain('font-semibold');
+      expect(html).not.toContain('Milestones, roadmaps, task execution, and budget tracking.');
       expect(html).toContain('Board View');
       expect(html).toContain('List View');
       expect(html).toContain('Timeline');

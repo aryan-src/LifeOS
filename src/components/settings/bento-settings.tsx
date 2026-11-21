@@ -33,7 +33,9 @@ import {
 } from '@/lib/export/formatters';
 import { Card } from '@/components/ui/card';
 import { Pill } from '@/components/ui/pill';
+import { PageTitle } from '@/components/ui/page-title';
 import { ThemeModeSelector } from './theme-mode-selector';
+import { ThemePullCord } from './theme-pull-cord';
 
 interface BentoSettingsProps {
   initialProfile: Profile;
@@ -129,6 +131,19 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     } catch {
       // ignore storage errors
     }
+
+    const handleThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const nextTheme = customEvent.detail || localStorage.getItem('lifeos_theme');
+      if (nextTheme) {
+        setThemeMode(normalizeThemeMode(nextTheme));
+      }
+    };
+
+    window.addEventListener('lifeos-theme-change', handleThemeChange);
+    return () => {
+      window.removeEventListener('lifeos-theme-change', handleThemeChange);
+    };
   }, []);
 
   const parsedAllowance = Math.max(0, parseFloat(allowanceTarget) || 0);
@@ -166,9 +181,13 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     setSaveError(null);
     const trimmedName = displayName.trim() || 'Student';
     const formData = new FormData();
+    const dbThemePreference =
+      themeMode === 'monsoon-garden' || (themeMode as string) === 'monsoon'
+        ? 'light'
+        : themeMode;
     formData.set('displayName', trimmedName);
     formData.set('currencySymbol', currencySymbol);
-    formData.set('themePreference', themeMode);
+    formData.set('themePreference', dbThemePreference);
     formData.set('monthlyAllowanceTarget', String(parsedAllowance));
     formData.set('dailyFocusGoalMinutes', String(focusGoalMinutes));
 
@@ -244,12 +263,10 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const initials = getInitials(displayName);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20 space-y-6 sm:space-y-8">
+    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Settings Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Settings
-        </h1>
+        <PageTitle>Settings</PageTitle>
 
         <button
           type="button"
@@ -273,10 +290,9 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
 
       {/* Main 12-Column Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Card 1: Profile */}
-          <Card as="section" id="sectionProfile" padding="lg" surface="lowest" className="space-y-5">
+        {/* Card 1: Profile */}
+        <div className="lg:col-span-7">
+          <Card as="section" id="sectionProfile" padding="lg" surface="lowest" className="space-y-5 h-full">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-on-surface">
                 <User className="h-4 w-4" aria-hidden="true" />
@@ -340,9 +356,11 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
               </div>
             </div>
           </Card>
+        </div>
 
-          {/* Card 2: Goals */}
-          <Card as="section" id="sectionFinance" padding="lg" surface="lowest" className="space-y-5">
+        {/* Card 2: Goals */}
+        <div className="lg:col-span-5">
+          <Card as="section" id="sectionFinance" padding="lg" surface="lowest" className="space-y-5 h-full">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-secondary">
                 <Wallet className="h-4 w-4" aria-hidden="true" />
@@ -459,9 +477,8 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
           </Card>
         </div>
 
-        {/* Right Column (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* Card 3: Appearance */}
+        {/* Card 3: Appearance (Full 12 Cols) */}
+        <div className="lg:col-span-12">
           <Card as="section" id="sectionAppearance" padding="lg" surface="lowest" className="space-y-5">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-on-surface">
@@ -472,10 +489,19 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
               </h2>
             </div>
 
-            <ThemeModeSelector value={themeMode} onChange={handleSelectTheme} />
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-1 w-full space-y-3">
+                <ThemeModeSelector value={themeMode} onChange={handleSelectTheme} />
+              </div>
+              <div className="shrink-0 flex justify-center">
+                <ThemePullCord onThemeChange={(t) => setThemeMode(t)} />
+              </div>
+            </div>
           </Card>
+        </div>
 
-          {/* Card 4: Your data */}
+        {/* Card 4: Your data (Full 12 Cols) */}
+        <div className="lg:col-span-12">
           <Card as="section" id="sectionData" padding="lg" surface="lowest" className="space-y-4">
             <div className="flex items-center gap-3 border-b border-outline-variant/30 pb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-container-low text-secondary">

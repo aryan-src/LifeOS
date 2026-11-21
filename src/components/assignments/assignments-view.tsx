@@ -17,6 +17,7 @@ import { GradeModal } from './grade-modal';
 import { AssignmentsSummaryCards } from './assignments-summary-cards';
 import { computeAssignmentSummary } from '@/lib/assignments/derived';
 import { Pill } from '@/components/ui/pill';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   FOUR_COLUMNS,
   getAssignmentPriority,
@@ -38,7 +39,7 @@ import {
   ExternalLink,
   ArrowUpDown,
 } from 'lucide-react';
-import { getTodayDate } from '@/lib/utils/date';
+import { getTodayDate, dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 import { daysBetweenDateStrings } from '@/lib/daily-loop/business-logic';
 
 interface ProjectOption {
@@ -52,6 +53,7 @@ interface AssignmentsViewProps {
   projects: ProjectOption[];
   initialError?: string | null;
   isSchemaMissing?: boolean;
+  userTimezone?: string;
 }
 
 type OptimisticAction =
@@ -73,6 +75,7 @@ export function AssignmentsView({
   projects,
   initialError,
   isSchemaMissing = false,
+  userTimezone,
 }: AssignmentsViewProps) {
   const [viewMode, setViewMode] = useState<'due_date' | 'by_course' | 'kanban' | 'list'>('due_date');
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,7 +156,11 @@ export function AssignmentsView({
     return Array.from(set).sort();
   }, [optimisticAssignments]);
 
-  const today = getTodayDate();
+  const userTz =
+    userTimezone ||
+    (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : APP_TIMEZONE) ||
+    APP_TIMEZONE;
+  const today = dueDateToCalendarDate(new Date().toISOString(), userTz);
 
   // Filtered and Sorted assignments
   const filteredAssignments = useMemo(() => {
@@ -176,7 +183,7 @@ export function AssignmentsView({
 
       // Priority filter
       if (selectedPriority !== 'all') {
-        const p = getAssignmentPriority(a, today);
+        const p = getAssignmentPriority(a, today, userTz);
         if (p !== selectedPriority) return false;
       }
 
@@ -194,13 +201,17 @@ export function AssignmentsView({
         if (!a.due_date && !b.due_date) return 0;
         if (!a.due_date) return 1;
         if (!b.due_date) return -1;
-        return a.due_date.localeCompare(b.due_date);
+        const dateA = dueDateToCalendarDate(a.due_date, userTz);
+        const dateB = dueDateToCalendarDate(b.due_date, userTz);
+        return dateA.localeCompare(dateB);
       }
       if (sortBy === 'due_desc') {
         if (!a.due_date && !b.due_date) return 0;
         if (!a.due_date) return 1;
         if (!b.due_date) return -1;
-        return b.due_date.localeCompare(a.due_date);
+        const dateA = dueDateToCalendarDate(a.due_date, userTz);
+        const dateB = dueDateToCalendarDate(b.due_date, userTz);
+        return dateB.localeCompare(dateA);
       }
       if (sortBy === 'title_asc') {
         return a.title.localeCompare(b.title);
@@ -226,6 +237,7 @@ export function AssignmentsView({
     selectedStatus,
     sortBy,
     today,
+    userTz,
   ]);
 
   // Dynamic KPI Metrics computation
@@ -257,12 +269,11 @@ export function AssignmentsView({
     const uniqueSubjects = new Set(optimisticAssignments.map((a) => a.subject).filter(Boolean));
 
     // Urgent pending items (due today or overdue)
-    const urgentPendingCount = optimisticAssignments.filter(
-      (a) =>
-        a.status === 'submission_pending' &&
-        a.due_date &&
-        a.due_date <= today
-    ).length;
+    const urgentPendingCount = optimisticAssignments.filter((a) => {
+      if (a.status !== 'submission_pending' || !a.due_date) return false;
+      const calDate = dueDateToCalendarDate(a.due_date, userTz);
+      return calDate <= today;
+    }).length;
 
     return {
       total,
@@ -400,38 +411,38 @@ export function AssignmentsView({
   };
 
   const derivedSummary = useMemo(
-    () => computeAssignmentSummary(optimisticAssignments, today),
-    [optimisticAssignments, today]
+    () => computeAssignmentSummary(optimisticAssignments, today, userTz),
+    [optimisticAssignments, today, userTz]
   );
   const letterGrade = getLetterGrade(derivedSummary.avgPercentage);
 
   const overdueAssignments = useMemo(() => {
     return filteredAssignments.filter((a) => {
       if (a.status === 'submitted' || a.status === 'graded' || !a.due_date) return false;
-      const dueDay = a.due_date.slice(0, 10);
+      const dueDay = dueDateToCalendarDate(a.due_date, userTz);
       return dueDay < today;
     });
-  }, [filteredAssignments, today]);
+  }, [filteredAssignments, today, userTz]);
 
   const thisWeekAssignments = useMemo(() => {
     return filteredAssignments.filter((a) => {
       if (!a.due_date) return false;
-      const dueDay = a.due_date.slice(0, 10);
+      const dueDay = dueDateToCalendarDate(a.due_date, userTz);
       if (dueDay < today) return false;
       const diff = daysBetweenDateStrings(today, dueDay);
       return diff >= 0 && diff <= 7;
     });
-  }, [filteredAssignments, today]);
+  }, [filteredAssignments, today, userTz]);
 
   const upcomingLaterAssignments = useMemo(() => {
     return filteredAssignments.filter((a) => {
       if (!a.due_date) return true;
-      const dueDay = a.due_date.slice(0, 10);
+      const dueDay = dueDateToCalendarDate(a.due_date, userTz);
       if (dueDay < today) return false;
       const diff = daysBetweenDateStrings(today, dueDay);
       return diff > 7;
     });
-  }, [filteredAssignments, today]);
+  }, [filteredAssignments, today, userTz]);
 
   const assignmentsByCourse = useMemo(() => {
     const map = new Map<string, AssignmentWithProject[]>();
@@ -445,18 +456,24 @@ export function AssignmentsView({
 
   const nextAssignment = useMemo(() => {
     const candidates = filteredAssignments
-      .filter((a) => a.status !== 'graded' && a.status !== 'submitted' && a.due_date)
-      .sort((a, b) => (a.due_date! > b.due_date! ? 1 : -1));
+      .filter((a) => {
+        if (a.status === 'graded' || a.status === 'submitted' || !a.due_date) return false;
+        const dueDay = dueDateToCalendarDate(a.due_date, userTz);
+        return dueDay >= today;
+      })
+      .sort((a, b) => {
+        const dueDayA = dueDateToCalendarDate(a.due_date!, userTz);
+        const dueDayB = dueDateToCalendarDate(b.due_date!, userTz);
+        return dueDayA.localeCompare(dueDayB);
+      });
     return candidates[0] || null;
-  }, [filteredAssignments]);
+  }, [filteredAssignments, today, userTz]);
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-6">
       {/* Assignments Page Header */}
-      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 md:flex-row md:items-end">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Assignments
-        </h1>
+      <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 mb-2 md:flex-row md:items-end">
+        <PageTitle>Assignments</PageTitle>
 
         {/* View Mode & New Assignment Action Buttons */}
         <div className="flex flex-wrap items-center gap-3">
@@ -602,6 +619,7 @@ export function AssignmentsView({
         dueThisWeekCount={thisWeekAssignments.length}
         completedThisWeekCount={thisWeekAssignments.filter(a => a.status === 'submitted' || a.status === 'graded').length}
         nextAssignment={nextAssignment}
+        timeZone={userTz}
       />
 
       {/* Filter and Search Bar (Stitch Toolbar) */}
@@ -720,20 +738,27 @@ export function AssignmentsView({
                 </div>
               </div>
             ) : (
-              <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
-                {overdueAssignments.map((assignment) => (
-                  <AssignmentRow
-                    key={assignment.id}
-                    assignment={assignment}
-                    onStatusChange={handleStatusChange}
-                    onGradeClick={(a) => setGradingAssignment(a)}
-                    onEditClick={(a) => {
-                      setEditingAssignment(a);
-                      setIsCreateOpen(true);
-                    }}
-                    onDeleteClick={handleDelete}
-                  />
-                ))}
+              <div className="overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <tbody>
+                      {overdueAssignments.map((assignment) => (
+                        <AssignmentRow
+                          key={assignment.id}
+                          assignment={assignment}
+                          onStatusChange={handleStatusChange}
+                          onGradeClick={(a) => setGradingAssignment(a)}
+                          onEditClick={(a) => {
+                            setEditingAssignment(a);
+                            setIsCreateOpen(true);
+                          }}
+                          onDeleteClick={handleDelete}
+                          timeZone={userTz}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </section>
@@ -755,20 +780,27 @@ export function AssignmentsView({
                 <p className="font-sans text-body-sm text-on-surface-variant">No assignments due this week.</p>
               </div>
             ) : (
-              <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
-                {thisWeekAssignments.map((assignment) => (
-                  <AssignmentRow
-                    key={assignment.id}
-                    assignment={assignment}
-                    onStatusChange={handleStatusChange}
-                    onGradeClick={(a) => setGradingAssignment(a)}
-                    onEditClick={(a) => {
-                      setEditingAssignment(a);
-                      setIsCreateOpen(true);
-                    }}
-                    onDeleteClick={handleDelete}
-                  />
-                ))}
+              <div className="overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <tbody>
+                      {thisWeekAssignments.map((assignment) => (
+                        <AssignmentRow
+                          key={assignment.id}
+                          assignment={assignment}
+                          onStatusChange={handleStatusChange}
+                          onGradeClick={(a) => setGradingAssignment(a)}
+                          onEditClick={(a) => {
+                            setEditingAssignment(a);
+                            setIsCreateOpen(true);
+                          }}
+                          onDeleteClick={handleDelete}
+                          timeZone={userTz}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </section>
@@ -801,6 +833,7 @@ export function AssignmentsView({
                       setIsCreateOpen(true);
                     }}
                     onDeleteClick={handleDelete}
+                    timeZone={userTz}
                   />
                 ))}
               </div>
@@ -825,20 +858,27 @@ export function AssignmentsView({
                     {items.length} {items.length === 1 ? 'item' : 'items'}
                   </span>
                 </div>
-                <div className="bg-surface-container-lowest rounded-xl shadow-xs border border-outline-variant/40 divide-y divide-outline-variant/30 overflow-hidden">
-                  {items.map((assignment) => (
-                    <AssignmentRow
-                      key={assignment.id}
-                      assignment={assignment}
-                      onStatusChange={handleStatusChange}
-                      onGradeClick={(a) => setGradingAssignment(a)}
-                      onEditClick={(a) => {
-                        setEditingAssignment(a);
-                        setIsCreateOpen(true);
-                      }}
-                      onDeleteClick={handleDelete}
-                    />
-                  ))}
+                <div className="overflow-hidden rounded-xl border border-outline-variant/40 bg-surface-container-lowest shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <tbody>
+                        {items.map((assignment) => (
+                          <AssignmentRow
+                            key={assignment.id}
+                            assignment={assignment}
+                            onStatusChange={handleStatusChange}
+                            onGradeClick={(a) => setGradingAssignment(a)}
+                            onEditClick={(a) => {
+                              setEditingAssignment(a);
+                              setIsCreateOpen(true);
+                            }}
+                            onDeleteClick={handleDelete}
+                            timeZone={userTz}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             ))
@@ -965,6 +1005,7 @@ export function AssignmentsView({
                       setIsCreateOpen(true);
                     }}
                     onDeleteClick={handleDelete}
+                    timeZone={userTz}
                   />
                 ))
               )}
@@ -984,6 +1025,7 @@ export function AssignmentsView({
         defaultStatus={createDefaultStatus}
         projects={projects}
         onSubmit={handleSaveAssignment}
+        timeZone={userTz}
       />
 
       {/* Grade Modal */}

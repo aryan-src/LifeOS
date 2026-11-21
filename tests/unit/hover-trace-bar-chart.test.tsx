@@ -67,6 +67,7 @@ describe('HoverTraceBarChart Component', () => {
   it('renders single cleanly styled price indicator without duplicate overlay badges', () => {
     const rawHtml = renderToString(
       <HoverTraceBarChart
+        data={mockWeeklyData}
         currencySymbol="₹"
       />
     );
@@ -74,7 +75,7 @@ describe('HoverTraceBarChart Component', () => {
     const cleanHtml = rawHtml.replace(/<!--.*?-->/g, '');
     // Check for single clean amber amount badge styling
     expect(cleanHtml).toContain('text-xs font-mono font-medium mb-1.5 transition-transform duration-200 tabular-nums z-10 text-amber-800 dark:text-amber-300');
-    expect(cleanHtml).toContain('₹327');
+    expect(cleanHtml).toContain('₹601');
     // Ensure no secondary peak overlay duplicate badges exist in markup
     expect(cleanHtml).not.toContain('shadow-xs whitespace-nowrap group-hover:brightness-105');
   });

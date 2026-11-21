@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, CheckCircle2, GitCommit } from 'lucide-react';
 import type { Metadata } from 'next';
+import { PageTitle } from '@/components/ui/page-title';
 
 export const metadata: Metadata = {
   title: 'Changelog & Release Notes',
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-[#FAF9F5] dark:bg-zinc-950 text-textMain dark:text-zinc-100 font-sans antialiased selection:bg-sage selection:text-white transition-colors py-12 px-6 sm:px-8">
+    <div className="w-full text-textMain dark:text-zinc-100 font-sans antialiased selection:bg-sage selection:text-white transition-colors py-12 px-6 sm:px-8">
       <div className="max-w-3xl mx-auto space-y-10">
         {/* Navigation */}
         <div className="flex items-center justify-between border-b border-borderWarm dark:border-zinc-800 pb-4">
@@ -25,18 +26,9 @@ export default function ChangelogPage() {
         </div>
 
         {/* Header */}
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#E1EEE6] dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 text-[#065F46] dark:text-emerald-400 text-xs font-mono">
-            <Sparkles size={14} />
-            <span>Product Release History</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
-            Changelog &amp; Release Notes
-          </h1>
-          <p className="text-base text-textMuted dark:text-zinc-400 leading-relaxed">
-            Continuous engineering updates, security hardening, and new capabilities across LifeOS.
-          </p>
-        </div>
+        <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 mb-8">
+          <PageTitle>Changelog &amp; Release Notes</PageTitle>
+        </header>
 
         {/* Release v1.0.0 */}
         <div className="space-y-6">

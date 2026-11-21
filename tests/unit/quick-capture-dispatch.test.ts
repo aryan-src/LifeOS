@@ -4,6 +4,12 @@ import {
   undoQuickCapture,
 } from '@/lib/actions/quick-capture';
 
+// Mock next/cache
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}));
+import { revalidatePath } from 'next/cache';
+
 // Mock the server actions
 vi.mock('@/lib/actions/tasks', () => ({
   createTask: vi.fn(),
@@ -240,5 +246,66 @@ describe('Quick Capture Server Action Dispatch & 5-Second Undo', () => {
     expect(undoRes.success).toBe(true);
     expect(undoRes.data?.undone).toBe(false);
     expect(toggleHabitLog).not.toHaveBeenCalled();
+  });
+
+  it('revalidates dashboard, root, and affected domain page upon successful dispatch and undo', async () => {
+    vi.mocked(revalidatePath).mockClear();
+    vi.mocked(createTask).mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: 'task-rev-1',
+        title: 'Review PR',
+        due_date: '2026-11-20',
+        priority: 2,
+        sort_order: 0,
+        user_id: 'user-1',
+        is_completed: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        project_id: null,
+        description: null,
+        completed_at: null,
+      },
+    });
+
+    const dispatchRes = await dispatchQuickCapture('t Review PR');
+    expect(dispatchRes.success).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+    expect(revalidatePath).toHaveBeenCalledWith('/tasks');
+
+    vi.mocked(revalidatePath).mockClear();
+    vi.mocked(deleteTask).mockResolvedValueOnce({ success: true });
+    const undoRes = await undoQuickCapture('task', 'task-rev-1');
+    expect(undoRes.success).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+    expect(revalidatePath).toHaveBeenCalledWith('/tasks');
+  });
+
+  it('revalidates habits page when a habit is checked in and undone', async () => {
+    vi.mocked(revalidatePath).mockClear();
+    vi.mocked(toggleHabitLog).mockResolvedValueOnce({
+      success: true,
+      data: { habit_id: 'h-run', date: '2026-11-19', is_completed: true },
+    });
+
+    const context = {
+      habits: [{ id: 'h-run', title: 'Go for a run', is_completed_today: false }],
+    };
+
+    const res = await dispatchQuickCapture('Go for a run', undefined, context);
+    expect(res.success).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    expect(revalidatePath).toHaveBeenCalledWith('/habits');
+
+    vi.mocked(revalidatePath).mockClear();
+    vi.mocked(toggleHabitLog).mockResolvedValueOnce({
+      success: true,
+      data: { habit_id: 'h-run', date: '2026-11-19', is_completed: false },
+    });
+    const undoRes = await undoQuickCapture('habit', 'h-run', res.data?.extra);
+    expect(undoRes.success).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith('/habits');
   });
 });

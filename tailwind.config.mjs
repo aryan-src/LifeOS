@@ -148,6 +148,8 @@ export default {
         'code-sm': ['var(--font-jetbrains-mono)', 'ui-monospace', 'monospace'],
       },
       fontSize: {
+        'page-title': ['clamp(1.75rem, 1.2rem + 2vw, 2.75rem)', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'dashboard-greeting': ['clamp(1.875rem, 1.25rem + 2.25vw, 3rem)', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
         'display': ['3.5rem', { lineHeight: '4rem', letterSpacing: '-0.02em', fontWeight: '600' }],
         'display-lg': ['3.5rem', { lineHeight: '4rem', letterSpacing: '-0.02em', fontWeight: '600' }],
         'display-lg-mobile': ['2.25rem', { lineHeight: '2.75rem', letterSpacing: '-0.015em', fontWeight: '600' }],

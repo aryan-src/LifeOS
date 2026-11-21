@@ -26,13 +26,7 @@ interface Milestone {
   deliverables: string;
 }
 
-const DEFAULT_MILESTONES: Milestone[] = [
-  {
-    id: 'm-1',
-    title: 'Discovery & Wireframes',
-    deliverables: 'Audits, user journeys & component specs',
-  },
-];
+const DEFAULT_MILESTONES: Milestone[] = [];
 
 const STATUS_OPTIONS: { id: ExtendedProjectStatus; label: string; dotClass: string }[] = [
   { id: 'backlog', label: 'Backlog', dotClass: 'bg-stone-400 dark:bg-zinc-500' },
@@ -629,7 +623,7 @@ export function CreateProjectModal({
                               }
                             />
                           </div>
-                          {milestones.length > 1 && (
+                          {milestones.length > 0 && (
                             <button
                               className="p-1 text-stone-400 hover:text-rose-500 transition-colors rounded cursor-pointer"
                               type="button"

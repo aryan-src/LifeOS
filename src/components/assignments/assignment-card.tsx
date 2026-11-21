@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatCalendarDate, getTodayDate } from '@/lib/utils/date';
+import { formatCalendarDate, dueDateToCalendarDate, APP_TIMEZONE } from '@/lib/utils/date';
 import type { AssignmentWithProject } from '@/lib/actions/assignments';
 import type { AssignmentStatus } from '@/types/database.types';
 import {
@@ -24,6 +24,7 @@ interface AssignmentCardProps {
   onGradeClick: (assignment: AssignmentWithProject) => void;
   onEditClick: (assignment: AssignmentWithProject) => void;
   onDeleteClick: (id: string) => void;
+  timeZone?: string;
 }
 
 export function AssignmentCard({
@@ -32,20 +33,24 @@ export function AssignmentCard({
   onGradeClick,
   onEditClick,
   onDeleteClick,
+  timeZone,
 }: AssignmentCardProps) {
-  const today = getTodayDate();
+  const tz = timeZone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : APP_TIMEZONE) || APP_TIMEZONE;
+  const today = dueDateToCalendarDate(new Date().toISOString(), tz);
+  const calendarDueDate = assignment.due_date ? dueDateToCalendarDate(assignment.due_date, tz) : null;
+
   const isOverdue =
-    assignment.due_date &&
-    assignment.due_date < today &&
+    calendarDueDate !== null &&
+    calendarDueDate < today &&
     assignment.status !== 'submitted' &&
     assignment.status !== 'graded';
 
-  const isDueToday = assignment.due_date === today;
+  const isDueToday = calendarDueDate === today;
   const isPendingSubmission = assignment.status === 'submission_pending';
   const isGraded = assignment.status === 'graded';
   const isSubmitted = assignment.status === 'submitted';
 
-  const priority = getAssignmentPriority(assignment, today);
+  const priority = getAssignmentPriority(assignment, today, tz);
 
   const percentage =
     assignment.marks_achieved !== null &&
@@ -151,13 +156,13 @@ export function AssignmentCard({
               suppressHydrationWarning
             >
               <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              {assignment.due_date ? (
+              {calendarDueDate ? (
                 isDueToday ? (
                   'Due Tonight 11:59 PM'
                 ) : isOverdue ? (
                   'Overdue'
                 ) : (
-                  `Due ${formatCalendarDate(assignment.due_date, 'short')}`
+                  `Due ${formatCalendarDate(calendarDueDate, 'short')}`
                 )
               ) : (
                 'Action Required'
@@ -184,8 +189,8 @@ export function AssignmentCard({
               suppressHydrationWarning
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              {assignment.due_date
-                ? `Turned in ${formatCalendarDate(assignment.due_date, 'short')}`
+              {calendarDueDate
+                ? `Turned in ${formatCalendarDate(calendarDueDate, 'short')}`
                 : 'Turned In'}
             </span>
             <button
@@ -199,8 +204,8 @@ export function AssignmentCard({
         ) : isGraded ? (
           <>
             <span suppressHydrationWarning>
-              {assignment.due_date
-                ? `${formatCalendarDate(assignment.due_date, 'short')} evaluation`
+              {calendarDueDate
+                ? `${formatCalendarDate(calendarDueDate, 'short')} evaluation`
                 : 'Evaluated'}
             </span>
             <button
@@ -227,8 +232,8 @@ export function AssignmentCard({
                     : ''
                 }
               >
-                {assignment.due_date
-                  ? formatCalendarDate(assignment.due_date, 'short')
+                {calendarDueDate
+                  ? formatCalendarDate(calendarDueDate, 'short')
                   : 'No due date'}
                 {isOverdue && ' (Overdue)'}
                 {isDueToday && ' (Today)'}

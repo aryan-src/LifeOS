@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useOptimistic, useTransition, useMemo } from 'react';
+import React, { useState, useEffect, useOptimistic, useTransition, useMemo } from 'react';
 import type { HabitWithLog, WeeklyHabitStat } from '@/lib/actions/habits';
 import {
   toggleHabitLog,
@@ -17,6 +17,7 @@ import { Pill } from '@/components/ui/pill';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Modal } from '@/components/ui/modal';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   Check,
   Plus,
@@ -55,6 +56,10 @@ export function HabitTrackerClient({
   const trailingDays = useMemo(() => getTrailingDays(7), []);
 
   const [habitsState, setHabitsState] = useState<HabitWithLog[]>(initialHabits);
+
+  useEffect(() => {
+    setHabitsState(initialHabits);
+  }, [initialHabits]);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isAddingOpen, setIsAddingOpen] = useState(false);
@@ -234,7 +239,7 @@ export function HabitTrackerClient({
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 pb-12">
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8 pb-6">
       {/* Schema Missing Alert Banner */}
       {isSchemaMissing && (
         <div className="flex items-start gap-3 rounded-2xl border border-on-tertiary-container/30 bg-tertiary-fixed/50 p-4 font-mono text-label-sm text-on-tertiary-fixed">
@@ -265,9 +270,7 @@ export function HabitTrackerClient({
 
       {/* Habits Page Header */}
       <header className="flex flex-col justify-between gap-4 border-b border-outline-variant/40 pb-5 sm:flex-row sm:items-end">
-        <h1 className="font-serif text-page-title font-normal tracking-tight text-on-surface">
-          Habits
-        </h1>
+        <PageTitle>Habits</PageTitle>
 
         <button
           type="button"
@@ -287,7 +290,7 @@ export function HabitTrackerClient({
         {/* Left Column: Wide Habit Cards Stream (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-            <h2 className="font-sans text-headline-sm font-semibold tracking-tight text-on-surface">
+            <h2 className="font-serif text-headline-sm font-semibold tracking-tight text-on-surface">
               Today
             </h2>
             <div className="flex items-center gap-2">
@@ -333,32 +336,31 @@ export function HabitTrackerClient({
               return (
                 <div
                   key={habit.id}
-                  className="rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs transition-colors hover:border-outline-variant/70 space-y-4"
+                  className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-xs transition-all hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5"
                   data-purpose="habit-execution-card"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleHabit(habit.id, todayStr)}
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 mt-0.5 ${
-                          isDoneToday
-                            ? 'border-secondary bg-secondary text-on-secondary shadow-xs'
-                            : 'border-outline-variant text-transparent hover:border-secondary hover:bg-secondary/10'
-                        }`}
-                        aria-label={`Toggle habit: ${habit.title}`}
-                        aria-pressed={isDoneToday}
-                        title={isDoneToday ? 'Mark as incomplete' : 'Mark as completed'}
-                      >
-                        <Check
-                          className={`h-4 w-4 stroke-[3] transition-transform ${
-                            isDoneToday ? 'scale-100' : 'scale-50'
-                          }`}
-                          aria-hidden="true"
-                        />
-                      </button>
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleHabit(habit.id, todayStr)}
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
+                        isDoneToday
+                          ? 'bg-secondary/15 text-secondary border border-secondary/30'
+                          : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                      }`}
+                      aria-label={`Toggle habit: ${habit.title}`}
+                      aria-pressed={isDoneToday}
+                      title={isDoneToday ? 'Mark as incomplete' : 'Mark as completed'}
+                    >
+                      {isDoneToday ? (
+                        <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                      ) : (
+                        <Check className="h-5 w-5" aria-hidden="true" />
+                      )}
+                    </button>
 
-                      <div className="flex min-w-0 flex-col">
+                    <div className="flex min-w-0 flex-col space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span
                           className={`truncate font-sans text-body-md font-medium tracking-tight transition-colors ${
                             isDoneToday
@@ -368,80 +370,99 @@ export function HabitTrackerClient({
                         >
                           {habit.title}
                         </span>
-                        {habit.description && (
-                          <span className="truncate font-sans text-body-sm text-on-surface-variant">
-                            {habit.description}
-                          </span>
+                        {habit.streak > 0 && (
+                          <Pill tone="tertiary">
+                            <span
+                              className="inline-flex items-center gap-1 font-semibold"
+                              style={LINING_NUMS_STYLE}
+                            >
+                              <Flame className="h-3 w-3 text-on-tertiary-container" aria-hidden="true" />
+                              <span>{`${habit.streak}d streak`}</span>
+                            </span>
+                          </Pill>
                         )}
                       </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-2">
-                      {habit.streak > 0 && (
-                        <Pill tone="tertiary">
-                          <span
-                            className="inline-flex items-center gap-1 font-semibold"
-                            style={LINING_NUMS_STYLE}
-                          >
-                            <Flame className="h-3 w-3 text-on-tertiary-container" aria-hidden="true" />
-                            <span>{`${habit.streak}d streak`}</span>
-                          </span>
-                        </Pill>
+                      {habit.description && (
+                        <p className="truncate font-sans text-body-sm text-on-surface-variant">
+                          {habit.description}
+                        </p>
                       )}
-
-                      <button
-                        type="button"
-                        onClick={() => handleToggleHabit(habit.id, todayStr)}
-                        className={`px-3 py-1.5 rounded-lg font-sans text-body-sm font-medium transition-all cursor-pointer ${
-                          isDoneToday
-                            ? 'bg-secondary/15 text-secondary border border-secondary/30 hover:bg-secondary/20'
-                            : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                        }`}
-                      >
-                        {isDoneToday ? 'Done today' : 'Log'}
-                      </button>
                     </div>
                   </div>
 
-                  {/* M-S Day Dot Strip */}
-                  <div className="flex items-center justify-between border-t border-outline-variant/20 pt-3">
+                  <div className="flex items-center justify-between md:justify-end gap-5 pt-2 md:pt-0 border-t border-outline-variant/20 md:border-t-0 md:pt-0">
+                    {/* M-S Day Dot Strip */}
                     <div className="flex items-center gap-1.5" aria-label="7-day completion history">
                       {trailingDays.map((d) => {
                         const completed = habit.weekly_history?.[d.date] || false;
                         return (
-                          <button
-                            key={d.date}
-                            type="button"
-                            onClick={() => handleToggleHabit(habit.id, d.date)}
-                            aria-label={`${habit.title} ${d.dayLabel} (${d.date}): ${
-                              completed ? 'Completed' : 'Missed'
-                            }`}
-                            className={`flex h-6 w-6 items-center justify-center rounded-md font-mono text-[10px] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
-                              completed
-                                ? 'bg-secondary text-on-secondary'
-                                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-highest'
-                            } ${d.isToday ? 'ring-2 ring-secondary/35' : ''}`}
-                            title={`${d.dayLabel} (${d.date}): ${completed ? 'Completed' : 'Missed'} • Click to toggle`}
-                          >
-                            {completed ? (
-                              <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
-                            ) : (
-                              d.dayLabel.slice(0, 1)
-                            )}
-                          </button>
+                          <div key={d.date} className="flex flex-col items-center gap-1">
+                            <span
+                              className={`font-mono text-[10px] ${
+                                d.isToday
+                                  ? 'font-semibold text-on-surface'
+                                  : 'text-on-surface-variant'
+                              }`}
+                            >
+                              {d.dayLabel.slice(0, 1)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleHabit(habit.id, d.date)}
+                              aria-label={`${habit.title} ${d.dayLabel} (${d.date}): ${
+                                completed ? 'Completed' : 'Missed'
+                              }`}
+                              className={`flex h-6 w-6 items-center justify-center rounded-md font-mono text-[10px] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 ${
+                                completed
+                                  ? 'bg-secondary text-on-secondary shadow-xs'
+                                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-highest'
+                              } ${d.isToday ? 'ring-2 ring-secondary/35' : ''}`}
+                              title={`${d.dayLabel} (${d.date}): ${completed ? 'Completed' : 'Missed'} • Click to toggle`}
+                            >
+                              {completed ? (
+                                <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                              ) : (
+                                '·'
+                              )}
+                            </button>
+                          </div>
                         );
                       })}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteHabit(habit.id)}
-                      className="rounded-lg p-1.5 text-outline transition-colors hover:bg-error-container/60 hover:text-error cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
-                      title="Delete habit"
-                      aria-label={`Delete habit: ${habit.title}`}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHabit(habit.id, todayStr)}
+                        className={`px-3.5 py-1.5 rounded-lg font-mono text-label-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                          isDoneToday
+                            ? 'bg-secondary/15 text-secondary border border-secondary/30 hover:bg-secondary/20'
+                            : 'bg-secondary text-on-secondary shadow-xs hover:opacity-90 active:scale-95'
+                        }`}
+                      >
+                        {isDoneToday ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span>Done today</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span>Log</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteHabit(habit.id)}
+                        className="rounded-lg p-1.5 text-outline transition-colors hover:bg-error-container/60 hover:text-error cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"
+                        title="Delete habit"
+                        aria-label={`Delete habit: ${habit.title}`}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

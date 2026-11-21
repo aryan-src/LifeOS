@@ -1,8 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import type { AssignmentStatus } from '@/types/database.types';
-import { formatCalendarDate } from '@/lib/utils/date';
+import { formatCalendarDate, dueDateToCalendarDate } from '@/lib/utils/date';
 
 describe('Assignments logic and formatting', () => {
+  describe('dueDateToCalendarDate', () => {
+    it('returns date-only YYYY-MM-DD input unchanged', () => {
+      expect(dueDateToCalendarDate('2026-11-20', 'Asia/Kolkata')).toBe('2026-11-20');
+      expect(dueDateToCalendarDate('2026-11-20', 'America/Los_Angeles')).toBe('2026-11-20');
+    });
+
+    it('correctly maps UTC late evening to the next calendar day in Asia/Kolkata', () => {
+      // 2026-11-20 23:59:00 UTC is 2026-11-21 05:29:00 IST
+      expect(dueDateToCalendarDate('2026-11-20T23:59:00Z', 'Asia/Kolkata')).toBe('2026-11-21');
+    });
+
+    it('correctly maps UTC late evening to the same calendar day in America/Los_Angeles', () => {
+      // 2026-11-20 23:59:00 UTC is 2026-11-20 15:59:00 PST
+      expect(dueDateToCalendarDate('2026-11-20T23:59:00Z', 'America/Los_Angeles')).toBe('2026-11-20');
+    });
+  });
+
   it('formats assignment due dates deterministically without timezone shifts', () => {
     expect(formatCalendarDate('2026-10-15', 'short')).toBe('Oct 15');
     expect(formatCalendarDate('2026-11-01', 'medium')).toBe('1 Nov 2026');

@@ -21,6 +21,7 @@ import { DashboardExpensesCard } from './dashboard-expenses-card';
 import { DashboardHabitsCard } from './dashboard-habits-card';
 import { DashboardRightColumn } from './dashboard-right-column';
 import { Pill } from '@/components/ui/pill';
+import { PageTitle } from '@/components/ui/page-title';
 import { daysBetweenDateStrings } from '@/lib/daily-loop/business-logic';
 import { formatCalendarMetaFromDateString } from '@/lib/daily-loop/dashboard-derived';
 
@@ -314,10 +315,10 @@ export function Variant3DashboardView({
           data-purpose="dashboard-workspace"
         >
           {/* 1. Greeting & Real Date Header */}
-          <header className="flex w-full shrink-0 flex-col justify-between gap-2 border-b border-surface-container-high/60 pb-3 sm:flex-row sm:items-end">
-            <h1 className="truncate font-serif text-page-title font-normal tracking-tight text-on-surface">
+          <header className="flex w-full shrink-0 flex-col justify-between gap-2 border-b border-surface-container-high/60 pb-4 mb-2 sm:flex-row sm:items-baseline">
+            <PageTitle isDashboardGreeting>
               {greetingTime}, {firstName}
-            </h1>
+            </PageTitle>
             <div className="font-mono text-label-sm text-on-surface-variant">
               {resolvedDayName}, {resolvedDateFormatted}
             </div>

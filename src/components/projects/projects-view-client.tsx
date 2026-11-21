@@ -13,6 +13,7 @@ import { ProjectsListView } from './views/projects-list-view';
 import { ProjectsTimelineView } from './views/projects-timeline-view';
 import { ProjectCreateModal } from './project-create-modal';
 import { ProjectEditModal } from './project-edit-modal';
+import { PageTitle } from '@/components/ui/page-title';
 import {
   Kanban,
   List,
@@ -174,14 +175,7 @@ export function ProjectsViewClient({
     <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 space-y-6">
       {/* TopBar Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-textMain dark:text-zinc-100 font-serif">
-            Projects
-          </h1>
-          <p className="text-xs text-textMuted dark:text-zinc-400 mt-0.5">
-            Milestones, roadmaps, task execution, and budget tracking.
-          </p>
-        </div>
+        <PageTitle>Projects</PageTitle>
 
         {/* View Switcher & Action CTA */}
         <div className="flex flex-wrap items-center gap-3">

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { CloudRain, Monitor, Moon, Sun } from 'lucide-react';
 import { normalizeThemeMode, type ThemeMode } from '@/lib/theme/use-theme';
 
 export interface ThemeModeSelectorProps {
@@ -28,6 +28,12 @@ const THEME_OPTIONS: Array<{
     icon: <Moon className="h-4 w-4" aria-hidden="true" />,
   },
   {
+    id: 'monsoon-garden',
+    label: 'Monsoon Garden',
+    description: 'Light botanical palette with misty cream and deep forest ink',
+    icon: <CloudRain className="h-4 w-4" aria-hidden="true" />,
+  },
+  {
     id: 'system',
     label: 'System',
     description: 'Matches your operating system appearance automatically',
@@ -42,7 +48,7 @@ export function ThemeModeSelector({ value, onChange }: ThemeModeSelectorProps) {
     <div
       role="radiogroup"
       aria-label="Theme appearance"
-      className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
       data-purpose="theme-mode-selector"
     >
       {THEME_OPTIONS.map((option) => {

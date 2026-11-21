@@ -12,32 +12,7 @@ interface Timeblock {
   durationMinutes: number;
 }
 
-const DEFAULT_TIMEBLOCKS: Timeblock[] = [
-  {
-    id: 'tb-1',
-    title: 'Architecture Review',
-    timeRange: '09:00 - 10:30 AM',
-    statusText: 'Completed · 90m deep focus',
-    state: 'completed',
-    durationMinutes: 90,
-  },
-  {
-    id: 'tb-2',
-    title: 'Deep Work: System Design',
-    timeRange: '11:00 AM - 1:00 PM',
-    statusText: 'Current active block · In Progress',
-    state: 'in_progress',
-    durationMinutes: 120,
-  },
-  {
-    id: 'tb-3',
-    title: 'Team Sync & Daily Drill',
-    timeRange: '02:30 - 03:30 PM',
-    statusText: 'Scheduled · Google Meet',
-    state: 'scheduled',
-    durationMinutes: 60,
-  },
-];
+const DEFAULT_TIMEBLOCKS: Timeblock[] = [];
 
 export function HourlyTimeblocks() {
   const [blocks, setBlocks] = useState<Timeblock[]>(DEFAULT_TIMEBLOCKS);
@@ -88,8 +63,13 @@ export function HourlyTimeblocks() {
 
       {/* Block List */}
       <div className="flex flex-col gap-2">
-        {blocks.map((block) => {
-          if (block.state === 'in_progress') {
+        {blocks.length === 0 ? (
+          <div className="py-6 text-center text-stone-400 dark:text-zinc-500 text-xs font-mono">
+            No timeblocks scheduled for today
+          </div>
+        ) : (
+          blocks.map((block) => {
+            if (block.state === 'in_progress') {
             return (
               <div
                 key={block.id}
@@ -165,7 +145,8 @@ export function HourlyTimeblocks() {
               <Calendar className="w-4 h-4 text-stone-400 dark:text-zinc-500 shrink-0" />
             </div>
           );
-        })}
+        })
+      )}
       </div>
     </div>
   );

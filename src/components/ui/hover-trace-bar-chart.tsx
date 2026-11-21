@@ -45,16 +45,6 @@ export interface HoverTraceBarChartProps {
   showHeader?: boolean;
 }
 
-const DEFAULT_DAYS: HoverTraceBarItem[] = [
-  { day: "Thu", date: "2026-10-15", amount: 327, isToday: false },
-  { day: "Fri", date: "2026-10-16", amount: 45, isToday: false },
-  { day: "Sat", date: "2026-10-17", amount: 0, isToday: false },
-  { day: "Sun", date: "2026-10-18", amount: 170, isToday: false },
-  { day: "Mon", date: "2026-10-19", amount: 217, isToday: false },
-  { day: "Tue", date: "2026-10-20", amount: 0, isToday: true },
-  { day: "Wed", date: "2026-10-21", amount: 0, isToday: false },
-];
-
 export function HoverTraceBarChart({
   data,
   transactions,
@@ -96,7 +86,7 @@ export function HoverTraceBarChart({
         }
       }
 
-      const calculated = trailing.map((d) => ({
+      return trailing.map((d) => ({
         label: d.dayLabel,
         day: d.dayLabel,
         value: Number((daySpendMap.get(d.date) || 0).toFixed(2)),
@@ -105,14 +95,10 @@ export function HoverTraceBarChart({
         subLabel: d.date,
         isToday: d.isToday,
       }));
-
-      if (calculated.some((d) => d.value > 0)) {
-        return calculated;
-      }
     }
 
     if (data && data.length > 0) {
-      const normalized = data.map((item) => {
+      return data.map((item) => {
         const label =
           "label" in item && typeof item.label === "string"
             ? item.label
@@ -142,17 +128,14 @@ export function HoverTraceBarChart({
           isToday,
         };
       });
-
-      if (normalized.some((d) => d.value > 0) || !transactions) {
-        return normalized;
-      }
     }
 
-    return DEFAULT_DAYS.map((d) => ({
-      label: d.day,
-      day: d.day,
-      value: d.amount,
-      amount: d.amount,
+    const fallbackTrailing = getTrailingDays(7);
+    return fallbackTrailing.map((d) => ({
+      label: d.dayLabel,
+      day: d.dayLabel,
+      value: 0,
+      amount: 0,
       date: d.date,
       subLabel: d.date,
       isToday: d.isToday,

@@ -468,7 +468,7 @@ export function calculateLifeScore(
     } else if (habitsCompleted > 0) {
       habitsScore = 35;
     } else {
-      habitsScore = 20; // baseline if no habits configured
+      habitsScore = 0; // 0 baseline if no habits configured
     }
 
     // 2. Focus (30 points)
@@ -481,12 +481,17 @@ export function calculateLifeScore(
     const tasksScore = Math.min(20, Math.round((tasksCompleted / 3) * 20));
 
     // 4. Finance / Allowance (15 points)
-    let financeScore = 15;
+    let financeScore = 0;
     const budget = rec.dailyAllowanceBudget ?? 500;
     const expense = rec.dailyExpenseAmount ?? 0;
-    if (budget > 0 && expense > budget) {
-      const overspendRatio = (expense - budget) / budget;
-      financeScore = Math.max(0, Math.round(15 - overspendRatio * 15));
+    const expensesLogged = rec.expensesLogged ?? 0;
+    if (expensesLogged > 0 || expense > 0) {
+      if (budget > 0 && expense > budget) {
+        const overspendRatio = (expense - budget) / budget;
+        financeScore = Math.max(0, Math.round(15 - overspendRatio * 15));
+      } else {
+        financeScore = 15;
+      }
     }
 
     const total = Math.min(100, Math.max(0, habitsScore + focusScore + tasksScore + financeScore));

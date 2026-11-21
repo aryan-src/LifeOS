@@ -130,6 +130,88 @@ describe('Smart Quick Capture Pure Parser Module', () => {
       expect(res.chips.amount).toBe(25);
       expect(Math.abs(res.payload.amount!)).toBe(25);
     });
+
+    // Thousands & Indian Grouping Separators (BUG 1)
+    it('parses "₹1,200 rent" -> amount 1200 and title "rent"', () => {
+      const res = parseQuickCapture('₹1,200 rent', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(1200);
+      expect(Math.abs(res.payload.amount!)).toBe(1200);
+      expect(res.chips.title).toBe('rent');
+      expect(res.payload.title).toBe('rent');
+      expect(res.summaryPill).toContain('₹1200.00');
+      expect(res.chips.title).not.toMatch(/^[,.:;/-]/);
+    });
+
+    it('parses "₹1,20,000 fee" with Indian numbering grouping -> amount 120000', () => {
+      const res = parseQuickCapture('₹1,20,000 fee', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(120000);
+      expect(Math.abs(res.payload.amount!)).toBe(120000);
+      expect(res.chips.title).toBe('fee');
+      expect(res.chips.title).not.toMatch(/^[,.:;/-]/);
+    });
+
+    it('parses "e 12,000 laptop repair" via prefix shortcut -> amount 12000', () => {
+      const res = parseQuickCapture('e 12,000 laptop repair', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(12000);
+      expect(Math.abs(res.payload.amount!)).toBe(12000);
+      expect(res.chips.title).toBe('laptop repair');
+    });
+
+    it('parses "rent 1,200 rs" with trailing currency code -> amount 1200', () => {
+      const res = parseQuickCapture('rent 1,200 rs', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(1200);
+      expect(Math.abs(res.payload.amount!)).toBe(1200);
+      expect(res.chips.title).toBe('rent');
+    });
+
+    it('parses "₹450.50 lunch" with decimals -> amount 450.5', () => {
+      const res = parseQuickCapture('₹450.50 lunch', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(450.5);
+      expect(Math.abs(res.payload.amount!)).toBe(450.5);
+      expect(res.chips.title).toBe('lunch');
+    });
+
+    it('parses "$1,200 rent" with dollar currency symbol -> amount 1200', () => {
+      const res = parseQuickCapture('$1,200 rent', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(1200);
+      expect(Math.abs(res.payload.amount!)).toBe(1200);
+      expect(res.chips.title).toBe('rent');
+    });
+
+    it('parses "₹1,200" with no title into default transaction title', () => {
+      const res = parseQuickCapture('₹1,200', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.type).toBe('expense');
+      expect(res.chips.amount).toBe(1200);
+      expect(Math.abs(res.payload.amount!)).toBe(1200);
+      expect(res.chips.title).toBe('Quick Capture Transaction');
+    });
+
+    it('does NOT treat "item 1,5" as an expense (invalid comma grouping without currency)', () => {
+      const res = parseQuickCapture('item 1,5', mockContext);
+      expect(res.target).not.toBe('transaction');
+      expect(res.chips.type).not.toBe('expense');
+      expect(res.chips.amount).toBeUndefined();
+    });
+
+    it('does NOT treat invalid comma grouping "e 1,5" as 15 rupees', () => {
+      const res = parseQuickCapture('e 1,5', mockContext);
+      expect(res.target).toBe('transaction');
+      expect(res.chips.amount).toBe(1); // 1, not 15
+      expect(res.chips.title).toBe('5');
+    });
   });
 
   // 4. Category Guessing

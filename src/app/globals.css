@@ -776,6 +776,404 @@ html[data-theme="crimson-light"],
 }
 
 /* ==========================================================================
+   Variant 2: "Monsoon Garden" (Light Botanical Organic Variant)
+   Background: Misty cream (#F3F1E8)
+   Surface / Cards: Soft off-white paper (#FBFAF4)
+   Raised Containers & Inputs: Pale sage-tinted olive (#E6EADB)
+   Borders & Dividers: Subtle sage leaf tone (#CBD3BE)
+   Primary Text: Deep forest ink (#1F2D24)
+   Muted Text: Soft eucalyptus grey (#5F6F63)
+   Primary Accent: Deep forest green (#1F5D4A)
+   Secondary Accent: Teal sage (#3E8E7E)
+   Tertiary Accent: Warm terracotta (#C8643B)
+   ========================================================================== */
+
+:root[data-theme="monsoon-garden"],
+:root[data-theme="monsoon"],
+[data-theme="monsoon-garden"],
+[data-theme="monsoon"],
+.theme-monsoon-garden,
+.theme-monsoon {
+  --theme-bg-page: #F3F1E8;
+  --theme-bg-surface: #FBFAF4;
+  --theme-text-primary: #1F2D24;
+  --theme-text-muted: #5F6F63;
+  --theme-accent: #1F5D4A;
+  --theme-accent-hover: #174738;
+  --theme-border-divider: #CBD3BE;
+  --theme-border-card: #CBD3BE;
+  --theme-glow: rgba(31, 93, 74, 0.2);
+  --color-from: rgba(31, 93, 74, 0.5);
+  color-scheme: light;
+
+  /* Stitch Semantic Surface Tokens (RGB) */
+  --color-background: 243 241 232;                /* #F3F1E8 Misty cream */
+  --color-surface: 251 250 244;                   /* #FBFAF4 Soft off-white paper */
+  --color-surface-bright: 251 250 244;            /* #FBFAF4 */
+  --color-surface-dim: 230 234 219;               /* #E6EADB */
+  --color-surface-container-lowest: 251 250 244;  /* #FBFAF4 Cards / surface */
+  --color-surface-container-low: 243 241 232;     /* #F3F1E8 */
+  --color-surface-container: 230 234 219;         /* #E6EADB Raised containers & inputs */
+  --color-surface-container-high: 222 227 209;    /* Slightly deeper sage */
+  --color-surface-container-highest: 203 211 190; /* #CBD3BE */
+  --color-surface-variant: 230 234 219;           /* #E6EADB */
+  --color-surface-tint: 31 93 74;                 /* #1F5D4A Deep forest green */
+
+  /* Text & Ink Tokens (RGB) */
+  --color-on-background: 31 45 36;                /* #1F2D24 Deep forest ink */
+  --color-on-surface: 31 45 36;                   /* #1F2D24 Deep forest ink */
+  --color-on-surface-variant: 95 111 99;          /* #5F6F63 Soft eucalyptus grey */
+  --color-inverse-surface: 31 45 36;              /* #1F2D24 */
+  --color-inverse-on-surface: 251 250 244;        /* #FBFAF4 */
+
+  /* Borders & Dividers (RGB) */
+  --color-outline: 95 111 99;                     /* #5F6F63 Soft eucalyptus grey */
+  --color-outline-variant: 203 211 190;           /* #CBD3BE Subtle sage leaf tone */
+
+  /* Primary Accent: Deep forest green #1F5D4A (interactive states, focus action buttons, active indicators) */
+  --color-primary: 31 93 74;                      /* #1F5D4A */
+  --color-primary-container: 230 234 219;         /* #E6EADB */
+  --color-primary-fixed: 230 234 219;             /* #E6EADB */
+  --color-primary-fixed-dim: 203 211 190;         /* #CBD3BE */
+  --color-on-primary: 251 250 244;                /* #FBFAF4 */
+  --color-on-primary-container: 31 93 74;         /* #1F5D4A */
+  --color-on-primary-fixed: 31 45 36;             /* #1F2D24 */
+  --color-on-primary-fixed-variant: 31 93 74;     /* #1F5D4A */
+  --color-inverse-primary: 62 142 126;            /* #3E8E7E */
+
+  /* Secondary Accent: Teal sage #3E8E7E (habit tracking fills and positive states) */
+  --color-secondary: 62 142 126;                  /* #3E8E7E */
+  --color-secondary-container: 219 237 232;       /* Tinted teal */
+  --color-secondary-fixed: 180 225 217;
+  --color-secondary-fixed-dim: 145 208 198;
+  --color-on-secondary: 255 255 255;              /* #FFFFFF */
+  --color-on-secondary-container: 31 93 74;       /* #1F5D4A */
+  --color-on-secondary-fixed: 15 50 42;
+  --color-on-secondary-fixed-variant: 31 93 74;
+
+  /* Tertiary Accent: Warm terracotta #C8643B (spend breakdown segments and warning thresholds) */
+  --color-tertiary: 200 100 59;                   /* #C8643B */
+  --color-tertiary-container: 253 234 227;
+  --color-tertiary-fixed: 253 234 227;
+  --color-tertiary-fixed-dim: 247 206 191;
+  --color-on-tertiary: 255 255 255;
+  --color-on-tertiary-container: 200 100 59;      /* #C8643B */
+  --color-on-tertiary-fixed: 77 28 8;
+  --color-on-tertiary-fixed-variant: 142 57 23;
+
+  /* Error Semantic Tokens */
+  --color-error: 186 26 26;
+  --color-error-container: 255 218 214;
+  --color-on-error: 255 255 255;
+  --color-on-error-container: 147 0 10;
+
+  --faint: #5F6F63;
+  --ruri: #1F2D24;
+  --ruri-soft: #CBD3BE;
+  --deep: #FBFAF4;
+}
+
+/* 1. Primary Page Background */
+html[data-theme="monsoon-garden"],
+html[data-theme="monsoon"],
+html[data-theme="monsoon-garden"] body,
+html[data-theme="monsoon"] body,
+[data-theme="monsoon-garden"] main,
+[data-theme="monsoon"] main,
+[data-theme="monsoon-garden"] [data-purpose="app-shell-root"],
+[data-theme="monsoon"] [data-purpose="app-shell-root"],
+[data-theme="monsoon-garden"] [data-purpose="app-layout-root"],
+[data-theme="monsoon"] [data-purpose="app-layout-root"],
+[data-theme="monsoon-garden"] [data-purpose="dashboard-viewport-container"],
+[data-theme="monsoon"] [data-purpose="dashboard-viewport-container"],
+[data-theme="monsoon-garden"] .bg-background,
+[data-theme="monsoon"] .bg-background {
+  background-color: #F3F1E8 !important;
+}
+
+/* 2. Surface / Cards: Soft off-white paper (#FBFAF4) */
+[data-theme="monsoon-garden"] .bg-surface,
+[data-theme="monsoon"] .bg-surface,
+[data-theme="monsoon-garden"] .bg-surface-container-lowest,
+[data-theme="monsoon"] .bg-surface-container-lowest,
+[data-theme="monsoon-garden"] .bg-card,
+[data-theme="monsoon"] .bg-card,
+[data-theme="monsoon-garden"] header,
+[data-theme="monsoon"] header,
+[data-theme="monsoon-garden"] aside,
+[data-theme="monsoon"] aside,
+[data-theme="monsoon-garden"] nav:not(.nimbus-nav),
+[data-theme="monsoon"] nav:not(.nimbus-nav),
+[data-theme="monsoon-garden"] [role="dialog"],
+[data-theme="monsoon"] [role="dialog"],
+[data-theme="monsoon-garden"] [role="menu"],
+[data-theme="monsoon"] [role="menu"],
+[data-theme="monsoon-garden"] [role="listbox"],
+[data-theme="monsoon"] [role="listbox"],
+[data-theme="monsoon-garden"] .modal-content,
+[data-theme="monsoon"] .modal-content {
+  background-color: #FBFAF4 !important;
+}
+
+/* 3. Raised Containers & Inputs: Pale sage-tinted olive (#E6EADB) */
+[data-theme="monsoon-garden"] .bg-surface-container-low,
+[data-theme="monsoon"] .bg-surface-container-low,
+[data-theme="monsoon-garden"] .bg-surface-container,
+[data-theme="monsoon"] .bg-surface-container,
+[data-theme="monsoon-garden"] .bg-surface-container-high,
+[data-theme="monsoon"] .bg-surface-container-high,
+[data-theme="monsoon-garden"] .bg-surface-container-highest,
+[data-theme="monsoon"] .bg-surface-container-highest,
+[data-theme="monsoon-garden"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="monsoon"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="monsoon-garden"] textarea,
+[data-theme="monsoon"] textarea,
+[data-theme="monsoon-garden"] select,
+[data-theme="monsoon"] select {
+  background-color: #E6EADB !important;
+}
+
+/* 4. Primary Text: Deep forest ink (#1F2D24) */
+html[data-theme="monsoon-garden"],
+html[data-theme="monsoon"],
+[data-theme="monsoon-garden"] body,
+[data-theme="monsoon"] body,
+[data-theme="monsoon-garden"] .text-on-surface,
+[data-theme="monsoon"] .text-on-surface,
+[data-theme="monsoon-garden"] .text-foreground,
+[data-theme="monsoon"] .text-foreground,
+[data-theme="monsoon-garden"] .text-stone-900,
+[data-theme="monsoon"] .text-stone-900,
+[data-theme="monsoon-garden"] .text-neutral-900,
+[data-theme="monsoon"] .text-neutral-900,
+[data-theme="monsoon-garden"] h1,
+[data-theme="monsoon"] h1,
+[data-theme="monsoon-garden"] h2,
+[data-theme="monsoon"] h2,
+[data-theme="monsoon-garden"] h3,
+[data-theme="monsoon"] h3,
+[data-theme="monsoon-garden"] h4,
+[data-theme="monsoon"] h4,
+[data-theme="monsoon-garden"] h5,
+[data-theme="monsoon"] h5,
+[data-theme="monsoon-garden"] h6,
+[data-theme="monsoon"] h6,
+[data-theme="monsoon-garden"] input,
+[data-theme="monsoon"] input,
+[data-theme="monsoon-garden"] textarea,
+[data-theme="monsoon"] textarea,
+[data-theme="monsoon-garden"] select,
+[data-theme="monsoon"] select {
+  color: #1F2D24 !important;
+}
+
+/* 5. Muted Text: Soft eucalyptus grey (#5F6F63) */
+[data-theme="monsoon-garden"] .text-outline,
+[data-theme="monsoon"] .text-outline,
+[data-theme="monsoon-garden"] .text-outline-variant,
+[data-theme="monsoon"] .text-outline-variant,
+[data-theme="monsoon-garden"] .text-on-surface-variant,
+[data-theme="monsoon"] .text-on-surface-variant,
+[data-theme="monsoon-garden"] .text-muted-foreground,
+[data-theme="monsoon"] .text-muted-foreground,
+[data-theme="monsoon-garden"] .text-stone-500,
+[data-theme="monsoon"] .text-stone-500,
+[data-theme="monsoon-garden"] .text-stone-600,
+[data-theme="monsoon"] .text-stone-600,
+[data-theme="monsoon-garden"] .text-neutral-500,
+[data-theme="monsoon"] .text-neutral-500,
+[data-theme="monsoon-garden"] .text-neutral-600,
+[data-theme="monsoon"] .text-neutral-600 {
+  color: #5F6F63 !important;
+}
+
+[data-theme="monsoon-garden"] input::placeholder,
+[data-theme="monsoon"] input::placeholder,
+[data-theme="monsoon-garden"] textarea::placeholder,
+[data-theme="monsoon"] textarea::placeholder {
+  color: #5F6F63 !important;
+  opacity: 0.7 !important;
+}
+
+/* 6. Primary Accent: Deep forest green (#1F5D4A) on interactive states, focus action buttons, and active indicators */
+[data-theme="monsoon-garden"] .bg-primary,
+[data-theme="monsoon"] .bg-primary,
+[data-theme="monsoon-garden"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="monsoon"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="monsoon-garden"] [data-state="active"],
+[data-theme="monsoon"] [data-state="active"],
+[data-theme="monsoon-garden"] .badge-primary,
+[data-theme="monsoon"] .badge-primary {
+  background-color: #1F5D4A !important;
+  color: #FBFAF4 !important;
+}
+
+[data-theme="monsoon-garden"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="monsoon"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="monsoon-garden"] .bg-primary *,
+[data-theme="monsoon"] .bg-primary * {
+  color: #FBFAF4 !important;
+}
+
+[data-theme="monsoon-garden"] .text-primary,
+[data-theme="monsoon"] .text-primary {
+  color: #1F5D4A !important;
+}
+
+[data-theme="monsoon-garden"] .bg-primary:hover,
+[data-theme="monsoon"] .bg-primary:hover,
+[data-theme="monsoon-garden"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="monsoon"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="monsoon-garden"] .hover\:bg-primary\/90:hover,
+[data-theme="monsoon"] .hover\:bg-primary\/90:hover {
+  background-color: #174738 !important;
+  box-shadow: 0 0 14px rgba(31, 93, 74, 0.25) !important;
+}
+
+[data-theme="monsoon-garden"] input:focus,
+[data-theme="monsoon"] input:focus,
+[data-theme="monsoon-garden"] textarea:focus,
+[data-theme="monsoon"] textarea:focus,
+[data-theme="monsoon-garden"] select:focus,
+[data-theme="monsoon"] select:focus,
+[data-theme="monsoon-garden"] .focus-within\:border-primary\/40:focus-within,
+[data-theme="monsoon"] .focus-within\:border-primary\/40:focus-within {
+  border-color: #1F5D4A !important;
+  box-shadow: 0 0 0 1px rgba(31, 93, 74, 0.25) !important;
+}
+
+/* 7. Secondary Accent: Teal sage (#3E8E7E) on habit tracking fills and positive states */
+[data-theme="monsoon-garden"] .text-secondary,
+[data-theme="monsoon"] .text-secondary {
+  color: #3E8E7E !important;
+}
+
+/* 8. Tertiary Accent: Warm terracotta (#C8643B) on spend breakdown segments and warning thresholds */
+[data-theme="monsoon-garden"] .text-tertiary,
+[data-theme="monsoon"] .text-tertiary,
+[data-theme="monsoon-garden"] .text-on-tertiary-container,
+[data-theme="monsoon"] .text-on-tertiary-container {
+  color: #C8643B !important;
+}
+
+[data-theme="monsoon-garden"] .bg-tertiary,
+[data-theme="monsoon"] .bg-tertiary,
+[data-theme="monsoon-garden"] .bg-on-tertiary-container,
+[data-theme="monsoon"] .bg-on-tertiary-container {
+  background-color: #C8643B !important;
+}
+
+/* 9. Borders & Dividers: Subtle sage leaf tone (#CBD3BE) */
+[data-theme="monsoon-garden"] hr,
+[data-theme="monsoon"] hr,
+[data-theme="monsoon-garden"] header,
+[data-theme="monsoon"] header,
+[data-theme="monsoon-garden"] aside,
+[data-theme="monsoon"] aside,
+[data-theme="monsoon-garden"] .border-outline-variant,
+[data-theme="monsoon"] .border-outline-variant,
+[data-theme="monsoon-garden"] .border-outline-variant\/20,
+[data-theme="monsoon"] .border-outline-variant\/20,
+[data-theme="monsoon-garden"] .border-outline-variant\/30,
+[data-theme="monsoon"] .border-outline-variant\/30,
+[data-theme="monsoon-garden"] .border-outline-variant\/40,
+[data-theme="monsoon"] .border-outline-variant\/40,
+[data-theme="monsoon-garden"] .border-outline-variant\/50,
+[data-theme="monsoon"] .border-outline-variant\/50,
+[data-theme="monsoon-garden"] .border-outline-variant\/60,
+[data-theme="monsoon"] .border-outline-variant\/60,
+[data-theme="monsoon-garden"] .border-neutral-200\/80,
+[data-theme="monsoon"] .border-neutral-200\/80 {
+  border-color: #CBD3BE !important;
+}
+
+[data-theme="monsoon-garden"] .bg-surface-container-lowest,
+[data-theme="monsoon"] .bg-surface-container-lowest,
+[data-theme="monsoon-garden"] section.bg-surface-container-lowest,
+[data-theme="monsoon"] section.bg-surface-container-lowest,
+[data-theme="monsoon-garden"] .rounded-2xl.border,
+[data-theme="monsoon"] .rounded-2xl.border,
+[data-theme="monsoon-garden"] .rounded-xl.border,
+[data-theme="monsoon"] .rounded-xl.border {
+  border-color: #CBD3BE !important;
+}
+
+/* Active card selection in Settings */
+[data-theme="monsoon-garden"] .border-secondary,
+[data-theme="monsoon"] .border-secondary,
+[data-theme="monsoon-garden"] .border-primary,
+[data-theme="monsoon"] .border-primary {
+  border-color: #1F5D4A !important;
+}
+
+[data-theme="monsoon-garden"] .ring-secondary\/30,
+[data-theme="monsoon"] .ring-secondary\/30,
+[data-theme="monsoon-garden"] .ring-primary\/30,
+[data-theme="monsoon"] .ring-primary\/30 {
+  --tw-ring-color: rgba(31, 93, 74, 0.3) !important;
+}
+
+/* 10. Stylistic Signature 1: Generous 20px rounded corners (rounded-[20px]) */
+[data-theme="monsoon-garden"] .rounded-2xl,
+[data-theme="monsoon"] .rounded-2xl,
+[data-theme="monsoon-garden"] .rounded-xl,
+[data-theme="monsoon"] .rounded-xl,
+[data-theme="monsoon-garden"] .bg-surface-container-lowest,
+[data-theme="monsoon"] .bg-surface-container-lowest,
+[data-theme="monsoon-garden"] .bg-card,
+[data-theme="monsoon"] .bg-card,
+[data-theme="monsoon-garden"] [role="dialog"],
+[data-theme="monsoon"] [role="dialog"],
+[data-theme="monsoon-garden"] .modal-content,
+[data-theme="monsoon"] .modal-content {
+  border-radius: 20px !important;
+}
+
+/* 11. Stylistic Signature 2: Subtle green-tinted drop shadows rather than neutral grey shadows */
+[data-theme="monsoon-garden"] .shadow-xs,
+[data-theme="monsoon"] .shadow-xs,
+[data-theme="monsoon-garden"] .shadow-sm,
+[data-theme="monsoon"] .shadow-sm,
+[data-theme="monsoon-garden"] .shadow,
+[data-theme="monsoon"] .shadow,
+[data-theme="monsoon-garden"] .shadow-md,
+[data-theme="monsoon"] .shadow-md,
+[data-theme="monsoon-garden"] .shadow-lg,
+[data-theme="monsoon"] .shadow-lg,
+[data-theme="monsoon-garden"] .shadow-subtle,
+[data-theme="monsoon"] .shadow-subtle,
+[data-theme="monsoon-garden"] .shadow-card,
+[data-theme="monsoon"] .shadow-card,
+[data-theme="monsoon-garden"] .shadow-floating,
+[data-theme="monsoon"] .shadow-floating,
+[data-theme="monsoon-garden"] .bg-surface-container-lowest,
+[data-theme="monsoon"] .bg-surface-container-lowest,
+[data-theme="monsoon-garden"] .bg-card,
+[data-theme="monsoon"] .bg-card,
+[data-theme="monsoon-garden"] .rounded-2xl.border,
+[data-theme="monsoon"] .rounded-2xl.border,
+[data-theme="monsoon-garden"] .rounded-xl.border,
+[data-theme="monsoon"] .rounded-xl.border {
+  box-shadow: 0 4px 20px -2px rgba(31, 93, 74, 0.08), 0 2px 6px -1px rgba(31, 93, 74, 0.04) !important;
+}
+
+/* 12. Stylistic Signature 3: Habit streak fills styled like a gentle rising tide */
+[data-theme="monsoon-garden"] [data-purpose="streak-records-card"] .bg-secondary,
+[data-theme="monsoon"] [data-purpose="streak-records-card"] .bg-secondary,
+[data-theme="monsoon-garden"] .habit-streak-fill,
+[data-theme="monsoon"] .habit-streak-fill {
+  background: linear-gradient(90deg, #1F5D4A 0%, #3E8E7E 70%, #5BB7A4 100%) !important;
+  box-shadow: 0 0 10px rgba(62, 142, 126, 0.35) !important;
+}
+
+/* Text Selection in Monsoon Garden */
+[data-theme="monsoon-garden"] ::selection,
+[data-theme="monsoon"] ::selection {
+  background-color: #1F5D4A !important;
+  color: #FBFAF4 !important;
+}
+
+/* ==========================================================================
    Five Hook-Driven Premium Workspace Themes
    1. Spatial Glassmorphism (spatial-glass)
    2. Risograph Editorial (risograph)
@@ -1321,5 +1719,27 @@ html[data-transition-dir="to-dark"]::view-transition-new(root) {
 html[data-transition-dir="to-light"]::view-transition-new(root) {
   filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
 }
+
+/* ==========================================================================
+   Shared Page Title Typography System
+   ========================================================================== */
+.text-page-title {
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: rgb(var(--color-on-surface));
+}
+
+.text-dashboard-greeting {
+  font-family: var(--font-playfair-display), Georgia, serif;
+  font-size: clamp(1.875rem, 1.25rem + 2.25vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: rgb(var(--color-on-surface));
+}
+
 
 

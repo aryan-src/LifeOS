@@ -13,7 +13,10 @@ export default async function AppLayout({
   const profile = await getUserProfile();
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-surface text-on-surface transition-colors duration-200">
+    <div
+      data-purpose="app-layout-root"
+      className="min-h-screen w-full flex flex-col bg-surface text-on-surface transition-colors duration-200"
+    >
       <AppShell initialTheme={profile.theme_preference}>
         <DevBypassBanner />
         <WorkspaceHeader

@@ -109,7 +109,7 @@ export function getTrailingDays(count: number = 7): Array<{
  */
 export function formatCalendarDate(
   dateInput: string | Date | null | undefined,
-  format: 'short' | 'medium' | 'full' | 'header' = 'medium'
+  format: 'short' | 'medium' | 'full' | 'header' | 'weekday' = 'medium'
 ): string {
   if (!dateInput) return '';
 
@@ -141,6 +141,9 @@ export function formatCalendarDate(
   const shortMonth = shortMonths[m - 1] || '';
   const fullMonth = fullMonths[m - 1] || '';
 
+  if (format === 'weekday') {
+    return `${dayName}, ${shortMonth} ${d}`;
+  }
   if (format === 'header') {
     return `${dayName}, ${d} ${shortMonth}`;
   }
@@ -151,4 +154,21 @@ export function formatCalendarDate(
     return `${fullMonth} ${d}, ${y}`;
   }
   return `${d} ${shortMonth} ${y}`;
+}
+
+/**
+ * Converts a due date string to a strict YYYY-MM-DD calendar date in the given timezone.
+ * If already a date-only YYYY-MM-DD string, returns it unchanged.
+ */
+export function dueDateToCalendarDate(due: string, timeZone: string): string {
+  if (!due) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(due)) {
+    return due;
+  }
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(due));
 }

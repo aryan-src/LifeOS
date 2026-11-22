@@ -46,9 +46,9 @@ const PADDING = 14;
 const NAVBAR_STYLES = `
 .nimbus-nav {
   --n-tint: rgb(var(--color-surface) / 0.6);
-  --n-fg: #1F5D4A;
-  --n-fg-soft: #5F6F63;
-  --n-rim: #CBD3BE;
+  --n-fg: rgb(var(--color-primary, 31 93 74));
+  --n-fg-soft: rgb(var(--color-on-surface-variant, 95 111 99));
+  --n-rim: rgb(var(--color-outline-variant, 203 211 190));
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -66,8 +66,8 @@ const NAVBAR_STYLES = `
 }
 .nimbus-nav[data-tone="dark"] {
   --n-tint: rgb(var(--color-surface) / 0.6);
-  --n-fg: rgb(var(--color-secondary-fixed, 79 219 200));
-  --n-fg-soft: rgb(var(--color-on-surface-variant, 187 202 198));
+  --n-fg: rgb(var(--color-primary-fixed, var(--color-primary, 127 184 150)));
+  --n-fg-soft: rgb(var(--color-on-surface-variant, 157 176 163));
   --n-rim: rgba(255, 255, 255, 0.2);
 }
 .nimbus-glass {
@@ -152,9 +152,9 @@ const NAVBAR_STYLES = `
               inset 0 1px 1px rgba(255, 255, 255, 0.45);
 }
 .nimbus-nav[data-variant="docked"][data-tone="dark"] .nimbus-drop {
-  background: rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.18);
-  border: 1px solid rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.35);
-  box-shadow: 0 0 12px rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.25),
+  background: rgba(var(--color-primary-fixed, var(--color-secondary-fixed, var(--color-secondary, 127 184 150))), 0.18);
+  border: 1px solid rgba(var(--color-primary-fixed, var(--color-secondary-fixed, var(--color-secondary, 127 184 150))), 0.35);
+  box-shadow: 0 0 12px rgba(var(--color-primary-fixed, var(--color-secondary-fixed, var(--color-secondary, 127 184 150))), 0.25),
               inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
 .nimbus-item {

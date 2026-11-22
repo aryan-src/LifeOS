@@ -84,31 +84,77 @@ describe('createCategory Server Action', () => {
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('prevents duplicate category names for the same user and type via pre-check', async () => {
+  it('prevents duplicate category names for the same user and type via safe in-memory check', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
-    // Mock category duplicate check query returning an existing row
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            ilike: vi.fn().mockReturnValue({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: { id: 'existing-cat-id' },
-                error: null,
-              }),
-            }),
+          eq: vi.fn().mockResolvedValue({
+            data: [{ id: 'existing-cat-id', name: 'books' }],
+            error: null,
           }),
         }),
       }),
     });
 
-    const res = await createCategory('Books', 'expense');
+    const res = await createCategory('  Books  ', 'expense');
     expect(res.success).toBe(false);
     expect(res.error).toBe('A category with this name already exists');
+  });
+
+  it('does not falsely match category names containing underscores and percent signs', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    });
+
+    const insertMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({
+          data: {
+            id: 'new-cat-wildcard',
+            user_id: mockUser.id,
+            name: 'Books_10%',
+            type: 'expense',
+            color: null,
+            monthly_budget: null,
+            created_at: '2026-11-22T00:00:00Z',
+          },
+          error: null,
+        }),
+      }),
+    });
+
+    // An ILIKE query with 'Books_10%' would falsely match 'Books 100' or 'Books-109'
+    // but the in-memory normalized comparison does not treat '_' and '%' as wildcards.
+    mockFrom.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({
+            data: [
+              { id: 'cat-1', name: 'Books 100' },
+              { id: 'cat-2', name: 'Books_20%' },
+            ],
+            error: null,
+          }),
+        }),
+      }),
+      insert: insertMock,
+    });
+
+    const res = await createCategory('Books_10%', 'expense');
+    expect(res.success).toBe(true);
+    expect(res.data?.name).toBe('Books_10%');
+    expect(insertMock).toHaveBeenCalledWith({
+      user_id: mockUser.id,
+      name: 'Books_10%',
+      type: 'expense',
+      color: null,
+    });
   });
 
   it('handles unique constraint violation error 23505 gracefully if concurrent insert happens', async () => {
@@ -120,13 +166,9 @@ describe('createCategory Server Action', () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            ilike: vi.fn().mockReturnValue({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            }),
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
           }),
         }),
       }),
@@ -171,13 +213,9 @@ describe('createCategory Server Action', () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            ilike: vi.fn().mockReturnValue({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            }),
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
           }),
         }),
       }),

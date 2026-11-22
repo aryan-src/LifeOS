@@ -150,15 +150,19 @@ export async function createCategory(
     }
 
     // Check for duplicate category name under the same user and transaction type
-    const { data: existing } = await supabase
+    // Safe comparison: fetch user categories of this type and compare lowercase trimmed names in code
+    // (prevents SQL wildcard injection where % and _ in .ilike would match unintended names)
+    const { data: existingCategories } = await supabase
       .from('categories')
-      .select('id')
+      .select('id, name')
       .eq('user_id', user.id)
-      .eq('type', type)
-      .ilike('name', cleanName)
-      .maybeSingle();
+      .eq('type', type);
 
-    if (existing) {
+    const isDuplicate = (existingCategories || []).some(
+      (c) => c.name.trim().toLowerCase() === cleanName.toLowerCase()
+    );
+
+    if (isDuplicate) {
       return { success: false, error: 'A category with this name already exists' };
     }
 

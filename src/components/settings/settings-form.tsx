@@ -69,7 +69,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
     formData.append('displayName', displayName);
     formData.append('currencySymbol', currencySymbol);
     formData.append('themePreference', themePreference);
-    formData.append('monthlyAllowanceTarget', allowanceTarget);
+    formData.append('monthlyAllowanceTarget', allowanceTarget.trim() === '' ? '0' : allowanceTarget);
 
     startTransition(async () => {
       const res = await updateProfile(null, formData);
@@ -169,8 +169,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
                   min="0"
                   value={allowanceTarget}
                   onChange={(e) => setAllowanceTarget(e.target.value)}
-                  placeholder="e.g. 15000"
-                  required
+                  placeholder="0"
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-outline/40 transition-all"
                 />
               </div>

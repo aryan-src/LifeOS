@@ -88,5 +88,24 @@ describe('Dev Bypass Profile Fallback', () => {
     const resNight = await updateProfile(null, formDataNight);
     expect(resNight.success).toBe(true);
     expect(resNight.data?.theme_preference).toBe('monsoon-night');
+
+    // Empty allowance target defaults to 0 without error
+    const formDataEmptyAllowance = new FormData();
+    formDataEmptyAllowance.append('displayName', 'Student Empty');
+    formDataEmptyAllowance.append('currencySymbol', '₹');
+    formDataEmptyAllowance.append('themePreference', 'monsoon-garden');
+    formDataEmptyAllowance.append('monthlyAllowanceTarget', '');
+    const resEmptyAllowance = await updateProfile(null, formDataEmptyAllowance);
+    expect(resEmptyAllowance.success).toBe(true);
+    expect(resEmptyAllowance.data?.monthly_allowance_target).toBe(0);
+
+    // Omitted allowance target defaults to 0 without error
+    const formDataOmittedAllowance = new FormData();
+    formDataOmittedAllowance.append('displayName', 'Student Omitted');
+    formDataOmittedAllowance.append('currencySymbol', '₹');
+    formDataOmittedAllowance.append('themePreference', 'monsoon-garden');
+    const resOmittedAllowance = await updateProfile(null, formDataOmittedAllowance);
+    expect(resOmittedAllowance.success).toBe(true);
+    expect(resOmittedAllowance.data?.monthly_allowance_target).toBe(0);
   });
 });

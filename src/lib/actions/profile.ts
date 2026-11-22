@@ -150,11 +150,17 @@ export async function updateProfile(
     formData.get('daily_focus_goal_minutes') ||
     formData.get('focusGoalMinutes');
 
+  const rawAllowance = formData.get('monthlyAllowanceTarget');
+  const normalizedAllowance =
+    rawAllowance === null || rawAllowance === '' || typeof rawAllowance === 'undefined'
+      ? 0
+      : rawAllowance;
+
   const parsed = updateProfileSchema.safeParse({
     displayName: formData.get('displayName'),
     currencySymbol: formData.get('currencySymbol'),
     themePreference: formData.get('themePreference'),
-    monthlyAllowanceTarget: formData.get('monthlyAllowanceTarget'),
+    monthlyAllowanceTarget: normalizedAllowance,
     dailyFocusGoalMinutes: rawGoal ? Number(rawGoal) : undefined,
   });
 

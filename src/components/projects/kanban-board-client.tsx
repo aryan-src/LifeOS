@@ -483,7 +483,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                           {provided.placeholder}
 
                           {columnProjects.length === 0 && (
-                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500 gap-1.5">
+                            <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/60 rounded-lg text-on-surface-variant gap-1.5">
                               <span className="material-symbols-outlined text-[24px]">
                                 inbox
                               </span>
@@ -541,7 +541,7 @@ export function KanbanBoardClient({ initialProjects }: KanbanBoardClientProps) {
                     ))}
 
                     {columnProjects.length === 0 && (
-                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/50 dark:border-zinc-800 rounded-lg text-outline dark:text-zinc-500">
+                      <div className="flex flex-col items-center justify-center p-6 border border-dashed border-outline-variant/60 rounded-lg text-on-surface-variant">
                         <span className="material-symbols-outlined text-[24px] mb-1">
                           inbox
                         </span>

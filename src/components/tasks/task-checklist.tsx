@@ -391,7 +391,7 @@ export function TaskChecklist({
 
             <div className="flex flex-col gap-2">
               {deliverables.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-stone-200/90 dark:border-zinc-800/80 p-8 text-center bg-white/40 dark:bg-zinc-900/30">
+                <div className="rounded-xl border border-dashed border-outline-variant/60 p-8 text-center bg-surface-container-low/40">
                   <p className="font-body-sm text-body-sm text-stone-500 dark:text-zinc-400 font-medium">
                     All caught up! No active deliverables in this view.
                   </p>
@@ -476,7 +476,7 @@ export function TaskChecklist({
                 >
                   <div className="flex flex-col gap-2 pt-1">
                     {completedTasks.length === 0 ? (
-                      <div className="rounded-xl border border-dashed border-stone-200/90 dark:border-zinc-800/80 p-8 text-center bg-white/40 dark:bg-zinc-900/30">
+                      <div className="rounded-xl border border-dashed border-outline-variant/60 p-8 text-center bg-surface-container-low/40">
                         <p className="font-body-sm text-body-sm text-stone-500 dark:text-zinc-400">
                           No completed tasks yet. Completed items will appear here.
                         </p>

@@ -62,7 +62,7 @@ export async function SubmissionsAndFocusCard({
       <div className="py-3.5 flex flex-col gap-3 flex-1 justify-between">
         <div className="space-y-2.5 min-w-0">
           {displayList.length === 0 ? (
-            <div className="p-4 text-center text-xs text-stone-400 dark:text-zinc-500 rounded-2xl bg-stone-100/60 dark:bg-zinc-950/40 border border-dashed border-stone-200/80 dark:border-zinc-800">
+            <div className="p-4 text-center text-xs text-on-surface-variant rounded-2xl bg-surface-container-low/60 border border-dashed border-outline-variant/60">
               No pending assignment deadlines!
             </div>
           ) : (

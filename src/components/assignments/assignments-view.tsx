@@ -929,7 +929,7 @@ export function AssignmentsView({
                 {/* Column Cards Container */}
                 <div className="space-y-4 flex-1 flex flex-col">
                   {columnItems.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-stone-200 dark:border-stone-800 text-stone-400 text-xs">
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-outline-variant/60 text-on-surface-variant text-xs">
                       <p>No assignments in this column.</p>
                       <button
                         type="button"

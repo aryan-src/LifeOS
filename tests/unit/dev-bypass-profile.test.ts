@@ -32,7 +32,7 @@ describe('Dev Bypass Profile Fallback', () => {
     process.env = { ...originalEnv };
   });
 
-  it('falls back to mock profile (Aryan, ₹, 15000) when NODE_ENV=development and DEV_BYPASS_AUTH=true', async () => {
+  it('falls back to clean mock profile (Aryan, ₹, 0) when NODE_ENV=development and DEV_BYPASS_AUTH=true', async () => {
     (process.env as any).NODE_ENV = 'development';
     process.env.DEV_BYPASS_AUTH = 'true';
 
@@ -40,7 +40,7 @@ describe('Dev Bypass Profile Fallback', () => {
 
     expect(profile.display_name).toBe('Aryan');
     expect(profile.currency_symbol).toBe('₹');
-    expect(profile.monthly_allowance_target).toBe(15000);
+    expect(profile.monthly_allowance_target).toBe(0);
     expect(profile.id).toBe('dev-local-user');
   });
 

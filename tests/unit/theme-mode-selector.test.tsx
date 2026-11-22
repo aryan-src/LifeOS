@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { ThemeModeSelector } from '../../src/components/settings/theme-mode-selector';
 
 describe('Stitch ThemeModeSelector', () => {
-  it('renders accessible radiogroup for Light, Dark, Monsoon Garden, and System themes with active selection', () => {
+  it('renders accessible radiogroup for Light, Dark, Monsoon Garden, Monsoon Night, and System themes with active selection', () => {
     const html = renderToString(
       <ThemeModeSelector value="dark" onChange={() => undefined} />
     );
@@ -13,6 +13,7 @@ describe('Stitch ThemeModeSelector', () => {
     expect(html).toContain('Light');
     expect(html).toContain('Dark');
     expect(html).toContain('Monsoon Garden');
+    expect(html).toContain('Monsoon Night');
     expect(html).toContain('System');
     expect(html).toContain('aria-checked="true"');
     expect(html).toContain('Active');
@@ -31,6 +32,15 @@ describe('Stitch ThemeModeSelector', () => {
       <ThemeModeSelector value="monsoon-garden" onChange={() => undefined} />
     );
     expect(html).toContain('Monsoon Garden');
+    expect(html).toContain('aria-checked="true"');
+    expect(html).toContain('Active');
+  });
+
+  it('renders Monsoon Night as active when value is monsoon-night', () => {
+    const html = renderToString(
+      <ThemeModeSelector value="monsoon-night" onChange={() => undefined} />
+    );
+    expect(html).toContain('Monsoon Night');
     expect(html).toContain('aria-checked="true"');
     expect(html).toContain('Active');
   });

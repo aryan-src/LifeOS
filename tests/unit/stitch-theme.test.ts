@@ -16,6 +16,7 @@ describe('Stitch Theme Resolution & Normalization', () => {
     expect(resolveDarkMode('system', false)).toBe(false);
     expect(resolveDarkMode('monsoon-garden', true)).toBe(false);
     expect(resolveDarkMode('monsoon', true)).toBe(false);
+    expect(resolveDarkMode('monsoon-night', false)).toBe(true);
     expect(resolveDarkMode(null, true)).toBe(false);
   });
 
@@ -28,6 +29,7 @@ describe('Stitch Theme Resolution & Normalization', () => {
     expect(normalizeThemeMode('crimson-dark')).toBe('dark');
     expect(normalizeThemeMode('system')).toBe('system');
     expect(normalizeThemeMode('monsoon-garden')).toBe('monsoon-garden');
+    expect(normalizeThemeMode('monsoon-night')).toBe('monsoon-night');
     expect(normalizeThemeMode('monsoon')).toBe('monsoon-garden');
     expect(normalizeThemeMode(undefined)).toBe('monsoon-garden');
     expect(normalizeThemeMode(null)).toBe('monsoon-garden');

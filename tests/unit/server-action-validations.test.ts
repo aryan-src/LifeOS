@@ -268,6 +268,28 @@ describe('Server Action Zod Validation Schemas', () => {
         expect(res.data.themePreference).toBe('crimson-dark');
         expect(res.data.monthlyAllowanceTarget).toBe(20000);
       }
+
+      const resMonsoonGarden = updateProfileSchema.safeParse({
+        displayName: 'Student',
+        currencySymbol: '₹',
+        themePreference: 'monsoon-garden',
+        monthlyAllowanceTarget: '15000',
+      });
+      expect(resMonsoonGarden.success).toBe(true);
+      if (resMonsoonGarden.success) {
+        expect(resMonsoonGarden.data.themePreference).toBe('monsoon-garden');
+      }
+
+      const resMonsoonNight = updateProfileSchema.safeParse({
+        displayName: 'Student',
+        currencySymbol: '₹',
+        themePreference: 'monsoon-night',
+        monthlyAllowanceTarget: '15000',
+      });
+      expect(resMonsoonNight.success).toBe(true);
+      if (resMonsoonNight.success) {
+        expect(resMonsoonNight.data.themePreference).toBe('monsoon-night');
+      }
     });
   });
 });

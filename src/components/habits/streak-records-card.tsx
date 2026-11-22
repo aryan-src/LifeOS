@@ -73,7 +73,7 @@ export function StreakRecordsCard({ habits }: StreakRecordsCardProps) {
 
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container">
                   <div
-                    className="h-full rounded-full bg-secondary transition-all duration-500 ease-out"
+                    className="h-full rounded-full bg-secondary habit-streak-fill transition-all duration-500 ease-out"
                     style={{ width: `${percent}%` }}
                   />
                 </div>

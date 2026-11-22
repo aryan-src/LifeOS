@@ -83,6 +83,10 @@
     --app-footer-height: 64px;
     --app-footer-clearance: calc(var(--app-footer-height) + env(safe-area-inset-bottom, 0px) + 16px);
     --footer-content-padding: var(--app-footer-clearance);
+
+    /* Habit Streak Gradient and Glow Tokens */
+    --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed, var(--color-secondary))) 100%);
+    --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 0 108 73), 0.35);
   }
 
   @media (min-width: 768px) {
@@ -154,6 +158,10 @@
     --ruri-soft: #3d3b36;
     --deep: #0f0e0d;
     color-scheme: dark;
+
+    /* Habit Streak Gradient and Glow Tokens in Dark Mode */
+    --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-surface-container-high)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed, var(--color-secondary))) 100%);
+    --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 79 219 200), 0.3);
   }
 
   html, body {
@@ -918,6 +926,10 @@ html[data-theme="crimson-light"],
   --ruri: #1F2D24;
   --ruri-soft: #CBD3BE;
   --deep: #FBFAF4;
+
+  /* Habit Streak Gradient and Glow Tokens in Monsoon Garden */
+  --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed-dim, var(--color-secondary))) 100%);
+  --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 62 142 126), 0.35);
 }
 
 /* 1. Primary Page Background */
@@ -1204,13 +1216,11 @@ html[data-theme="monsoon"],
   box-shadow: 0 4px 20px -2px rgba(31, 93, 74, 0.08), 0 2px 6px -1px rgba(31, 93, 74, 0.04) !important;
 }
 
-/* 12. Stylistic Signature 3: Habit streak fills styled like a gentle rising tide */
-[data-theme="monsoon-garden"] [data-purpose="streak-records-card"] .bg-secondary,
-[data-theme="monsoon"] [data-purpose="streak-records-card"] .bg-secondary,
-[data-theme="monsoon-garden"] .habit-streak-fill,
-[data-theme="monsoon"] .habit-streak-fill {
-  background: linear-gradient(90deg, #1F5D4A 0%, #3E8E7E 70%, #5BB7A4 100%) !important;
-  box-shadow: 0 0 10px rgba(62, 142, 126, 0.35) !important;
+/* Habit streak fills styled like a gentle rising tide using theme tokens */
+[data-purpose="streak-records-card"] .bg-secondary,
+.habit-streak-fill {
+  background: var(--habit-streak-gradient) !important;
+  box-shadow: var(--habit-streak-glow) !important;
 }
 
 /* Text Selection in Monsoon Garden */
@@ -1315,6 +1325,10 @@ html[data-theme="monsoon"],
   --ruri: #E8EDE4;
   --ruri-soft: #2A3B32;
   --deep: #0E1511;
+
+  /* Habit Streak Gradient and Glow Tokens in Monsoon Night */
+  --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-surface-container-high)) 0%, rgb(var(--color-primary)) 70%, rgb(var(--color-primary-fixed, var(--color-primary))) 100%);
+  --habit-streak-glow: 0 0 10px rgba(var(--color-primary, 127 184 150), 0.3);
 }
 
 /* Monsoon Night Component Overrides */
@@ -1490,12 +1504,6 @@ html[data-theme="monsoon-night"],
 [data-theme="monsoon-night"] .rounded-2xl.border,
 [data-theme="monsoon-night"] .rounded-xl.border {
   box-shadow: 0 4px 20px -2px rgba(10, 16, 12, 0.45), 0 2px 6px -1px rgba(10, 16, 12, 0.25) !important;
-}
-
-[data-theme="monsoon-night"] [data-purpose="streak-records-card"] .bg-secondary,
-[data-theme="monsoon-night"] .habit-streak-fill {
-  background: linear-gradient(90deg, #24332B 0%, #7FB896 70%, #98C9AC 100%) !important;
-  box-shadow: 0 0 10px rgba(127, 184, 150, 0.3) !important;
 }
 
 [data-theme="monsoon-night"] ::selection {

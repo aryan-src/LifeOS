@@ -70,6 +70,9 @@ function AppShellContent({
             '--footer-nav-height': '52px',
             '--footer-nav-offset': '20px',
             '--footer-nav-gap': '16px',
+            '--app-footer-height': '64px',
+            '--app-footer-clearance':
+              'calc(var(--app-footer-height) + env(safe-area-inset-bottom, 0px) + 16px)',
             '--footer-content-padding':
               'calc(var(--footer-nav-height) + var(--footer-nav-offset) + var(--footer-nav-gap) + env(safe-area-inset-bottom, 0px))',
           } as React.CSSProperties

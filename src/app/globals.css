@@ -78,6 +78,17 @@
     --ruri-soft: #e2dfd8;
     --deep: #fdfcfb;
     color-scheme: light;
+
+    /* App Footer Height and Dynamic Clearance */
+    --app-footer-height: 64px;
+    --app-footer-clearance: calc(var(--app-footer-height) + env(safe-area-inset-bottom, 0px) + 16px);
+    --footer-content-padding: var(--app-footer-clearance);
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --app-footer-height: 72px;
+    }
   }
 
   .dark {
@@ -205,6 +216,30 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Liquid Glass Footer Strip */
+.liquid-footer-strip {
+  background-color: rgb(var(--color-surface-container-lowest) / 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 -1px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dark .liquid-footer-strip,
+[data-theme="dark"] .liquid-footer-strip {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 -1px 12px rgba(0, 0, 0, 0.15);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .liquid-footer-strip {
+    background-color: rgb(var(--color-surface-container-lowest) / 0.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    backdrop-filter: blur(20px) saturate(1.6);
+  }
+
+  .dark .liquid-footer-strip,
+  [data-theme="dark"] .liquid-footer-strip {
+    background-color: rgb(var(--color-surface-container-lowest) / 0.65);
+  }
 }
 
 /* ==========================================================================

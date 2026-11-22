@@ -38,6 +38,7 @@ export interface LiquidNavbarProps {
   ariaLabel?: string;
   ambient?: boolean;
   linkComponent?: React.ComponentType<any> | 'a';
+  variant?: 'default' | 'docked';
 }
 
 const PADDING = 14;
@@ -117,13 +118,55 @@ const NAVBAR_STYLES = `
 .nimbus-nav[data-gl="off"] .nimbus-drop {
   display: block;
 }
+.nimbus-nav[data-variant="docked"] {
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.nimbus-nav[data-variant="docked"] .nimbus-glass {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nimbus-nav[data-variant="docked"] .nimbus-glass {
+    background: transparent !important;
+  }
+}
+.nimbus-nav[data-variant="docked"] .nimbus-water {
+  display: block;
+}
+.nimbus-nav[data-variant="docked"] .nimbus-drop {
+  display: block !important;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: rgba(var(--color-secondary, 0 108 73), 0.14);
+  border: 1px solid rgba(var(--color-secondary, 0 108 73), 0.28);
+  box-shadow: 0 2px 8px -1px rgba(var(--color-secondary, 0 108 73), 0.18),
+              inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+.nimbus-nav[data-variant="docked"][data-tone="dark"] .nimbus-drop {
+  background: rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.18);
+  border: 1px solid rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.35);
+  box-shadow: 0 0 12px rgba(var(--color-secondary-fixed, var(--color-secondary, 79 219 200)), 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
 .nimbus-item {
   position: relative;
   z-index: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  height: 42px;
+  min-width: 44px;
+  min-height: 44px;
+  height: 44px;
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
@@ -143,11 +186,44 @@ const NAVBAR_STYLES = `
   color: var(--n-fg);
 }
 .nimbus-item:focus-visible {
-  outline: 2px solid #1F5D4A;
+  outline: 2px solid rgb(var(--color-secondary, 0 108 73));
   outline-offset: 2px;
+  border-radius: 999px;
 }
 .nimbus-nav[data-tone="dark"] .nimbus-item:focus-visible {
-  outline-color: rgb(var(--color-secondary, 79 219 200));
+  outline-color: rgb(var(--color-secondary-fixed, 79 219 200));
+}
+.nimbus-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 60;
+  background-color: rgb(var(--color-surface-container-highest, 40 40 40));
+  color: rgb(var(--color-on-surface, 240 240 240));
+  border: 1px solid rgba(var(--color-outline-variant, 140 147 143), 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.nimbus-item:hover .nimbus-tooltip,
+.nimbus-item:focus-visible .nimbus-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 .nv-ico {
   position: relative;
@@ -282,7 +358,11 @@ const NAVBAR_STYLES = `
   100% { transform: translateY(-1px) scale(1.08); }
 }
 .nimbus-nav[data-compact="true"] .nimbus-item {
-  padding: 0 13px;
+  padding: 0;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
 }
 .nimbus-nav[data-compact="true"] .nimbus-label {
   position: absolute;
@@ -294,7 +374,11 @@ const NAVBAR_STYLES = `
 }
 @media (max-width: 520px) {
   .nimbus-nav:not([data-compact="false"]) .nimbus-item {
-    padding: 0 13px;
+    padding: 0;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
   .nimbus-nav:not([data-compact="false"]) .nimbus-label {
     position: absolute;
@@ -312,6 +396,9 @@ const NAVBAR_STYLES = `
   .nv-door {
     animation: none !important;
     transition: none;
+  }
+  .nimbus-tooltip {
+    transition: none !important;
   }
 }
 `;
@@ -520,6 +607,7 @@ export function LiquidNavbar({
   ariaLabel = 'Main',
   ambient = true,
   linkComponent = 'a',
+  variant = 'default',
 }: LiquidNavbarProps) {
   const [internalActive, setInternalActive] = useState<number>(defaultActive);
   const activeIndex = activeIndexProp ?? active ?? internalActive;
@@ -594,13 +682,14 @@ export function LiquidNavbar({
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-    } else if (fallbackDropRef.current) {
+    }
+    if (fallbackDropRef.current) {
       const left = Math.min(s.a.x, s.b.x) - s.q - rad - PADDING;
       const width = dist + 2 * (s.q + rad);
       fallbackDropRef.current.style.width = `${width}px`;
       fallbackDropRef.current.style.transform = `translateX(${left}px) scaleY(${s.sy.s})`;
     }
-  }, [ambient]);
+  }, [ambient, variant]);
 
   const stepSimulation = useCallback(
     (dt: number, now: number) => {
@@ -928,6 +1017,7 @@ export function LiquidNavbar({
       data-gl={glStatus}
       data-compact={compact === undefined ? undefined : String(compact)}
       data-refract={refractSupport ? 'on' : 'off'}
+      data-variant={variant === 'docked' ? 'docked' : undefined}
       aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
       onPointerMove={handlePointerMove}
@@ -989,7 +1079,6 @@ export function LiquidNavbar({
             className="nimbus-item"
             aria-current={isPage ? 'page' : undefined}
             aria-label={item.label}
-            title={compact ? item.label : undefined}
             onClick={() => select(index)}
           >
             {item.icon && (
@@ -1005,6 +1094,11 @@ export function LiquidNavbar({
               </span>
             )}
             <span className="nimbus-label">{item.label}</span>
+            {compact && (
+              <span className="nimbus-tooltip" role="tooltip" aria-hidden="true">
+                {item.label}
+              </span>
+            )}
           </Component>
         );
       })}

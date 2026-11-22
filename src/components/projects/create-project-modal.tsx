@@ -524,7 +524,7 @@ export function CreateProjectModal({
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 rounded-xl border border-stone-200/90 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 px-4 py-3 text-xs font-medium text-stone-900 dark:text-zinc-100 shadow-xl backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200"
+          className="fixed bottom-24 right-6 z-[9999] flex items-center gap-2.5 rounded-xl border border-stone-200/90 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 px-4 py-3 text-xs font-medium text-stone-900 dark:text-zinc-100 shadow-xl backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200"
         >
           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>{toastMessage}</span>
@@ -1016,7 +1016,7 @@ export function CreateProjectModal({
           <div
             role="status"
             aria-live="polite"
-            className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 rounded-xl border border-stone-200/90 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 px-4 py-3 text-xs font-medium text-stone-900 dark:text-zinc-100 shadow-xl backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200"
+            className="fixed bottom-24 right-6 z-[9999] flex items-center gap-2.5 rounded-xl border border-stone-200/90 dark:border-zinc-800/90 bg-white/95 dark:bg-zinc-900/95 px-4 py-3 text-xs font-medium text-stone-900 dark:text-zinc-100 shadow-xl backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>{toastMessage}</span>

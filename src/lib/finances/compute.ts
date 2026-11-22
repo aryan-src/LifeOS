@@ -94,21 +94,22 @@ export function computeFinancialAnalytics(
     } else if (totalInflow > 0) {
       monthlyAllowance = totalInflow;
     } else {
-      monthlyAllowance = 15000.00;
+      monthlyAllowance = 0;
     }
   }
 
-  const remainingAllowance = Number((monthlyAllowance - monthlySpent).toFixed(2));
+  const remainingAllowance =
+    monthlyAllowance > 0
+      ? Number(Math.max(0, monthlyAllowance - monthlySpent).toFixed(2))
+      : 0;
   const allowanceUsagePercent =
     monthlyAllowance > 0
       ? Math.min(100, Math.round((monthlySpent / monthlyAllowance) * 100))
-      : monthlySpent > 0
-      ? 100
       : 0;
 
   const safeDaysLeft = Math.max(1, daysLeftInMonth);
   const safeDailyBudget =
-    remainingAllowance > 0
+    monthlyAllowance > 0 && remainingAllowance > 0
       ? Number((remainingAllowance / safeDaysLeft).toFixed(2))
       : 0;
 

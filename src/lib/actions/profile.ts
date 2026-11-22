@@ -24,9 +24,9 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
   const defaultProfile: Profile = {
     id: isDevBypass ? 'dev-local-user' : 'unauthenticated',
     display_name: isDevBypass ? 'Aryan' : 'Student',
-    theme_preference: 'nordic',
+    theme_preference: 'monsoon-garden',
     currency_symbol: '₹',
-    monthly_allowance_target: 15000.00,
+    monthly_allowance_target: 0.00,
     timezone: null,
     daily_focus_goal_minutes: 240,
     created_at: new Date().toISOString(),
@@ -79,7 +79,7 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
         avatar_url: profile.avatar_url ?? resolvedAvatarUrl,
         timezone: profile.timezone ?? null,
         daily_focus_goal_minutes: Number(profile.daily_focus_goal_minutes || 240),
-        monthly_allowance_target: Number(profile.monthly_allowance_target || 15000),
+        monthly_allowance_target: Number(profile.monthly_allowance_target ?? 0),
       };
     }
 
@@ -92,9 +92,9 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
             id: user.id,
             display_name: resolvedDisplayName,
             avatar_url: resolvedAvatarUrl,
-            theme_preference: 'stone',
+            theme_preference: 'monsoon-garden',
             currency_symbol: '₹',
-            monthly_allowance_target: 15000.0,
+            monthly_allowance_target: 0.0,
           },
           { onConflict: 'id', ignoreDuplicates: true }
         );
@@ -106,9 +106,9 @@ export const getUserProfile = cache(async (): Promise<Profile> => {
             {
               id: user.id,
               display_name: resolvedDisplayName,
-              theme_preference: 'stone',
+              theme_preference: 'monsoon-garden',
               currency_symbol: '₹',
-              monthly_allowance_target: 15000.0,
+              monthly_allowance_target: 0.0,
             },
             { onConflict: 'id', ignoreDuplicates: true }
           );
@@ -175,7 +175,7 @@ export async function updateProfile(
         display_name: parsed.data.displayName || 'Aryan',
         currency_symbol: parsed.data.currencySymbol || '₹',
         theme_preference: themePreference,
-        monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
+        monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget ?? 0),
         daily_focus_goal_minutes: Number(parsed.data.dailyFocusGoalMinutes || 240),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -267,7 +267,7 @@ export async function updateProfile(
     display_name: data.display_name ?? displayName,
     theme_preference: data.theme_preference || themePreference,
     currency_symbol: data.currency_symbol || currencySymbol,
-    monthly_allowance_target: Number(data.monthly_allowance_target || monthlyAllowanceTarget),
+    monthly_allowance_target: Number(data.monthly_allowance_target ?? monthlyAllowanceTarget ?? 0),
     created_at: data.created_at || new Date().toISOString(),
     updated_at: data.updated_at || new Date().toISOString(),
   };

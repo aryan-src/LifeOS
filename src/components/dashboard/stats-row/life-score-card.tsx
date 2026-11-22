@@ -21,7 +21,9 @@ export function LifeScoreCard({ lifeScore }: LifeScoreCardProps) {
       ? 'Strong rhythm'
       : lifeScore.total >= 40
       ? 'Building momentum'
-      : 'Starting today';
+      : lifeScore.total > 0
+      ? 'Starting today'
+      : 'Fresh start';
 
   return (
     <Card

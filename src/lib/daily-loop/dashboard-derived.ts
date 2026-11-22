@@ -94,7 +94,7 @@ export function computeBudgetUtilization(
       : 0;
   const daysLeftInMonth = computeDaysLeftInMonth(todayDateStr);
   const safeDailyPace =
-    daysLeftInMonth > 0 ? Math.floor(remainingAmount / daysLeftInMonth) : 0;
+    safeAllowance > 0 && daysLeftInMonth > 0 ? Math.floor(remainingAmount / daysLeftInMonth) : 0;
 
   let tone: 'secondary' | 'tertiary' | 'error' = 'secondary';
   if (percentUtilized >= 90) {

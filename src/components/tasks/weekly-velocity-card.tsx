@@ -72,7 +72,7 @@ export function WeeklyVelocityCard() {
             </span>
           </div>
           <span className="font-mono text-[10px] text-stone-400 dark:text-zinc-500 mt-1.5">
-            Starting today
+            No active streak
           </span>
         </div>
 

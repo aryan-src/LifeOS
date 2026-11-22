@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useEffect, useRef } from 'react';
-import { createTransaction, type TransactionWithRelations } from '@/lib/actions/finances';
+import { createTransaction, createCategory, type TransactionWithRelations } from '@/lib/actions/finances';
 import type { Category } from '@/types/database.types';
 import type { ProjectOption } from '@/lib/actions/projects-options';
 import { getTodayDate } from '@/lib/utils/date';
@@ -39,6 +39,15 @@ export function RecordExpenseModal({
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCategoryPending, setIsCategoryPending] = useState(false);
+
+  useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
+
   useEffect(() => {
     if (isOpen) {
       setDescription('');
@@ -46,19 +55,37 @@ export function RecordExpenseModal({
       setDate(getTodayDate());
       setProjectId('none');
       setError(null);
+      setIsCreatingCategory(false);
+      setNewCategoryName('');
       if (categories.length > 0) {
-        const defaultCat =
-          categories.find(
-            (c) =>
-              c.name.toLowerCase().includes('grocery') ||
-              c.name.toLowerCase().includes('juice') ||
-              c.name.toLowerCase().includes('food')
-          ) || categories[0];
-        setCategoryId(defaultCat?.id || '');
+        setCategoryId(categories[0].id);
+      } else {
+        setCategoryId('');
       }
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen, categories]);
+
+  const handleCreateCategory = async () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    setIsCategoryPending(true);
+    try {
+      const res = await createCategory(trimmed, 'expense');
+      if (res.success && res.data) {
+        setLocalCategories((prev) => [...prev, res.data!]);
+        setCategoryId(res.data.id);
+        setIsCreatingCategory(false);
+        setNewCategoryName('');
+      } else {
+        setError(res.error || 'Failed to create category');
+      }
+    } catch {
+      setError('Failed to create category');
+    } finally {
+      setIsCategoryPending(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -74,7 +101,7 @@ export function RecordExpenseModal({
       return;
     }
 
-    const selectedCategory = categories.find((c) => c.id === categoryId);
+    const selectedCategory = localCategories.find((c) => c.id === categoryId);
     const selectedProject = projects.find((p) => p.id === projectId);
 
     const optimisticTx: TransactionWithRelations = {
@@ -227,34 +254,68 @@ export function RecordExpenseModal({
           </div>
 
           <div>
-            <label
-              htmlFor="form-category"
-              className="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400 mb-1"
-            >
-              Category
-            </label>
-            <select
-              id="form-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-stone-400 focus:border-stone-400 transition-all text-stone-700 dark:text-zinc-200"
-            >
-              {categories.length > 0 ? (
-                categories.map((cat) => (
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor="form-category"
+                className="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-400"
+              >
+                Category
+              </label>
+              {!isCreatingCategory && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingCategory(true)}
+                  className="text-[11px] font-mono text-secondary hover:underline cursor-pointer"
+                >
+                  + New Category
+                </button>
+              )}
+            </div>
+
+            {isCreatingCategory ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="New category name..."
+                  autoFocus
+                  className="flex-1 px-3 py-1.5 text-sm border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl text-stone-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-secondary"
+                />
+                <button
+                  type="button"
+                  disabled={isCategoryPending || !newCategoryName.trim()}
+                  onClick={handleCreateCategory}
+                  className="px-3 py-1.5 text-xs font-medium rounded-xl bg-secondary text-on-secondary disabled:opacity-50 cursor-pointer"
+                >
+                  {isCategoryPending ? 'Adding...' : 'Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreatingCategory(false);
+                    setNewCategoryName('');
+                  }}
+                  className="px-2 py-1.5 text-xs text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <select
+                id="form-category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-stone-400 focus:border-stone-400 transition-all text-stone-700 dark:text-zinc-200"
+              >
+                <option value="">— Uncategorized —</option>
+                {localCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
-                ))
-              ) : (
-                <>
-                  <option value="junk-food">Junk Food</option>
-                  <option value="juice">Juice</option>
-                  <option value="vegetable">Vegetable</option>
-                  <option value="grocery">Grocery</option>
-                  <option value="commute">Commute</option>
-                </>
-              )}
-            </select>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>

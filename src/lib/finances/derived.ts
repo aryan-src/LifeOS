@@ -68,7 +68,7 @@ export function computeExpensesSummary(params: {
       : computeDaysLeftInMonth(params.currentDate || new Date().toISOString().slice(0, 10));
 
   const safeDailyPace =
-    daysLeft > 0 ? Math.max(0, Math.floor(remainingBalance / daysLeft)) : 0;
+    monthlyLimit > 0 && daysLeft > 0 ? Math.max(0, Math.floor(remainingBalance / daysLeft)) : 0;
 
   const trailing = (params.weeklyDays || []).slice(-7);
   const totalTrackedDays = trailing.length || 7;
@@ -81,16 +81,21 @@ export function computeExpensesSummary(params: {
     barTone = 'tertiary';
   }
 
+  const paceStatusText =
+    monthlyLimit > 0
+      ? `${daysBelowPaceCount} of ${totalTrackedDays} days below pace`
+      : 'No monthly limit set';
+
   return {
     totalSpent,
     monthlyLimit,
-    remainingBalance,
+    remainingBalance: monthlyLimit > 0 ? remainingBalance : 0,
     percentUtilized,
     daysLeft,
     safeDailyPace,
     daysBelowPaceCount,
     totalTrackedDays,
-    paceStatusText: `${daysBelowPaceCount} of ${totalTrackedDays} days below pace`,
+    paceStatusText,
     barTone,
   };
 }

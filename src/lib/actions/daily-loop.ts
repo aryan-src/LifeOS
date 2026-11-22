@@ -176,8 +176,8 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
     },
     pocketLedger: {
       spentAmount: 0,
-      monthlyAllowance: profile.monthly_allowance_target || 15000,
-      remainingAllowance: profile.monthly_allowance_target || 15000,
+      monthlyAllowance: profile.monthly_allowance_target || 0,
+      remainingAllowance: profile.monthly_allowance_target || 0,
       allowancePercent: 0,
       currentMonth: currentMonthName,
     },
@@ -332,7 +332,7 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
           focusMinutes: 0,
           focusGoalMinutes: profile.daily_focus_goal_minutes || 240,
           dailyExpenseAmount: 0,
-          dailyAllowanceBudget: (profile.monthly_allowance_target || 15000) / 30,
+          dailyAllowanceBudget: (profile.monthly_allowance_target || 0) / 30,
         };
         recordsByDate.set(date, r);
       }
@@ -413,8 +413,8 @@ export async function getDailyLoopDashboardData(): Promise<DailyLoopDashboardDat
         ? `${focusHours}h ${focusMinsRemaining}m`
         : `${todayFocusMinutes}m`;
 
-    const monthlyAllowance = profile.monthly_allowance_target || 15000;
-    const remainingAllowance = Math.max(0, monthlyAllowance - currentMonthSpend);
+    const monthlyAllowance = profile.monthly_allowance_target || 0;
+    const remainingAllowance = monthlyAllowance > 0 ? Math.max(0, monthlyAllowance - currentMonthSpend) : 0;
     const allowancePercent = Math.min(
       100,
       monthlyAllowance > 0 ? Math.round((currentMonthSpend / monthlyAllowance) * 100) : 0

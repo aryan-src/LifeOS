@@ -346,7 +346,7 @@ export const updateProfileSchema = z.object({
     .number()
     .finite({ message: 'Allowance target must be a finite number.' })
     .nonnegative({ message: 'Allowance target cannot be negative.' })
-    .default(15000),
+    .default(0),
   timezone: z.string().trim().optional(),
   dailyFocusGoalMinutes: z.coerce.number().int().positive().optional(),
 });

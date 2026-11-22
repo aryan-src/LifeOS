@@ -95,8 +95,8 @@ export function Variant3DashboardView({
     },
     pocketLedger: {
       spentAmount: 0,
-      monthlyAllowance: 15000,
-      remainingAllowance: 15000,
+      monthlyAllowance: 0,
+      remainingAllowance: 0,
       allowancePercent: 0,
       currentMonth,
     },

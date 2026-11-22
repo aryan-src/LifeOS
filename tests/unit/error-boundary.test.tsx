@@ -22,9 +22,9 @@ describe('LifeOS Error Boundary and Fallbacks', () => {
   it('provides safe fallback financial analytics structure', () => {
     const fallback = getFallbackFinancialAnalytics();
     expect(fallback.currencySymbol).toBe('₹');
-    expect(fallback.monthlyAllowance).toBeGreaterThan(0);
-    expect(fallback.safeDailyBudget).toBeGreaterThanOrEqual(0);
-    expect(fallback.remainingAllowance).toBeGreaterThan(0);
+    expect(fallback.monthlyAllowance).toBe(0);
+    expect(fallback.safeDailyBudget).toBe(0);
+    expect(fallback.remainingAllowance).toBe(0);
     expect(Array.isArray(fallback.weeklyDays)).toBe(true);
     expect(Array.isArray(fallback.categoryBreakdown)).toBe(true);
   });

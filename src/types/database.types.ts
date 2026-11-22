@@ -252,7 +252,7 @@ export interface Database {
           id: string;
           display_name: string | null;
           avatar_url?: string | null;
-          theme_preference: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
+          theme_preference: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'monsoon-garden' | 'monsoon-night' | 'default' | 'system';
           currency_symbol: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target: number;
@@ -265,7 +265,7 @@ export interface Database {
           id: string;
           display_name?: string | null;
           avatar_url?: string | null;
-          theme_preference?: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
+          theme_preference?: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'monsoon-garden' | 'monsoon-night' | 'default' | 'system';
           currency_symbol?: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target?: number;
@@ -278,7 +278,7 @@ export interface Database {
           id?: string;
           display_name?: string | null;
           avatar_url?: string | null;
-          theme_preference?: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'default' | 'system';
+          theme_preference?: 'spatial-glass' | 'risograph' | 'nordic' | 'tui' | 'tactile' | 'stone' | 'light' | 'dark' | 'crimson-cream' | 'crimson-dark' | 'crimson-light' | 'monsoon-garden' | 'monsoon-night' | 'default' | 'system';
           currency_symbol?: string;
           monthly_allowance_goal?: number;
           monthly_allowance_target?: number;

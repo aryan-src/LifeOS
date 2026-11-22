@@ -181,15 +181,9 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     setSaveError(null);
     const trimmedName = displayName.trim() || 'Student';
     const formData = new FormData();
-    const dbThemePreference =
-      themeMode === 'monsoon-garden' || (themeMode as string) === 'monsoon'
-        ? 'light'
-        : themeMode === 'monsoon-night'
-        ? 'dark'
-        : themeMode;
     formData.set('displayName', trimmedName);
     formData.set('currencySymbol', currencySymbol);
-    formData.set('themePreference', dbThemePreference);
+    formData.set('themePreference', themeMode);
     formData.set('monthlyAllowanceTarget', String(parsedAllowance));
     formData.set('dailyFocusGoalMinutes', String(focusGoalMinutes));
 

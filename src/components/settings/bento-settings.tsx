@@ -184,6 +184,8 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     const dbThemePreference =
       themeMode === 'monsoon-garden' || (themeMode as string) === 'monsoon'
         ? 'light'
+        : themeMode === 'monsoon-night'
+        ? 'dark'
         : themeMode;
     formData.set('displayName', trimmedName);
     formData.set('currencySymbol', currencySymbol);

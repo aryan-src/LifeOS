@@ -125,6 +125,8 @@ export async function getCategories(): Promise<Category[]> {
 
 /**
  * Create a custom financial category for the authenticated user.
+ * Requires active authentication, trims and enforces length limits,
+ * guards against duplicates for the same user/type, and enforces RLS isolation.
  */
 export async function createCategory(
   name: string,
@@ -137,10 +139,27 @@ export async function createCategory(
       return { success: false, error: 'Category name is required' };
     }
 
+    if (cleanName.length > 50) {
+      return { success: false, error: 'Category name must be 50 characters or fewer' };
+    }
+
     const supabase = await createClient();
     const { user, isBypass } = await getAuthenticatedUser(supabase);
     if (isBypass || !user) {
       return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
+
+    // Check for duplicate category name under the same user and transaction type
+    const { data: existing } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('type', type)
+      .ilike('name', cleanName)
+      .maybeSingle();
+
+    if (existing) {
+      return { success: false, error: 'A category with this name already exists' };
     }
 
     const { data, error } = await supabase
@@ -155,6 +174,9 @@ export async function createCategory(
       .single();
 
     if (error) {
+      if (error.code === '23505') {
+        return { success: false, error: 'A category with this name already exists' };
+      }
       return { success: false, error: error.message };
     }
 

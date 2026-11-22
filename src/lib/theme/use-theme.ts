@@ -13,16 +13,17 @@ export type LifeOSTheme =
   | 'crimson-dark'
   | 'crimson-light'
   | 'monsoon-garden'
+  | 'monsoon-night'
   | 'monsoon'
   | 'default'
   | 'system';
 
 export const THEME_STORAGE_KEY = 'lifeos_theme';
 
-export type StitchThemeMode = 'light' | 'dark' | 'system' | 'monsoon-garden';
+export type StitchThemeMode = 'light' | 'dark' | 'system' | 'monsoon-garden' | 'monsoon-night';
 export type ThemeMode = StitchThemeMode;
 
-const DARK_THEME_ALIASES = new Set(['dark', 'tui', 'crimson-dark', 'crimson-cream']);
+const DARK_THEME_ALIASES = new Set(['dark', 'tui', 'crimson-dark', 'crimson-cream', 'monsoon-night']);
 
 /**
  * Pure helper resolving whether a stored theme string should activate Tailwind's `dark` class.
@@ -40,6 +41,7 @@ export function resolveDarkMode(theme: string | null | undefined, systemPrefersD
 export function normalizeThemeMode(theme: string | null | undefined): StitchThemeMode {
   if (!theme) return 'monsoon-garden';
   if (theme === 'system') return 'system';
+  if (theme === 'monsoon-night') return 'monsoon-night';
   if (theme === 'monsoon-garden' || theme === 'monsoon') return 'monsoon-garden';
   return DARK_THEME_ALIASES.has(theme) ? 'dark' : 'light';
 }
@@ -60,7 +62,9 @@ export function applyThemeToDOM(theme: string) {
     root.classList.remove('dark');
   }
 
-  if (theme === 'monsoon-garden' || theme === 'monsoon') {
+  if (theme === 'monsoon-night') {
+    root.setAttribute('data-theme', 'monsoon-night');
+  } else if (theme === 'monsoon-garden' || theme === 'monsoon') {
     root.setAttribute('data-theme', 'monsoon-garden');
   } else {
     root.setAttribute('data-theme', shouldBeDark ? 'dark' : 'light');
@@ -134,7 +138,7 @@ export function useTheme() {
 
   const toggleLightDark = () => {
     const isDocDark = document.documentElement.classList.contains('dark');
-    const newTheme = isDocDark ? 'monsoon-garden' : 'dark';
+    const newTheme = isDocDark ? 'monsoon-garden' : 'monsoon-night';
     setTheme(newTheme);
   };
 

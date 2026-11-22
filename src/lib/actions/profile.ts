@@ -164,6 +164,14 @@ export async function updateProfile(
 
   const supabase = await createClient();
   const { user, isBypass } = await getAuthenticatedUser(supabase);
+  const rawTheme = parsed.data.themePreference;
+  const dbTheme: UpdateProfile['theme_preference'] =
+    rawTheme === 'monsoon-garden'
+      ? 'light'
+      : rawTheme === 'monsoon-night'
+      ? 'dark'
+      : (rawTheme as UpdateProfile['theme_preference']);
+
   if (isBypass || !user) {
     return {
       success: true,
@@ -171,7 +179,7 @@ export async function updateProfile(
         id: 'dev-local-user',
         display_name: parsed.data.displayName || 'Aryan',
         currency_symbol: parsed.data.currencySymbol || '₹',
-        theme_preference: parsed.data.themePreference || 'nordic',
+        theme_preference: dbTheme || 'nordic',
         monthly_allowance_target: Number(parsed.data.monthlyAllowanceTarget || 15000),
         daily_focus_goal_minutes: Number(parsed.data.dailyFocusGoalMinutes || 240),
         created_at: new Date().toISOString(),
@@ -182,13 +190,13 @@ export async function updateProfile(
 
   const displayName = parsed.data.displayName;
   const currencySymbol = parsed.data.currencySymbol;
-  const themePreference = parsed.data.themePreference;
+  const themePreference = dbTheme;
   const monthlyAllowanceTarget = parsed.data.monthlyAllowanceTarget;
 
   const payload: UpdateProfile = {
     display_name: displayName,
     currency_symbol: currencySymbol,
-    theme_preference: themePreference,
+    theme_preference: themePreference || 'light',
     monthly_allowance_target: monthlyAllowanceTarget,
     ...(parsed.data.dailyFocusGoalMinutes
       ? { daily_focus_goal_minutes: parsed.data.dailyFocusGoalMinutes }
@@ -263,7 +271,7 @@ export async function updateProfile(
     ...data,
     id: data.id || user.id,
     display_name: data.display_name ?? displayName,
-    theme_preference: themePreference,
+    theme_preference: themePreference || 'light',
     currency_symbol: data.currency_symbol || currencySymbol,
     monthly_allowance_target: Number(data.monthly_allowance_target || monthlyAllowanceTarget),
     created_at: data.created_at || new Date().toISOString(),

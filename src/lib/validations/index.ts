@@ -322,6 +322,8 @@ export const themePreferenceEnum = z.enum([
   'crimson-cream',
   'crimson-dark',
   'crimson-light',
+  'monsoon-garden',
+  'monsoon-night',
   'default',
   'system',
 ]);

@@ -26,7 +26,7 @@ export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
     } else if (initialTheme) {
       saveTheme(normalizeThemeMode(initialTheme));
     } else {
-      applyThemeToDOM('light');
+      applyThemeToDOM('monsoon-garden');
     }
   }, [initialTheme]);
 

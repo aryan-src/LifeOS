@@ -98,7 +98,9 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
     initialProfile.display_name?.trim() || ''
   );
   const [allowanceTarget, setAllowanceTarget] = useState<string>(
-    initialProfile.monthly_allowance_target?.toString() || '5000'
+    initialProfile.monthly_allowance_target && initialProfile.monthly_allowance_target > 0
+      ? initialProfile.monthly_allowance_target.toString()
+      : ''
   );
   const [currencyCode, setCurrencyCode] = useState<string>(() =>
     resolveCurrencyCode(initialProfile.currency_symbol)
@@ -385,6 +387,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
                     step={50}
                     value={allowanceTarget}
                     onChange={(e) => setAllowanceTarget(e.target.value)}
+                    placeholder="e.g. 5000"
                     className="w-full rounded-xl border border-outline-variant/50 bg-surface-container-low py-2 pl-8 pr-3.5 font-mono text-body-sm text-on-surface focus:border-secondary focus:bg-surface-container-lowest focus:outline-none"
                     style={LINING_NUMS_STYLE}
                   />

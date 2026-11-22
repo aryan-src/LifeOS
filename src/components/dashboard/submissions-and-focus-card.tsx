@@ -115,15 +115,24 @@ export async function SubmissionsAndFocusCard({
 
       {/* Card Footer */}
       <div className="mt-1.5 shrink-0 pt-2.5 border-t border-stone-200/60 dark:border-zinc-800/60 flex items-center justify-between text-xs">
+        {remainingCount > 0 ? (
+          <Link
+            className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
+            href="/assignments"
+          >
+            <span>+ {remainingCount} more due this week →</span>
+          </Link>
+        ) : (
+          <span className="text-[11px] text-stone-400 dark:text-zinc-500 font-mono">
+            All caught up
+          </span>
+        )}
         <Link
-          className="text-stone-400 dark:text-zinc-500 hover:text-stone-700 dark:hover:text-zinc-300 transition-colors font-medium text-[11px]"
           href="/assignments"
+          className="text-[11px] font-mono text-secondary hover:underline"
         >
-          <span>+ {remainingCount} more due this week →</span>
+          Assignments →
         </Link>
-        <span className="text-[9px] font-mono text-stone-400 dark:text-zinc-500">
-          Sync: LMS Active
-        </span>
       </div>
     </article>
   );

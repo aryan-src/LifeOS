@@ -42,8 +42,8 @@ export function ExpensesPaceChart({
           Daily spending
         </h2>
 
-        <Pill tone="secondary" dot={true}>
-          {paceStatusText}
+        <Pill tone={safeDailyPace > 0 ? 'secondary' : 'neutral'} dot={safeDailyPace > 0}>
+          {safeDailyPace > 0 ? paceStatusText : 'Pace untracked'}
         </Pill>
       </div>
 

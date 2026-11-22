@@ -35,11 +35,11 @@ export function PocketMoneyWidget({
   className = '',
 }: PocketMoneyWidgetProps) {
   const {
-    monthlyAllowance = 5000,
-    remainingAllowance = 823.5,
-    allowanceUsagePercent = 84,
+    monthlyAllowance = 0,
+    remainingAllowance = 0,
+    allowanceUsagePercent = 0,
     todaySpent = 0,
-    daysLeftInMonth = 8,
+    daysLeftInMonth = 30,
     currencySymbol = '₹',
     weeklyDays = [],
   } = telemetry;
@@ -47,13 +47,13 @@ export function PocketMoneyWidget({
   const remainingPercent = Math.max(0, Math.min(100, Math.round(100 - allowanceUsagePercent)));
 
   const defaultWeeklyDays = [
-    { dayLabel: 'Sun', spent: 60, isToday: false },
-    { dayLabel: 'Mon', spent: 120, isToday: false },
-    { dayLabel: 'Tue', spent: 80, isToday: false },
-    { dayLabel: 'Wed', spent: 210, isToday: false },
-    { dayLabel: 'Thu', spent: 40, isToday: false },
-    { dayLabel: 'Fri', spent: 70, isToday: false },
-    { dayLabel: 'Sat', spent: 30, isToday: true },
+    { dayLabel: 'Sun', spent: 0, isToday: false },
+    { dayLabel: 'Mon', spent: 0, isToday: false },
+    { dayLabel: 'Tue', spent: 0, isToday: false },
+    { dayLabel: 'Wed', spent: 0, isToday: false },
+    { dayLabel: 'Thu', spent: 0, isToday: false },
+    { dayLabel: 'Fri', spent: 0, isToday: false },
+    { dayLabel: 'Sat', spent: 0, isToday: true },
   ];
 
   const days = weeklyDays.length >= 7 ? weeklyDays.slice(-7) : defaultWeeklyDays;

@@ -39,7 +39,9 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
     initialProfile.theme_preference || 'default'
   );
   const [allowanceTarget, setAllowanceTarget] = useState(
-    initialProfile.monthly_allowance_target?.toString() || '15000'
+    initialProfile.monthly_allowance_target && initialProfile.monthly_allowance_target > 0
+      ? initialProfile.monthly_allowance_target.toString()
+      : ''
   );
 
   const [isPending, startTransition] = useTransition();
@@ -167,7 +169,7 @@ export function SettingsForm({ initialProfile, userEmail }: SettingsFormProps) {
                   min="0"
                   value={allowanceTarget}
                   onChange={(e) => setAllowanceTarget(e.target.value)}
-                  placeholder="15000"
+                  placeholder="e.g. 15000"
                   required
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-outline/40 transition-all"
                 />

@@ -90,35 +90,10 @@ export interface FinancialAnalytics {
   cashflowComparison: { name: string; amount: number; fill: string }[];
 }
 
-const STUDENT_CATEGORIES: { name: string; type: 'income' | 'expense'; color: string }[] = [
-  { name: 'Pocket Money', type: 'income', color: '#10b981' },
-  { name: 'Allowance', type: 'income', color: '#10b981' },
-  { name: 'Food & Canteen', type: 'expense', color: '#f97316' },
-  { name: 'Transport', type: 'expense', color: '#3b82f6' },
-  { name: 'Subscriptions', type: 'expense', color: '#ec4899' },
-  { name: 'Books & Supplies', type: 'expense', color: '#8b5cf6' },
-  { name: 'Grocery', type: 'expense', color: '#16a34a' },
-  { name: 'Stationary', type: 'expense', color: '#8b5cf6' },
-  { name: 'Junk Food', type: 'expense', color: '#f97316' },
-  { name: 'Vegetable', type: 'expense', color: '#22c55e' },
-  { name: 'Fruits', type: 'expense', color: '#ef4444' },
-  { name: 'Juice', type: 'expense', color: '#eab308' },
-  { name: 'Commute', type: 'expense', color: '#3b82f6' },
-  { name: 'Subscription', type: 'expense', color: '#ec4899' },
-  { name: 'Personal & Misc', type: 'expense', color: '#64748b' },
-];
-
-const OBSOLETE_CATEGORIES = [
-  'Entertainment & Hanging Out',
-  'Gifts & Side Hustles',
-  'Pocket Money / Allowance',
-  'Transport & Commute',
-];
-
 import { getFallbackFinancialAnalytics } from '@/lib/finances/defaults';
 
 /**
- * Fetch financial categories and auto-seed/sync the student categories if missing.
+ * Fetch financial categories for the authenticated user without auto-seeding.
  */
 export async function getCategories(): Promise<Category[]> {
   try {
@@ -126,7 +101,7 @@ export async function getCategories(): Promise<Category[]> {
     const { user, isBypass } = await getAuthenticatedUser(supabase);
     if (isBypass || !user) return [];
 
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('categories')
       .select('*')
       .eq('user_id', user.id)
@@ -137,46 +112,6 @@ export async function getCategories(): Promise<Category[]> {
       return [];
     }
 
-    const existingNames = new Set((data || []).map((c) => c.name));
-    const hasObsolete = (data || []).some((c) => OBSOLETE_CATEGORIES.includes(c.name));
-    const missingCategories = STUDENT_CATEGORIES.filter((c) => !existingNames.has(c.name));
-
-    if (hasObsolete || missingCategories.length > 0) {
-      // Clean up obsolete categories
-      if (hasObsolete) {
-        await supabase
-          .from('categories')
-          .delete()
-          .eq('user_id', user.id)
-          .in('name', OBSOLETE_CATEGORIES);
-      }
-
-      // Insert missing student categories
-      if (missingCategories.length > 0) {
-        await supabase
-          .from('categories')
-          .insert(
-            missingCategories.map((c) => ({
-              user_id: user.id,
-              name: c.name,
-              type: c.type,
-              color: c.color,
-            }))
-          );
-      }
-
-      // Re-query the updated clean category set
-      const refreshed = await supabase
-        .from('categories')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name', { ascending: true });
-
-      if (refreshed.data) {
-        data = refreshed.data;
-      }
-    }
-
     // Parse monthly_budget to number if present
     return (data || []).map((c) => ({
       ...c,
@@ -185,6 +120,56 @@ export async function getCategories(): Promise<Category[]> {
   } catch (err) {
     console.error('Unhandled error in getCategories:', err);
     return [];
+  }
+}
+
+/**
+ * Create a custom financial category for the authenticated user.
+ */
+export async function createCategory(
+  name: string,
+  type: 'income' | 'expense' = 'expense',
+  color?: string
+): Promise<ActionResponse<Category>> {
+  try {
+    const cleanName = (name || '').trim();
+    if (!cleanName) {
+      return { success: false, error: 'Category name is required' };
+    }
+
+    const supabase = await createClient();
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
+
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({
+        user_id: user.id,
+        name: cleanName,
+        type,
+        color: color || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/finances');
+    revalidatePath('/dashboard');
+
+    return {
+      success: true,
+      data: {
+        ...data,
+        monthly_budget: data.monthly_budget !== null ? Number(data.monthly_budget) : null,
+      },
+    };
+  } catch (err) {
+    return { success: false, error: formatErrorMessage(err) };
   }
 }
 

@@ -5,7 +5,6 @@
 -- 1. Updates public.profiles column defaults:
 --    - theme_preference default to 'monsoon-garden'
 --    - monthly_allowance_target default to 0.00
---    - monthly_allowance_goal default to 0.00
 -- 2. Updates handle_new_user() trigger function:
 --    - Provisions fresh user profiles with 'monsoon-garden' theme and 0.00 allowance target
 --    - Eliminates pre-set starter tasks, starter projects, and starter categories
@@ -18,9 +17,6 @@ alter table if exists public.profiles
 
 alter table if exists public.profiles
     alter column monthly_allowance_target set default 0.00;
-
-alter table if exists public.profiles
-    alter column monthly_allowance_goal set default 0.00;
 
 -- 2. Update handle_new_user Trigger Function
 create or replace function public.handle_new_user()
@@ -69,8 +65,3 @@ begin
     return new;
 end;
 $$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-    after insert on auth.users
-    for each row execute function public.handle_new_user();

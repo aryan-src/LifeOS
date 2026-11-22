@@ -32,7 +32,7 @@ export function ThemePullCord({ className, onThemeChange }: ThemePullCordProps) 
   }
 
   const handleCheckedChange = (checked: boolean) => {
-    const nextTheme: ThemeMode = checked ? 'light' : 'dark';
+    const nextTheme: ThemeMode = checked ? 'monsoon-garden' : 'monsoon-night';
     setTheme(nextTheme);
     onThemeChange?.(nextTheme);
   };

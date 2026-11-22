@@ -598,7 +598,7 @@ export function FocusTimer({
       <div className="flex flex-col items-center justify-center py-2 relative" data-purpose="centerpiece-display">
         <div className="relative w-64 h-64 sm:w-68 sm:h-68 flex items-center justify-center">
           {/* Subtle outer breathing atmosphere ring */}
-          <div className="absolute inset-0 rounded-full border border-stone-300/40 dark:border-zinc-700/40 animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-full border border-outline-variant/30 animate-pulse pointer-events-none" />
 
           {/* SVG Circular Progress Ring */}
           <svg className="w-full h-full p-2 -rotate-90 origin-center" viewBox="0 0 240 240">
@@ -608,9 +608,8 @@ export function FocusTimer({
               cy="120"
               fill="none"
               r="104"
-              stroke="#ECEAE2"
               strokeWidth="2.5"
-              className="dark:stroke-zinc-800"
+              className="stroke-surface-container-high"
             />
             {/* Active progress ring */}
             <circle
@@ -618,12 +617,13 @@ export function FocusTimer({
               cy="120"
               fill="none"
               r="104"
-              stroke={isBreakMode ? '#b45309' : '#262422'}
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               strokeWidth="3"
-              className="transition-[stroke-dashoffset] duration-700 ease-out dark:stroke-zinc-200"
+              className={`transition-[stroke-dashoffset] duration-700 ease-out ${
+                isBreakMode ? 'stroke-secondary' : 'stroke-primary'
+              }`}
               id="zen-progress-ring"
             />
           </svg>
@@ -631,13 +631,13 @@ export function FocusTimer({
           {/* Core Numbers Display Inside Circle */}
           <div className="absolute flex flex-col items-center justify-center select-none text-center">
             <span
-              className="text-[9px] font-mono tracking-widest uppercase text-stone-400 dark:text-zinc-500 mb-1"
+              className="text-[9px] font-mono tracking-widest uppercase text-on-surface-variant mb-1"
               id="mode-subtitle"
             >
               {modeSubtitle}
             </span>
             <span
-              className="font-sans font-light tracking-[-0.04em] text-6xl sm:text-7xl text-stone-900 dark:text-zinc-100 leading-none tabular-nums"
+              className="font-sans font-light tracking-[-0.04em] text-6xl sm:text-7xl text-on-surface leading-none tabular-nums"
               id="timer-display"
             >
               {formatTime(remainingSeconds)}

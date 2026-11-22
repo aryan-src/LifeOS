@@ -137,9 +137,22 @@ describe('LiquidFooterNav Item Definitions & Hrefs', () => {
 });
 
 describe('LiquidFooterNav Rendering & Fallbacks', () => {
-  it('renders all links with correct hrefs, labels, and aria attributes', () => {
+  it('renders footer wrapper containing centered navbar, links, and aria attributes', () => {
     mockCurrentPath = '/projects/alpha';
     const html = renderToString(<LiquidFooterNav />);
+
+    // Footer wrapper exists with exact physical strip styling
+    expect(html).toContain('<footer');
+    expect(html).toContain('fixed bottom-0 inset-x-0 z-50 flex items-center justify-center');
+    expect(html).toContain('border-t border-outline-variant/30');
+    expect(html).toContain('liquid-footer-strip');
+
+    // Nav is rendered inside the footer with docked variant (no double container)
+    expect(html).toMatch(/<footer[^>]*>[\s\S]*<nav[^>]*class="[^"]*nimbus-nav/);
+    expect(html).toContain('data-variant="docked"');
+    expect(html).toContain('class="nimbus-glass"');
+    expect(html).toContain('class="nimbus-water"');
+    expect(html).toContain('class="nimbus-drop"');
 
     expect(html).toContain('aria-label="Primary"');
     expect(html).toContain('href="/dashboard"');
@@ -150,10 +163,9 @@ describe('LiquidFooterNav Rendering & Fallbacks', () => {
     expect(html).toContain('href="/notes"');
     expect(html).toContain('href="/settings"');
 
-    // Title attribute in compact mode
-    expect(html).toContain('title="Dashboard"');
-    expect(html).toContain('title="Projects"');
-    expect(html).toContain('title="Settings"');
+    // Centered tooltips rendered instead of buggy native title attributes
+    expect(html).toContain('class="nimbus-tooltip"');
+    expect(html).not.toContain('title="Dashboard"');
 
     // Projects link has aria-current="page"
     expect(html).toContain('aria-current="page"');

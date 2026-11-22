@@ -210,7 +210,7 @@ export function WorkspaceHeader({
           <button
             type="button"
             onClick={(e) => {
-              const nextTheme = isDark ? 'light' : 'dark';
+              const nextTheme = isDark ? 'monsoon-garden' : 'monsoon-night';
               triggerThemeTransition(e, nextTheme, setTheme);
             }}
             className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant/40 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50"

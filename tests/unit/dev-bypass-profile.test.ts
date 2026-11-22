@@ -70,5 +70,23 @@ describe('Dev Bypass Profile Fallback', () => {
     expect(res.data?.display_name).toBe('Aryan Test');
     expect(res.data?.theme_preference).toBe('tui');
     expect(res.data?.monthly_allowance_target).toBe(20000);
+
+    const formDataGarden = new FormData();
+    formDataGarden.append('displayName', 'Student Garden');
+    formDataGarden.append('currencySymbol', '₹');
+    formDataGarden.append('themePreference', 'monsoon-garden');
+    formDataGarden.append('monthlyAllowanceTarget', '15000');
+    const resGarden = await updateProfile(null, formDataGarden);
+    expect(resGarden.success).toBe(true);
+    expect(resGarden.data?.theme_preference).toBe('monsoon-garden');
+
+    const formDataNight = new FormData();
+    formDataNight.append('displayName', 'Student Night');
+    formDataNight.append('currencySymbol', '₹');
+    formDataNight.append('themePreference', 'monsoon-night');
+    formDataNight.append('monthlyAllowanceTarget', '15000');
+    const resNight = await updateProfile(null, formDataNight);
+    expect(resNight.success).toBe(true);
+    expect(resNight.data?.theme_preference).toBe('monsoon-night');
   });
 });

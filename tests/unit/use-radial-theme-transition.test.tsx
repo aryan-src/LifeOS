@@ -95,6 +95,18 @@ describe('useRadialThemeTransition Hook', () => {
       expect(mockElement.setAttribute).not.toHaveBeenCalledWith('data-theme-transitioning', 'true');
     });
 
+    it('sets dark mode and dark colorScheme when transitioning to monsoon-night', () => {
+      const hook = getHook();
+      const applyThemeState = vi.fn();
+
+      hook.triggerThemeTransition(null, 'monsoon-night', applyThemeState);
+
+      expect(applyThemeState).toHaveBeenCalledWith('monsoon-night');
+      expect(mockElement.classList.toggle).toHaveBeenCalledWith('dark', true);
+      expect(mockElement.setAttribute).toHaveBeenCalledWith('data-theme', 'monsoon-night');
+      expect(mockElement.style.colorScheme).toBe('dark');
+    });
+
     it('bypasses view transition when prefers-reduced-motion matches', () => {
       const hook = getHook();
       const applyThemeState = vi.fn();

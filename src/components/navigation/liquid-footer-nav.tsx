@@ -139,17 +139,25 @@ export function LiquidFooterNav({
   const activeIndex = pendingIndex !== null ? pendingIndex : resolvedIndex;
 
   return (
-    <LiquidNavbar
-      items={items}
-      activeIndex={activeIndex}
-      onChange={handleChange}
-      tone={isDark ? 'dark' : 'light'}
-      compact={true}
-      sound={false}
-      ambient={false}
-      ariaLabel="Primary"
-      linkComponent={Link}
-      className={className}
-    />
+    <footer
+      className={`fixed bottom-0 inset-x-0 z-50 flex items-center justify-center border-t border-outline-variant/30 liquid-footer-strip pointer-events-auto h-[calc(64px+env(safe-area-inset-bottom,0px))] md:h-[calc(72px+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] ${className || ''}`}
+      style={{
+        height: 'calc(var(--app-footer-height, 64px) + env(safe-area-inset-bottom, 0px))',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+    >
+      <LiquidNavbar
+        items={items}
+        activeIndex={activeIndex}
+        onChange={handleChange}
+        tone={isDark ? 'dark' : 'light'}
+        compact={true}
+        variant="docked"
+        sound={false}
+        ambient={false}
+        ariaLabel="Primary"
+        linkComponent={Link}
+      />
+    </footer>
   );
 }

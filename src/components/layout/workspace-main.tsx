@@ -42,7 +42,7 @@ export function WorkspaceMain({
         !isDockHidden
           ? {
               paddingBottom:
-                'var(--footer-content-padding, calc(var(--footer-nav-height, 52px) + 20px + 16px + env(safe-area-inset-bottom, 0px)))',
+                'var(--footer-content-padding, var(--app-footer-clearance, calc(var(--app-footer-height, 64px) + env(safe-area-inset-bottom, 0px) + 16px)))',
             }
           : undefined
       }

@@ -62,6 +62,7 @@ export function useRadialThemeTransition() {
         nextTheme === "dark" ||
         nextTheme === "crimson-dark" ||
         nextTheme === "tui" ||
+        nextTheme === "monsoon-night" ||
         (nextTheme === "system" && systemPrefersDark);
 
       const syncDomAttributes = () => {

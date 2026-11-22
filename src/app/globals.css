@@ -78,6 +78,21 @@
     --ruri-soft: #e2dfd8;
     --deep: #fdfcfb;
     color-scheme: light;
+
+    /* App Footer Height and Dynamic Clearance */
+    --app-footer-height: 64px;
+    --app-footer-clearance: calc(var(--app-footer-height) + env(safe-area-inset-bottom, 0px) + 16px);
+    --footer-content-padding: var(--app-footer-clearance);
+
+    /* Habit Streak Gradient and Glow Tokens */
+    --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed, var(--color-secondary))) 100%);
+    --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 0 108 73), 0.35);
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --app-footer-height: 72px;
+    }
   }
 
   .dark {
@@ -143,6 +158,10 @@
     --ruri-soft: #3d3b36;
     --deep: #0f0e0d;
     color-scheme: dark;
+
+    /* Habit Streak Gradient and Glow Tokens in Dark Mode */
+    --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-surface-container-high)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed, var(--color-secondary))) 100%);
+    --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 79 219 200), 0.3);
   }
 
   html, body {
@@ -205,6 +224,42 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Liquid Glass Footer Strip */
+.liquid-footer-strip {
+  background-color: rgb(var(--color-surface-container-lowest) / 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 -1px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dark .liquid-footer-strip,
+[data-theme="dark"] .liquid-footer-strip {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 -1px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="monsoon-night"] .liquid-footer-strip {
+  background-color: rgb(var(--color-surface-container-lowest) / 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 -1px 12px rgba(14, 21, 17, 0.4);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .liquid-footer-strip {
+    background-color: rgb(var(--color-surface-container-lowest) / 0.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    backdrop-filter: blur(20px) saturate(1.6);
+  }
+
+  .dark .liquid-footer-strip,
+  [data-theme="dark"] .liquid-footer-strip {
+    background-color: rgb(var(--color-surface-container-lowest) / 0.65);
+  }
+
+  [data-theme="monsoon-night"] .liquid-footer-strip {
+    background-color: rgb(var(--color-surface-container-lowest) / 0.65);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    backdrop-filter: blur(20px) saturate(1.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 -1px 12px rgba(14, 21, 17, 0.4);
+  }
 }
 
 /* ==========================================================================
@@ -871,6 +926,10 @@ html[data-theme="crimson-light"],
   --ruri: #1F2D24;
   --ruri-soft: #CBD3BE;
   --deep: #FBFAF4;
+
+  /* Habit Streak Gradient and Glow Tokens in Monsoon Garden */
+  --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 70%, rgb(var(--color-secondary-fixed-dim, var(--color-secondary))) 100%);
+  --habit-streak-glow: 0 0 10px rgba(var(--color-secondary, 62 142 126), 0.35);
 }
 
 /* 1. Primary Page Background */
@@ -1157,13 +1216,11 @@ html[data-theme="monsoon"],
   box-shadow: 0 4px 20px -2px rgba(31, 93, 74, 0.08), 0 2px 6px -1px rgba(31, 93, 74, 0.04) !important;
 }
 
-/* 12. Stylistic Signature 3: Habit streak fills styled like a gentle rising tide */
-[data-theme="monsoon-garden"] [data-purpose="streak-records-card"] .bg-secondary,
-[data-theme="monsoon"] [data-purpose="streak-records-card"] .bg-secondary,
-[data-theme="monsoon-garden"] .habit-streak-fill,
-[data-theme="monsoon"] .habit-streak-fill {
-  background: linear-gradient(90deg, #1F5D4A 0%, #3E8E7E 70%, #5BB7A4 100%) !important;
-  box-shadow: 0 0 10px rgba(62, 142, 126, 0.35) !important;
+/* Habit streak fills styled like a gentle rising tide using theme tokens */
+[data-purpose="streak-records-card"] .bg-secondary,
+.habit-streak-fill {
+  background: var(--habit-streak-gradient) !important;
+  box-shadow: var(--habit-streak-glow) !important;
 }
 
 /* Text Selection in Monsoon Garden */
@@ -1171,6 +1228,293 @@ html[data-theme="monsoon"],
 [data-theme="monsoon"] ::selection {
   background-color: #1F5D4A !important;
   color: #FBFAF4 !important;
+}
+
+/* ==========================================================================
+   Monsoon Night Theme (monsoon-night)
+   Dark edition of Monsoon Garden based on Stitch screen specifications.
+   Page Background: Deep green-black obsidian (#0E1511)
+   Base Card Surface: Muted forest obsidian (#16211B)
+   Raised Surface & Inputs: Dark olive slate (#1C2A23)
+   Elevated Containers: Rich deep pine (#24332B)
+   Card Borders & Dividers: Subdued forest line (#2A3B32)
+   Muted Outline: Eucalyptus sage (#5E7569)
+   Primary Accent: Luminous sage (#7FB896) with dark text (#0E1511)
+   Secondary Accent: Warm terracotta (#D9805A)
+   Heading Text: Pale misty foam (#E8EDE4)
+   Muted Text: Soft eucalyptus slate (#9DB0A3)
+   ========================================================================== */
+
+:root[data-theme="monsoon-night"],
+[data-theme="monsoon-night"],
+.theme-monsoon-night {
+  --theme-bg-page: #0E1511;
+  --theme-bg-surface: #16211B;
+  --theme-text-primary: #E8EDE4;
+  --theme-text-muted: #9DB0A3;
+  --theme-accent: #7FB896;
+  --theme-accent-hover: #98C9AC;
+  --theme-border-divider: #2A3B32;
+  --theme-border-card: #2A3B32;
+  --theme-glow: rgba(127, 184, 150, 0.2);
+  --color-from: rgba(127, 184, 150, 0.5);
+  color-scheme: dark;
+
+  /* Stitch Semantic Surface Tokens (RGB) */
+  --color-background: 14 21 17;                   /* #0E1511 Deep green-black */
+  --color-surface: 22 33 27;                      /* #16211B Base card surface */
+  --color-surface-bright: 36 51 43;               /* #24332B */
+  --color-surface-dim: 14 21 17;                  /* #0E1511 */
+  --color-surface-container-lowest: 22 33 27;     /* #16211B Base cards */
+  --color-surface-container-low: 24 36 30;        /* #18241E */
+  --color-surface-container: 28 42 35;            /* #1C2A23 Raised containers & inputs */
+  --color-surface-container-high: 36 51 43;       /* #24332B Elevated focus blocks */
+  --color-surface-container-highest: 47 64 55;    /* #2F4037 Deep containers */
+  --color-surface-variant: 47 64 55;              /* #2F4037 */
+  --color-surface-tint: 127 184 150;              /* #7FB896 Sage */
+
+  /* Text & Ink Tokens (RGB) */
+  --color-on-background: 232 237 228;             /* #E8EDE4 Pale misty foam */
+  --color-on-surface: 232 237 228;                /* #E8EDE4 Pale misty foam */
+  --color-on-surface-variant: 157 176 163;        /* #9DB0A3 Soft eucalyptus slate */
+  --color-inverse-surface: 232 237 228;           /* #E8EDE4 */
+  --color-inverse-on-surface: 14 21 17;           /* #0E1511 */
+
+  /* Borders & Dividers (RGB) */
+  --color-outline: 94 117 105;                    /* #5E7569 Muted outline */
+  --color-outline-variant: 42 59 50;              /* #2A3B32 Card border */
+
+  /* Primary Accent: Sage #7FB896 (buttons have dark text on it) */
+  --color-primary: 127 184 150;                   /* #7FB896 Sage */
+  --color-primary-container: 36 51 43;            /* #24332B */
+  --color-primary-fixed: 152 201 172;             /* #98C9AC */
+  --color-primary-fixed-dim: 127 184 150;         /* #7FB896 */
+  --color-on-primary: 14 21 17;                   /* #0E1511 Dark ink text on sage buttons */
+  --color-on-primary-container: 232 237 228;      /* #E8EDE4 */
+  --color-on-primary-fixed: 14 21 17;             /* #0E1511 */
+  --color-on-primary-fixed-variant: 28 42 35;     /* #1C2A23 */
+  --color-inverse-primary: 31 93 74;              /* #1F5D4A */
+
+  /* Secondary Accent: Warm Terracotta #D9805A */
+  --color-secondary: 217 128 90;                  /* #D9805A Warm terracotta */
+  --color-secondary-container: 58 35 25;          /* #3A2319 */
+  --color-secondary-fixed: 240 162 130;           /* #F0A282 */
+  --color-secondary-fixed-dim: 217 128 90;        /* #D9805A */
+  --color-on-secondary: 14 21 17;                 /* #0E1511 Dark ink */
+  --color-on-secondary-container: 245 197 178;    /* #F5C5B2 */
+  --color-on-secondary-fixed: 30 15 10;
+  --color-on-secondary-fixed-variant: 80 40 25;
+
+  /* Tertiary Accent: Warm Terracotta #D9805A */
+  --color-tertiary: 217 128 90;                   /* #D9805A */
+  --color-tertiary-container: 58 35 25;
+  --color-tertiary-fixed: 240 162 130;
+  --color-tertiary-fixed-dim: 217 128 90;
+  --color-on-tertiary: 14 21 17;
+  --color-on-tertiary-container: 245 197 178;
+  --color-on-tertiary-fixed: 30 15 10;
+  --color-on-tertiary-fixed-variant: 80 40 25;
+
+  /* Error Semantic Tokens */
+  --color-error: 255 180 171;                     /* #FFB4AB */
+  --color-error-container: 147 0 10;              /* #93000A */
+  --color-on-error: 105 0 5;                      /* #690005 */
+  --color-on-error-container: 255 218 214;        /* #FFDAD6 */
+
+  --faint: #9DB0A3;
+  --ruri: #E8EDE4;
+  --ruri-soft: #2A3B32;
+  --deep: #0E1511;
+
+  /* Habit Streak Gradient and Glow Tokens in Monsoon Night */
+  --habit-streak-gradient: linear-gradient(90deg, rgb(var(--color-surface-container-high)) 0%, rgb(var(--color-primary)) 70%, rgb(var(--color-primary-fixed, var(--color-primary))) 100%);
+  --habit-streak-glow: 0 0 10px rgba(var(--color-primary, 127 184 150), 0.3);
+}
+
+/* Monsoon Night Component Overrides */
+html[data-theme="monsoon-night"],
+html[data-theme="monsoon-night"] body,
+[data-theme="monsoon-night"] main,
+[data-theme="monsoon-night"] [data-purpose="app-shell-root"],
+[data-theme="monsoon-night"] [data-purpose="app-layout-root"],
+[data-theme="monsoon-night"] [data-purpose="dashboard-viewport-container"],
+[data-theme="monsoon-night"] .bg-background {
+  background-color: #0E1511 !important;
+}
+
+[data-theme="monsoon-night"] .bg-surface,
+[data-theme="monsoon-night"] .bg-surface-container-lowest,
+[data-theme="monsoon-night"] .bg-card,
+[data-theme="monsoon-night"] header,
+[data-theme="monsoon-night"] aside,
+[data-theme="monsoon-night"] nav:not(.nimbus-nav),
+[data-theme="monsoon-night"] [role="dialog"],
+[data-theme="monsoon-night"] [role="menu"],
+[data-theme="monsoon-night"] [role="listbox"],
+[data-theme="monsoon-night"] .modal-content {
+  background-color: #16211B !important;
+}
+
+[data-theme="monsoon-night"] .bg-surface-container-low {
+  background-color: #18241E !important;
+}
+[data-theme="monsoon-night"] .bg-surface-container,
+[data-theme="monsoon-night"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="monsoon-night"] textarea,
+[data-theme="monsoon-night"] select {
+  background-color: #1C2A23 !important;
+}
+[data-theme="monsoon-night"] .bg-surface-container-high {
+  background-color: #24332B !important;
+}
+[data-theme="monsoon-night"] .bg-surface-container-highest {
+  background-color: #2F4037 !important;
+}
+
+html[data-theme="monsoon-night"],
+[data-theme="monsoon-night"] body,
+[data-theme="monsoon-night"] .text-on-surface,
+[data-theme="monsoon-night"] .text-foreground,
+[data-theme="monsoon-night"] .text-stone-900,
+[data-theme="monsoon-night"] .text-neutral-900,
+[data-theme="monsoon-night"] h1,
+[data-theme="monsoon-night"] h2,
+[data-theme="monsoon-night"] h3,
+[data-theme="monsoon-night"] h4,
+[data-theme="monsoon-night"] h5,
+[data-theme="monsoon-night"] h6,
+[data-theme="monsoon-night"] input,
+[data-theme="monsoon-night"] textarea,
+[data-theme="monsoon-night"] select {
+  color: #E8EDE4 !important;
+}
+
+[data-theme="monsoon-night"] .text-outline,
+[data-theme="monsoon-night"] .text-outline-variant,
+[data-theme="monsoon-night"] .text-on-surface-variant,
+[data-theme="monsoon-night"] .text-muted-foreground,
+[data-theme="monsoon-night"] .text-stone-500,
+[data-theme="monsoon-night"] .text-stone-600,
+[data-theme="monsoon-night"] .text-neutral-500,
+[data-theme="monsoon-night"] .text-neutral-600 {
+  color: #9DB0A3 !important;
+}
+
+[data-theme="monsoon-night"] input::placeholder,
+[data-theme="monsoon-night"] textarea::placeholder {
+  color: #9DB0A3 !important;
+  opacity: 0.65 !important;
+}
+
+[data-theme="monsoon-night"] .bg-primary,
+[data-theme="monsoon-night"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10),
+[data-theme="monsoon-night"] [data-state="active"],
+[data-theme="monsoon-night"] .badge-primary {
+  background-color: #7FB896 !important;
+  color: #0E1511 !important;
+}
+
+[data-theme="monsoon-night"] button[type="submit"]:not(.bg-transparent) *,
+[data-theme="monsoon-night"] .bg-primary * {
+  color: #0E1511 !important;
+}
+
+[data-theme="monsoon-night"] .text-primary {
+  color: #7FB896 !important;
+}
+
+[data-theme="monsoon-night"] .bg-primary:hover,
+[data-theme="monsoon-night"] button[type="submit"]:not(.bg-transparent):not(.bg-surface-container):not(.hover\:bg-red-500\/10):hover,
+[data-theme="monsoon-night"] .hover\:bg-primary\/90:hover {
+  background-color: #98C9AC !important;
+  box-shadow: 0 0 14px rgba(127, 184, 150, 0.25) !important;
+}
+
+[data-theme="monsoon-night"] input:focus,
+[data-theme="monsoon-night"] textarea:focus,
+[data-theme="monsoon-night"] select:focus,
+[data-theme="monsoon-night"] .focus-within\:border-primary\/40:focus-within {
+  border-color: #7FB896 !important;
+  box-shadow: 0 0 0 1px rgba(127, 184, 150, 0.35) !important;
+}
+
+[data-theme="monsoon-night"] .text-secondary {
+  color: #D9805A !important;
+}
+
+[data-theme="monsoon-night"] .text-tertiary,
+[data-theme="monsoon-night"] .text-on-tertiary-container {
+  color: #D9805A !important;
+}
+
+[data-theme="monsoon-night"] .bg-tertiary,
+[data-theme="monsoon-night"] .bg-on-tertiary-container {
+  background-color: #D9805A !important;
+}
+
+[data-theme="monsoon-night"] hr,
+[data-theme="monsoon-night"] header,
+[data-theme="monsoon-night"] aside,
+[data-theme="monsoon-night"] .border-outline-variant,
+[data-theme="monsoon-night"] .border-outline-variant\/20,
+[data-theme="monsoon-night"] .border-outline-variant\/30,
+[data-theme="monsoon-night"] .border-outline-variant\/40,
+[data-theme="monsoon-night"] .border-outline-variant\/50,
+[data-theme="monsoon-night"] .border-outline-variant\/60,
+[data-theme="monsoon-night"] .border-neutral-200\/80 {
+  border-color: #2A3B32 !important;
+}
+
+[data-theme="monsoon-night"] .bg-surface-container-lowest,
+[data-theme="monsoon-night"] section.bg-surface-container-lowest,
+[data-theme="monsoon-night"] .rounded-2xl.border,
+[data-theme="monsoon-night"] .rounded-xl.border {
+  border-color: #2A3B32 !important;
+}
+
+[data-theme="monsoon-night"] .border-secondary,
+[data-theme="monsoon-night"] .border-primary {
+  border-color: #7FB896 !important;
+}
+
+[data-theme="monsoon-night"] .ring-secondary\/30,
+[data-theme="monsoon-night"] .ring-primary\/30 {
+  --tw-ring-color: rgba(127, 184, 150, 0.35) !important;
+}
+
+[data-theme="monsoon-night"] .rounded-2xl,
+[data-theme="monsoon-night"] .rounded-xl,
+[data-theme="monsoon-night"] .bg-surface-container-lowest,
+[data-theme="monsoon-night"] .bg-card,
+[data-theme="monsoon-night"] [role="dialog"],
+[data-theme="monsoon-night"] .modal-content {
+  border-radius: 20px !important;
+}
+
+[data-theme="monsoon-night"] .shadow-xs,
+[data-theme="monsoon-night"] .shadow-sm,
+[data-theme="monsoon-night"] .shadow,
+[data-theme="monsoon-night"] .shadow-md,
+[data-theme="monsoon-night"] .shadow-lg,
+[data-theme="monsoon-night"] .shadow-subtle,
+[data-theme="monsoon-night"] .shadow-card,
+[data-theme="monsoon-night"] .shadow-floating,
+[data-theme="monsoon-night"] .bg-surface-container-lowest,
+[data-theme="monsoon-night"] .bg-card,
+[data-theme="monsoon-night"] .rounded-2xl.border,
+[data-theme="monsoon-night"] .rounded-xl.border {
+  box-shadow: 0 4px 20px -2px rgba(10, 16, 12, 0.45), 0 2px 6px -1px rgba(10, 16, 12, 0.25) !important;
+}
+
+[data-theme="monsoon-night"] ::selection {
+  background-color: #7FB896 !important;
+  color: #0E1511 !important;
+}
+
+[data-theme="monsoon-night"] .nimbus-nav[data-variant="docked"] .nimbus-drop {
+  background: rgba(127, 184, 150, 0.22) !important;
+  border: 1px solid rgba(127, 184, 150, 0.45) !important;
+  box-shadow: 0 0 14px rgba(127, 184, 150, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
 
 /* ==========================================================================

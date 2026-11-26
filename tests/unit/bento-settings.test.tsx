@@ -59,12 +59,13 @@ describe('Stitch Settings Screen (BentoSettings)', () => {
     expect(html).toContain('Spreadsheet Tables');
     expect(html).toContain('Full Account Snapshot');
     expect(html).toContain('Save Changes');
+    expect(html).toContain('Sign Out');
+    expect(html).toContain('Delete account');
 
     // Mockup-only items must be strictly absent
     expect(html).not.toContain('v2.4.0');
     expect(html).not.toContain('Cloud Node #4');
     expect(html).not.toContain('Kyoto Rain');
-    expect(html).not.toContain('Delete account');
     expect(html).not.toContain('Sophomore · CS Major');
     expect(html).not.toContain('italic');
   });

@@ -483,6 +483,10 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      delete_my_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: void;
+      };
       promote_to_project: {
         Args: {
           p_note_id: string;

@@ -12,6 +12,7 @@ import {
   Save,
   User,
   Wallet,
+  Trash2,
 } from 'lucide-react';
 import type { Profile } from '@/types/database.types';
 import { updateProfile, signOutAction } from '@/lib/actions/profile';
@@ -36,6 +37,7 @@ import { Pill } from '@/components/ui/pill';
 import { PageTitle } from '@/components/ui/page-title';
 import { ThemeModeSelector } from './theme-mode-selector';
 import { ThemePullCord } from './theme-pull-cord';
+import { DeleteAccountModal } from './delete-account-modal';
 
 interface BentoSettingsProps {
   initialProfile: Profile;
@@ -119,6 +121,7 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [exportBusy, setExportBusy] = useState<'notes' | 'csv' | 'json' | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { triggerThemeTransition } = useRadialThemeTransition();
 
   useEffect(() => {
@@ -579,8 +582,8 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
               </button>
             </div>
 
-            <div className="border-t border-outline-variant/30 pt-4">
-              <form action={signOutAction}>
+            <div className="border-t border-outline-variant/30 pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <form action={signOutAction} className="flex-1">
                 <button
                   type="submit"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-2.5 font-sans text-body-sm font-medium text-on-surface transition-colors hover:bg-surface-container cursor-pointer"
@@ -589,10 +592,28 @@ export function BentoSettings({ initialProfile, userEmail }: BentoSettingsProps)
                   <span>Sign Out</span>
                 </button>
               </form>
+
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-error/50 bg-surface-container-lowest px-4 py-2.5 font-sans text-body-sm font-medium text-error transition-colors hover:bg-error/10 hover:border-error/80 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span>Delete account</span>
+              </button>
             </div>
           </Card>
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        userEmail={userEmail || ''}
+        onDownloadBackup={() => handleRealExport('json')}
+        isBackingUp={exportBusy === 'json'}
+      />
 
       {/* Save Feedback Toast */}
       {toastMessage && (

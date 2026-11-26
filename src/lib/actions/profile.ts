@@ -338,3 +338,51 @@ export async function signOutAction() {
   await supabase.auth.signOut();
   redirect('/login');
 }
+
+/**
+ * Permanently delete the authenticated user's account and all associated data.
+ * Verifies confirmation text against the server-side session email (user.email)
+ * or the literal string "DELETE". Never trusts a client-supplied email claim.
+ * Protected against dev-bypass mode.
+ */
+export async function deleteAccountAction(
+  confirmationText: string
+): Promise<ActionResponse<void>> {
+  try {
+    const supabase = await createClient();
+    const { user, isBypass } = await getAuthenticatedUser(supabase);
+
+    if (isBypass || !user) {
+      return { success: false, error: DEV_BYPASS_MUTATION_ERROR };
+    }
+
+    const cleanConfirmation = (confirmationText || '').trim().toLowerCase();
+    const sessionEmail = (user.email || '').trim().toLowerCase();
+
+    const isMatch =
+      cleanConfirmation === 'delete' ||
+      (sessionEmail.length > 0 && cleanConfirmation === sessionEmail);
+
+    if (!isMatch) {
+      return {
+        success: false,
+        error: 'Confirmation does not match your account email or DELETE.',
+      };
+    }
+
+    const { error: rpcError } = await supabase.rpc('delete_my_account');
+    if (rpcError) {
+      return { success: false, error: rpcError.message };
+    }
+
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Non-fatal: user row in auth.users may already be removed by delete_my_account
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: formatErrorMessage(err) };
+  }
+}

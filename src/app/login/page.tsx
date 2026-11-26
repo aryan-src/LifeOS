@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -72,7 +72,14 @@ function resolveInitialAuthError(
 
 function LoginContent() {
   const searchParams = useSearchParams();
+  const noticeParam = searchParams.get('notice');
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(() => {
+    if (noticeParam === 'account-deleted') {
+      return 'Your account and data were deleted.';
+    }
+    return null;
+  });
   const [error, setError] = useState<string | null>(() =>
     resolveInitialAuthError(
       searchParams.get('error'),
@@ -80,6 +87,15 @@ function LoginContent() {
       searchParams.get('reason')
     )
   );
+
+  useEffect(() => {
+    if (noticeParam === 'account-deleted' && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('notice');
+      const cleanPath = url.pathname + (url.search ? url.search : '');
+      window.history.replaceState({}, '', cleanPath);
+    }
+  }, [noticeParam]);
 
   const nextPath = sanitizeInternalNextPath(
     searchParams.get('redirectTo') || searchParams.get('next')
@@ -143,6 +159,17 @@ function LoginContent() {
 
       {/* Login Card */}
       <div className="bg-ivory dark:bg-zinc-900/90 backdrop-blur-sm border border-borderWarm dark:border-zinc-800 rounded-2xl p-7 shadow-xs">
+        {/* Account Deletion Notice Banner */}
+        {notice && !error && (
+          <div
+            role="status"
+            className="mb-5 p-3 rounded-xl bg-secondary/10 border border-secondary/30 text-xs text-on-surface leading-snug flex items-start gap-2 animate-in fade-in duration-200"
+          >
+            <span className="text-secondary mt-0.5">•</span>
+            <span>{notice}</span>
+          </div>
+        )}
+
         {/* Error Alert Banner */}
         {error && (
           <div

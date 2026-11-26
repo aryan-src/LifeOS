@@ -86,4 +86,16 @@ describe('Notion-Style Login Page', () => {
       (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
     }
   });
+
+  it('renders a calm success notice banner when notice=account-deleted query parameter is provided', () => {
+    mockSearchParamsGet.mockImplementation((param: string) => {
+      if (param === 'notice') return 'account-deleted';
+      return null;
+    });
+
+    const html = renderToString(<LoginPage />);
+    expect(html).toContain('role="status"');
+    expect(html).toContain('Your account and data were deleted.');
+    expect(html).not.toContain('role="alert"');
+  });
 });
